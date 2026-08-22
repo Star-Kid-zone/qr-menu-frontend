@@ -42,8 +42,8 @@ export const SERVER_API_BASE_URL = `${requireEnvInProduction(
   'http://127.0.0.1:7000',
 ).replace(/\/+$/, '')}/api`;
 
-/** Root domain tenant subdomains are served from, e.g. `<slug>.qrmenu.app`. */
-export const TENANT_ROOT_DOMAIN = process.env.NEXT_PUBLIC_TENANT_ROOT_DOMAIN || 'qrmenu.app';
+/** Root domain tenant subdomains are served from, e.g. `<slug>.mynagaram.com`. */
+export const TENANT_ROOT_DOMAIN = process.env.NEXT_PUBLIC_TENANT_ROOT_DOMAIN || 'mynagaram.com';
 
 /** Canonical public URL for a tenant's landing page, given their public slug. */
 export function getTenantPublicUrl(slug: string | null | undefined): string {
