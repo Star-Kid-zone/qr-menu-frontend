@@ -53,29 +53,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async rewrites() {
-    const target = process.env.API_PROXY_TARGET;
-
-    if (!target) {
-      if (process.env.NODE_ENV === 'production') {
-        throw new Error(
-          'API_PROXY_TARGET is not set. Refusing to fall back to a localhost API target in a production build — set API_PROXY_TARGET to the backend origin (e.g. https://api.example.com).',
-        );
-      }
-      console.warn(
-        '[next.config] API_PROXY_TARGET is not set — falling back to http://127.0.0.1:7000 for local development only.',
-      );
-    }
-
-    const destinationOrigin = target || 'http://127.0.0.1:7000';
-
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${destinationOrigin.replace(/\/+$/, '')}/api/:path*`,
-      },
-    ];
-  },
+  // No rewrites() proxy: the browser calls the backend directly via
+  // NEXT_PUBLIC_API_BASE_URL (see src/config/app.constants.ts), and
+  // server-side data fetching calls it directly via API_PROXY_TARGET
+  // (SERVER_API_BASE_URL). Routing API traffic through the Next.js server
+  // would add an unnecessary hop and, on request-billed hosts (e.g. Amplify
+  // SSR compute), bill every API call as frontend compute.
 };
 
 export default nextConfig;
