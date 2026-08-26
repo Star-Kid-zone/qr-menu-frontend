@@ -5,6 +5,7 @@ frontend:
       commands:
         - corepack enable
         - corepack prepare pnpm@10.26.0 --activate
+        - printf 'NEXT_PUBLIC_APP_BASE_URL=%s\nAPP_BASE_URL=%s\nNEXT_PUBLIC_API_BASE_URL=%s\nAPI_PROXY_TARGET=%s\nNEXT_PUBLIC_TENANT_ROOT_DOMAIN=%s\nNODE_ENV=production\n' "$NEXT_PUBLIC_APP_BASE_URL" "$APP_BASE_URL" "$NEXT_PUBLIC_API_BASE_URL" "$API_PROXY_TARGET" "$NEXT_PUBLIC_TENANT_ROOT_DOMAIN" > .env.production
         - pnpm install --frozen-lockfile
     build:
       commands:
