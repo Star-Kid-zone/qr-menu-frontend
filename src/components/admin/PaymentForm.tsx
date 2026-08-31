@@ -13,7 +13,6 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "@/components/ui/toast";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   PiCheckBold,
   PiCopyBold,
@@ -21,6 +20,7 @@ import {
   PiLinkBold,
   PiImageBold,
   PiUploadSimpleBold,
+  PiCheckCircleFill,
 } from "react-icons/pi";
 import { cn } from "@/lib/utils";
 import { springDefault, easeOutTransition } from "@/lib/motion";
@@ -55,8 +55,18 @@ export interface PaymentFormProps {
 }
 
 const PAYMENT_TYPES = [
-  { value: "url" as const, label: "Gateway URL", icon: PiLinkBold },
-  { value: "image" as const, label: "QR Image Upload", icon: PiImageBold },
+  {
+    value: "url" as const,
+    label: "Payment Link",
+    sublabel: "Direct customers to your payment gateway URL",
+    icon: PiLinkBold,
+  },
+  {
+    value: "image" as const,
+    label: "QR Image Upload",
+    sublabel: "Upload a QR code image for customers to scan",
+    icon: PiImageBold,
+  },
 ];
 
 /**
@@ -81,8 +91,7 @@ function PaymentFormBase(
 
   // Sync in initial data once it arrives (e.g. after the edit page's fetch
   // resolves). Adjusted during render rather than in an effect, per React's
-  // "adjusting state when a prop changes" pattern — avoids an extra render
-  // pass and the react-hooks/set-state-in-effect cascading-render warning.
+  // "adjusting state when a prop changes" pattern.
   const [syncedInitialData, setSyncedInitialData] = useState(initialData);
   if (initialData !== syncedInitialData) {
     setSyncedInitialData(initialData);
@@ -155,127 +164,168 @@ function PaymentFormBase(
     }
   };
 
-  // A newly-selected file always takes precedence over a previously stored image.
   const isNewFilePreview = Boolean(newFilePreviewUrl);
   const previewUrl = newFilePreviewUrl ?? existingQrImage;
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="mb-1 flex items-center gap-3">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-clay-gradient text-primary-foreground shadow-neu-sm">
-              <PiCreditCardBold size={20} />
-            </span>
-            <p className="text-caption font-semibold uppercase tracking-[0.2em] text-primary">Checkout Setup</p>
+    <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-5">
+      {/* Left — Method selector */}
+      <div className="flex flex-col gap-3 lg:col-span-2">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="mb-1 flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+              <PiCreditCardBold size={15} />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-primary">Checkout Setup</p>
+            </div>
           </div>
-          <CardTitle className="text-h2 text-foreground">Payment Configuration</CardTitle>
-          <p className="text-body text-muted-foreground">
-            Choose how customers pay you and preview it before it goes live.
+          <p className="mt-2 text-sm font-bold text-foreground">Payment Configuration</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Choose how customers pay at checkout.
           </p>
+        </div>
 
-          <div
-            role="tablist"
-            aria-label="Payment method type"
-            className="mt-2 flex gap-1 rounded-md border border-border bg-muted p-1.5"
-          >
-            {PAYMENT_TYPES.map(({ value, label, icon: Icon }) => (
+        {/* Type selector */}
+        <div className="flex flex-col gap-2" role="tablist" aria-label="Payment method type">
+          {PAYMENT_TYPES.map(({ value, label, sublabel, icon: Icon }) => {
+            const selected = paymentType === value;
+            return (
               <button
                 key={value}
                 type="button"
                 role="tab"
-                aria-selected={paymentType === value}
+                aria-selected={selected}
                 onClick={() => setPaymentType(value)}
                 className={cn(
-                  "relative flex flex-1 items-center justify-center gap-2 rounded-md px-4 py-3 text-caption transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-                  paymentType === value
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-accent-foreground",
+                  "flex items-start gap-3 rounded-xl border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  selected
+                    ? "border-primary bg-primary/5 shadow-sm"
+                    : "border-border bg-card hover:border-primary/40 hover:bg-muted/50",
                 )}
               >
-                {paymentType === value && (
-                  <motion.span
-                    layoutId={`paymentTypeHighlight-${mode}`}
-                    className="absolute inset-0 -z-10 rounded-md bg-card shadow-xs"
-                    transition={springDefault}
-                  />
+                <div
+                  className={cn(
+                    "flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors",
+                    selected ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  <Icon size={17} />
+                </div>
+                <div className="min-w-0 flex-1 pt-0.5">
+                  <p className={cn("text-sm font-semibold", selected ? "text-foreground" : "text-muted-foreground")}>
+                    {label}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{sublabel}</p>
+                </div>
+                {selected && (
+                  <PiCheckCircleFill size={18} className="mt-0.5 shrink-0 text-primary" />
                 )}
-                <Icon size={16} />
-                {label}
               </button>
-            ))}
-          </div>
-        </CardHeader>
+            );
+          })}
+        </div>
 
-        <CardContent className="space-y-6 pt-0">
-          {mode === "edit" && (initialData?.link || initialData?.qrImage) ? (
-            <div>
-              <p className="mb-1.5 text-caption font-semibold text-foreground">
-                Current {initialData.type === "image" ? "Payment Image" : "Payment Link"}
-              </p>
-              <div className="clay-inset flex items-center gap-2 border border-border/60 bg-muted/40 p-3">
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-success/15 text-success">
-                  <PiCheckBold size={14} />
+        {/* Existing data badge (edit mode) */}
+        {mode === "edit" && (initialData?.link || initialData?.qrImage) && (
+          <div className="rounded-xl border border-border bg-muted/40 p-3">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Current {initialData?.type === "image" ? "Image" : "Link"}
+            </p>
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-2.5">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
+                <PiCheckBold size={12} />
+              </span>
+              {initialData?.type === "image" && initialData?.qrImage ? (
+                <span className="relative size-7 shrink-0 overflow-hidden rounded border border-border bg-card">
+                  <Image src={initialData.qrImage} alt="Current QR" fill className="object-contain p-0.5" />
                 </span>
-                {initialData.type === "image" && initialData.qrImage ? (
-                  <span className="relative size-8 shrink-0 overflow-hidden rounded-md border border-border bg-card">
-                    <Image src={initialData.qrImage} alt="Current QR code" fill className="object-contain p-1" />
-                  </span>
-                ) : null}
-                <p className="min-w-0 flex-1 truncate text-caption text-muted-foreground">
-                  {initialData.type === "image" ? "QR code image on file" : initialData.link}
-                </p>
-                {initialData.type !== "image" && initialData.link ? (
-                  <button
-                    type="button"
-                    onClick={handleCopyCurrentLink}
-                    title="Copy payment link"
-                    aria-label="Copy payment link"
-                    className="inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border border-border bg-card text-muted-foreground shadow-neu-sm transition-[color,background-color,border-color,transform] duration-150 ease-out hover:border-primary/30 hover:bg-accent hover:text-primary active:scale-[0.95]"
-                  >
-                    {copied ? <PiCheckBold size={14} className="text-success" /> : <PiCopyBold size={14} />}
-                  </button>
-                ) : null}
-              </div>
+              ) : null}
+              <p className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+                {initialData?.type === "image" ? "QR code image on file" : initialData?.link}
+              </p>
+              {initialData?.type !== "image" && initialData?.link ? (
+                <button
+                  type="button"
+                  onClick={handleCopyCurrentLink}
+                  title="Copy payment link"
+                  aria-label="Copy payment link"
+                  className="inline-flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded border border-border bg-card text-muted-foreground transition hover:border-primary/30 hover:text-primary"
+                >
+                  {copied ? <PiCheckBold size={11} className="text-emerald-600" /> : <PiCopyBold size={11} />}
+                </button>
+              ) : null}
             </div>
-          ) : null}
+          </div>
+        )}
+      </div>
 
+      {/* Right — Form content */}
+      <div className="flex flex-col lg:col-span-3">
+        <div className="h-full rounded-xl border border-border bg-card p-5">
           <AnimatePresence mode="wait" initial={false}>
             {paymentType === "url" ? (
               <motion.div
                 key="url"
-                initial={{ opacity: 0, y: 4 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
+                exit={{ opacity: 0, y: -6 }}
                 transition={easeOutTransition}
+                className="flex h-full flex-col gap-4"
               >
-                <label htmlFor="payment-url" className="mb-1 block text-body font-semibold text-foreground">
-                  Payment Gateway URL
-                </label>
-                <p className="mb-3 text-caption text-muted-foreground">
-                  Direct customers to your external payment portal.
-                </p>
-                <Input
-                  id="payment-url"
-                  value={paymentLink}
-                  onChange={(e) => setPaymentLink(e.target.value)}
-                  placeholder="e.g. https://paypal.me/yourname"
-                  className="h-12"
-                />
+                <div>
+                  <p className="text-sm font-bold text-foreground">Payment Gateway URL</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Enter the URL customers will be redirected to when they tap Pay.
+                  </p>
+                </div>
+                <label htmlFor="payment-url" className="sr-only">Payment Gateway URL</label>
+                <div className="relative">
+                  <PiLinkBold
+                    size={16}
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+                  <Input
+                    id="payment-url"
+                    value={paymentLink}
+                    onChange={(e) => setPaymentLink(e.target.value)}
+                    placeholder="https://paypal.me/yourname"
+                    className="h-11 pl-9"
+                  />
+                </div>
+
+                <div className="mt-auto rounded-xl border border-border bg-muted/40 p-4">
+                  <p className="mb-2 text-xs font-semibold text-foreground">Supported gateways</p>
+                  <div className="flex flex-wrap gap-2">
+                    {["PayPal", "Stripe", "Razorpay", "Paytm", "GPay", "PhonePe", "Custom"].map((g) => (
+                      <span
+                        key={g}
+                        className="rounded-md border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
+                      >
+                        {g}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </motion.div>
             ) : (
               <motion.div
                 key="image"
-                initial={{ opacity: 0, y: 4 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
+                exit={{ opacity: 0, y: -6 }}
                 transition={easeOutTransition}
-                className="space-y-3"
+                className="flex h-full flex-col gap-4"
               >
-                <label htmlFor="payment-qr-upload" className="block text-caption text-muted-foreground">
-                  Payment QR Image
-                </label>
-                <div className="group relative overflow-hidden rounded-lg border-2 border-dashed border-border bg-muted/50 p-8 text-center transition-colors duration-200 ease-out hover:border-primary/40 hover:bg-accent/40 has-[:focus-visible]:border-primary has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring/40">
+                <div>
+                  <p className="text-sm font-bold text-foreground">Upload QR Code Image</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Upload a QR code image that customers can scan to pay.
+                  </p>
+                </div>
+
+                <label htmlFor="payment-qr-upload" className="sr-only">Payment QR Image</label>
+                <div className="group relative flex flex-1 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-border bg-muted/30 transition-colors hover:border-primary/40 hover:bg-primary/5 has-[:focus-visible]:border-primary has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring">
                   <input
                     id="payment-qr-upload"
                     type="file"
@@ -283,17 +333,15 @@ function PaymentFormBase(
                     onChange={handleFileChange}
                     className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
                   />
-
                   {previewUrl ? (
-                    <div className="relative w-full space-y-4">
-                      <div className="relative mx-auto size-32 overflow-hidden rounded-md border border-border bg-card p-2 shadow-xs">
+                    <div className="flex flex-col items-center gap-3 p-6">
+                      <div className="relative size-36 overflow-hidden rounded-xl border border-border bg-white p-2 shadow-sm">
                         {isNewFilePreview ? (
-                          // blob preview, cannot be optimized
                           <Image
                             src={previewUrl}
                             alt="QR code preview"
                             fill
-                            sizes="128px"
+                            sizes="144px"
                             className="object-contain"
                             unoptimized
                           />
@@ -302,23 +350,23 @@ function PaymentFormBase(
                             src={previewUrl}
                             alt="QR code preview"
                             fill
-                            sizes="128px"
-                            className="object-contain p-2"
+                            sizes="144px"
+                            className="object-contain p-1"
                           />
                         )}
                       </div>
-                      <p className="text-caption text-primary">Click to change image</p>
+                      <p className="text-xs font-medium text-primary">Click anywhere to change image</p>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center gap-3">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform duration-300 ease-out group-hover:scale-110">
-                        <PiUploadSimpleBold size={28} />
+                    <div className="flex flex-col items-center gap-3 p-8">
+                      <div className="flex size-14 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-transform group-hover:scale-105 group-hover:text-primary">
+                        <PiUploadSimpleBold size={24} />
                       </div>
-                      <div>
-                        <p className="text-body font-semibold text-foreground">
+                      <div className="text-center">
+                        <p className="text-sm font-semibold text-foreground">
                           {mode === "edit" ? "Click to upload new QR code" : "Click to upload QR code"}
                         </p>
-                        <p className="mt-1 text-caption text-muted-foreground">PNG, JPG, SVG up to 5MB</p>
+                        <p className="mt-1 text-xs text-muted-foreground">PNG, JPG, SVG · Max 5 MB</p>
                       </div>
                     </div>
                   )}
@@ -326,8 +374,8 @@ function PaymentFormBase(
               </motion.div>
             )}
           </AnimatePresence>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

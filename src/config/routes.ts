@@ -35,5 +35,6 @@ export const routes = {
     users: "/superadmin/users",
     userDetail: (id: string | number) => `/superadmin/users/${id}`,
     analytics: "/superadmin/analytics",
+    weeklyPosters: "/superadmin/weekly-posters",
   },
 } as const;

@@ -1,19 +1,6 @@
 "use client";
 
-import { SmoothScrollProvider } from "./parallax/SmoothScrollProvider";
-import { CustomCursor } from "./parallax/CustomCursor";
-import { Header } from "./sections/Header";
-import { Hero } from "./sections/Hero";
-import { Gallery } from "./sections/Gallery";
-import { Flagship } from "./sections/Flagship";
-import { Features } from "./sections/Features";
-import { ThemeShowcase } from "./sections/ThemeShowcase";
-import { HowItWorks } from "./sections/HowItWorks";
-import { Showcase } from "./sections/Showcase";
-import { Pricing } from "./sections/Pricing";
-import { Faq } from "./sections/Faq";
-import { WaitlistCta } from "./sections/WaitlistCta";
-import { Footer } from "./sections/Footer";
+import { QrMenuLandingExperience } from "./QrMenuLandingExperience";
 
 /**
  * The main marketing site's landing page — shown when a request doesn't resolve
@@ -31,23 +18,5 @@ import { Footer } from "./sections/Footer";
  * specific numbers and what they're sourced from.
  */
 export function MarketingLandingPage() {
-  return (
-    <SmoothScrollProvider>
-      <div className="agency-cursor-zone dark relative flex min-h-screen flex-col bg-[#0d0906]">
-        <CustomCursor />
-        <Header />
-        <Hero />
-        <Gallery />
-        <Flagship />
-        <Features />
-        <ThemeShowcase />
-        <HowItWorks />
-        <Showcase />
-        <Pricing />
-        <Faq />
-        <WaitlistCta />
-        <Footer />
-      </div>
-    </SmoothScrollProvider>
-  );
+  return <QrMenuLandingExperience />;
 }

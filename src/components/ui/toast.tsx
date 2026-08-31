@@ -108,7 +108,7 @@ function ToastCard({ id, variant, message }: ToastItem) {
       exit={{ opacity: 0, x: 40, scale: 0.96, transition: { duration: 0.15 } }}
       transition={{ type: "spring", stiffness: 420, damping: 32 }}
       className={cn(
-        "pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-2xl border bg-card p-4 shadow-neu-md backdrop-blur-sm",
+        "pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border bg-card p-4 shadow-md backdrop-blur-sm",
         classes,
       )}
       role="status"

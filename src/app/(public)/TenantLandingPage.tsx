@@ -71,7 +71,10 @@ export function TenantLandingPage({
     trackEvent('visit', 'landing_page', { page: 'landing', path: window.location.pathname });
   }, [trackEvent]);
 
-  const menuHref = `/menu`;
+  // On subdomain tenants the menu lives at /menu (host-resolved).
+  // On path-based tenants (/[slug]) it lives at /[slug]/menu — use routeSlug
+  // when available so the link works on both access patterns.
+  const menuHref = routeSlug ? `/${routeSlug}/menu` : `/menu`;
 
   const onPay = () => {
     track("click", "payment_button", { destination: "payment" });

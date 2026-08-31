@@ -167,15 +167,15 @@ export function PhonePreview({
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-1 rounded-xl bg-muted/40 p-1">
+      <div className="flex shrink-0 items-center gap-1 rounded-lg border border-border bg-card p-1">
         <button
           type="button"
           onClick={() => setView("landing")}
           className={cn(
-            "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors duration-150",
+            "flex flex-1 items-center justify-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors",
             view === "landing"
-              ? "bg-accent text-accent-foreground shadow-neu-inset-sm"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-primary text-primary-foreground shadow-xs"
+              : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
           )}
         >
           <PiHouseBold className="size-3.5" /> Landing
@@ -184,10 +184,10 @@ export function PhonePreview({
           type="button"
           onClick={() => setView("menu")}
           className={cn(
-            "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50",
+            "flex flex-1 items-center justify-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50",
             view === "menu"
-              ? "bg-accent text-accent-foreground shadow-neu-inset-sm"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-primary text-primary-foreground shadow-xs"
+              : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
           )}
         >
           <PiForkKnifeBold className="size-3.5" /> Menu
@@ -203,16 +203,16 @@ export function PhonePreview({
             onClick={() => setDevice(d)}
             title={`${d.name} — ${d.width}×${d.height}`}
             className={cn(
-              "flex size-7 items-center justify-center rounded-full border text-[11px] font-bold transition-colors duration-150",
+              "flex size-6 items-center justify-center rounded-md border text-[10px] font-bold transition-colors",
               device.id === d.id
-                ? "border-accent bg-accent text-accent-foreground"
-                : "border-border text-muted-foreground hover:border-accent/50 hover:text-foreground",
+                ? "border-primary bg-primary text-primary-foreground shadow-xs"
+                : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
             )}
           >
             {d.label}
           </button>
         ))}
-        <span className="ml-1 text-[10px] text-muted-foreground">{device.name}</span>
+        <span className="ml-1 text-[10px] font-medium text-muted-foreground">{device.name}</span>
       </div>
 
       {/* Phone mockup — sticky so it stays in view while the settings column scrolls. */}

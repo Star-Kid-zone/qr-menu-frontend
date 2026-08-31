@@ -145,26 +145,14 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
       />
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-dvh w-[17rem] flex-col overflow-hidden border-r border-border bg-card transition-[transform,width] duration-200 lg:z-40 ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-dvh w-[17rem] flex-col border-r border-border bg-card transition-[transform,width] duration-200 lg:z-40 ${
           isOpen ? "translate-x-0" : "-translate-x-full lg:w-20 lg:translate-x-0"
         }`}
       >
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -left-16 -top-24 h-56 w-56 animate-blob rounded-full bg-clay-orange/20 blur-3xl"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-20 top-1/2 h-64 w-64 animate-blob-slow animate-blob-delay rounded-full bg-clay-violet/15 blur-3xl"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -left-10 bottom-0 h-48 w-48 animate-blob-slow rounded-full bg-clay-coral/15 blur-3xl"
-        />
 
         <div className={`relative flex h-16 shrink-0 items-center justify-between border-b border-border px-5 ${isOpen ? "" : "lg:justify-center lg:px-2"}`}>
           <div className={`flex items-center gap-2.5 ${isOpen ? "" : "lg:flex-col"}`}>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-clay-gradient text-sm font-bold text-primary-foreground shadow-neu-sm">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground shadow-sm">
               QR
             </div>
             {isOpen && <p className="text-h3 text-foreground">Admin</p>}
@@ -200,7 +188,7 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
                         isOpen ? "" : "justify-center"
                       } ${
                         active
-                          ? "bg-clay-gradient font-semibold text-primary-foreground shadow-neu-sm"
+                          ? "bg-primary font-semibold text-primary-foreground shadow-sm"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground hover:-translate-y-0.5"
                       }`}
                       onClick={() => {
@@ -224,7 +212,7 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
         <div className={`relative shrink-0 border-t border-border px-4 py-4 ${isOpen ? "" : "lg:px-2"}`}>
           {isOpen && (
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-clay-gradient-violet text-caption font-semibold text-primary-foreground shadow-neu-sm">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-caption font-semibold text-primary-foreground shadow-sm">
                 AD
               </div>
               <div className="flex min-w-0 flex-col">

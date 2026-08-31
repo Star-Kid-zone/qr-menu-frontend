@@ -87,7 +87,7 @@ const Navbar = ({
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <button
             type="button"
-            className="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-border bg-card text-muted-foreground shadow-neu-sm transition hover:bg-muted hover:text-foreground hover:-translate-y-0.5"
+            className="inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border bg-card text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground hover:-translate-y-0.5"
             onClick={toggleSidebar}
             aria-label="Toggle sidebar"
           >
@@ -103,19 +103,19 @@ const Navbar = ({
           <button
             type="button"
             onClick={toggleTheme}
-            className="inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border border-border bg-card px-3 text-caption text-muted-foreground shadow-neu-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground"
+            className="inline-flex h-9 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-card px-3 text-caption text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-muted hover:text-foreground"
             aria-label="Toggle theme"
           >
             {mode === "light" ? (
-              <PiMoonBold size={14} className="shrink-0 text-clay-violet" />
+              <PiMoonBold size={14} className="shrink-0 text-primary" />
             ) : (
-              <PiSunBold size={14} className="shrink-0 text-clay-gold" />
+              <PiSunBold size={14} className="shrink-0 text-primary" />
             )}
             <span className="hidden sm:inline">{mode === "light" ? "Dark" : "Light"}</span>
           </button>
 
-          <div className="hidden items-center gap-2 rounded-full border border-border bg-card py-1 pl-2 pr-3 shadow-neu-sm sm:flex">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-clay-gradient text-caption font-semibold text-primary-foreground">
+          <div className="hidden items-center gap-2 rounded-full border border-border bg-card py-1 pl-2 pr-3 shadow-sm sm:flex">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-caption font-semibold text-primary-foreground">
               {resolvedIdentityInitials}
             </div>
             <span className="truncate text-caption font-semibold text-foreground">
@@ -126,7 +126,7 @@ const Navbar = ({
           <button
             type="button"
             onClick={handleLogout}
-            className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-3 text-caption text-muted-foreground shadow-neu-sm transition hover:-translate-y-0.5 hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+            className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-3 text-caption text-muted-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
             aria-label="Log out"
           >
             <PiSignOutBold size={14} className="shrink-0" />

@@ -2,15 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, useReducedMotion } from "framer-motion";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/Badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { fadeIn, fadeInUp } from "@/lib/motion";
 import { workspaceService, type GooglePlaceResult } from "@/services/workspace.service";
 import { getApiErrorMessage } from "@/utils/errors";
 import {
@@ -18,6 +14,9 @@ import {
   PiCopyBold,
   PiMagnifyingGlassBold,
   PiMapPinBold,
+  PiGoogleLogoBold,
+  PiArrowRightBold,
+  PiCheckCircleFill,
 } from "react-icons/pi";
 
 export default function AddReviewPage() {
@@ -31,8 +30,6 @@ export default function AddReviewPage() {
   const [discoverySaving, setDiscoverySaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const searchRequestRef = useRef(0);
-  const shouldReduceMotion = useReducedMotion();
-  const cardVariants = shouldReduceMotion ? fadeIn : fadeInUp;
 
   useEffect(() => {
     let mounted = true;
@@ -48,15 +45,9 @@ export default function AddReviewPage() {
       }
     }
     loadWorkspace();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
-  // Live, debounced search — fires automatically as the admin types instead
-  // of requiring a button click. Stale in-flight requests are dropped via
-  // searchRequestRef so a fast typist never sees an older query's results
-  // flash in after a newer one already resolved.
   useEffect(() => {
     const trimmed = placeQuery.trim();
     if (trimmed.length < 2) {
@@ -95,7 +86,6 @@ export default function AddReviewPage() {
 
   const handleSynchronizeDiscovery = async () => {
     if (!selectedPlace) return;
-
     try {
       setDiscoverySaving(true);
       await workspaceService.updateWorkspace({
@@ -117,91 +107,85 @@ export default function AddReviewPage() {
       setCopied(true);
       toast.success("Review link copied");
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
+    } catch {
       toast.error("Failed to copy review link");
     }
   };
 
   return (
-    <div className="flex h-full flex-col gap-6 overflow-y-auto">
+    <div className="flex h-full flex-col gap-3 sm:gap-4">
       <PageHeader
         title="Add Review Link"
         onBack={() => router.push("/admin/listreview")}
-        backLabel="Back"
+        backLabel="Back to reviews"
       />
 
-      <motion.div
-        variants={cardVariants}
-        initial="hidden"
-        animate="visible"
-        className="mx-auto w-full max-w-3xl"
-      >
-        <Card>
-          <CardHeader className="pb-2">
-            <div className="mb-1 flex items-center gap-3">
-              <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-clay-gradient text-primary-foreground shadow-neu-sm">
-                <PiMagnifyingGlassBold size={20} />
-              </span>
-              <p className="text-caption font-semibold uppercase tracking-[0.2em] text-primary">Google Map Intelligence</p>
-            </div>
-            <CardTitle className="text-h2 text-foreground">Place Discovery</CardTitle>
-            <p className="text-body text-muted-foreground">
-              Search Google’s database to find your business and automatically generate its review link.
-            </p>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            {reviewLink ? (
-              <div>
-                <p className="mb-1.5 text-caption font-semibold text-foreground">Current Review Link</p>
-                <div className="clay-inset flex items-center gap-2 border border-border/60 bg-muted/40 p-3">
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-success/15 text-success">
-                    <PiCheckBold size={14} />
-                  </span>
-                  <p className="min-w-0 flex-1 truncate text-caption text-muted-foreground">{reviewLink}</p>
-                  <button
-                    type="button"
-                    onClick={handleCopyReviewLink}
-                    title="Copy review link"
-                    aria-label="Copy review link"
-                    className="inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md border border-border bg-card text-muted-foreground shadow-neu-sm transition-[color,background-color,border-color,transform] duration-150 ease-out hover:border-primary/30 hover:bg-accent hover:text-primary active:scale-[0.95]"
-                  >
-                    {copied ? <PiCheckBold size={14} className="text-success" /> : <PiCopyBold size={14} />}
-                  </button>
-                </div>
+      <div className="min-h-0 flex-1 overflow-y-auto pr-0.5 pb-6">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
+        {/* Left — Search panel */}
+        <div className="flex flex-col gap-4 lg:col-span-3">
+          {/* Heading card */}
+          <div className="rounded-xl border border-border bg-card p-5">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+                <PiGoogleLogoBold size={16} />
               </div>
-            ) : null}
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Google Map Intelligence</p>
+                <p className="text-sm font-bold text-foreground">Place Discovery</p>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Search Google's database to find your business and automatically generate your review link. Type your restaurant or business name to get started.
+            </p>
+          </div>
 
+          {/* Search input */}
+          <div className="rounded-xl border border-border bg-card p-4">
+            <p className="mb-2 text-xs font-semibold text-foreground">Search your business</p>
             <div className="relative">
-              <label className="sr-only">Business name or location</label>
               <PiMagnifyingGlassBold
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                size={18}
+                size={16}
               />
               <Input
                 value={placeQuery}
                 onChange={(e) => setPlaceQuery(e.target.value)}
-                placeholder="Start typing your restaurant's name…"
-                className="pl-10"
+                placeholder="e.g. The Spice Garden, Chennai"
+                className="h-10 pl-9 pr-20"
                 autoComplete="off"
               />
               {searching ? (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-caption text-muted-foreground">
-                  Searching…
+                <span className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="size-3 animate-spin rounded-full border border-muted-foreground border-t-transparent" />
+                  Searching
                 </span>
               ) : null}
             </div>
+          </div>
 
-            {hasSearched && !searching && placeResults.length === 0 ? (
-              <EmptyState
-                icon={<PiMapPinBold size={28} />}
-                title="No places found"
-                description="Try a more specific business name or add your city."
-                className="rounded-2xl py-10"
-              />
-            ) : null}
-
-            {placeResults.length > 0 ? (
-              <div className="flex max-h-[26rem] flex-col gap-2 overflow-y-auto">
+          {/* Results */}
+          <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-border bg-card">
+            {!hasSearched && !searching ? (
+              <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
+                <div className="flex size-12 items-center justify-center rounded-xl border border-border bg-muted text-muted-foreground">
+                  <PiMapPinBold size={22} />
+                </div>
+                <p className="text-sm font-semibold text-foreground">Search for your business</p>
+                <p className="max-w-xs text-xs text-muted-foreground">
+                  Results appear here — pick your listing, then click Synchronize below.
+                </p>
+              </div>
+            ) : hasSearched && !searching && placeResults.length === 0 ? (
+              <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
+                <div className="flex size-12 items-center justify-center rounded-xl border border-border bg-muted text-muted-foreground">
+                  <PiMapPinBold size={22} />
+                </div>
+                <p className="text-sm font-semibold text-foreground">No places found</p>
+                <p className="text-xs text-muted-foreground">Try a more specific name or add your city.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-px p-2">
                 {placeResults.map((place) => {
                   const isSelected = selectedPlace?.placeId === place.placeId;
                   return (
@@ -209,58 +193,100 @@ export default function AddReviewPage() {
                       key={place.placeId}
                       type="button"
                       onClick={() => handleSelectPlace(place)}
-                      className={`flex items-start gap-3 rounded-xl border p-3 text-left transition-all duration-150 ease-out ${
+                      className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                         isSelected
-                          ? "border-primary bg-primary/5 shadow-neu-sm"
-                          : "border-border bg-card hover:border-primary/30 hover:bg-accent hover:shadow-neu-sm"
+                          ? "border-primary bg-primary/5"
+                          : "border-transparent hover:border-border hover:bg-muted/50"
                       }`}
                     >
-                      <PiMapPinBold size={18} className="mt-0.5 shrink-0 text-primary" />
-                      <div className="min-w-0">
-                        <p className="truncate text-body font-semibold text-foreground">{place.name}</p>
+                      <div className={`flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors ${isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                        <PiMapPinBold size={14} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-foreground">{place.name}</p>
                         {place.address ? (
-                          <p className="truncate text-caption text-muted-foreground">{place.address}</p>
+                          <p className="truncate text-xs text-muted-foreground">{place.address}</p>
                         ) : null}
                       </div>
-                      {isSelected ? (
-                        <Badge tone="success" className="ml-auto shrink-0">Selected</Badge>
-                      ) : null}
+                      {isSelected && (
+                        <PiCheckCircleFill size={16} className="mt-0.5 shrink-0 text-primary" />
+                      )}
                     </button>
                   );
                 })}
               </div>
-            ) : null}
+            )}
+          </div>
+        </div>
 
-            {!hasSearched ? (
-              <EmptyState
-                icon={<PiMapPinBold size={28} />}
-                title="Search for your business"
-                description="Results appear here — pick your listing, then synchronize below."
-                className="rounded-2xl py-10"
-              />
-            ) : null}
-
+        {/* Right — Confirm + current link panel */}
+        <div className="flex flex-col gap-4 lg:col-span-2">
+          {/* Selected place confirmation */}
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">Selected Business</p>
             {selectedPlace ? (
-              <div className="clay-inset flex items-center gap-2 border border-primary/30 bg-primary/5 p-3">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-caption font-semibold text-foreground">{selectedPlace.name}</p>
-                  <p className="truncate text-caption text-muted-foreground">{selectedPlace.reviewLink}</p>
-                </div>
-                <Badge tone="success" className="shrink-0">Selected</Badge>
+              <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                <p className="truncate text-sm font-bold text-foreground">{selectedPlace.name}</p>
+                <p className="mt-0.5 truncate text-[10px] text-muted-foreground">{selectedPlace.reviewLink}</p>
               </div>
-            ) : null}
-
+            ) : (
+              <div className="mb-4 rounded-lg border border-dashed border-border p-3 text-center">
+                <p className="text-xs text-muted-foreground">No business selected yet</p>
+              </div>
+            )}
             <Button
               className="w-full"
               onClick={handleSynchronizeDiscovery}
               loading={discoverySaving}
               disabled={!selectedPlace}
+              rightIcon={!discoverySaving ? <PiArrowRightBold size={14} /> : undefined}
             >
               Synchronize Review
             </Button>
-          </CardContent>
-        </Card>
-      </motion.div>
+          </div>
+
+          {/* Current review link (if set) */}
+          {reviewLink ? (
+            <div className="rounded-xl border border-border bg-card p-5">
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">Current Review Link</p>
+              <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-800 dark:bg-emerald-950/40">
+                <PiCheckBold size={13} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+                <p className="min-w-0 flex-1 truncate text-xs text-emerald-700 dark:text-emerald-300">{reviewLink}</p>
+                <button
+                  type="button"
+                  onClick={handleCopyReviewLink}
+                  title="Copy review link"
+                  aria-label="Copy review link"
+                  className="inline-flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded border border-emerald-200 bg-white text-emerald-600 transition hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900 dark:text-emerald-400"
+                >
+                  {copied ? <PiCheckBold size={11} /> : <PiCopyBold size={11} />}
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          {/* How it works */}
+          <div className="flex-1 rounded-xl border border-border bg-card p-5">
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">How it works</p>
+            <div className="space-y-3">
+              {[
+                "Search your business name to find it on Google Maps",
+                "Select the correct listing from the results",
+                "Click Synchronize to save and activate your review link",
+                "Reviews sync automatically from your Google listing",
+              ].map((step, i) => (
+                <div key={i} className="flex items-start gap-2.5">
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                    {i + 1}
+                  </span>
+                  <p className="text-xs text-muted-foreground">{step}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
     </div>
   );
 }

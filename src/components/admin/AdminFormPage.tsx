@@ -39,29 +39,29 @@ export function AdminFormPage({
         onBack={onBack}
         backLabel={backLabel}
         actions={
-          <>
+          <div className="flex items-center gap-2">
             <Button
               type="button"
               variant="secondary"
+              size="sm"
               onClick={onCancel}
               disabled={submitting}
-              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
             <Button
               type="button"
+              size="sm"
               onClick={onSubmit}
-              disabled={submitting}
-              className="w-full sm:w-auto"
+              loading={submitting}
             >
-              {submitting ? "Saving..." : submitLabel}
+              {submitLabel}
             </Button>
-          </>
+          </div>
         }
       />
 
-      <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+      <div className="min-h-0 flex-1 overflow-y-auto pr-0.5 pb-4">{children}</div>
     </div>
   );
 }

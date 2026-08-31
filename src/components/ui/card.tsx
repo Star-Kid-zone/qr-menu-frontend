@@ -4,9 +4,9 @@ import { CardProps, CardTone } from "@/types/components/ui/Card.types";
 
 const toneClasses: Record<CardTone, string> = {
   default:
-    "rounded-2xl border border-border/60 bg-card shadow-neu-sm transition-all hover:shadow-neu hover:-translate-y-0.5",
-  muted: "rounded-2xl border border-border/60 bg-muted/60 shadow-neu-inset-sm",
-  ghost: "rounded-2xl border border-transparent bg-transparent",
+    "rounded-xl border border-border bg-card shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5",
+  muted: "rounded-xl border border-border bg-muted/40",
+  ghost: "rounded-xl border border-transparent bg-transparent",
 };
 
 export function Card({ className, tone = "default", ...props }: CardProps) {

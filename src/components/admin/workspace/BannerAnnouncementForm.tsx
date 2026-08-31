@@ -59,10 +59,7 @@ export function BannerAnnouncementForm({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [announcementEnabled, announcementText, isOpen]);
 
-  const cardClass = cn(
-    'space-y-4 border border-border bg-card',
-    compact ? 'rounded-xl p-4' : 'rounded-[2rem] p-6'
-  );
+  const cardClass = 'space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm';
 
   return (
     <form

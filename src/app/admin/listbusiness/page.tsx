@@ -12,6 +12,7 @@ import {
 import type { ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
+  PiDeviceMobileBold,
   PiLinkBold,
   PiListBulletsBold,
   PiMegaphoneBold,
@@ -21,6 +22,7 @@ import {
   PiSwatchesBold,
   PiTrashBold,
   PiUploadSimpleBold,
+  PiXBold,
 } from "react-icons/pi";
 import { normalizeTenantSlug, tenantSlugSchema } from "@/schemas/tenant.schema";
 import type { Availability } from "@/types/components/admin/workspace/PublicSlugEditor.types";
@@ -194,6 +196,7 @@ function ListBusinessPageContent() {
   const listFaqsRef = useRef<ListFaqsHandle>(null);
   const listLotteryRef = useRef<ListLotteryHandle>(null);
   const [addWorkspaceModalOpen, setAddWorkspaceModalOpen] = useState(false);
+  const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   const [workspaceEditMode, setWorkspaceEditMode] = useState(false);
   const [bannersEditMode, setBannersEditMode] = useState(false);
   const [workspaceCurrencies, setWorkspaceCurrencies] = useState<Currency[]>(
@@ -706,6 +709,7 @@ function ListBusinessPageContent() {
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
             <Button
               variant="secondary"
+              size="sm"
               type="button"
               onClick={() => setBusinessEditMode(false)}
               disabled={businessFormLoading}
@@ -713,6 +717,7 @@ function ListBusinessPageContent() {
               Cancel
             </Button>
             <Button
+              size="sm"
               type="submit"
               form={editBusinessFormId(businesses[0].id)}
               loading={businessFormLoading}
@@ -741,6 +746,7 @@ function ListBusinessPageContent() {
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
             <Button
               variant="secondary"
+              size="sm"
               type="button"
               disabled={slugSaving}
               onClick={() => {
@@ -751,6 +757,7 @@ function ListBusinessPageContent() {
               Cancel
             </Button>
             <Button
+              size="sm"
               loading={slugSaving}
               disabled={!canSaveSlug || slugSaving}
               onClick={async () => {
@@ -796,6 +803,7 @@ function ListBusinessPageContent() {
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
             <Button
               variant="secondary"
+              size="sm"
               type="button"
               disabled={contentSaveLoading}
               onClick={() => {
@@ -806,7 +814,7 @@ function ListBusinessPageContent() {
             >
               Cancel
             </Button>
-            <Button onClick={() => void handleContentSave()} loading={contentSaveLoading}>
+            <Button size="sm" onClick={() => void handleContentSave()} loading={contentSaveLoading}>
               Save
             </Button>
           </div>
@@ -1120,6 +1128,7 @@ function ListBusinessPageContent() {
               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
                 <Button
                   variant="secondary"
+                  size="sm"
                   type="button"
                   onClick={() => {
                     setBannersEditMode(false);
@@ -1130,6 +1139,7 @@ function ListBusinessPageContent() {
                   Cancel
                 </Button>
                 <Button
+                  size="sm"
                   type="submit"
                   form={INLINE_BANNER_FORM_ID}
                   loading={bannersSaveLoading}
@@ -1142,11 +1152,12 @@ function ListBusinessPageContent() {
               <Button
                 type="button"
                 variant="secondary"
+                size="sm"
                 onClick={() => {
                   setBannersSaveError(null);
                   setBannersEditMode(true);
                 }}
-                startIcon={<PiPencilSimpleBold className="size-5" />}
+                startIcon={<PiPencilSimpleBold className="size-4" />}
               >
                 Edit
               </Button>
@@ -1157,18 +1168,17 @@ function ListBusinessPageContent() {
 
       <div className="min-h-0 flex-1 overflow-y-auto pr-1">
         {workspace ? (
-          <Card className="p-6 md:p-8">
-            <BannerAnnouncementForm
-              formId={INLINE_BANNER_FORM_ID}
-              isOpen={bannersEditMode}
-              readOnly={!bannersEditMode}
-              initialValues={bannerFormInitialValues}
-              onSubmit={handleBannerSave}
-              error={bannersSaveError}
-              loading={bannersSaveLoading}
-              onValuesChange={setBannerDraft}
-            />
-          </Card>
+          <BannerAnnouncementForm
+            formId={INLINE_BANNER_FORM_ID}
+            isOpen={bannersEditMode}
+            readOnly={!bannersEditMode}
+            compact
+            initialValues={bannerFormInitialValues}
+            onSubmit={handleBannerSave}
+            error={bannersSaveError}
+            loading={bannersSaveLoading}
+            onValuesChange={setBannerDraft}
+          />
         ) : (
           <EmptyState
             icon={<PiMegaphoneBold className="size-8" />}
@@ -1522,7 +1532,7 @@ function ListBusinessPageContent() {
     <div className="flex h-full w-full gap-4">
       <div className="flex h-full min-w-0 flex-1 flex-col gap-4">
         <div className="shrink-0">
-          <div className="w-full rounded-full border border-border bg-card p-1.5">
+          <div className="w-full rounded-xl border border-border bg-card p-1.5 shadow-sm">
             <ScrollableTabRow
               activeKey={activeTab}
               role="tablist"
@@ -1540,21 +1550,16 @@ function ListBusinessPageContent() {
                     data-tab-active={selected || undefined}
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "flex shrink-0 snap-start items-center gap-2.5 whitespace-nowrap rounded-full px-5 py-2.5 text-caption font-semibold transition-colors duration-200",
+                      "flex shrink-0 snap-start items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       selected
-                        ? "bg-accent text-accent-foreground shadow-neu-inset-sm"
-                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
                     )}
                   >
-                    <span
-                      className={cn(
-                        "transition-colors",
-                        selected ? "text-accent-foreground" : "text-muted-foreground",
-                      )}
-                    >
+                    <span className="shrink-0">
                       {tab.icon}
                     </span>
-                    <span className={cn("transition-colors", selected ? "text-accent-foreground" : "text-muted-foreground")}>
+                    <span>
                       {tab.label}
                     </span>
                   </button>
@@ -1567,6 +1572,7 @@ function ListBusinessPageContent() {
         <div className="min-h-0 flex-1 overflow-hidden">{renderPanel()}</div>
       </div>
 
+      {/* Desktop Preview Column */}
       <aside className="hidden w-[320px] shrink-0 lg:block">
         <PhonePreview
           landingUrl={previewLandingUrl}
@@ -1576,6 +1582,50 @@ function ListBusinessPageContent() {
           renderMenu={() => <MenuPreviewRenderer data={previewData} />}
         />
       </aside>
+
+      {/* Floating Action Hover Button for Mobile Preview */}
+      <button
+        type="button"
+        onClick={() => setMobilePreviewOpen(true)}
+        aria-label="Open live mobile preview"
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95 lg:hidden"
+      >
+        <PiDeviceMobileBold size={17} />
+        <span>Preview</span>
+      </button>
+
+      {/* Mobile Live Preview Modal Sheet */}
+      {mobilePreviewOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-xs lg:hidden">
+          <div className="flex max-h-[92vh] w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
+            <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
+              <div className="flex items-center gap-2">
+                <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-xs">
+                  <PiDeviceMobileBold size={14} />
+                </div>
+                <p className="text-xs font-bold text-foreground">Live Mobile Preview</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobilePreviewOpen(false)}
+                aria-label="Close preview"
+                className="flex size-7 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              >
+                <PiXBold size={14} />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto p-3">
+              <PhonePreview
+                landingUrl={previewLandingUrl}
+                menuUrl={previewMenuUrl}
+                defaultView={previewDefaultView}
+                renderLanding={() => <LandingPreviewRenderer data={previewData} />}
+                renderMenu={() => <MenuPreviewRenderer data={previewData} />}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {deleteModalOpen && deleteBusinessId && (
         <ConfirmDeleteModal

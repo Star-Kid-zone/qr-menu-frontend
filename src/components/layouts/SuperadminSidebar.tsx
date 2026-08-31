@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { PiChartLineUpBold, PiGaugeBold, PiUsersThreeBold, PiXBold } from 'react-icons/pi';
+import { PiChartLineUpBold, PiGaugeBold, PiImagesBold, PiUsersThreeBold, PiXBold } from 'react-icons/pi';
 import { routes } from '@/config/routes';
 import { SuperadminSidebarProps, NavItem } from "@/types/components/layouts/SuperadminSidebar.types";
 
@@ -25,6 +25,7 @@ const items: NavItem[] = [
     text: 'Analytics',
     description: 'Traffic across all sites',
   },
+  { path: routes.superadmin.weeklyPosters, icon: <PiImagesBold />, text: 'Weekly posters', description: 'Send this week\'s poster' },
 ];
 
 export function SuperadminSidebar({ isOpen, toggleSidebar }: SuperadminSidebarProps) {
@@ -55,7 +56,7 @@ export function SuperadminSidebar({ isOpen, toggleSidebar }: SuperadminSidebarPr
 
         <div className={`relative flex h-16 shrink-0 items-center justify-between border-b border-border px-5 ${isOpen ? '' : 'lg:justify-center lg:px-2'}`}>
           <div className={`flex items-center gap-2.5 ${isOpen ? '' : 'lg:flex-col'}`}>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-clay-gradient-violet text-sm font-bold text-primary-foreground shadow-neu-sm">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground shadow-sm">
               SA
             </div>
             {isOpen && (
@@ -82,6 +83,8 @@ export function SuperadminSidebar({ isOpen, toggleSidebar }: SuperadminSidebarPr
               const active =
                 item.path === routes.superadmin.analytics
                   ? pathname === routes.superadmin.analytics
+                  : item.path === routes.superadmin.weeklyPosters
+                    ? pathname === routes.superadmin.weeklyPosters
                   : item.path === routes.superadmin.users
                     ? pathname.startsWith('/superadmin/users')
                     : pathname === routes.superadmin.home || pathname === '/superadmin/';
@@ -94,7 +97,7 @@ export function SuperadminSidebar({ isOpen, toggleSidebar }: SuperadminSidebarPr
                     isOpen ? '' : 'justify-center'
                   } ${
                     active
-                      ? 'bg-clay-gradient-violet font-semibold text-primary-foreground shadow-neu-sm'
+                      ? 'bg-primary font-semibold text-primary-foreground shadow-sm'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:-translate-y-0.5'
                   }`}
                   onClick={() => {

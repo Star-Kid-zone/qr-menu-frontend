@@ -1,129 +1,47 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
-import { PiFacebookLogoBold, PiImagesBold, PiInstagramLogoBold } from "react-icons/pi";
+import { useEffect, useState } from "react";
+import { PiFacebookLogoBold, PiInstagramLogoBold, PiUploadSimpleBold } from "react-icons/pi";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { PosterCanvas } from "@/components/marketing/PosterCanvas";
-import { POSTER_CATEGORIES, POSTER_TEMPLATES } from "@/components/marketing/posterTemplates";
-import { cn } from "@/utils/cn";
-
-const THUMBNAIL_WIDTH = 260;
-const CATEGORY_TABS = ["All", ...POSTER_CATEGORIES] as const;
+import { socialService, type SocialAccount, type SocialAsset, type SocialPost, type WeeklyPoster } from "@/services/social.service";
 
 export default function SocialMediaPage() {
-  const [category, setCategory] = useState<string>("All");
+  const [accounts, setAccounts] = useState<SocialAccount[]>([]);
+  const [assets, setAssets] = useState<SocialAsset[]>([]);
+  const [posts, setPosts] = useState<SocialPost[]>([]);
+  const [weeklyPosters, setWeeklyPosters] = useState<WeeklyPoster[]>([]);
+  const [assetId, setAssetId] = useState("");
+  const [weeklyPosterId, setWeeklyPosterId] = useState("");
+  const [facebookSelected, setFacebookSelected] = useState(true);
+  const [instagramSelected, setInstagramSelected] = useState(true);
+  const [facebookCaption, setFacebookCaption] = useState("");
+  const [instagramCaption, setInstagramCaption] = useState("");
+  const [title, setTitle] = useState("");
+  const [schedule, setSchedule] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const filteredTemplates = useMemo(() => {
-    if (category === "All") return POSTER_TEMPLATES;
-    return POSTER_TEMPLATES.filter((template) => template.category === category);
-  }, [category]);
+  async function load() {
+    const [a, m, p, w] = await Promise.all([socialService.getAccounts(), socialService.getAssets(), socialService.getPosts(), socialService.getWeeklyPosters()]);
+    setAccounts(a.data); setAssets(m.data); setPosts(p.data); setWeeklyPosters(w.data);
+    if (!assetId && m.data[0]) setAssetId(m.data[0].id);
+  }
+  useEffect(() => { load().catch((e) => setMessage(e?.response?.data?.error ?? "Could not load publishing data.")); }, []);
+  async function connect(platform: "facebook" | "instagram") { const { data } = await socialService.startOAuth(platform); window.location.assign(data.url); }
+  async function upload(file?: File) { if (!file) return; setBusy(true); try { const { data } = await socialService.uploadAsset(file); setAssets((current) => [data.asset, ...current]); setAssetId(data.asset.id); setMessage("Asset uploaded."); } catch (e: any) { setMessage(e?.response?.data?.error ?? "Upload failed."); } finally { setBusy(false); } }
+  async function create(action: "now" | "schedule") {
+    const selected = accounts.filter((a) => (a.platform === "facebook" && facebookSelected && facebookCaption.trim()) || (a.platform === "instagram" && instagramSelected && instagramCaption.trim()));
+    if ((!assetId && !weeklyPosterId) || !selected.length) { setMessage("Choose a poster, at least one destination, and its caption."); return; }
+    setBusy(true); try { const { data } = await socialService.createPost({ ...(weeklyPosterId ? { weeklyPosterId } : { assetId }), title: title || undefined, scheduledAt: action === "schedule" ? new Date(schedule).toISOString() : undefined, destinations: selected.map((a) => ({ accountId: a.id, caption: a.platform === "facebook" ? facebookCaption : instagramCaption })) }); setPosts((current) => [data, ...current]); setFacebookCaption(""); setInstagramCaption(""); setTitle(""); setMessage(action === "now" ? "Post queued for publishing." : "Post scheduled."); } catch (e: any) { setMessage(e?.response?.data?.error ?? "Could not create post."); } finally { setBusy(false); }
+  }
 
-  return (
-    <div className="flex h-full flex-col gap-4 overflow-y-auto pb-4">
-      <PageHeader
-        title="Marketing"
-        description="Connect your social accounts and create posters for your business."
-      />
-
-      <Card className="shrink-0">
-        <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-h3 text-foreground">Social Connections</h2>
-            <p className="text-caption text-muted-foreground">
-              Link Instagram and Facebook to your workspace — coming soon.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled
-              className="inline-flex cursor-not-allowed items-center gap-2 rounded-lg border border-border bg-muted/40 px-4 py-2 text-caption font-semibold text-muted-foreground opacity-60"
-            >
-              <PiInstagramLogoBold size={16} /> Connect Instagram
-            </button>
-            <button
-              type="button"
-              disabled
-              className="inline-flex cursor-not-allowed items-center gap-2 rounded-lg border border-border bg-muted/40 px-4 py-2 text-caption font-semibold text-muted-foreground opacity-60"
-            >
-              <PiFacebookLogoBold size={16} /> Connect Facebook
-            </button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="shrink-0">
-        <CardContent className="p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-h3 text-foreground">Poster Templates</h2>
-            <span className="text-caption text-muted-foreground">{POSTER_TEMPLATES.length} templates</span>
-          </div>
-          <div className="w-full overflow-hidden">
-            <div className="no-scrollbar inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border bg-card p-1.5">
-              {CATEGORY_TABS.map((cat) => {
-                const selected = cat === category;
-                return (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setCategory(cat)}
-                    aria-pressed={selected}
-                    className={cn(
-                      "whitespace-nowrap rounded-full px-4 py-2 text-caption font-semibold transition-colors duration-150 ease-out",
-                      selected
-                        ? "bg-accent text-accent-foreground shadow-neu-inset-sm"
-                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-                    )}
-                  >
-                    {cat}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="min-h-0 flex-1">
-        {filteredTemplates.length === 0 ? (
-          <div className="flex h-full items-center justify-center">
-            <EmptyState
-              icon={<PiImagesBold size={32} />}
-              title="No templates in this category"
-              description="Try a different category."
-            />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredTemplates.map((template, index) => (
-              <Link
-                key={template.slug}
-                href={`/admin/social-media/editor/${template.slug}`}
-                className="group animate-fade-in-up"
-                style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
-              >
-                <Card className="overflow-hidden transition-shadow duration-150 group-hover:shadow-neu">
-                  <div className="flex items-center justify-center bg-muted p-3">
-                    <div
-                      className="overflow-hidden rounded-lg shadow-sm"
-                      style={{ width: THUMBNAIL_WIDTH }}
-                    >
-                      <PosterCanvas config={template} renderWidth={THUMBNAIL_WIDTH} editable={false} />
-                    </div>
-                  </div>
-                  <CardContent className="p-3">
-                    <p className="text-caption uppercase tracking-wide text-primary">{template.category}</p>
-                    <h3 className="mt-0.5 line-clamp-1 text-h3 text-foreground">{template.name}</h3>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  return <div className="flex h-full flex-col gap-4 overflow-y-auto pb-4">
+    <PageHeader title="Organic Publishing" description="Manage poster assets and publish to connected Facebook Pages and Instagram Professional accounts." />
+    {message && <div className="rounded-xl border border-border bg-muted px-4 py-3 text-caption text-foreground">{message}</div>}
+    <Card><CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="text-h3">Connected accounts</h2><p className="text-caption text-muted-foreground">Tokens stay encrypted on the backend. Personal Facebook profiles are not supported.</p><div className="mt-3 flex flex-wrap gap-2">{accounts.map((a) => <span key={a.id} className="rounded-full border border-border px-3 py-1 text-caption">{a.platform === "facebook" ? "Facebook" : "Instagram"}: {a.displayName}</span>)}</div></div><div className="flex gap-2"><button onClick={() => connect("facebook")} className="rounded-lg bg-accent px-3 py-2 text-caption font-semibold"><PiFacebookLogoBold className="mr-1 inline" /> Connect Facebook</button><button onClick={() => connect("instagram")} className="rounded-lg border border-border px-3 py-2 text-caption font-semibold"><PiInstagramLogoBold className="mr-1 inline" /> Connect Instagram</button></div></CardContent></Card>
+    <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]"><Card><CardContent className="p-4"><div className="mb-3 flex items-center justify-between"><h2 className="text-h3">Poster library</h2><label className="cursor-pointer rounded-lg bg-accent px-3 py-2 text-caption font-semibold"><PiUploadSimpleBold className="mr-1 inline" /> Upload<input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => upload(e.target.files?.[0])} /></label></div>{weeklyPosters.length > 0 && <><p className="mb-2 text-caption font-semibold text-primary">Weekly posters</p><div className="mb-4 grid grid-cols-2 gap-3">{weeklyPosters.map((poster) => <button key={poster.id} onClick={() => { setWeeklyPosterId(poster.id); setAssetId(""); }} className={`overflow-hidden rounded-xl border text-left ${weeklyPosterId === poster.id ? "border-primary ring-2 ring-primary/30" : "border-border"}`}><img src={poster.thumbnailUrl ?? poster.imageUrl} alt={poster.title} className="aspect-square w-full object-cover" /><span className="block truncate p-2 text-caption">{poster.title}</span></button>)}</div></>}{assets.length > 0 && <p className="mb-2 text-caption font-semibold text-primary">Your uploads</p>}<div className="grid grid-cols-2 gap-3">{assets.map((asset) => <button key={asset.id} onClick={() => { setAssetId(asset.id); setWeeklyPosterId(""); }} className={`overflow-hidden rounded-xl border text-left ${assetId === asset.id ? "border-primary ring-2 ring-primary/30" : "border-border"}`}><img src={asset.thumbnailUrl ?? asset.publishingUrl} alt={asset.originalFilename} className="aspect-square w-full object-cover" /><span className="block truncate p-2 text-caption">{asset.originalFilename}</span></button>)}</div>{!assets.length && !weeklyPosters.length && <p className="py-8 text-center text-caption text-muted-foreground">Upload an existing poster image to begin.</p>}</CardContent></Card>
+      <Card><CardContent className="space-y-4 p-4"><h2 className="text-h3">Create post</h2><input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Internal title (optional)" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-body" /><label className="flex items-center gap-2 text-caption"><input type="checkbox" checked={facebookSelected} onChange={(e) => setFacebookSelected(e.target.checked)} /> Facebook Page</label><textarea disabled={!facebookSelected} value={facebookCaption} onChange={(e) => setFacebookCaption(e.target.value)} placeholder="Facebook Page caption" rows={4} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-body disabled:opacity-50" /><label className="flex items-center gap-2 text-caption"><input type="checkbox" checked={instagramSelected} onChange={(e) => setInstagramSelected(e.target.checked)} /> Instagram Professional</label><textarea disabled={!instagramSelected} value={instagramCaption} onChange={(e) => setInstagramCaption(e.target.value)} placeholder="Instagram caption" rows={4} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-body disabled:opacity-50" /><div className="flex flex-col gap-2 sm:flex-row"><input type="datetime-local" value={schedule} onChange={(e) => setSchedule(e.target.value)} className="rounded-lg border border-border bg-background px-3 py-2 text-body" /><button disabled={busy || !schedule} onClick={() => create("schedule")} className="rounded-lg border border-border px-4 py-2 text-caption font-semibold disabled:opacity-50">Schedule</button><button disabled={busy} onClick={() => create("now")} className="rounded-lg bg-primary px-4 py-2 text-caption font-semibold text-primary-foreground disabled:opacity-50">Publish now</button></div></CardContent></Card></div>
+    <Card><CardContent className="p-4"><h2 className="mb-3 text-h3">Publishing history</h2><div className="space-y-2">{posts.map((post) => <div key={post.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-caption"><span>#{post.id} {post.title || "Untitled post"}</span><span className="rounded-full bg-muted px-2 py-1">{post.lifecycleStatus}</span></div>)}{!posts.length && <p className="text-caption text-muted-foreground">Your drafts, scheduled posts, and results will appear here.</p>}</div></CardContent></Card>
+  </div>;
 }

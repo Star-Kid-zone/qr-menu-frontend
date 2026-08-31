@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PromptDialog } from "@/components/ui/PromptDialog";
 import { AdminFormPage } from "@/components/admin/AdminFormPage";
 import {
@@ -14,13 +13,16 @@ import {
   PiCircle,
   PiImageBold,
   PiVideoCameraBold,
+  PiTrashBold,
+  PiSparkleBold,
+  PiClockBold,
 } from "react-icons/pi";
 import { toast } from "@/components/ui/toast";
 import industryService from "@/services/industry.service";
 import { menuService } from "@/services/menu.service";
 import { Industry, IndustryCategory, IndustryType } from "@/types";
 import { getApiErrorMessage } from "@/utils/errors";
-
+import { cn } from "@/utils/cn";
 
 export default function AddMenuPage() {
   const router = useRouter();
@@ -47,6 +49,7 @@ export default function AddMenuPage() {
   const [selectedIndustry, setSelectedIndustry] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedType, setSelectedType] = useState<string>("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     industryService.getIndustries().then((res) => {
@@ -67,30 +70,18 @@ export default function AddMenuPage() {
   useEffect(() => {
     const urls = images.map((img) => URL.createObjectURL(img));
     setImagePreviews(urls);
-
-    return () => {
-      urls.forEach((url) => URL.revokeObjectURL(url));
-    };
+    return () => { urls.forEach((url) => URL.revokeObjectURL(url)); };
   }, [images]);
 
   const toggleTime = (time: string) => {
-    if (time === "All Day") {
-      setSelectedTimes(["All Day"]);
-      return;
-    }
-
+    if (time === "All Day") { setSelectedTimes(["All Day"]); return; }
     let newTimes = selectedTimes.filter(t => t !== "All Day");
     if (newTimes.includes(time)) {
       newTimes = newTimes.filter(t => t !== time);
     } else {
       newTimes.push(time);
     }
-
-    if (newTimes.length === 0) {
-      setSelectedTimes(["All Day"]);
-    } else {
-      setSelectedTimes(newTimes);
-    }
+    setSelectedTimes(newTimes.length === 0 ? ["All Day"] : newTimes);
   };
 
   const handleCreateCategory = () => {
@@ -133,14 +124,11 @@ export default function AddMenuPage() {
     }
   };
 
-  const [submitting, setSubmitting] = useState(false);
-
   const handleCreateItem = async () => {
     if (!itemName || !price || !description || !selectedCategory || !selectedType) {
       toast.error("Please fill in all required fields.");
       return;
     }
-
     try {
       setSubmitting(true);
       const formData = new FormData();
@@ -152,14 +140,8 @@ export default function AddMenuPage() {
       formData.append("availabilityTime", selectedTimes.join(","));
       formData.append("category", selectedCategory);
       formData.append("type", selectedType);
-
-      if (images.length > 0) {
-        images.forEach((img) => formData.append("images", img));
-      }
-      if (videoFile) {
-        formData.append("videos", videoFile);
-      }
-
+      if (images.length > 0) images.forEach((img) => formData.append("images", img));
+      if (videoFile) formData.append("videos", videoFile);
       await menuService.createMenu(formData);
       toast.success("Menu item created!");
       router.push("/admin/listmenu");
@@ -168,6 +150,18 @@ export default function AddMenuPage() {
       setSubmitting(false);
     }
   };
+
+  const fieldLabel = (text: string, required = false) => (
+    <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
+      {text}{required && <span className="ml-0.5 text-destructive">*</span>}
+    </label>
+  );
+
+  const sectionLabel = (text: string) => (
+    <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{text}</p>
+  );
+
+  const TIME_SLOTS = ["Morning", "Lunch", "Evening", "Dinner"];
 
   return (
     <AdminFormPage
@@ -178,257 +172,326 @@ export default function AddMenuPage() {
       submitLabel="Create Item"
       submitting={submitting}
     >
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-          {/* Left Column */}
-          <div className="animate-fade-in-up space-y-4 lg:col-span-8">
-            {/* Basic Information */}
-            <Card>
-              <CardHeader className="border-b border-border pb-4">
-                <CardTitle className="text-caption uppercase tracking-widest text-muted-foreground">
-                  Basic Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-4">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="md:col-span-2">
-                    <label htmlFor="item-name" className="mb-1.5 block text-caption font-semibold text-muted-foreground">Item Name *</label>
-                    <Input id="item-name" placeholder="e.g. House Burger" value={itemName} onChange={(e) => setItemName(e.target.value)} />
-                  </div>
+      {/* Two-column layout filling available height */}
+      <div className="grid h-full grid-cols-1 gap-4 overflow-y-auto lg:grid-cols-12 lg:overflow-hidden">
 
-                  <div>
-                    <label htmlFor="item-price" className="mb-1.5 block text-caption font-semibold text-muted-foreground">Price ($) *</label>
-                    <Input id="item-price" type="number" placeholder="0.00" step="any" min="0" value={price} onChange={(e) => setPrice(e.target.value)} />
-                  </div>
+        {/* ── Left column (8/12) ── */}
+        <div className="flex flex-col gap-4 lg:col-span-8 lg:overflow-y-auto lg:pb-1">
 
-                  <div>
-                    <span className="mb-1.5 block text-caption font-semibold text-muted-foreground">Highlight</span>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={isPopular}
-                      onClick={() => setIsPopular(!isPopular)}
-                      className={`flex h-10 w-full cursor-pointer items-center justify-between rounded-md border px-3 transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 active:scale-[0.97] ${
-                        isPopular ? "border-primary/30 bg-primary/10" : "border-border bg-muted hover:bg-accent"
-                      }`}
-                    >
-                      <span className={`text-caption font-semibold uppercase tracking-wider ${isPopular ? "text-primary" : "text-muted-foreground"}`}>
-                        Popular Item
-                      </span>
-                      {isPopular ? (
-                        <PiCheckCircleFill className="text-primary" size={18} />
-                      ) : (
-                        <PiCircle className="text-muted-foreground" size={18} />
-                      )}
-                    </button>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label htmlFor="item-description" className="mb-1.5 block text-caption font-semibold text-muted-foreground">Description *</label>
-                    <Textarea
-                      id="item-description"
-                      rows={3}
-                      placeholder="Ingredients, dietary notes..."
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
+          {/* Basic Information */}
+          <div className="rounded-xl border border-border bg-card p-5">
+            {sectionLabel("Basic Information")}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {/* Categorization */}
-              <Card>
-                <CardHeader className="border-b border-border pb-4">
-                  <CardTitle className="text-caption uppercase tracking-widest text-muted-foreground">
-                    Categorization
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 pt-4">
-                  <div>
-                    <label htmlFor="industry" className="mb-1.5 block text-caption font-semibold text-muted-foreground">Industry</label>
-                    <Select
-                      id="industry"
-                      value={selectedIndustry}
-                      onChange={(e) => setSelectedIndustry(e.target.value)}
-                    >
-                      <option value="">Select Industry</option>
-                      {industries.map(ind => (
-                        <option key={ind.id} value={ind.id}>{ind.name}</option>
-                      ))}
-                    </Select>
-                  </div>
+              <div className="md:col-span-2">
+                {fieldLabel("Item Name", true)}
+                <Input
+                  id="item-name"
+                  placeholder="e.g. House Burger"
+                  value={itemName}
+                  onChange={(e) => setItemName(e.target.value)}
+                />
+              </div>
 
-                  <div>
-                    <label htmlFor="category" className="mb-1.5 block text-caption font-semibold text-muted-foreground">Category *</label>
-                    <div className="flex flex-col gap-1">
-                      <Select
-                        id="category"
-                        value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                      >
-                        <option value="">Select category</option>
-                        {categories.map(cat => (
-                          <option key={cat.id} value={cat.name}>{cat.name}</option>
-                        ))}
-                      </Select>
-                      <button type="button" onClick={handleCreateCategory} className="self-end rounded text-caption font-semibold uppercase tracking-widest text-primary transition-colors duration-150 ease-out hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40">
-                        + Create New
-                      </button>
-                    </div>
-                  </div>
+              <div>
+                {fieldLabel("Price ($)", true)}
+                <Input
+                  id="item-price"
+                  type="number"
+                  placeholder="0.00"
+                  step="any"
+                  min="0"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                />
+              </div>
 
-                  <div>
-                    <label htmlFor="type" className="mb-1.5 block text-caption font-semibold text-muted-foreground">Type *</label>
-                    <div className="flex flex-col gap-1">
-                      <Select
-                        id="type"
-                        value={selectedType}
-                        onChange={(e) => setSelectedType(e.target.value)}
-                      >
-                        <option value="">Select type</option>
-                        {types.map(typ => (
-                          <option key={typ.id} value={typ.name}>{typ.name}</option>
-                        ))}
-                      </Select>
-                      <button type="button" onClick={handleCreateType} className="self-end rounded text-caption font-semibold uppercase tracking-widest text-primary transition-colors duration-150 ease-out hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40">
-                        + Create New
-                      </button>
-                    </div>
+              <div>
+                {fieldLabel("Highlight")}
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isPopular}
+                  onClick={() => setIsPopular(!isPopular)}
+                  className={cn(
+                    "flex h-9 w-full cursor-pointer items-center justify-between rounded-lg border px-3 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98]",
+                    isPopular
+                      ? "border-primary/30 bg-primary/8 text-primary"
+                      : "border-border bg-muted text-muted-foreground hover:bg-muted/70"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <PiSparkleBold size={14} />
+                    <span className="text-xs font-semibold">Popular Item</span>
                   </div>
-                </CardContent>
-              </Card>
+                  {isPopular ? (
+                    <PiCheckCircleFill size={16} className="text-primary" />
+                  ) : (
+                    <PiCircle size={16} className="text-muted-foreground" />
+                  )}
+                </button>
+              </div>
 
-              {/* Availability */}
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
-                  <CardTitle className="text-caption uppercase tracking-widest text-muted-foreground">
-                    Availability
-                  </CardTitle>
-                  <button
-                    type="button"
-                    aria-pressed={isActive}
-                    onClick={() => setIsActive(!isActive)}
-                    className={`rounded-full px-3 py-1 text-caption font-semibold uppercase tracking-wider transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 active:scale-[0.97] ${
-                      isActive ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {isActive ? "Active" : "Hidden"}
-                  </button>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    {["Morning", "Lunch", "Evening", "Dinner"].map(time => {
-                      const isSelected = selectedTimes.includes(time);
-                      return (
-                        <button
-                          type="button"
-                          key={time}
-                          aria-pressed={isSelected}
-                          onClick={() => toggleTime(time)}
-                          className={`rounded-md border p-2 text-caption font-semibold uppercase tracking-wider transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 active:scale-[0.97] ${
-                            isSelected ? "border-primary bg-primary text-primary-foreground" : "border-border bg-muted text-muted-foreground hover:bg-accent"
-                          }`}
-                        >
-                          {time}
-                        </button>
-                      )
-                    })}
-                    <button
-                      type="button"
-                      aria-pressed={selectedTimes.includes("All Day")}
-                      onClick={() => toggleTime("All Day")}
-                      className={`col-span-2 rounded-md border p-2 text-caption font-semibold uppercase tracking-wider transition-colors duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 active:scale-[0.97] ${
-                        selectedTimes.includes("All Day") ? "border-primary bg-primary text-primary-foreground" : "border-border bg-muted text-muted-foreground hover:bg-accent"
-                      }`}
-                    >
-                      Available All Day
-                    </button>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="md:col-span-2">
+                {fieldLabel("Description", true)}
+                <Textarea
+                  id="item-description"
+                  rows={3}
+                  placeholder="Ingredients, dietary notes, allergens..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </div>
             </div>
           </div>
 
-          {/* Right Column */}
-          <div className="animate-fade-in-up space-y-4 lg:col-span-4">
-            <Card>
-              <CardHeader className="border-b border-border pb-4">
-                <CardTitle className="text-caption uppercase tracking-widest text-muted-foreground">
-                  Media Assets
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6 pt-4">
+          {/* Categorization + Availability side by side */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
-                {/* Photos */}
+            {/* Categorization */}
+            <div className="rounded-xl border border-border bg-card p-5">
+              {sectionLabel("Categorization")}
+              <div className="flex flex-col gap-4">
                 <div>
-                  <div className="mb-3 flex items-center justify-between">
-                    <span className="text-caption font-semibold uppercase tracking-widest text-muted-foreground">
-                      Photos ({images.length}/5)
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    {imagePreviews.map((previewUrl, idx) => (
-                      <div key={previewUrl} className="animate-scale-in relative aspect-square overflow-hidden rounded-md border border-border bg-muted">
-                         {/* blob preview, cannot be optimized */}
-                         <Image src={previewUrl} alt={`Preview ${idx + 1}`} fill className="object-cover" unoptimized />
-                      </div>
+                  {fieldLabel("Industry")}
+                  <Select
+                    id="industry"
+                    value={selectedIndustry}
+                    onChange={(e) => setSelectedIndustry(e.target.value)}
+                  >
+                    <option value="">Select Industry</option>
+                    {industries.map(ind => (
+                      <option key={ind.id} value={ind.id}>{ind.name}</option>
                     ))}
-                    {images.length < 5 && (
-                      <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-border bg-muted transition-colors duration-150 ease-out hover:bg-accent focus-within:ring-2 focus-within:ring-ring/40">
-                        <PiImageBold className="mb-2 text-muted-foreground" size={22} />
-                        <span className="text-caption font-semibold text-muted-foreground">Upload</span>
-                        <input
-                          type="file"
-                          className="sr-only"
-                          accept="image/*"
-                          multiple
-                          onChange={(e) => {
-                            if (e.target.files) {
-                              const newImages = Array.from(e.target.files);
-                              setImages(prev => [...prev, ...newImages].slice(0, 5));
-                            }
-                          }}
-                        />
-                      </label>
-                    )}
-                  </div>
+                  </Select>
                 </div>
 
-                <div className="border-t border-border pt-6">
-                  <span className="mb-3 block text-caption font-semibold uppercase tracking-widest text-muted-foreground">
-                    Video Promotion
-                  </span>
-
-                  <label className="relative flex h-28 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-md border border-dashed border-border bg-muted transition-colors duration-150 ease-out hover:bg-accent focus-within:ring-2 focus-within:ring-ring/40">
-                    {videoFile ? (
-                      <span className="z-10 text-caption font-semibold text-success">{videoFile.name}</span>
-                    ) : (
-                      <>
-                        <PiVideoCameraBold className="mb-2 text-muted-foreground" size={24} />
-                        <span className="text-caption font-semibold uppercase tracking-widest text-muted-foreground">
-                          Upload Video
-                        </span>
-                      </>
-                    )}
-                    <input
-                      type="file"
-                      className="sr-only"
-                      accept="video/*"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files.length > 0) {
-                          setVideoFile(e.target.files[0]);
-                        }
-                      }}
-                    />
-                  </label>
+                <div>
+                  {fieldLabel("Category", true)}
+                  <Select
+                    id="category"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                  >
+                    <option value="">Select category</option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.name}>{cat.name}</option>
+                    ))}
+                  </Select>
+                  <button
+                    type="button"
+                    onClick={handleCreateCategory}
+                    className="mt-1 self-end text-[11px] font-semibold text-primary hover:underline focus-visible:outline-none"
+                  >
+                    + Create New
+                  </button>
                 </div>
 
-              </CardContent>
-            </Card>
+                <div>
+                  {fieldLabel("Type", true)}
+                  <Select
+                    id="type"
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                  >
+                    <option value="">Select type</option>
+                    {types.map(typ => (
+                      <option key={typ.id} value={typ.name}>{typ.name}</option>
+                    ))}
+                  </Select>
+                  <button
+                    type="button"
+                    onClick={handleCreateType}
+                    className="mt-1 self-end text-[11px] font-semibold text-primary hover:underline focus-visible:outline-none"
+                  >
+                    + Create New
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Availability */}
+            <div className="rounded-xl border border-border bg-card p-5">
+              <div className="mb-3 flex items-center justify-between">
+                {sectionLabel("Availability")}
+                <button
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={() => setIsActive(!isActive)}
+                  className={cn(
+                    "-mt-3 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]",
+                    isActive
+                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  {isActive ? "Active" : "Hidden"}
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                  <PiClockBold size={13} />
+                  Serving times
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {TIME_SLOTS.map(time => {
+                    const isSelected = selectedTimes.includes(time);
+                    return (
+                      <button
+                        type="button"
+                        key={time}
+                        aria-pressed={isSelected}
+                        onClick={() => toggleTime(time)}
+                        className={cn(
+                          "rounded-lg border py-2 text-xs font-semibold uppercase tracking-wider transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]",
+                          isSelected
+                            ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                            : "border-border bg-muted text-muted-foreground hover:bg-muted/70"
+                        )}
+                      >
+                        {time}
+                      </button>
+                    );
+                  })}
+                  <button
+                    type="button"
+                    aria-pressed={selectedTimes.includes("All Day")}
+                    onClick={() => toggleTime("All Day")}
+                    className={cn(
+                      "col-span-2 rounded-lg border py-2 text-xs font-semibold uppercase tracking-wider transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97]",
+                      selectedTimes.includes("All Day")
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "border-border bg-muted text-muted-foreground hover:bg-muted/70"
+                    )}
+                  >
+                    Available All Day
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* ── Right column (4/12) ── */}
+        <div className="flex flex-col gap-4 lg:col-span-4 lg:overflow-y-auto lg:pb-1">
+
+          {/* Photos */}
+          <div className="rounded-xl border border-border bg-card p-5">
+            <div className="mb-3 flex items-center justify-between">
+              {sectionLabel("Photos")}
+              <span className="-mt-3 text-[10px] font-semibold text-muted-foreground">
+                {images.length}/5
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              {imagePreviews.map((previewUrl, idx) => (
+                <div
+                  key={previewUrl}
+                  className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted"
+                >
+                  {/* blob preview, cannot be optimized */}
+                  <Image
+                    src={previewUrl}
+                    alt={`Preview ${idx + 1}`}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImages(prev => prev.filter((_, i) => i !== idx));
+                    }}
+                    className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-destructive/90 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                  >
+                    <PiTrashBold size={9} />
+                  </button>
+                </div>
+              ))}
+              {images.length < 5 && (
+                <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border bg-muted/50 transition-colors hover:border-primary/40 hover:bg-primary/5 focus-within:ring-2 focus-within:ring-ring">
+                  <PiImageBold size={18} className="text-muted-foreground" />
+                  <span className="text-[10px] font-semibold text-muted-foreground">Add</span>
+                  <input
+                    type="file"
+                    className="sr-only"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        const newImages = Array.from(e.target.files);
+                        setImages(prev => [...prev, ...newImages].slice(0, 5));
+                      }
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+          </div>
+
+          {/* Video */}
+          <div className="rounded-xl border border-border bg-card p-5">
+            {sectionLabel("Video Promotion")}
+            <label className="relative flex h-24 cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border border-dashed border-border bg-muted/50 transition-colors hover:border-primary/40 hover:bg-primary/5 focus-within:ring-2 focus-within:ring-ring">
+              {videoFile ? (
+                <div className="flex items-center gap-2">
+                  <PiVideoCameraBold size={16} className="shrink-0 text-emerald-600" />
+                  <span className="max-w-[160px] truncate text-xs font-semibold text-foreground">
+                    {videoFile.name}
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <PiVideoCameraBold size={20} className="text-muted-foreground" />
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Upload Video
+                  </span>
+                </>
+              )}
+              <input
+                type="file"
+                className="sr-only"
+                accept="video/*"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    setVideoFile(e.target.files[0]);
+                  }
+                }}
+              />
+            </label>
+            {videoFile && (
+              <button
+                type="button"
+                onClick={() => setVideoFile(null)}
+                className="mt-2 flex items-center gap-1 text-[11px] font-semibold text-destructive hover:underline"
+              >
+                <PiTrashBold size={11} />
+                Remove video
+              </button>
+            )}
+          </div>
+
+          {/* Tips card */}
+          <div className="rounded-xl border border-border bg-muted/40 p-4">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Tips</p>
+            <ul className="space-y-1.5">
+              {[
+                "Use a square image for best results",
+                "Keep names short and clear",
+                "Add allergen info in description",
+              ].map((tip, i) => (
+                <li key={i} className="flex items-start gap-2 text-[11px] text-muted-foreground">
+                  <span className="mt-0.5 flex size-3.5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[8px] font-bold text-primary">
+                    {i + 1}
+                  </span>
+                  {tip}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
 
       <PromptDialog
         isOpen={categoryDialogOpen}
