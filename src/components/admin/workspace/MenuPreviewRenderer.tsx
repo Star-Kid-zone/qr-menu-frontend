@@ -65,9 +65,30 @@ export function MenuPreviewRenderer({ data }: { data: RawPublicSiteData }) {
     menuTemplates[themeSlug as keyof typeof menuTemplates] ||
     menuTemplates.swiss;
 
+  const rawItems = (data.menuItems ?? []) as any[];
+  const normalizedMenuItems: Menu[] = rawItems.map((item) => {
+    const img =
+      item.image_url ||
+      item.imageUrl ||
+      item.image ||
+      (Array.isArray(item.images) && item.images.length > 0
+        ? typeof item.images[0] === "string"
+          ? item.images[0]
+          : item.images[0]?.url
+        : null) ||
+      null;
+    return {
+      ...item,
+      id: Number(item.id),
+      image_url: img,
+      imageUrl: img,
+      image: img,
+    };
+  });
+
   const payload = {
     mapped: mappedResult.value,
-    menuItems: (data.menuItems ?? []) as Menu[],
+    menuItems: normalizedMenuItems,
     routeSlug: "",
   };
 

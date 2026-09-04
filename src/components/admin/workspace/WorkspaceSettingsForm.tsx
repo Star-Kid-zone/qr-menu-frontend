@@ -34,7 +34,6 @@ import {
   FormField,
   Input,
   Select,
-  StatusMessage,
   ToggleCard,
 } from "@/components/ui";
 import { cn } from "@/utils/cn";
@@ -523,8 +522,6 @@ export function WorkspaceSettingsForm({
         <input type="checkbox" {...register("announcement_enabled")} />
         <textarea {...register("announcement_text")} />
       </div>
-
-      {error ? <StatusMessage variant="error">{error}</StatusMessage> : null}
     </form>
   );
 }

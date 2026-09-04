@@ -1,7 +1,7 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { API_BASE_URL } from '@/config/app.constants';
 import { routes } from '@/config/routes';
-import { getCsrfToken, isAuthenticated } from '@/utils/storage.utils';
+import { getCsrfToken, isAuthenticated, clearStorage } from '@/utils/storage.utils';
 import { startGlobalLoading, endGlobalLoading } from '@/utils/globalLoading.store';
 
 const MUTATING_METHODS = new Set(['post', 'put', 'patch', 'delete']);
@@ -65,10 +65,16 @@ api.interceptors.response.use(
 
       try {
         if (!isAuthenticated()) {
+          if (typeof window !== 'undefined' && (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/superadmin'))) {
+            clearStorage();
+            window.location.replace(`${window.location.origin}${routes.public.login}?reason=session_expired`);
+          }
           return Promise.reject(error);
         }
 
         if (originalRequest.url?.includes('/auth/refresh')) {
+          clearStorage();
+          window.location.replace(`${window.location.origin}${routes.public.login}?reason=session_expired`);
           return Promise.reject(error);
         }
 
@@ -79,7 +85,8 @@ api.interceptors.response.use(
 
         return api(originalRequest);
       } catch (refreshError) {
-        window.location.replace(`${window.location.origin}${routes.public.login}`);
+        clearStorage();
+        window.location.replace(`${window.location.origin}${routes.public.login}?reason=session_expired`);
         return Promise.reject(refreshError);
       }
     }

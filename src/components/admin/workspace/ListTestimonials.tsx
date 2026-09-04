@@ -14,6 +14,7 @@ import {
   PiStarFill,
 } from 'react-icons/pi';
 import { Modal } from '@/components/Modal';
+import { toast } from '@/components/ui/toast';
 import { getApiErrorMessage } from '@/utils/errors';
 import { usePagination } from '@/hooks/usePagination';
 import { Pagination } from '@/components/ui/Pagination';
@@ -55,7 +56,6 @@ function TestimonialFormModal({
 }) {
   const [form, setForm] = useState<TestimonialFormData>(createDefaultForm());
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     if (initial && isEdit) {
@@ -74,7 +74,6 @@ function TestimonialFormModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setError('');
     try {
       const payload = {
         authorName: form.authorName,
@@ -85,13 +84,15 @@ function TestimonialFormModal({
       };
       if (isEdit && initial) {
         await workspaceService.updateTestimonial(initial.id, payload);
+        toast.success("Testimonial updated successfully!");
       } else {
         await workspaceService.addTestimonial(payload);
+        toast.success("Testimonial created successfully!");
       }
       await onSave();
       onClose();
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Failed to save testimonial'));
+      toast.error(getApiErrorMessage(err, 'Failed to save testimonial'));
     } finally {
       setSubmitting(false);
     }
@@ -204,12 +205,6 @@ function TestimonialFormModal({
             </button>
           </div>
         </div>
-
-        {error && (
-          <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-body font-medium text-destructive">
-            {error}
-          </div>
-        )}
       </form>
     </Modal>
   );
@@ -233,10 +228,11 @@ function DeleteTestimonialModal({
     setDeleting(true);
     try {
       await workspaceService.removeTestimonial(testimonial.id);
+      toast.success("Testimonial removed successfully!");
       await onDeleted();
       onClose();
     } catch (err) {
-      console.error('Delete failed:', err);
+      toast.error(getApiErrorMessage(err, "Failed to delete testimonial"));
     } finally {
       setDeleting(false);
     }

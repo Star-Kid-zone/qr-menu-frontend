@@ -7,14 +7,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/FormField";
-import { StatusMessage } from "@/components/ui/StatusMessage";
+import { toast } from "@/components/ui/toast";
 import { MdArrowBack } from "react-icons/md";
 import { authService } from "@/services/auth.service";
 import { forgotPasswordSchema, type ForgotPasswordSchemaValues } from "@/schemas/auth.schema";
 import { getApiErrorMessage } from "@/utils/errors";
 
 export default function ForgotPasswordPage() {
-  const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
 
   const {
@@ -28,11 +27,11 @@ export default function ForgotPasswordPage() {
 
   const onSubmit = async (data: ForgotPasswordSchemaValues) => {
     try {
-      setError(null);
       await authService.forgotPassword(data.phone);
       setSent(true);
+      toast.success("If an account exists for that phone number, a reset link has been sent.");
     } catch (err) {
-      setError(getApiErrorMessage(err, "Something went wrong. Please try again."));
+      toast.error(getApiErrorMessage(err, "Something went wrong. Please try again."));
     }
   };
 
@@ -49,12 +48,11 @@ export default function ForgotPasswordPage() {
       </div>
 
       {sent ? (
-        <StatusMessage variant="success">
-          If an account exists for that phone number, a reset link is on its way.
-        </StatusMessage>
+        <div className="rounded-xl border border-border bg-card p-5 text-center text-sm font-medium text-muted-foreground">
+          Reset instructions have been dispatched. Check your phone notifications.
+        </div>
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
-          {error && <StatusMessage variant="error">{error}</StatusMessage>}
 
           <FormField label="Phone number" htmlFor="phone" error={errors.phone?.message}>
             <Input

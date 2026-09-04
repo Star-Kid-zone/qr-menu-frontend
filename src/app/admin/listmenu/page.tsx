@@ -23,6 +23,7 @@ import {
 import { downloadCsv } from "@/utils/downloadCsv";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { cn } from "@/utils/cn";
+import { NoImagePlaceholder } from "@/components/templates/core/NoImagePlaceholder";
 
 interface MenuItem {
   id: string;
@@ -241,9 +242,7 @@ export default function ListMenuPage() {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <PiForkKnifeBold size={20} className="text-muted-foreground/30" />
-                      </div>
+                      <NoImagePlaceholder iconSize="sm" label="" className="p-1" />
                     )}
                     {item.popular && (
                       <span className="absolute left-1 top-1 flex size-4 items-center justify-center rounded-full bg-amber-400 text-amber-950 shadow-xs">
@@ -313,9 +312,7 @@ export default function ListMenuPage() {
                             className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-muted/60">
-                            <PiForkKnifeBold size={32} className="text-muted-foreground/30" />
-                          </div>
+                          <NoImagePlaceholder iconSize="md" label="No Image" />
                         )}
 
                         {/* Top Badges */}
@@ -413,9 +410,7 @@ export default function ListMenuPage() {
                                 {item.imageUrl ? (
                                   <Image src={item.imageUrl} alt={getItemDisplayName(item)} fill className="object-cover" />
                                 ) : (
-                                  <div className="flex h-full w-full items-center justify-center">
-                                    <PiForkKnifeBold size={16} className="text-muted-foreground/40" />
-                                  </div>
+                                  <NoImagePlaceholder iconSize="sm" label="" className="p-0.5" />
                                 )}
                               </div>
                               <div>

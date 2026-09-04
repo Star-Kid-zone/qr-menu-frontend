@@ -14,6 +14,7 @@ import {
   PiEyeSlashBold,
 } from 'react-icons/pi';
 import { Modal } from '@/components/Modal';
+import { toast } from '@/components/ui/toast';
 import { getApiErrorMessage } from '@/utils/errors';
 
 export interface ListLotteryHandle {
@@ -56,9 +57,8 @@ function RewardFormModal({
 }) {
   // A brand-new reward only defaults to active if nothing else is active yet —
   // avoids an admin accidentally deactivating their live reward by mistake.
-  const [form, setForm] = useState<RewardFormData>(createDefaultForm(!otherActiveReward));
+  const [form, setForm] = useState<RewardFormData>(createDefaultForm(false));
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     if (initial && isEdit) {
@@ -77,7 +77,6 @@ function RewardFormModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setError('');
     try {
       const payload = {
         label: form.label,
@@ -87,19 +86,21 @@ function RewardFormModal({
         isActive: form.isActive,
       };
       if (!payload.ratioWins || !payload.ratioPlays || payload.ratioWins > payload.ratioPlays) {
-        setError('Enter a valid ratio, e.g. 1 winner out of 1000 plays.');
+        toast.warning('Enter a valid ratio, e.g. 1 winner out of 1000 plays.');
         setSubmitting(false);
         return;
       }
       if (isEdit && initial) {
         await workspaceService.updateLotteryReward(initial.id, payload);
+        toast.success("Reward updated successfully!");
       } else {
         await workspaceService.addLotteryReward(payload);
+        toast.success("Reward created successfully!");
       }
       await onSave();
       onClose();
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Failed to save reward'));
+      toast.error(getApiErrorMessage(err, 'Failed to save reward'));
     } finally {
       setSubmitting(false);
     }
@@ -198,12 +199,6 @@ function RewardFormModal({
             </p>
           )}
         </div>
-
-        {error && (
-          <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-body font-medium text-destructive">
-            {error}
-          </div>
-        )}
       </form>
     </Modal>
   );
@@ -227,10 +222,11 @@ function DeleteRewardModal({
     setDeleting(true);
     try {
       await workspaceService.removeLotteryReward(reward.id);
+      toast.success("Reward removed successfully!");
       await onDeleted();
       onClose();
     } catch (err) {
-      console.error('Delete failed:', err);
+      toast.error(getApiErrorMessage(err, "Failed to delete reward"));
     } finally {
       setDeleting(false);
     }

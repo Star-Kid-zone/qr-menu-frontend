@@ -98,7 +98,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           />
         )}
         {!loading && resolvedLeftIcon}
-        <span>{children}</span>
+        {children && (
+          <span className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
+            {children}
+          </span>
+        )}
         {!loading && resolvedRightIcon}
       </button>
     );

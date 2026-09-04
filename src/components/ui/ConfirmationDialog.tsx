@@ -3,7 +3,6 @@ import { RiDeleteBin6Line } from 'react-icons/ri';
 import { Modal } from '@/components/Modal';
 import { Button } from '@/components/ui/button';
 import { ModalFooter } from '@/components/ui/ModalFooter';
-import { StatusMessage } from '@/components/ui/StatusMessage';
 import { ConfirmationDialogProps } from "@/types/components/ui/ConfirmationDialog.types";
 
 export function ConfirmationDialog({
@@ -15,7 +14,6 @@ export function ConfirmationDialog({
   confirmLabel,
   cancelLabel = 'Cancel',
   loading = false,
-  error,
   icon,
   maxWidth = 'max-w-md',
 }: ConfirmationDialogProps) {
@@ -42,8 +40,6 @@ export function ConfirmationDialog({
         <div className="mb-2 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive sm:h-16 sm:w-16">
           {icon ?? <RiDeleteBin6Line className="size-6 sm:size-8" />}
         </div>
-
-        {error ? <StatusMessage variant="error" className="w-full break-words">{error}</StatusMessage> : null}
 
         <p className="break-words font-medium leading-relaxed text-muted-foreground">{description}</p>
       </div>

@@ -10,6 +10,7 @@ import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
 import { ReactQRCode } from "@lglab/react-qr-code";
 import { workspaceService, WorkspaceData } from "@/services/workspace.service";
 import { toast } from "@/components/ui/toast";
+import { PermissionGuard } from "@/components/auth/PermissionGuard";
 import {
   PiPlusBold,
   PiPencilSimpleBold,
@@ -21,7 +22,7 @@ import {
   PiCheckCircleFill,
 } from "react-icons/pi";
 
-export default function ListPaymentPage() {
+function ListPaymentPageContent() {
   const router = useRouter();
   const [data, setData] = useState<WorkspaceData | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -232,5 +233,13 @@ export default function ListPaymentPage() {
         entityName="payment method"
       />
     </div>
+  );
+}
+
+export default function ListPaymentPage() {
+  return (
+    <PermissionGuard requiredUnit="payments">
+      <ListPaymentPageContent />
+    </PermissionGuard>
   );
 }

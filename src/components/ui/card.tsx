@@ -21,6 +21,10 @@ export const CardTitle = ({ className, ...props }: HTMLAttributes<HTMLHeadingEle
   <h3 className={cn("font-semibold leading-none tracking-tight", className)} {...props} />
 );
 
+export const CardDescription = ({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) => (
+  <p className={cn("text-caption text-muted-foreground", className)} {...props} />
+);
+
 export const CardContent = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (
   <div className={cn("p-6 pt-0", className)} {...props} />
 );

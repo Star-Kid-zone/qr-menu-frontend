@@ -1,31 +1,44 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { routes } from '@/config/routes';
-import { isAuthenticated } from '@/utils/storage.utils';
+import { isAuthenticated, getCurrentRole, clearStorage } from '@/utils/storage.utils';
+
+export interface ProtectedGuardOptions {
+  requiredRole?: 'superadmin' | 'admin';
+}
 
 /**
  * Keeps admin/superadmin shell aligned with the session: if the CSRF marker
  * cookie is missing (logout, expired refresh, or bfcache restore), send the
- * user to login instead of showing a stale screen from the back stack. The
- * actual access token lives in an httpOnly cookie the client can't read, so
- * this marker is the best available client-side "am I logged in" signal.
+ * user to login instead of showing a stale screen from the back stack.
+ * Also verifies role matches requirements (e.g. non-superadmins redirected away from /superadmin).
  */
-export function useProtectedSessionGuard(): void {
+export function useProtectedSessionGuard(options?: ProtectedGuardOptions): void {
   const router = useRouter();
 
   useEffect(() => {
-    const redirectIfLoggedOut = () => {
+    const validateSession = () => {
       if (!isAuthenticated()) {
-        router.replace(routes.public.login);
+        clearStorage();
+        router.replace(`${routes.public.login}?reason=session_expired`);
+        return;
+      }
+
+      if (options?.requiredRole === 'superadmin') {
+        const currentRole = getCurrentRole();
+        if (currentRole !== 'superadmin') {
+          router.replace(routes.admin.home);
+          return;
+        }
       }
     };
 
-    redirectIfLoggedOut();
+    validateSession();
 
-    const onPopState = () => redirectIfLoggedOut();
+    const onPopState = () => validateSession();
     const onPageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
-        redirectIfLoggedOut();
+        validateSession();
       }
     };
 
@@ -35,5 +48,5 @@ export function useProtectedSessionGuard(): void {
       window.removeEventListener('popstate', onPopState);
       window.removeEventListener('pageshow', onPageShow as EventListener);
     };
-  }, [router]);
+  }, [router, options?.requiredRole]);
 }

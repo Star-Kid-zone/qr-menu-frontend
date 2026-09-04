@@ -43,9 +43,16 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
     Object.keys(portal.menu).forEach(category => {
       portal.menu[category].forEach((item: any) => {
         menuItems.push({
-          ...item,
+          id: Number(item.id),               // API returns string id — cast to number
+          item: item.item,
+          description: item.description ?? '',
+          price: String(item.price ?? '0'),
+          type: item.type ?? '',
           category,
-          // map fields back to what templates expect if needed, or just pass as is
+          popular: Boolean(item.popular),
+          availability: true,                // backend strips this field; default to true
+          image_url: item.imageUrl ?? null,  // API uses camelCase, Menu type uses snake_case
+          images: Array.isArray(item.images) ? item.images : [],
         });
       });
     });

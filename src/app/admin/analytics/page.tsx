@@ -28,12 +28,13 @@ import { downloadCsv } from "@/utils/downloadCsv";
 import { deriveAnalyticsMetrics } from "@/utils/analyticsMetrics";
 import { getApiErrorMessage } from "@/utils/errors";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PermissionGuard } from "@/components/auth/PermissionGuard";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/utils/cn";
 
 type RangeKey = '7d' | '30d' | 'all';
 
-export default function AnalyticsPage() {
+function AnalyticsPageContent() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -665,5 +666,13 @@ export default function AnalyticsPage() {
       </Card>
 
     </div>
+  );
+}
+
+export default function AnalyticsPage() {
+  return (
+    <PermissionGuard requiredUnit="analytics">
+      <AnalyticsPageContent />
+    </PermissionGuard>
   );
 }

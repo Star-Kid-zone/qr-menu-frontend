@@ -129,13 +129,12 @@ export function PhonePreview({
 }: PhonePreviewProps) {
   const [view, setView] = useState<PreviewView>(defaultView);
   const [device, setDevice] = useState<DevicePreset>(DEVICES[1]);
-  const didInitView = useRef(false);
 
+  // Sync the active view whenever the parent changes the defaultView prop
+  // (e.g. switching between the Landing / Menu sub-tabs in workspace settings).
+  // The user can still manually toggle within the preview at any time.
   useEffect(() => {
-    if (!didInitView.current) {
-      didInitView.current = true;
-      setView(defaultView);
-    }
+    setView(defaultView);
   }, [defaultView]);
 
   const hasSlug = Boolean(landingUrl && menuUrl);

@@ -9,16 +9,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/FormField";
-import { StatusMessage } from "@/components/ui/StatusMessage";
 import { Checkbox } from "@/components/ui/Checkbox";
-import { fadeInUp } from "@/lib/motion";
+import { toast } from "@/components/ui/toast";
 import { authService } from "@/services/auth.service";
 import { registerSchema, type RegisterSchemaValues } from "@/schemas/auth.schema";
 import { getApiErrorMessage } from "@/utils/errors";
+import { fadeInUp } from "@/lib/motion";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<"register" | "otp">("register");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
@@ -41,7 +40,6 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterSchemaValues) => {
     try {
-      setError(null);
       await authService.register({
         name: data.name,
         phone: data.phone,
@@ -49,19 +47,20 @@ export default function RegisterPage() {
       });
       setPhone(data.phone);
       setStep("otp");
+      toast.success("Account created! Verification code sent.");
     } catch (err) {
-      setError(getApiErrorMessage(err, "Registration failed."));
+      toast.error(getApiErrorMessage(err, "Registration failed."));
     }
   };
 
   const onVerifyOtp = async () => {
     try {
-      setError(null);
       setIsVerifying(true);
       await authService.verifyOtp({ phone, otp });
+      toast.success("Phone verified successfully! Please sign in.");
       router.push("/login");
     } catch (err) {
-      setError(getApiErrorMessage(err, "OTP verification failed."));
+      toast.error(getApiErrorMessage(err, "OTP verification failed."));
     } finally {
       setIsVerifying(false);
     }
@@ -88,11 +87,6 @@ export default function RegisterPage() {
             Check your backend terminal for the 6-digit OTP code.
           </p>
 
-          {error && (
-            <StatusMessage variant="error" className="mb-4">
-              {error}
-            </StatusMessage>
-          )}
 
           <div className="space-y-5">
             <FormField label="OTP code" htmlFor="otp">
@@ -132,9 +126,9 @@ export default function RegisterPage() {
             <h1 className="text-h1 text-foreground">Create your account</h1>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
-            {error && <StatusMessage variant="error">{error}</StatusMessage>}
 
+
+          <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
             <FormField label="Full name" htmlFor="name" error={errors.name?.message}>
               <Input
                 id="name"

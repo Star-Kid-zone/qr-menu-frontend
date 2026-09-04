@@ -17,7 +17,7 @@ import {
   type DateRange,
   type PlatformOverview,
 } from '@/services/superadmin.service';
-import { Badge, Card, PageLoader, Button } from '@/components/ui';
+import { Badge, Card, Button } from '@/components/ui';
 import { routes } from '@/config/routes';
 import { fadeIn, fadeInUp, staggerContainer } from '@/lib/motion';
 import { getApiErrorMessage } from '@/utils/errors';
@@ -45,7 +45,7 @@ export default function SuperadminPage() {
     fetchData();
   }, [fetchData]);
 
-  if (loading) return <PageLoader label="Aggregating platform data…" />;
+  if (loading) return null;
   if (error || !data) {
     return (
       <div className="flex flex-col items-center gap-4 p-8 text-center">

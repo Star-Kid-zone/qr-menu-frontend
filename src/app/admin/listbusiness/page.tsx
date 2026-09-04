@@ -34,8 +34,6 @@ import {
   ConfirmDeleteModal,
   EmptyState,
   PageHeader,
-  PageLoader,
-  StatusMessage,
   FormField,
   Input,
   Textarea,
@@ -43,6 +41,7 @@ import {
   ScrollableTabRow,
   SubTabPills,
 } from "@/components/ui";
+import { toast } from "@/components/ui/toast";
 
 import {
   settingService,
@@ -355,8 +354,9 @@ function ListBusinessPageContent() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
+      toast.success("Copied to clipboard!");
     } catch {
-      window.prompt("Copy:", text);
+      toast.error("Failed to copy link to clipboard.");
     }
   };
 
@@ -592,9 +592,10 @@ function ListBusinessPageContent() {
           currencyId: values.currency_id?.toString() || null,
         });
         setWorkspaceEditMode(false);
+        toast.success("Workspace settings saved successfully!");
         await fetchWorkspaceData();
       } catch (err: unknown) {
-        setWorkspaceSaveError("Failed to save workspace settings.");
+        toast.error("Failed to save workspace settings.");
       } finally {
         setWorkspaceSaveLoading(false);
       }
@@ -618,9 +619,10 @@ function ListBusinessPageContent() {
           }
         });
         setBannersEditMode(false);
+        toast.success("Announcement banner updated successfully!");
         await fetchWorkspaceData();
       } catch (err: unknown) {
-        setBannersSaveError("Failed to save banner settings.");
+        toast.error("Failed to save banner settings.");
       } finally {
         setBannersSaveLoading(false);
       }
@@ -641,9 +643,10 @@ function ListBusinessPageContent() {
         },
       });
       setContentEditMode(false);
+      toast.success("Story and metrics saved successfully!");
       await fetchWorkspaceData();
     } catch (err: unknown) {
-      setContentSaveError("Failed to save story & stats.");
+      toast.error("Failed to save story & stats.");
     } finally {
       setContentSaveLoading(false);
     }
@@ -655,7 +658,27 @@ function ListBusinessPageContent() {
       try {
         const response = await menuService.getMenus();
         if (!cancelled) {
-          setWorkspaceMenuItems(Array.isArray(response.data) ? response.data : []);
+          const rawItems = Array.isArray(response.data) ? response.data : [];
+          const normalized = rawItems.map((item: any) => {
+            const img =
+              item.image_url ||
+              item.imageUrl ||
+              item.image ||
+              (Array.isArray(item.images) && item.images.length > 0
+                ? typeof item.images[0] === "string"
+                  ? item.images[0]
+                  : item.images[0]?.url
+                : null) ||
+              null;
+            return {
+              ...item,
+              id: Number(item.id),
+              image_url: img,
+              imageUrl: img,
+              image: img,
+            };
+          });
+          setWorkspaceMenuItems(normalized);
         }
       } catch (err) {
         console.error("Failed to fetch menu items:", err);
@@ -768,9 +791,10 @@ function ListBusinessPageContent() {
                 try {
                   await workspaceService.updateSlug(normalized);
                   setPublicSiteEditMode(false);
+                  toast.success("Public slug updated successfully!");
                   void fetchWorkspaceData();
                 } catch (err) {
-                  setSlugError(getApiErrorMessage(err, "Could not save slug. Try again."));
+                  toast.error(getApiErrorMessage(err, "Could not save slug. Try again."));
                 } finally {
                   setSlugSaving(false);
                 }
@@ -964,9 +988,6 @@ function ListBusinessPageContent() {
                 />
                 {publicSiteEditMode && slugAvailabilityLabel ? (
                   <p className="text-caption">{slugAvailabilityLabel}</p>
-                ) : null}
-                {slugError && publicSiteEditMode ? (
-                  <StatusMessage variant="error">{slugError}</StatusMessage>
                 ) : null}
               </Card>
               <Card className="space-y-3 p-6 md:col-span-2">
@@ -1462,12 +1483,6 @@ function ListBusinessPageContent() {
             ))
           )}
         </div>
-
-        {contentSaveError && (
-          <div className="lg:col-span-2">
-            <StatusMessage variant="error">{contentSaveError}</StatusMessage>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -1658,7 +1673,7 @@ function ListBusinessPageContent() {
 
 export default function ListBusinessPage() {
   return (
-    <Suspense fallback={<PageLoader label="Loading workspace…" />}>
+    <Suspense fallback={null}>
       <ListBusinessPageContent />
     </Suspense>
   );

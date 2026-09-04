@@ -5,7 +5,6 @@ import { Modal } from '@/components/Modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ModalFooter } from '@/components/ui/ModalFooter';
-import { StatusMessage } from '@/components/ui/StatusMessage';
 import { PromptDialogProps } from '@/types/components/ui/PromptDialog.types';
 
 export function PromptDialog({
@@ -18,7 +17,6 @@ export function PromptDialog({
   confirmLabel = 'Create',
   cancelLabel = 'Cancel',
   loading = false,
-  error,
 }: PromptDialogProps) {
   const [value, setValue] = useState('');
   // Reset the input the moment the dialog transitions to open, without an
@@ -50,7 +48,6 @@ export function PromptDialog({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="max-w-md" footer={footer}>
       <div className="flex flex-col gap-4">
-        {error ? <StatusMessage variant="error" className="break-words">{error}</StatusMessage> : null}
         {label ? (
           <label htmlFor="prompt-dialog-input" className="mb-1.5 block break-words text-caption font-semibold text-muted-foreground">
             {label}

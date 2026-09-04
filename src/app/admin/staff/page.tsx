@@ -11,6 +11,7 @@ import { staffService, type StaffMember } from "@/services/staff.service";
 import type { StaffRole } from "@/constants/permissions";
 import { getApiErrorMessage } from "@/utils/errors";
 import { useAsyncData } from "@/hooks/useAsyncData";
+import { PermissionGuard } from "@/components/auth/PermissionGuard";
 import {
   PiPencilSimpleBold,
   PiPlusBold,
@@ -43,7 +44,7 @@ function getInitials(name: string) {
   return name.slice(0, 2).toUpperCase() || "ST";
 }
 
-export default function StaffPage() {
+function StaffPageContent() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [saving, setSaving] = useState(false);
@@ -491,5 +492,13 @@ export default function StaffPage() {
         description={`This will permanently revoke ${deleteTarget?.name || "this member"}'s login access.`}
       />
     </div>
+  );
+}
+
+export default function StaffPage() {
+  return (
+    <PermissionGuard requireOwner>
+      <StaffPageContent />
+    </PermissionGuard>
   );
 }

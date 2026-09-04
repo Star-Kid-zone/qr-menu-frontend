@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
+import { toast } from '@/components/ui/toast';
 import { ConfirmationDialog } from './ConfirmationDialog';
 import { ConfirmDeleteModalProps } from "@/types/components/ui/ConfirmDeleteModal.types";
 import { getApiErrorMessage } from "@/utils/errors";
@@ -16,18 +17,17 @@ export function ConfirmDeleteModal({
   entityName,
 }: ConfirmDeleteModalProps) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const handleDelete = async () => {
     try {
       setLoading(true);
-      setError('');
       await onConfirm();
+      toast.success(`${entityName || 'Item'} deleted successfully`);
       if (onSuccess) onSuccess();
       onClose();
     } catch (err) {
       console.error(`Error deleting ${entityName || 'item'}:`, err);
-      setError(getApiErrorMessage(err, `Failed to delete ${entityName || 'item'}.`));
+      toast.error(getApiErrorMessage(err, `Failed to delete ${entityName || 'item'}.`));
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,6 @@ export function ConfirmDeleteModal({
       title={title}
       confirmLabel={confirmLabel}
       loading={loading}
-      error={error}
       description={description}
     />
   );

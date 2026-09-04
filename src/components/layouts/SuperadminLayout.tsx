@@ -5,18 +5,20 @@ import { useState } from 'react';
 import { useProtectedSessionGuard } from '@/hooks/useProtectedSessionGuard';
 import { SuperadminSidebar } from './SuperadminSidebar';
 import Navbar from './Navbar';
+import { GlobalLoaderOverlay } from './GlobalLoaderOverlay';
 
 /**
  * Shell for platform operators (superadmin): separate nav from tenant admin,
  * same token system and fixed-viewport shell as the admin panel.
  */
 export default function SuperadminLayout({ children }: { children: ReactNode }) {
-  useProtectedSessionGuard();
+  useProtectedSessionGuard({ requiredRole: 'superadmin' });
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
   return (
     <div className="flex h-dvh overflow-hidden bg-background text-foreground font-sans selection:bg-accent">
+      <GlobalLoaderOverlay />
       <SuperadminSidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
       <div

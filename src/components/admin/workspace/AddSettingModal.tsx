@@ -5,6 +5,7 @@ import { WorkspaceSettingsForm } from '@/components/admin/workspace/WorkspaceSet
 import type { WorkspaceSettingsFormValues } from '@/types/workspace.types';
 import { getDefaultWorkspaceSettings } from '@/utils/workspace.utils';
 import { Button, ModalFooter } from '@/components/ui';
+import { toast } from '@/components/ui/toast';
 import { workspaceService } from '@/services/workspace.service';
 import { Modal } from '@/components/Modal';
 import { ADD_WORKSPACE_FORM_ID } from "@/constants/components/admin/workspace/AddSettingModal.constants";
@@ -19,19 +20,11 @@ export function AddSettingModal({
   onClose: () => void;
   onSettingAdded: () => void;
 }) {
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const initialValues = useMemo(() => getDefaultWorkspaceSettings(), []);
 
-  useEffect(() => {
-    if (isOpen) {
-      setError(null);
-    }
-  }, [isOpen]);
-
   const handleSubmit = async (values: WorkspaceSettingsFormValues) => {
     setLoading(true);
-    setError(null);
 
     try {
       await workspaceService.updateWorkspace({
@@ -82,9 +75,10 @@ export function AddSettingModal({
         currencyId: values.currency_id?.toString() || null,
       });
       onSettingAdded();
+      toast.success("Workspace created successfully!");
       onClose();
     } catch (err: unknown) {
-      setError(getApiErrorMessage(err, 'Failed to create workspace settings'));
+      toast.error(getApiErrorMessage(err, 'Failed to create workspace settings'));
     } finally {
       setLoading(false);
     }
@@ -114,7 +108,6 @@ export function AddSettingModal({
         isOpen={isOpen}
         initialValues={initialValues}
         onSubmit={handleSubmit}
-        error={error}
         loading={loading}
       />
     </Modal>

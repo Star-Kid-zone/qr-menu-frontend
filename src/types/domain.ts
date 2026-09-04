@@ -39,6 +39,7 @@ export interface Menu {
   price: string;
   image?: string;
   image_url?: string;
+  imageUrl?: string;
   images?: { id: number; url: string }[];
   category: string;
   type: string;

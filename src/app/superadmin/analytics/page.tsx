@@ -22,7 +22,7 @@ import {
   type AnalyticsByUserResponse,
 } from '@/services/superadmin.service';
 import { routes } from '@/config/routes';
-import { PageLoader, PageHeader, Card, Button, Select } from '@/components/ui';
+import { PageHeader, Card, Button, Select } from '@/components/ui';
 import { SUSPENSE_LABELS } from '@/config/app.constants';
 import { PiChartLineUpBold, PiUsersBold, PiCursorClickBold, PiWarningBold, PiArrowClockwiseBold } from 'react-icons/pi';
 import { PIE_COLORS } from "@/constants/app/superadmin/analytics/page.constants";
@@ -58,13 +58,7 @@ export default function SuperadminAnalyticsPage() {
     load();
   }, [load]);
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <PageLoader label={SUSPENSE_LABELS.charts} />
-      </div>
-    );
-  }
+  if (loading) return null;
 
   if (error || !platform || !byUser) {
     return (

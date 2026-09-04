@@ -1,23 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { PiInfoBold } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/FormField";
-import { StatusMessage } from "@/components/ui/StatusMessage";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { toast } from "@/components/ui/toast";
 import { authService } from "@/services/auth.service";
 import { setStoredUserRole, setStoredPermissions } from "@/utils/storage";
 import { loginSchema, type LoginSchemaValues } from "@/schemas/auth.schema";
 import { getApiErrorMessage } from "@/utils/errors";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const isSessionExpired = searchParams?.get("reason") === "session_expired";
   const [isStaff, setIsStaff] = useState(false);
 
   const {
@@ -35,9 +37,10 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginSchemaValues) => {
     try {
-      setError(null);
       const res = isStaff ? await authService.staffLogin(data) : await authService.login(data);
       const user = res?.data?.user;
+
+      toast.success("Signed in successfully! Redirecting...");
 
       if (user) {
         setStoredPermissions(user.permissions ?? null);
@@ -49,7 +52,7 @@ export default function LoginPage() {
         }
       }
     } catch (err) {
-      setError(getApiErrorMessage(err, "Login failed. Please check your credentials."));
+      toast.error(getApiErrorMessage(err, "Login failed. Please check your credentials."));
     }
   };
 
@@ -62,9 +65,14 @@ export default function LoginPage() {
         <h1 className="text-h1 text-foreground">Sign in to your account</h1>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
-        {error && <StatusMessage variant="error">{error}</StatusMessage>}
+      {isSessionExpired && (
+        <div className="mb-6 flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 text-sm text-amber-700 dark:text-amber-400">
+          <PiInfoBold className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <span>Your session has expired. Please sign in again to continue.</span>
+        </div>
+      )}
 
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
         <FormField label="Phone number" htmlFor="phone" error={errors.phone?.message}>
           <Input
             id="phone"
@@ -118,5 +126,13 @@ export default function LoginPage() {
         </Link>
       </p>
     </>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-sm text-muted-foreground">Loading login…</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

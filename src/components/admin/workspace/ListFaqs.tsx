@@ -13,6 +13,7 @@ import {
   PiEyeSlashBold,
 } from 'react-icons/pi';
 import { Modal } from '@/components/Modal';
+import { toast } from '@/components/ui/toast';
 import { getApiErrorMessage } from '@/utils/errors';
 import { usePagination } from '@/hooks/usePagination';
 import { Pagination } from '@/components/ui/Pagination';
@@ -52,7 +53,6 @@ function FaqFormModal({
 }) {
   const [form, setForm] = useState<FaqFormData>(createDefaultForm());
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     if (initial && isEdit) {
@@ -69,18 +69,19 @@ function FaqFormModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setError('');
     try {
       const payload = { question: form.question, answer: form.answer, isVisible: form.isVisible };
       if (isEdit && initial) {
         await workspaceService.updateFaq(initial.id, payload);
+        toast.success("FAQ updated successfully!");
       } else {
         await workspaceService.addFaq(payload);
+        toast.success("FAQ created successfully!");
       }
       await onSave();
       onClose();
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Failed to save FAQ'));
+      toast.error(getApiErrorMessage(err, 'Failed to save FAQ'));
     } finally {
       setSubmitting(false);
     }
@@ -155,12 +156,6 @@ function FaqFormModal({
             </div>
           </button>
         </div>
-
-        {error && (
-          <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-body font-medium text-destructive">
-            {error}
-          </div>
-        )}
       </form>
     </Modal>
   );
@@ -184,10 +179,11 @@ function DeleteFaqModal({
     setDeleting(true);
     try {
       await workspaceService.removeFaq(faq.id);
+      toast.success("FAQ deleted successfully!");
       await onDeleted();
       onClose();
     } catch (err) {
-      console.error('Delete failed:', err);
+      toast.error(getApiErrorMessage(err, "Failed to delete FAQ"));
     } finally {
       setDeleting(false);
     }

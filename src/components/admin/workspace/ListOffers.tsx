@@ -12,6 +12,7 @@ import {
   PiUploadSimpleBold,
 } from 'react-icons/pi';
 import { Modal } from '@/components/Modal';
+import { toast } from '@/components/ui/toast';
 import { OfferFormData, ListOffersProps, Offer } from "@/types/components/admin/workspace/ListOffers.types";
 import { getApiErrorMessage } from "@/utils/errors";
 import { usePagination } from '@/hooks/usePagination';
@@ -37,7 +38,6 @@ function OfferFormModal({
   const [form, setForm] = useState<OfferFormData>(createDefaultOfferForm());
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     if (initial && isEdit) {
@@ -63,7 +63,6 @@ function OfferFormModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setError('');
     try {
       const fd = new FormData();
       fd.append('title', form.title);
@@ -74,13 +73,15 @@ function OfferFormModal({
 
       if (isEdit && initial) {
         await workspaceService.updateOfferItem(initial.id, fd);
+        toast.success("Offer updated successfully!");
       } else {
         await workspaceService.addOfferItem(fd);
+        toast.success("Offer created successfully!");
       }
       await onSave();
       onClose();
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Failed to save offer'));
+      toast.error(getApiErrorMessage(err, 'Failed to save offer'));
     } finally {
       setSubmitting(false);
     }
@@ -200,12 +201,6 @@ function OfferFormModal({
             />
           </label>
         </div>
-
-        {error && (
-          <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-body font-medium text-destructive">
-            {error}
-          </div>
-        )}
       </form>
     </Modal>
   );
@@ -229,10 +224,11 @@ function DeleteOfferModal({
     setDeleting(true);
     try {
       await workspaceService.removeOfferItem(offer.id);
+      toast.success("Offer removed successfully!");
       await onDeleted();
       onClose();
     } catch (err) {
-      console.error('Delete failed:', err);
+      toast.error(getApiErrorMessage(err, "Failed to delete offer"));
     } finally {
       setDeleting(false);
     }

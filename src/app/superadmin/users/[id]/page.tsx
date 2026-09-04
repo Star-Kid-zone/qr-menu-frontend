@@ -24,7 +24,7 @@ import {
 } from "@/services/superadmin.service";
 import type { DashboardData } from "@/services/analytics.service";
 import { routes } from "@/config/routes";
-import { PageLoader, Card, Badge, Button, Select, Spinner, buttonVariants } from "@/components/ui";
+import { Card, Badge, Button, Select, buttonVariants } from "@/components/ui";
 import { Props } from "@/types/app/superadmin/users/[id]/page.types";
 import { fadeIn } from "@/lib/motion";
 
@@ -89,9 +89,7 @@ function SuperadminUserDetailContent({ id }: Props) {
     );
   }
 
-  if (loading) {
-    return <PageLoader label="Loading account profile…" />;
-  }
+  if (loading) return null;
 
   if (error || !detail) {
     return (
@@ -334,9 +332,7 @@ function SuperadminUserDetailContent({ id }: Props) {
               </div>
 
               {loadingAnalytics ? (
-                <div className="py-10">
-                  <Spinner label="Processing data…" />
-                </div>
+                <div className="h-28" />
               ) : tenantAnalytics ? (
                 <div className="space-y-3">
                   <MetricRow
@@ -457,7 +453,7 @@ function SuperadminUserDetailPageComponent({
     params.then((p) => setId(p.id));
   }, [params]);
 
-  if (!id) return <PageLoader />;
+  if (!id) return null;
   return <SuperadminUserDetailContent id={id} />;
 }
 

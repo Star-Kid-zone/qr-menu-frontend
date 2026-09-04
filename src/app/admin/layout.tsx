@@ -1,15 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useProtectedSessionGuard } from "@/hooks/useProtectedSessionGuard";
 import Sidebar from "@/components/layouts/Sidebar";
 import Navbar from "@/components/layouts/Navbar";
 import { GlobalProgressBar } from "@/components/layouts/GlobalProgressBar";
+import { GlobalLoaderOverlay } from "@/components/layouts/GlobalLoaderOverlay";
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  useProtectedSessionGuard();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -17,6 +20,7 @@ export default function AdminLayout({
   return (
     <div className="flex h-dvh overflow-hidden bg-background text-foreground font-sans selection:bg-accent">
       <GlobalProgressBar />
+      <GlobalLoaderOverlay />
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
       <div

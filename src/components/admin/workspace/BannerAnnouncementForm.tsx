@@ -4,7 +4,7 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { PiMegaphoneBold } from 'react-icons/pi';
-import { FormField, StatusMessage, Textarea, ToggleCard } from '@/components/ui';
+import { FormField, Textarea, ToggleCard } from '@/components/ui';
 import { cn } from '@/utils/cn';
 import { BannerAnnouncementFormProps, BannerAnnouncementValues } from "@/types/components/admin/workspace/BannerAnnouncementForm.types";
 
@@ -123,8 +123,6 @@ export function BannerAnnouncementForm({
           </FormField>
         ) : null}
       </section>
-
-      {error ? <StatusMessage variant="error">{error}</StatusMessage> : null}
     </form>
   );
 }

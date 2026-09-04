@@ -8,6 +8,7 @@ import { workspaceService } from '@/services/workspace.service';
 import { Setting } from '@/types';
 import { usePagination } from '@/hooks/usePagination';
 import { Pagination } from '@/components/ui/Pagination';
+import { ConfirmDeleteModal } from '@/components/ui/ConfirmDeleteModal';
 import { WorkspaceFeatureLibrarySectionProps, FeatureItem, FeatureCatalog } from "@/types/components/admin/workspace/WorkspaceFeatureLibrarySection.types";
 
 export function WorkspaceFeatureLibrarySection({
@@ -25,6 +26,8 @@ export function WorkspaceFeatureLibrarySection({
   const [editingItemName, setEditingItemName] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [sectionToDelete, setSectionToDelete] = useState<string | null>(null);
+  const [featureToDelete, setFeatureToDelete] = useState<{ id: number; name: string } | null>(null);
 
   useEffect(() => {
     setCatalog(workspace.industry_feature_catalog || {});
@@ -157,20 +160,24 @@ export function WorkspaceFeatureLibrarySection({
     setSectionDraftName(normalizedName);
   };
 
-  const deleteSection = async () => {
-    if (!selectedSectionName || !window.confirm(`Delete section "${selectedSectionName}"?`)) return;
+  const confirmDeleteSection = async () => {
+    if (!sectionToDelete) return;
+    const targetName = sectionToDelete;
 
     const nextCatalog = updateSelectedIndustry((sections) => {
       const updatedSections = { ...sections };
-      delete updatedSections[selectedSectionName];
+      delete updatedSections[targetName];
       return updatedSections;
     });
 
     if (!nextCatalog) return;
 
     await persistCatalog(nextCatalog, 'Section deleted.');
-    setSelectedSectionName('');
-    setSectionDraftName('');
+    if (selectedSectionName === targetName) {
+      setSelectedSectionName('');
+      setSectionDraftName('');
+    }
+    setSectionToDelete(null);
   };
 
   const addFeatureItem = async () => {
@@ -220,17 +227,19 @@ export function WorkspaceFeatureLibrarySection({
     setEditingItemName('');
   };
 
-  const deleteFeatureItem = async (itemId: number, itemName: string) => {
-    if (!selectedSectionName || !window.confirm(`Delete feature "${itemName}"?`)) return;
+  const confirmDeleteFeature = async () => {
+    if (!selectedSectionName || !featureToDelete) return;
+    const { id } = featureToDelete;
 
     const nextCatalog = updateSelectedIndustry((sections) => ({
       ...sections,
-      [selectedSectionName]: (sections[selectedSectionName] || []).filter((item) => item.id !== itemId),
+      [selectedSectionName]: (sections[selectedSectionName] || []).filter((item) => item.id !== id),
     }));
 
     if (!nextCatalog) return;
 
     await persistCatalog(nextCatalog, 'Feature deleted.');
+    setFeatureToDelete(null);
   };
 
   if (loading) {
@@ -363,8 +372,8 @@ export function WorkspaceFeatureLibrarySection({
                   </button>
                   <button
                     type="button"
-                    onClick={deleteSection}
-                    disabled={saving}
+                    onClick={() => setSectionToDelete(selectedSectionName)}
+                    disabled={saving || !selectedSectionName}
                     className="inline-flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-caption font-semibold uppercase tracking-wide text-destructive hover:bg-destructive/10 transition-all disabled:opacity-60"
                   >
                     <PiTrashBold className="size-4" />
@@ -454,7 +463,7 @@ export function WorkspaceFeatureLibrarySection({
                             </button>
                             <button
                               type="button"
-                              onClick={() => deleteFeatureItem(item.id, item.name)}
+                              onClick={() => setFeatureToDelete({ id: item.id, name: item.name })}
                               className="inline-flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-caption font-semibold uppercase tracking-wide text-destructive hover:bg-destructive/10 transition-all"
                             >
                               <PiTrashBold className="size-4" />
@@ -493,6 +502,22 @@ export function WorkspaceFeatureLibrarySection({
           )}
         </div>
       </div>
+
+      <ConfirmDeleteModal
+        isOpen={Boolean(sectionToDelete)}
+        onClose={() => setSectionToDelete(null)}
+        onConfirm={confirmDeleteSection}
+        entityName={sectionToDelete ? `Section "${sectionToDelete}"` : 'Section'}
+        description="This will remove this entire feature section and all items within it from this workspace."
+      />
+
+      <ConfirmDeleteModal
+        isOpen={Boolean(featureToDelete)}
+        onClose={() => setFeatureToDelete(null)}
+        onConfirm={confirmDeleteFeature}
+        entityName={featureToDelete ? `Feature "${featureToDelete.name}"` : 'Feature'}
+        description="This will remove this feature from this workspace."
+      />
     </div>
   );
 }

@@ -6,9 +6,10 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { superadminService, type UserListRow } from '@/services/superadmin.service';
 import { routes } from '@/config/routes';
 import { UI_TIMING } from '@/config/app.constants';
-import { PageHeader, Card, SearchInput, Badge, Button, Select, Spinner, EmptyState } from '@/components/ui';
+import { PageHeader, Card, SearchInput, Badge, Button, Select, EmptyState } from '@/components/ui';
+import { toast } from '@/components/ui/toast';
 import { Pagination } from '@/components/ui/Pagination';
-import { PiUsersBold, PiKeyBold, PiXCircleBold, PiDownloadSimpleBold } from 'react-icons/pi';
+import { PiUsersBold, PiKeyBold, PiDownloadSimpleBold } from 'react-icons/pi';
 import { downloadCsv } from '@/utils/downloadCsv';
 import { fadeIn } from '@/lib/motion';
 
@@ -22,7 +23,6 @@ export default function SuperadminUsersPage() {
   const [role, setRole] = useState<'admin' | 'superadmin' | ''>('');
   const [activeFilter, setActiveFilter] = useState<'all' | 'true' | 'false'>('all');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const t = window.setTimeout(() => setDebouncedSearch(search.trim()), UI_TIMING.searchDebounceMs);
@@ -32,7 +32,6 @@ export default function SuperadminUsersPage() {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
       const res = await superadminService.listUsers({
         page,
         page_size: pageSize,
@@ -45,7 +44,7 @@ export default function SuperadminUsersPage() {
       setTotal(res.total);
     } catch (e) {
       console.error(e);
-      setError('Failed to load users.');
+      toast.error('Failed to load users.');
     } finally {
       setLoading(false);
     }
@@ -137,13 +136,6 @@ export default function SuperadminUsersPage() {
           </div>
         </div>
 
-        {error && (
-          <div className="mb-4 flex shrink-0 items-center gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-body font-medium text-destructive">
-            <PiXCircleBold className="size-4" />
-            {error}
-          </div>
-        )}
-
         <div className="min-h-0 flex-1 overflow-hidden rounded-md border border-border">
           <div className="h-full overflow-x-auto overflow-y-auto">
             <table className="w-full min-w-[720px] border-collapse text-left text-body">
@@ -160,9 +152,7 @@ export default function SuperadminUsersPage() {
               <tbody className="divide-y divide-border">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-20 text-center">
-                      <Spinner label="Fetching account records…" />
-                    </td>
+                    <td colSpan={6} className="h-48" />
                   </tr>
                 ) : rows.length === 0 ? (
                   <tr>
