@@ -204,11 +204,11 @@ function StaffPageContent() {
       </div>
 
       {/* ─── Staff Grid ─────────────────────────────────────────────────── */}
-      <div className="min-h-0 flex-1 overflow-y-auto pb-4">
+      <div className={cn("min-h-0 flex-1", filteredStaff.length === 0 ? "flex flex-col" : "overflow-y-auto pb-4")}>
         {filteredStaff.length === 0 ? (
-          <div className="flex h-full items-center justify-center">
+          <div className="h-full min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-card p-4 md:p-6 flex flex-col">
             <EmptyState
-              icon={<PiUsersThreeBold size={28} />}
+              icon={<PiUsersThreeBold size={32} />}
               title="No staff members found"
               description={
                 search || roleFilter !== "all"

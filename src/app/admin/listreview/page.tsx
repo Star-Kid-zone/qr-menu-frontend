@@ -12,6 +12,8 @@ import {
 } from "@/services/workspace.service";
 import { toast } from "@/components/ui/toast";
 import { getApiErrorMessage } from "@/utils/errors";
+import { PermissionGuard } from "@/components/auth/PermissionGuard";
+import { cn } from "@/utils/cn";
 import {
   PiArrowsClockwiseBold,
   PiGoogleLogoBold,
@@ -38,7 +40,7 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-export default function ListReviewPage() {
+function ListReviewPageContent() {
   const [workspace, setWorkspace] = useState<WorkspaceData | null>(null);
   const [googleReviews, setGoogleReviews] = useState<GoogleReviewRecord[]>([]);
   const [googlePlaceId, setGooglePlaceId] = useState<string | null>(null);
@@ -161,15 +163,15 @@ export default function ListReviewPage() {
       )}
 
       {/* Body */}
-      <div className="min-h-0 flex-1 overflow-y-auto pr-0.5 pb-4">
+      <div className={cn("min-h-0 flex-1", (!googlePlaceId || googleReviews.length === 0) && !loading ? "flex flex-col" : "overflow-y-auto pr-0.5 pb-4")}>
         {loading ? (
           <div className="flex h-full items-center justify-center">
             <span className="size-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         ) : !googlePlaceId ? (
-          <div className="flex h-full items-center justify-center p-4">
+          <div className="h-full min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-card p-4 md:p-6 flex flex-col">
             <EmptyState
-              icon={<PiStarBold size={24} />}
+              icon={<PiStarBold size={32} />}
               title="No business linked yet"
               description="Search and link your Google business profile to showcase real customer reviews on your landing page."
               action={
@@ -184,9 +186,9 @@ export default function ListReviewPage() {
             />
           </div>
         ) : googleReviews.length === 0 ? (
-          <div className="flex h-full items-center justify-center p-4">
+          <div className="h-full min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-card p-4 md:p-6 flex flex-col">
             <EmptyState
-              icon={<PiStarBold size={24} />}
+              icon={<PiStarBold size={32} />}
               title="No reviews synced yet"
               description="Click Sync Now above to pull your business's latest Google reviews."
             />
@@ -238,5 +240,13 @@ export default function ListReviewPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ListReviewPage() {
+  return (
+    <PermissionGuard requiredUnit="reviews">
+      <ListReviewPageContent />
+    </PermissionGuard>
   );
 }

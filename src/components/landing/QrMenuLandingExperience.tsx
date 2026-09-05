@@ -79,17 +79,41 @@ function Journey() {
 
 export function QrMenuLandingExperience() {
   return <main className="min-h-screen overflow-x-hidden bg-[#fbfaf7] text-[#17202e]">
-    <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-6 py-6 sm:px-12"><Link href="/" className="font-serif text-2xl tracking-tight">qrmenu<span className="text-[#6d5dfc]">.</span></Link><div className="flex items-center gap-5"><a href="#platform" className="hidden text-xs font-bold uppercase tracking-[0.14em] text-[#566271] sm:block">How it works</a><Link href={routes.public.login} className="rounded-full bg-[#17202e] px-4 py-2.5 text-xs font-bold text-white transition-transform hover:-translate-y-0.5">Log in</Link></div></header>
+    <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-6 py-6 sm:px-12">
+      <Link href="/" className="font-serif text-2xl tracking-tight">qrmenu<span className="text-[#6d5dfc]">.</span></Link>
+      <div className="flex items-center gap-2.5 sm:gap-4">
+        <a href="#platform" className="hidden text-xs font-bold uppercase tracking-[0.14em] text-[#566271] sm:block">How it works</a>
+        <Link href={routes.public.login} className="px-3 py-2 text-xs font-bold text-[#566271] transition-colors hover:text-[#17202e]">Log in</Link>
+        <Link href={routes.public.register} className="rounded-full bg-[#17202e] px-4 py-2 text-xs font-bold text-white shadow-[0_4px_14px_rgba(23,32,46,0.15)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#6d5dfc]">Register</Link>
+      </div>
+    </header>
     <section className="relative flex min-h-[100svh] items-center overflow-hidden px-6 pb-16 pt-28 sm:px-12">
       <div className="absolute -right-24 top-12 h-[36rem] w-[36rem] rounded-full bg-[#dbe8ff] blur-3xl" /><div className="absolute -bottom-32 -left-20 h-[32rem] w-[32rem] rounded-full bg-[#f9dec9] blur-3xl" />
       <div className="relative mx-auto grid w-full max-w-7xl items-center gap-14 lg:grid-cols-[1.1fr_0.9fr]">
-        <div><p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#6d5dfc]">Restaurant operating system</p><h1 className="mt-5 max-w-3xl font-serif text-[clamp(4rem,8vw,8.5rem)] leading-[0.78] tracking-[-0.07em]">The table is just the beginning.</h1><p className="mt-8 max-w-lg text-lg leading-relaxed text-[#566271]">A single scan that moves guests from choosing dinner to coming back for more.</p><div className="mt-9 flex flex-wrap gap-3"><a href="#platform" className="inline-flex items-center gap-3 rounded-full bg-[#6d5dfc] px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_25px_rgba(109,93,252,0.26)]">Follow the journey <PiArrowRightBold /></a><Link href={routes.public.login} className="inline-flex items-center gap-2 rounded-full border border-[#bfc9d4] px-6 py-3.5 text-sm font-bold">See the workspace</Link></div></div>
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#6d5dfc]">Restaurant operating system</p>
+          <h1 className="mt-5 max-w-3xl font-serif text-[clamp(4rem,8vw,8.5rem)] leading-[0.78] tracking-[-0.07em]">The table is just the beginning.</h1>
+          <p className="mt-8 max-w-lg text-lg leading-relaxed text-[#566271]">A single scan that moves guests from choosing dinner to coming back for more.</p>
+          <div className="mt-9 flex flex-wrap gap-3">
+            <Link href={routes.public.register} className="inline-flex items-center gap-2 rounded-full bg-[#6d5dfc] px-6 py-3.5 text-sm font-bold text-white shadow-[0_12px_25px_rgba(109,93,252,0.26)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(109,93,252,0.36)]">Register your restaurant <PiArrowRightBold /></Link>
+            <a href="#platform" className="inline-flex items-center gap-2 rounded-full border border-[#bfc9d4] px-6 py-3.5 text-sm font-bold transition-colors hover:bg-black/5">See how it works</a>
+          </div>
+        </div>
         <motion.div initial={{ opacity: 0, scale: 0.9, rotate: 8 }} animate={{ opacity: 1, scale: 1, rotate: 4 }} transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }} className="relative mx-auto w-[min(22rem,80vw)]"><div className="absolute -left-9 top-12 rounded-2xl bg-white px-4 py-3 shadow-xl"><p className="text-[9px] font-bold uppercase tracking-wider text-[#1e8f79]">Live menu</p><p className="mt-1 text-xs font-bold">Kitchen is open</p></div><div className="rounded-[2.5rem] bg-[#17202e] p-3 shadow-[0_35px_70px_rgba(23,32,46,0.25)]"><div className="rounded-[2rem] bg-[#f7f8f6] p-7"><QrMark /><p className="mt-5 text-center font-serif text-xl">Cedar &amp; Spice</p><p className="mt-1 text-center text-[10px] font-bold uppercase tracking-[0.16em] text-[#6d5dfc]">Point your camera here</p></div></div></motion.div>
       </div>
     </section>
     <section className="border-y border-[#d9e0e7] bg-white px-6 py-6 sm:px-12"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 text-xs font-bold uppercase tracking-[0.12em] text-[#657080]"><span>One connected guest experience</span><span className="flex items-center gap-2 text-[#1e8f79]"><PiCheckCircleFill /> Made for independent restaurants</span><span className="flex items-center gap-2 text-[#d7a51d]"><PiChartLineUpBold /> See every useful signal</span></div></section>
     <Journey />
-    <section className="bg-[#17202e] px-6 py-24 text-white sm:px-12 sm:py-32"><div className="mx-auto max-w-5xl text-center"><p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#b9dfd5]">A better guest experience starts here</p><h2 className="mt-5 font-serif text-5xl leading-[0.88] tracking-[-0.05em] sm:text-7xl">Run the restaurant.<br />Not seven disconnected tools.</h2><Link href={routes.public.login} className="mt-9 inline-flex items-center gap-3 rounded-full bg-[#b9dfd5] px-6 py-3.5 text-sm font-bold text-[#17202e]">Open QRMenu <PiArrowRightBold /></Link></div></section>
+    <section className="bg-[#17202e] px-6 py-24 text-white sm:px-12 sm:py-32">
+      <div className="mx-auto max-w-5xl text-center">
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#b9dfd5]">A better guest experience starts here</p>
+        <h2 className="mt-5 font-serif text-5xl leading-[0.88] tracking-[-0.05em] sm:text-7xl">Run the restaurant.<br />Not seven disconnected tools.</h2>
+        <div className="mt-9 flex flex-wrap justify-center gap-3">
+          <Link href={routes.public.register} className="inline-flex items-center gap-2 rounded-full bg-[#b9dfd5] px-6 py-3.5 text-sm font-bold text-[#17202e] transition-transform hover:-translate-y-0.5">Register now <PiArrowRightBold /></Link>
+          <Link href={routes.public.login} className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-white/10">Sign in to workspace</Link>
+        </div>
+      </div>
+    </section>
     <footer className="flex flex-col gap-4 bg-[#17202e] px-6 pb-8 text-[11px] font-bold uppercase tracking-[0.14em] text-white/50 sm:flex-row sm:items-center sm:justify-between sm:px-12"><span>© {new Date().getFullYear()} QRMenu</span><span>Menus · websites · payments · growth</span></footer>
   </main>;
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import Link from "next/link";
 import {
   PiCalendarBlankBold,
   PiClockBold,
@@ -9,19 +8,16 @@ import {
   PiFacebookLogoBold,
   PiImagesBold,
   PiInstagramLogoBold,
-  PiPaletteBold,
   PiPaperPlaneTiltBold,
-  PiPencilSimpleBold,
   PiPlusBold,
   PiShareNetworkBold,
-  PiSparkleBold,
   PiUploadSimpleBold,
   PiWarningCircleBold,
   PiXBold,
 } from "react-icons/pi";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -29,7 +25,6 @@ import { ScrollableTabRow } from "@/components/ui/ScrollableTabRow";
 import { Spinner } from "@/components/ui/Spinner";
 import { toast } from "@/components/ui/toast";
 import { SocialPostPreview } from "@/components/admin/social/SocialPostPreview";
-import { POSTER_CATEGORIES, POSTER_TEMPLATES } from "@/components/marketing/posterTemplates";
 import {
   socialService,
   type SocialAccount,
@@ -39,8 +34,9 @@ import {
 } from "@/services/social.service";
 import { getApiErrorMessage } from "@/utils/errors";
 import { cn } from "@/utils/cn";
+import { PermissionGuard } from "@/components/auth/PermissionGuard";
 
-type SocialTabId = "compose" | "library" | "templates" | "history" | "accounts";
+type SocialTabId = "compose" | "library" | "history" | "accounts";
 
 const POPULAR_HASHTAGS = [
   "#DailySpecial",
@@ -53,7 +49,7 @@ const POPULAR_HASHTAGS = [
   "#DineWithUs",
 ];
 
-export default function SocialMediaPage() {
+function SocialMediaPageContent() {
   const [activeTab, setActiveTab] = useState<SocialTabId>("compose");
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
   const [assets, setAssets] = useState<SocialAsset[]>([]);
@@ -63,7 +59,6 @@ export default function SocialMediaPage() {
   // Composer selection
   const [assetId, setAssetId] = useState("");
   const [weeklyPosterId, setWeeklyPosterId] = useState("");
-  const [selectedTemplateSlug, setSelectedTemplateSlug] = useState("");
   const [facebookSelected, setFacebookSelected] = useState(true);
   const [instagramSelected, setInstagramSelected] = useState(true);
   const [syncCaptions, setSyncCaptions] = useState(true);
@@ -78,7 +73,6 @@ export default function SocialMediaPage() {
   const [uploading, setUploading] = useState(false);
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   const [libraryFilter, setLibraryFilter] = useState<"all" | "uploads" | "weekly">("all");
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [historyFilter, setHistoryFilter] = useState<"all" | "published" | "scheduled" | "draft">("all");
 
   // Disconnect modal
@@ -150,7 +144,6 @@ export default function SocialMediaPage() {
       setAssets((current) => [data.asset, ...current]);
       setAssetId(data.asset.id);
       setWeeklyPosterId("");
-      setSelectedTemplateSlug("");
       toast.success("Poster image uploaded successfully.");
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Poster upload failed."));
@@ -166,8 +159,8 @@ export default function SocialMediaPage() {
         (a.platform === "instagram" && instagramSelected && instagramCaption.trim()),
     );
 
-    if (!assetId && !weeklyPosterId && !selectedTemplateSlug) {
-      toast.warning("Please select a poster image from the library or templates.");
+    if (!assetId && !weeklyPosterId) {
+      toast.warning("Please select a poster image from the library.");
       return;
     }
 
@@ -283,19 +276,8 @@ export default function SocialMediaPage() {
         };
       }
     }
-    if (selectedTemplateSlug) {
-      const item = POSTER_TEMPLATES.find((t) => t.slug === selectedTemplateSlug);
-      if (item) {
-        return {
-          url: null,
-          title: item.name,
-          type: "Template",
-          slug: item.slug,
-        };
-      }
-    }
     return null;
-  }, [weeklyPosterId, assetId, selectedTemplateSlug, weeklyPosters, assets]);
+  }, [weeklyPosterId, assetId, weeklyPosters, assets]);
 
   // Tab definitions matching listbusiness pattern
   const tabs = [
@@ -309,12 +291,6 @@ export default function SocialMediaPage() {
       label: "Poster Library",
       icon: <PiImagesBold size={16} />,
       badge: assets.length + weeklyPosters.length,
-    },
-    {
-      id: "templates" as const,
-      label: "Poster Templates",
-      icon: <PiPaletteBold size={16} />,
-      badge: POSTER_TEMPLATES.length,
     },
     {
       id: "history" as const,
@@ -339,7 +315,6 @@ export default function SocialMediaPage() {
       <PageHeader
         className="shrink-0"
         title="Compose & Publish"
-        description="Craft eye-catching social posts and publish directly to your connected Meta channels."
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -372,9 +347,6 @@ export default function SocialMediaPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-sm font-bold">1. Poster Image</CardTitle>
-                  <CardDescription className="text-xs">
-                    Choose the visual creative to accompany this post.
-                  </CardDescription>
                 </div>
                 <label className="cursor-pointer">
                   <span className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-semibold text-foreground shadow-xs transition hover:bg-muted">
@@ -403,7 +375,7 @@ export default function SocialMediaPage() {
                         />
                       ) : (
                         <div className="flex size-full items-center justify-center bg-primary/10 text-primary">
-                          <PiPaletteBold size={24} />
+                          <PiImagesBold size={24} />
                         </div>
                       )}
                     </div>
@@ -416,9 +388,6 @@ export default function SocialMediaPage() {
                           {activePoster.type}
                         </Badge>
                       </div>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        Ready for Instagram (4:5) and Facebook publishing
-                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -440,9 +409,6 @@ export default function SocialMediaPage() {
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-foreground">No poster selected</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      Pick a poster from your library, weekly specials, or upload a new file.
-                    </p>
                   </div>
                   <Button
                     type="button"
@@ -462,10 +428,7 @@ export default function SocialMediaPage() {
           {/* Section 2: Destination Channels */}
           <Card>
             <CardHeader className="p-4 pb-2">
-              <CardTitle className="text-sm font-bold">2. Target Destinations</CardTitle>
-              <CardDescription className="text-xs">
-                Select which connected Meta profiles this post should be published to.
-              </CardDescription>
+              <CardTitle className="text-sm font-bold">2. Destinations</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3 p-4 pt-2 sm:grid-cols-2">
               {/* Facebook Card */}
@@ -577,10 +540,7 @@ export default function SocialMediaPage() {
             <CardHeader className="p-4 pb-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <CardTitle className="text-sm font-bold">3. Post Content & Captions</CardTitle>
-                  <CardDescription className="text-xs">
-                    Compose your message with tailored captions and hashtag enhancements.
-                  </CardDescription>
+                  <CardTitle className="text-sm font-bold">3. Content</CardTitle>
                 </div>
                 <div className="flex items-center gap-2">
                   <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
@@ -598,7 +558,7 @@ export default function SocialMediaPage() {
             <CardContent className="space-y-3.5 p-4 pt-2">
               <div>
                 <label className="mb-1 block text-caption font-semibold text-foreground">
-                  Internal Campaign Title (optional)
+                  Campaign Title (optional)
                 </label>
                 <input
                   value={title}
@@ -621,7 +581,7 @@ export default function SocialMediaPage() {
                   <textarea
                     value={instagramCaption}
                     onChange={(e) => handleCaptionChange(e.target.value, "instagram")}
-                    placeholder="Write a compelling caption for both Facebook and Instagram..."
+                    placeholder="Write your caption..."
                     rows={4}
                     className="w-full rounded-lg border border-border bg-background px-3 py-2 text-body focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   />
@@ -641,7 +601,7 @@ export default function SocialMediaPage() {
                       disabled={!facebookSelected}
                       value={facebookCaption}
                       onChange={(e) => handleCaptionChange(e.target.value, "facebook")}
-                      placeholder="Write Facebook post text..."
+                      placeholder="Write Facebook caption..."
                       rows={4}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-body disabled:opacity-50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     />
@@ -659,7 +619,7 @@ export default function SocialMediaPage() {
                       disabled={!instagramSelected}
                       value={instagramCaption}
                       onChange={(e) => handleCaptionChange(e.target.value, "instagram")}
-                      placeholder="Write Instagram caption & hashtags..."
+                      placeholder="Write Instagram caption..."
                       rows={4}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-body disabled:opacity-50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     />
@@ -669,8 +629,8 @@ export default function SocialMediaPage() {
 
               {/* Hashtag Helper Pills */}
               <div>
-                <p className="mb-1.5 flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
-                  <PiSparkleBold className="text-primary size-3.5" /> Quick Hashtags:
+                <p className="mb-1.5 text-[11px] font-semibold text-muted-foreground">
+                  Hashtags:
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {POPULAR_HASHTAGS.map((tag) => (
@@ -694,9 +654,6 @@ export default function SocialMediaPage() {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <CardTitle className="text-sm font-bold">4. Publish or Schedule</CardTitle>
-                  <CardDescription className="text-xs">
-                    Publish immediately to your connected channels, or set a future date & time.
-                  </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] text-muted-foreground">Channels:</span>
@@ -782,7 +739,6 @@ export default function SocialMediaPage() {
         <PageHeader
           className="shrink-0"
           title="Poster Library"
-          description="Browse and organize uploaded poster creatives and weekly marketing kits."
           actions={
             <div className="flex items-center gap-2">
               <label className="cursor-pointer">
@@ -831,7 +787,6 @@ export default function SocialMediaPage() {
               <EmptyState
                 icon={<PiImagesBold size={32} />}
                 title="No poster assets found"
-                description="Upload an image poster or use weekly specials to get started."
                 action={
                   <label className="cursor-pointer">
                     <span className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-semibold text-primary-foreground shadow-xs transition hover:bg-primary/90">
@@ -849,8 +804,8 @@ export default function SocialMediaPage() {
               />
             </div>
           ) : (
-            <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 pb-6">
-              {/* Weekly Posters */}
+            <div className="grid grid-cols-2 gap-3 pb-6 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
+              {/* Weekly Special Posters */}
               {displayedWeekly.map((poster) => {
                 const isSelected = weeklyPosterId === poster.id;
                 return (
@@ -881,7 +836,6 @@ export default function SocialMediaPage() {
                           onClick={() => {
                             setWeeklyPosterId(poster.id);
                             setAssetId("");
-                            setSelectedTemplateSlug("");
                             setActiveTab("compose");
                             toast.success(`"${poster.title}" selected for your post!`);
                           }}
@@ -933,7 +887,6 @@ export default function SocialMediaPage() {
                           onClick={() => {
                             setAssetId(asset.id);
                             setWeeklyPosterId("");
-                            setSelectedTemplateSlug("");
                             setActiveTab("compose");
                             toast.success(`"${asset.originalFilename}" selected for your post!`);
                           }}
@@ -947,7 +900,7 @@ export default function SocialMediaPage() {
                         {asset.originalFilename}
                       </p>
                       <p className="text-[10px] text-muted-foreground">
-                        {new Date(asset.createdAt).toLocaleDateString()}
+                        Uploaded {new Date(asset.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                   </Card>
@@ -960,94 +913,7 @@ export default function SocialMediaPage() {
     );
   };
 
-  // Tab 3: Poster Templates
-  const renderTemplatesTab = () => {
-    const filteredTemplates =
-      selectedCategory === "All"
-        ? POSTER_TEMPLATES
-        : POSTER_TEMPLATES.filter((t) => t.category === selectedCategory);
-
-    return (
-      <div className="flex h-full min-h-0 flex-col gap-4">
-        <PageHeader
-          className="shrink-0"
-          title="Poster Templates"
-          description="High-converting restaurant templates you can customize and export for organic marketing."
-        />
-
-        {/* Category Pills */}
-        <div className="flex shrink-0 items-center gap-1.5 overflow-x-auto pb-1">
-          {["All", ...POSTER_CATEGORIES].map((category) => (
-            <button
-              key={category}
-              type="button"
-              onClick={() => setSelectedCategory(category)}
-              className={cn(
-                "whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold transition",
-                selectedCategory === category
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "bg-muted text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-
-        <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 pb-6">
-            {filteredTemplates.map((tpl) => (
-              <Card
-                key={tpl.slug}
-                className="group flex flex-col overflow-hidden border-border transition-all hover:border-primary/50 hover:shadow-md"
-              >
-                <div
-                  className="relative aspect-[4/5] w-full overflow-hidden p-6 flex flex-col justify-between"
-                  style={{
-                    background:
-                      tpl.background.type === "gradient"
-                        ? tpl.background.value
-                        : tpl.background.value,
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="rounded-full bg-black/40 px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider backdrop-blur-xs">
-                      {tpl.category}
-                    </span>
-                    <span className="text-white/80">
-                      <PiPaletteBold size={18} />
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-bold text-white uppercase drop-shadow-sm">
-                      {tpl.name}
-                    </p>
-                    <p className="text-[11px] text-white/90 drop-shadow-xs line-clamp-2">
-                      {tpl.textFields[0]?.defaultText ?? "Special Promotion"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between gap-2 p-3 bg-card border-t border-border">
-                  <span className="text-xs font-semibold text-foreground truncate">
-                    {tpl.name}
-                  </span>
-                  <Link
-                    href={`/admin/social-media/editor/${tpl.slug}`}
-                    className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90 shrink-0"
-                  >
-                    <PiPencilSimpleBold size={13} /> Customize
-                  </Link>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Tab 4: Publishing History
+  // Tab 3: Publishing History
   const renderHistoryTab = () => {
     const filteredPosts =
       historyFilter === "all"
@@ -1059,7 +925,6 @@ export default function SocialMediaPage() {
         <PageHeader
           className="shrink-0"
           title="Publishing History"
-          description="View past publications, track scheduled posts, and monitor status results."
           actions={
             <div className="flex items-center gap-2">
               <Button
@@ -1110,7 +975,6 @@ export default function SocialMediaPage() {
               <EmptyState
                 icon={<PiClockBold size={32} />}
                 title="No posts found"
-                description="Your drafts, scheduled campaigns, and published posts will appear here."
                 action={
                   <Button
                     type="button"
@@ -1215,7 +1079,6 @@ export default function SocialMediaPage() {
       <PageHeader
         className="shrink-0"
         title="Connected Accounts"
-        description="Link your official Facebook Pages and Instagram Professional profiles via Meta OAuth."
         actions={
           <Button
             type="button"
@@ -1242,7 +1105,6 @@ export default function SocialMediaPage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-foreground">Facebook Page</h3>
-                    <p className="text-xs text-muted-foreground">Meta Graph API Pages publishing</p>
                   </div>
                 </div>
                 <Badge tone={fbAccount ? "success" : "neutral"}>
@@ -1276,10 +1138,7 @@ export default function SocialMediaPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <p className="text-xs text-muted-foreground">
-                      Connect a Facebook Page to automatically publish specials, announcements, and posters.
-                    </p>
+                  <div className="pt-1">
                     <Button
                       type="button"
                       variant="primary"
@@ -1304,7 +1163,6 @@ export default function SocialMediaPage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-foreground">Instagram Professional</h3>
-                    <p className="text-xs text-muted-foreground">Business or Creator Meta account</p>
                   </div>
                 </div>
                 <Badge tone={igAccount ? "success" : "neutral"}>
@@ -1340,10 +1198,7 @@ export default function SocialMediaPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <p className="text-xs text-muted-foreground">
-                      Connect an Instagram Professional account to publish feed media directly from your admin panel.
-                    </p>
+                  <div className="pt-1">
                     <Button
                       type="button"
                       variant="primary"
@@ -1359,15 +1214,6 @@ export default function SocialMediaPage() {
               </div>
             </Card>
           </div>
-
-          <Card className="p-4 bg-muted/20 border-border">
-            <h4 className="text-xs font-bold text-foreground mb-1">Meta Publishing Requirements</h4>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Personal Facebook profiles cannot publish via Meta Graph API. You must have a Facebook Page
-              with admin or task permissions. For Instagram, the account must be configured as a
-              Professional (Business or Creator) profile and linked to your Facebook Page in Meta Business Suite.
-            </p>
-          </Card>
         </div>
       </div>
     </div>
@@ -1377,8 +1223,6 @@ export default function SocialMediaPage() {
     switch (activeTab) {
       case "library":
         return renderLibraryTab();
-      case "templates":
-        return renderTemplatesTab();
       case "history":
         return renderHistoryTab();
       case "accounts":
@@ -1522,5 +1366,13 @@ export default function SocialMediaPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function SocialMediaPage() {
+  return (
+    <PermissionGuard requiredUnit="marketing">
+      <SocialMediaPageContent />
+    </PermissionGuard>
   );
 }

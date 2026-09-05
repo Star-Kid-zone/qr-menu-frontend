@@ -7,8 +7,9 @@ import { AdminFormPage } from "@/components/admin/AdminFormPage";
 import { PaymentForm, type PaymentFormHandle } from "@/components/admin/PaymentForm";
 import { workspaceService } from "@/services/workspace.service";
 import { getApiErrorMessage } from "@/utils/errors";
+import { PermissionGuard } from "@/components/auth/PermissionGuard";
 
-export default function AddPaymentPage() {
+function AddPaymentPageContent() {
   const router = useRouter();
   const formRef = useRef<PaymentFormHandle>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -58,5 +59,13 @@ export default function AddPaymentPage() {
     >
       <PaymentForm ref={formRef} mode="create" />
     </AdminFormPage>
+  );
+}
+
+export default function AddPaymentPage() {
+  return (
+    <PermissionGuard requiredUnit="payments">
+      <AddPaymentPageContent />
+    </PermissionGuard>
   );
 }

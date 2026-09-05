@@ -11,8 +11,9 @@ import {
 } from "@/components/admin/PaymentForm";
 import { workspaceService } from "@/services/workspace.service";
 import { getApiErrorMessage } from "@/utils/errors";
+import { PermissionGuard } from "@/components/auth/PermissionGuard";
 
-export default function EditPaymentPage() {
+function EditPaymentPageContent() {
   const router = useRouter();
   const formRef = useRef<PaymentFormHandle>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -82,5 +83,13 @@ export default function EditPaymentPage() {
     >
       <PaymentForm ref={formRef} mode="edit" initialData={initialData} />
     </AdminFormPage>
+  );
+}
+
+export default function EditPaymentPage() {
+  return (
+    <PermissionGuard requiredUnit="payments">
+      <EditPaymentPageContent />
+    </PermissionGuard>
   );
 }

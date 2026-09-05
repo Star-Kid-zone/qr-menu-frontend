@@ -59,7 +59,7 @@ export function SocialPostPreview({
 
   // Helper to highlight hashtags in caption
   const renderFormattedCaption = (text: string) => {
-    if (!text) return <span className="italic text-muted-foreground/60">Your post caption will appear here in real time...</span>;
+    if (!text) return <span className="italic text-muted-foreground/60">Caption will appear here...</span>;
 
     const parts = text.split(/(#[a-zA-Z0-9_]+)/g);
     return (
@@ -82,7 +82,7 @@ export function SocialPostPreview({
       {/* Header */}
       <div className="flex shrink-0 items-center justify-between gap-2">
         <p className="flex items-center gap-1.5 text-caption font-semibold uppercase tracking-wider text-muted-foreground">
-          <PiDeviceMobileBold className="size-4 text-primary" /> Live Social Preview
+          <PiDeviceMobileBold className="size-4 text-primary" /> Preview
         </p>
         <div className="flex items-center gap-1">
           {facebookSelected && (
@@ -165,9 +165,6 @@ export function SocialPostPreview({
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-foreground">No Poster Selected</p>
-                      <p className="mt-0.5 text-[11px] text-muted-foreground">
-                        Select a poster from the library or templates
-                      </p>
                     </div>
                   </div>
                 )}

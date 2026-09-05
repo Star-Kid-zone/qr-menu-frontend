@@ -201,11 +201,11 @@ export default function ListMenuPage() {
       </div>
 
       {/* ── Content View ── */}
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div className={cn("min-h-0 flex-1 overflow-hidden", filteredItems.length === 0 && "flex flex-col")}>
         {filteredItems.length === 0 ? (
-          <div className="flex h-full items-center justify-center p-4">
+          <div className="h-full min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-card p-4 md:p-6 flex flex-col">
             <EmptyState
-              icon={<PiForkKnifeBold size={28} />}
+              icon={<PiForkKnifeBold size={32} />}
               title="No dishes found"
               description={
                 search || selectedCategory !== "All"

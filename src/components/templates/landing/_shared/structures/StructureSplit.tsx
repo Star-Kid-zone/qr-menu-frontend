@@ -17,9 +17,7 @@ export default function StructureSplit(p: LandingTemplateProps) {
   const t = buildTheme(c);
   const img = getThemeImages(t.slug);
 
-  const galleryImages = c.gallery.length
-    ? c.gallery.slice(0, 8).map((g) => g.image_url as string)
-    : [img.scene, img.dish, img.hero, img.scene];
+  const galleryImages = c.gallery.slice(0, 8).map((g) => g.image_url as string);
 
   const footerBg  = t.footerBg  ?? t.bg;
   const sectionBg = t.sectionBg ?? t.surface;
@@ -365,6 +363,7 @@ export default function StructureSplit(p: LandingTemplateProps) {
           )}
 
           {/* Gallery */}
+          {c.gallery.length > 0 && (
           <section style={{ background: t.bg }} className="px-6 py-16 sm:px-10">
             <FadeIn>
               <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-[0.4em]">Gallery</p>
@@ -378,6 +377,7 @@ export default function StructureSplit(p: LandingTemplateProps) {
               ))}
             </div>
           </section>
+          )}
 
           {/* Testimonials */}
           {c.testimonials.length > 0 && (

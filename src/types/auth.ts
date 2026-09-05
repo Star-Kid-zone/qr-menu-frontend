@@ -30,6 +30,8 @@ export interface LoginFormValues {
 
 export interface RegisterFormValues {
   name?: string;
+  businessName?: string;
+  slug?: string;
   phone: string;
   email?: string;
   password?: string;

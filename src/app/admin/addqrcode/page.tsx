@@ -36,6 +36,7 @@ import {
 } from "@/services/workspace.service";
 import { getApiErrorMessage } from "@/utils/errors";
 import { cn } from "@/utils/cn";
+import { PermissionGuard } from "@/components/auth/PermissionGuard";
 
 export type FinderPatternStyle =
   | "square"
@@ -130,7 +131,7 @@ const RANDOM_COLOR_PRESETS = [
   { name: "Charcoal Emerald", bg: "#ffffff", module: "#1c1917", finder: "#059669" },
 ];
 
-export default function QRGeneratorPage() {
+function QRGeneratorPageContent() {
   const router = useRouter();
   const ref = useRef<ReactQRCodeRef | null>(null);
 
@@ -722,5 +723,13 @@ export default function QRGeneratorPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function QRGeneratorPage() {
+  return (
+    <PermissionGuard requiredUnit="qr-assets">
+      <QRGeneratorPageContent />
+    </PermissionGuard>
   );
 }

@@ -96,10 +96,7 @@ export default function BaseTemplate({ theme: themeConfig, ...p }: Props) {
   };
 
   const img = getThemeImages(t.slug);
-  const galleryImages = c.gallery.length
-    ? c.gallery.map((g) => g.image_url as string)
-    : [img.scene, img.dish, img.hero, img.scene, img.dish, img.hero];
-
+  const galleryImages = c.gallery.slice(0, 6).map((g) => g.image_url as string);
   const footerBg = t.footerBg ?? t.bg;
   const sectionBg = t.sectionBg ?? t.surface;
   const cardStyle = t.cardStyle ?? "";
@@ -611,6 +608,7 @@ export default function BaseTemplate({ theme: themeConfig, ...p }: Props) {
       )}
 
       {/* ── Gallery ───────────────────────────────────────────────────── */}
+      {c.gallery.length > 0 && (
       <section
         style={{ background: sectionBg, borderColor: t.border }}
         className="border-y px-5 py-20 sm:px-10"
@@ -648,6 +646,7 @@ export default function BaseTemplate({ theme: themeConfig, ...p }: Props) {
           </div>
         </div>
       </section>
+      )}
 
       {/* ── Testimonials ──────────────────────────────────────────────── */}
       {c.testimonials.length > 0 && (

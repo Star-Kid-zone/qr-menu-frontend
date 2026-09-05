@@ -95,15 +95,15 @@ function ListPaymentPageContent() {
       />
 
       {/* Body */}
-      <div className="min-h-0 flex-1 pt-4">
+      <div className="min-h-0 flex-1 pt-3 sm:pt-4 flex flex-col">
         {loading ? (
           <div className="flex h-full items-center justify-center">
             <span className="size-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         ) : !hasPayment ? (
-          <div className="flex h-full items-center justify-center">
+          <div className="h-full min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-card p-4 md:p-6 flex flex-col">
             <EmptyState
-              icon={<PiQrCodeBold size={24} />}
+              icon={<PiQrCodeBold size={32} />}
               title="No payment method yet"
               description="Add a payment link or QR code image to start accepting payments from customers."
               action={

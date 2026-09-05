@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { workspaceService, type GooglePlaceResult } from "@/services/workspace.service";
 import { getApiErrorMessage } from "@/utils/errors";
+import { PermissionGuard } from "@/components/auth/PermissionGuard";
 import {
   PiCheckBold,
   PiCopyBold,
@@ -19,7 +20,7 @@ import {
   PiCheckCircleFill,
 } from "react-icons/pi";
 
-export default function AddReviewPage() {
+function AddReviewPageContent() {
   const router = useRouter();
   const [reviewLink, setReviewLink] = useState("");
   const [placeQuery, setPlaceQuery] = useState("");
@@ -288,5 +289,13 @@ export default function AddReviewPage() {
       </div>
       </div>
     </div>
+  );
+}
+
+export default function AddReviewPage() {
+  return (
+    <PermissionGuard requiredUnit="reviews">
+      <AddReviewPageContent />
+    </PermissionGuard>
   );
 }

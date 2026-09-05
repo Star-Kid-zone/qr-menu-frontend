@@ -16,29 +16,27 @@ export const loginDefaultValues: LoginSchemaValues = {
 };
 
 // Register Schema
-export const registerSchema = z
-  .object({
-    name: z.string().min(1, 'Full name is required'),
-    phone: z.string().min(10, 'Phone number must be at least 10 digits'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string().min(6, 'Confirm your password'),
-    agreed: z.boolean().refine((value) => value === true, {
-      message: 'You must agree to the Terms and Privacy Policy',
-    }),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
+export const registerSchema = z.object({
+  businessName: z.string().min(2, 'Business name must be at least 2 characters'),
+  slug: z
+    .string()
+    .min(2, 'Store URL slug is required')
+    .max(191, 'Slug is too long')
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase letters, numbers, and single hyphens (e.g. bistro-hub)'),
+  phone: z.string().min(8, 'Phone number must be at least 8 digits'),
+  password: z
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, 'Password must contain at least one letter and one number'),
+});
 
 export type RegisterSchemaValues = z.infer<typeof registerSchema>;
 
 export const registerDefaultValues: RegisterSchemaValues = {
-  name: '',
+  businessName: '',
+  slug: '',
   phone: '',
   password: '',
-  confirmPassword: '',
-  agreed: false,
 };
 
 // Forgot Password Schema
