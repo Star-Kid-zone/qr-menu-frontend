@@ -8,9 +8,7 @@ import { getThemeImages } from "../themeImages";
 import { FadeIn, StaggerGroup, StaggerItem, Marquee } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
 import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/templates/core/socialPlatforms";
-import { LotterySection } from "./sections";
-
-const STARS = [1, 2, 3, 4, 5];
+import { ReviewCard } from "./sections";
 
 export default function StructureSplit(p: LandingTemplateProps) {
   const c = getRichContent(p.data, (p.data.settings as any)?.landing_theme ?? "swiss");
@@ -106,17 +104,11 @@ export default function StructureSplit(p: LandingTemplateProps) {
               </div>
             </FadeIn>
 
-            {(c.offers.length > 0 || p.lotteryEnabled) && (
+            {c.offers.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-1.5">
-                {[c.offers.length > 0 && "Offers", p.lotteryEnabled && "Lucky Draw"]
+                {[c.offers.length > 0 && "Offers"]
                   .filter(Boolean)
                   .map((b) => <span key={b as string} style={{ borderColor: `${t.accentText}30`, color: `${t.accentText}cc` }} className="rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider">{b}</span>)}
-              </div>
-            )}
-
-            {c.amenities.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-1.5">
-                {c.amenities.map((a) => <span key={a} style={{ borderColor: `${t.accentText}30`, color: `${t.accentText}cc` }} className="rounded-full border px-2.5 py-1 text-[10px] font-semibold">{a}</span>)}
               </div>
             )}
 
@@ -351,17 +343,6 @@ export default function StructureSplit(p: LandingTemplateProps) {
           </section>
           )}
 
-          {/* Amenities */}
-          {c.amenities.length > 0 && (
-          <section className="px-6 py-10 sm:px-10">
-            <div className="flex flex-wrap justify-center gap-2">
-              {c.amenities.map((a) => (
-                <span key={a} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3.5 py-1.5 text-xs font-semibold">{a}</span>
-              ))}
-            </div>
-          </section>
-          )}
-
           {/* Gallery */}
           {c.gallery.length > 0 && (
           <section style={{ background: t.bg }} className="px-6 py-16 sm:px-10">
@@ -379,27 +360,17 @@ export default function StructureSplit(p: LandingTemplateProps) {
           </section>
           )}
 
-          {/* Testimonials */}
-          {c.testimonials.length > 0 && (
+          {/* Google Reviews */}
+          {c.googleReviews.length > 0 && (
           <section style={{ background: sectionBg, borderColor: t.border }} className="border-y px-6 py-16 sm:px-10">
             <FadeIn>
-              <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-[0.4em]">Reviews</p>
-              <h2 style={{ color: t.textPrimary }} className="mb-8 text-2xl font-bold">What Our Guests Say</h2>
+              <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-[0.4em]">Google Reviews</p>
+              <h2 style={{ color: t.textPrimary }} className="mb-8 text-2xl font-bold">What People Are Saying</h2>
             </FadeIn>
-            <StaggerGroup className="grid gap-5 sm:grid-cols-3">
-              {c.testimonials.map((r) => (
-                <StaggerItem key={r.name}>
-                  <div style={{ background: t.bg, borderColor: t.border }} className="rounded-xl border p-5">
-                    <div className="mb-2 flex gap-0.5">
-                      {STARS.map((s) => (
-                        <span key={s} style={{ color: t.accent }} className="text-xs">
-                          {s <= (r.rating ?? 5) ? "★" : "☆"}
-                        </span>
-                      ))}
-                    </div>
-                    <p style={{ color: t.textSecondary }} className="text-sm italic leading-relaxed">"{r.text}"</p>
-                    <p style={{ color: t.textPrimary }} className="mt-3 text-xs font-bold">{r.name}</p>
-                  </div>
+            <StaggerGroup className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {c.googleReviews.slice(0, 6).map((r) => (
+                <StaggerItem key={r.id}>
+                  <ReviewCard review={r} t={{ ...t, surface: t.bg }} />
                 </StaggerItem>
               ))}
             </StaggerGroup>
@@ -440,8 +411,8 @@ export default function StructureSplit(p: LandingTemplateProps) {
                   <p style={{ color: t.accent }} className="mb-3 text-[10px] font-bold uppercase tracking-[0.4em]">FAQ</p>
                   <h2 style={{ color: t.textPrimary }} className="mb-5 text-xl font-bold">Common Questions</h2>
                   <div className="space-y-4">
-                    {c.faqs.map((f) => (
-                      <div key={f.q} style={{ background: sectionBg, borderColor: t.border }} className="rounded-xl border p-4">
+                    {c.faqs.map((f, i) => (
+                      <div key={`${f.q}-${i}`} style={{ background: sectionBg, borderColor: t.border }} className="rounded-xl border p-4">
                         <h3 style={{ color: t.textPrimary }} className="text-sm font-bold">{f.q}</h3>
                         <p style={{ color: t.textSecondary }} className="mt-1 text-xs leading-relaxed">{f.a}</p>
                       </div>
@@ -453,8 +424,6 @@ export default function StructureSplit(p: LandingTemplateProps) {
             </div>
           </section>
           )}
-
-          <LotterySection c={c} p={p} t={t} />
 
           {/* Footer */}
           <footer style={{ background: footerBg, borderColor: t.border }} className="border-t px-6 py-8 sm:px-10">

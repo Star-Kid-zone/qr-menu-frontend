@@ -336,7 +336,7 @@ export function WorkspaceSettingsForm({
                 <Input id={`${formId}-theme-colour`} invalid={Boolean(errors.theme_colour)} disabled={disabled} placeholder="e.g. Modern Bistro" className="h-9 text-sm" {...register("theme_colour")} />
               </FormField>
               {currencies.length > 0 && (
-                <FormField label="Workspace currency" htmlFor={`${formId}-currency`}>
+                <FormField label="Website currency" htmlFor={`${formId}-currency`}>
                   <Select id={`${formId}-currency`} disabled={disabled} className="h-9 text-sm" {...register("currency_id", { setValueAs: (v) => { if (v === "" || v == null) return null; const n = Number(v); return Number.isNaN(n) ? null : n; } })}>
                     <option value="">Select Currency</option>
                     {currencies.map((c) => <option key={c.id} value={c.id}>{c.code} ({c.symbol})</option>)}

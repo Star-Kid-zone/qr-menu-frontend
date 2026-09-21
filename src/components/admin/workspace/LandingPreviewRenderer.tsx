@@ -99,7 +99,6 @@ export function LandingPreviewRenderer({ data }: { data: RawPublicSiteData }) {
         onReview={() => {}}
         track={() => {}}
         LinkComponent={PreviewLink}
-        lotteryEnabled={Boolean(settings.lottery_status)}
       />
     </Suspense>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { Modal } from "@/components/Modal";
-import { MenuItemImage } from "@/components/templates/core/MenuImage";
+import { MenuItemGallery } from "@/components/templates/core/MenuItemGallery";
 import type { PublicMenuTemplateProps } from "@/components/templates/core/types";
 import type { MenuStructureTheme } from "./buildMenuTheme";
 
@@ -13,7 +13,7 @@ export function MenuItemDetailModal({ p, t }: { p: PublicMenuTemplateProps; t: M
     <Modal isOpen={Boolean(p.selectedItem)} onClose={p.closeItem} title={p.selectedItem?.item ?? ""}>
       {p.selectedItem && (
         <div className="space-y-4">
-          <MenuItemImage item={p.selectedItem} primary={t.accent} secondary={t.textSecondary} className="h-48 w-full rounded-xl object-cover" />
+          <MenuItemGallery key={p.selectedItem.id} item={p.selectedItem} primary={t.accent} secondary={t.textSecondary} className="h-48 w-full rounded-xl" />
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span style={{ color: t.accent }} className="font-mono text-lg font-bold">
               {p.currencySymbol}{p.selectedItem.price}

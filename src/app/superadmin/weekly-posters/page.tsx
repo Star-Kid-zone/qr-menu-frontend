@@ -15,7 +15,7 @@ export default function WeeklyPostersPage() {
   useEffect(() => {
     socialService
       .getWeeklyPosters()
-      .then((response) => setPosters(response.data))
+      .then((response) => setPosters(Array.isArray(response.data) ? response.data : []))
       .catch(() => toast.error("Could not load weekly posters."));
   }, []);
 

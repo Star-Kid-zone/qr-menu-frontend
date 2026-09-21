@@ -7,15 +7,13 @@ import { buildTheme } from "../buildTheme";
 import { FadeIn, StaggerGroup, StaggerItem } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
 import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/templates/core/socialPlatforms";
-import { LotterySection } from "./sections";
-
-const STARS = [1, 2, 3, 4, 5];
+import { ReviewCard } from "./sections";
 
 /** Mirror of the Split structure with the sticky identity/contact panel moved
  * to the RIGHT, and the main content reordered to lead with the menu/dishes
  * instead of a hero image — menu-first emphasis instead of brand-first.
  * Every section from the content model is present: both dish lists, stats,
- * amenities, offers, gallery, testimonials, FAQ, lottery, and a
+ * offers, gallery, FAQ, and a
  * full contact block (hours/address/phone/email/whatsapp/social/QR) in the
  * sidebar rather than a separate contact section. */
 export default function StructureSidebarRight(p: LandingTemplateProps) {
@@ -68,9 +66,9 @@ export default function StructureSidebarRight(p: LandingTemplateProps) {
               </div>
             </FadeIn>
 
-            {(c.cta.menuBtn || c.cta.payBtn || c.cta.reviewBtn || c.offers.length > 0 || p.lotteryEnabled) && (
+            {(c.cta.menuBtn || c.cta.payBtn || c.cta.reviewBtn || c.offers.length > 0) && (
               <div className="mt-4 flex flex-wrap gap-1.5">
-                {[c.offers.length > 0 && "Offers", p.lotteryEnabled && "Lucky Draw"]
+                {[c.offers.length > 0 && "Offers"]
                   .filter(Boolean)
                   .map((b) => <span key={b as string} style={{ borderColor: `${t.accentText}30`, color: `${t.accentText}cc` }} className="rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider">{b}</span>)}
               </div>
@@ -89,14 +87,6 @@ export default function StructureSidebarRight(p: LandingTemplateProps) {
                   ))}
                 </div>
               </FadeIn>
-            )}
-
-            {c.amenities.length > 0 && (
-              <div className="mb-6 flex flex-wrap gap-1.5">
-                {c.amenities.map((a) => (
-                  <span key={a} style={{ borderColor: `${t.accentText}30`, color: `${t.accentText}cc` }} className="rounded-full border px-2.5 py-1 text-[10px] font-semibold">{a}</span>
-                ))}
-              </div>
             )}
 
             {c.hours.length > 0 && (
@@ -233,30 +223,22 @@ export default function StructureSidebarRight(p: LandingTemplateProps) {
             </section>
           )}
 
-          {/* Testimonials */}
-          {c.testimonials.length > 0 && (
+          {/* Google Reviews */}
+          {c.googleReviews.length > 0 && (
             <section style={{ background: sectionBg, borderColor: t.border }} className="border-y px-6 py-14 sm:px-10">
               <FadeIn>
-                <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-[0.4em]">Reviews</p>
-                <h2 style={{ color: t.textPrimary }} className="mb-6 text-2xl font-bold">What Guests Say</h2>
+                <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-[0.4em]">Google Reviews</p>
+                <h2 style={{ color: t.textPrimary }} className="mb-8 text-3xl font-bold">What People Are Saying</h2>
               </FadeIn>
-              <StaggerGroup className="grid gap-4 sm:grid-cols-3">
-                {c.testimonials.map((tst, i) => (
-                  <StaggerItem key={i}>
-                    <div style={{ background: t.bg, borderColor: t.border }} className="rounded-xl border p-5">
-                      <div className="mb-2 flex gap-0.5">
-                        {STARS.map((s) => <span key={s} style={{ color: t.accent }} className="text-xs">{s <= (tst.rating ?? 5) ? "★" : "☆"}</span>)}
-                      </div>
-                      <p style={{ color: t.textSecondary }} className="text-sm italic leading-relaxed">"{tst.text}"</p>
-                      <p style={{ color: t.textPrimary }} className="mt-2 text-xs font-bold">{tst.name}</p>
-                    </div>
+              <StaggerGroup className="grid gap-5 sm:grid-cols-2">
+                {c.googleReviews.slice(0, 6).map((r) => (
+                  <StaggerItem key={r.id}>
+                    <ReviewCard review={r} t={{ ...t, surface: t.bg }} />
                   </StaggerItem>
                 ))}
               </StaggerGroup>
             </section>
           )}
-
-          <LotterySection c={c} p={p} t={t} />
 
           {/* FAQ */}
           {c.faqs.length > 0 && (

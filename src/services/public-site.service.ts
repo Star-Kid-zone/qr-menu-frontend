@@ -53,6 +53,7 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
           availability: true,                // backend strips this field; default to true
           image_url: item.imageUrl ?? null,  // API uses camelCase, Menu type uses snake_case
           images: Array.isArray(item.images) ? item.images : [],
+          videos: Array.isArray(item.videos) ? item.videos : [],
         });
       });
     });
@@ -100,10 +101,8 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
       menu_section_bg_color:     portal.portalInfo.menuSectionBgColor,
       menu_font_family:          portal.portalInfo.menuFontFamily,
       menu_card_style:           portal.portalInfo.menuCardStyle,
-      lottery_status: portal.portalInfo.lotteryStatus ? 1 : 0,
       logo_url: portal.portalInfo.logoUrl,
       banner_url: portal.portalInfo.bannerUrl,
-      industry_feature_catalog: portal.portalInfo.industryFeatureCatalog,
       announcement_text: portal.portalInfo.announcementText,
       announcement_enabled: portal.portalInfo.announcementEnabled ? 1 : 0,
       menubtn_status: portal.portalInfo.menubtnStatus ? 1 : 0,
@@ -119,7 +118,6 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
       address: portal.portalInfo.address,
       business_hours: portal.portalInfo.businessHours,
       availability: portal.portalInfo.availability,
-      features: portal.portalInfo.features,
       whatsapp_number: portal.portalInfo.whatsappNumber,
       location_url: portal.portalInfo.locationUrl,
       website_url: portal.portalInfo.websiteUrl,
@@ -146,24 +144,19 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
       image_url: o.imageUrl,
     })),
     menuItems: menuItems,
-    testimonials: (portal.testimonials || []).map((t: any) => ({
-      id: t.id,
-      authorName: t.authorName,
-      authorRole: t.authorRole,
-      quote: t.quote,
-      rating: t.rating,
-    })),
     faqs: (portal.faqs || []).map((f: any) => ({
       id: f.id,
       question: f.question,
       answer: f.answer,
     })),
-    lotteryRewards: (portal.lotteryRewards || []).map((r: any) => ({
+    googleReviews: (portal.googleReviews || []).map((r: any) => ({
       id: r.id,
-      label: r.label,
-      emoji: r.emoji,
-      ratioWins: r.ratioWins,
-      ratioPlays: r.ratioPlays,
+      authorName: r.authorName,
+      authorPhotoUrl: r.authorPhotoUrl ?? null,
+      rating: r.rating,
+      text: r.text ?? null,
+      relativePublishDescription: r.relativePublishDescription ?? null,
+      publishTime: r.publishTime ?? null,
     })),
   } as RawPublicSiteData;
 });

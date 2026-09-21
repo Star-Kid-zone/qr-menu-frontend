@@ -66,7 +66,6 @@ export function AddSettingModal({
           paybtnStatus:       values.paybtn_status,
           reviewbtnStatus:    values.reviewbtn_status,
           specialOfferStatus: values.special_offerstatus,
-          lotteryStatus:      values.lottery_status,
         },
         announcement: {
           enabled: values.announcement_enabled,
@@ -75,7 +74,7 @@ export function AddSettingModal({
         currencyId: values.currency_id?.toString() || null,
       });
       onSettingAdded();
-      toast.success("Workspace created successfully!");
+      toast.success("Website created successfully!");
       onClose();
     } catch (err: unknown) {
       toast.error(getApiErrorMessage(err, 'Failed to create workspace settings'));
@@ -90,7 +89,7 @@ export function AddSettingModal({
         Cancel
       </Button>
       <Button form={ADD_WORKSPACE_FORM_ID} type="submit" loading={loading}>
-        Create Workspace
+        Create Website
       </Button>
     </ModalFooter>
   );
@@ -99,7 +98,7 @@ export function AddSettingModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Create Workspace"
+      title="Create Website"
       maxWidth="max-w-4xl"
       footer={footer}
     >

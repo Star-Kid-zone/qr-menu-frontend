@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import { superadminService, type UserListRow } from '@/services/superadmin.service';
 import { routes } from '@/config/routes';
+import { buildPublicLandingUrl, buildPublicMenuUrl } from '@/utils/tenantHost';
 import { UI_TIMING } from '@/config/app.constants';
 import { PageHeader, Card, SearchInput, Badge, Button, Select, EmptyState } from '@/components/ui';
 import { toast } from '@/components/ui/toast';
 import { Pagination } from '@/components/ui/Pagination';
-import { PiUsersBold, PiKeyBold, PiDownloadSimpleBold } from 'react-icons/pi';
+import { PiUsersBold, PiKeyBold, PiDownloadSimpleBold, PiArrowSquareOutBold, PiPhoneBold, PiGlobeBold } from 'react-icons/pi';
 import { downloadCsv } from '@/utils/downloadCsv';
 import { fadeIn } from '@/lib/motion';
 
@@ -66,7 +67,7 @@ export default function SuperadminUsersPage() {
     >
       <PageHeader
         title="Users & Tenants"
-        description="Search accounts and drill into workspaces, businesses, and public URLs."
+        description="Core tenant directory. View access permissions, verification status, and direct slugs."
         eyebrow="System Administration"
         className="shrink-0"
         actions={
@@ -93,12 +94,12 @@ export default function SuperadminUsersPage() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              placeholder="Name, phone or email…"
+              placeholder="Name, phone number or slug…"
             />
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-            <div className="min-w-[120px]">
+            <div className="min-w-[130px]">
               <label htmlFor="users-role-filter" className="mb-2 ml-1 block text-caption uppercase tracking-wide text-muted-foreground">
                 Access Role
               </label>
@@ -116,7 +117,7 @@ export default function SuperadminUsersPage() {
               </Select>
             </div>
 
-            <div className="min-w-[120px]">
+            <div className="min-w-[130px]">
               <label htmlFor="users-status-filter" className="mb-2 ml-1 block text-caption uppercase tracking-wide text-muted-foreground">
                 Status
               </label>
@@ -143,70 +144,91 @@ export default function SuperadminUsersPage() {
                 <tr>
                   <th className="px-6 py-4 text-caption uppercase tracking-wide text-muted-foreground">Identity</th>
                   <th className="px-6 py-4 text-caption uppercase tracking-wide text-muted-foreground">Access</th>
-                  <th className="px-6 py-4 text-center text-caption uppercase tracking-wide text-muted-foreground">Workspaces</th>
-                  <th className="px-6 py-4 text-center text-caption uppercase tracking-wide text-muted-foreground">Businesses</th>
-                  <th className="px-6 py-4 text-center text-caption uppercase tracking-wide text-muted-foreground">Menu Items</th>
                   <th className="px-6 py-4 text-caption uppercase tracking-wide text-muted-foreground">Status</th>
+                  <th className="px-6 py-4 text-caption uppercase tracking-wide text-muted-foreground">Phone Num</th>
+                  <th className="px-6 py-4 text-caption uppercase tracking-wide text-muted-foreground">Slug Name</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="h-48" />
+                    <td colSpan={5} className="h-48 text-center text-muted-foreground">
+                      Loading user accounts...
+                    </td>
                   </tr>
                 ) : rows.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8">
+                    <td colSpan={5} className="px-6 py-8">
                       <EmptyState
                         icon={<PiUsersBold className="size-8" />}
                         title="No users matching filters"
-                        description="Try adjusting your search criteria or role filters."
+                        description="Try adjusting your search query or role filter."
                       />
                     </td>
                   </tr>
                 ) : (
                   rows.map((u) => (
                     <tr key={u.id} className="group transition-colors hover:bg-muted/30">
+                      {/* Identity */}
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <Link
                             href={routes.superadmin.userDetail(u.id)}
-                            className="font-semibold text-primary transition-all hover:underline"
+                            className="font-semibold text-foreground transition-colors hover:text-primary hover:underline"
                           >
-                            {u.name}
+                            {u.name || 'Unnamed Account'}
                           </Link>
-                          <span className="mt-0.5 font-mono text-caption text-muted-foreground">{u.phone}</span>
+                          <span className="font-mono text-caption text-muted-foreground">ID #{u.id}</span>
                         </div>
                       </td>
+
+                      {/* Access */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <div className={`rounded-md p-1.5 ${u.role === 'superadmin' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
                             <PiKeyBold className="size-4" />
                           </div>
-                          <span className={`text-caption uppercase tracking-wide ${u.role === 'superadmin' ? 'text-primary' : 'text-muted-foreground'}`}>
+                          <span className={`text-caption uppercase tracking-wide font-medium ${u.role === 'superadmin' ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
                             {u.role}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="inline-flex size-8 items-center justify-center rounded-full bg-accent font-mono text-caption font-semibold text-foreground">
-                          {u.workspace_count}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="inline-flex size-8 items-center justify-center rounded-full bg-accent font-mono text-caption font-semibold text-foreground">
-                          {u.business_count}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="inline-flex size-8 items-center justify-center rounded-full bg-accent font-mono text-caption font-semibold text-foreground">
-                          {u.menu_count}
-                        </span>
-                      </td>
+
+                      {/* Status */}
                       <td className="px-6 py-4">
                         <Badge tone={u.active ? 'success' : 'neutral'}>
                           {u.active ? 'Active' : 'Inactive'}
                         </Badge>
+                      </td>
+
+                      {/* Phone Num */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 font-mono text-sm text-foreground">
+                          <PiPhoneBold className="size-3.5 text-muted-foreground" />
+                          <span>{u.phone || '—'}</span>
+                        </div>
+                      </td>
+
+                      {/* Slug Name */}
+                      <td className="px-6 py-4">
+                        {u.public_slug ? (
+                          <div className="flex items-center gap-2">
+                            <span className="rounded-md border border-border bg-muted/50 px-2.5 py-1 font-mono text-xs font-semibold text-foreground">
+                              {u.public_slug}
+                            </span>
+                            <a
+                              href={buildPublicLandingUrl(u.public_slug) || `/${u.public_slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+                              title={`Open live tenant landing: ${buildPublicLandingUrl(u.public_slug)}`}
+                            >
+                              <PiArrowSquareOutBold className="size-3.5" />
+                            </a>
+                          </div>
+                        ) : (
+                          <span className="text-caption text-muted-foreground italic">No slug configured</span>
+                        )}
                       </td>
                     </tr>
                   ))

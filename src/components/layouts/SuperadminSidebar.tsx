@@ -2,7 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { PiChartLineUpBold, PiGaugeBold, PiImagesBold, PiUsersThreeBold, PiXBold } from 'react-icons/pi';
+import {
+  PiChartLineUpBold,
+  PiGaugeBold,
+  PiImagesBold,
+  PiUsersThreeBold,
+  PiBookBookmarkBold,
+  PiMegaphoneBold,
+  PiClockCountdownBold,
+  PiXBold,
+} from 'react-icons/pi';
 import { routes } from '@/config/routes';
 import { SuperadminSidebarProps, NavItem } from "@/types/components/layouts/SuperadminSidebar.types";
 
@@ -20,12 +29,35 @@ const items: NavItem[] = [
     description: 'Accounts and workspaces',
   },
   {
+    path: routes.superadmin.blueprints,
+    icon: <PiBookBookmarkBold />,
+    text: 'Starter blueprints',
+    description: 'Industry menu presets',
+  },
+  {
+    path: routes.superadmin.announcements,
+    icon: <PiMegaphoneBold />,
+    text: 'Broadcasts',
+    description: 'Tenant dashboard banners',
+  },
+  {
+    path: routes.superadmin.jobs,
+    icon: <PiClockCountdownBold />,
+    text: 'Jobs & queue',
+    description: 'Background worker telemetry',
+  },
+  {
     path: routes.superadmin.analytics,
     icon: <PiChartLineUpBold />,
     text: 'Analytics',
     description: 'Traffic across all sites',
   },
-  { path: routes.superadmin.weeklyPosters, icon: <PiImagesBold />, text: 'Weekly posters', description: 'Send this week\'s poster' },
+  {
+    path: routes.superadmin.weeklyPosters,
+    icon: <PiImagesBold />,
+    text: 'Weekly posters',
+    description: "Send this week's poster",
+  },
 ];
 
 export function SuperadminSidebar({ isOpen, toggleSidebar }: SuperadminSidebarProps) {
@@ -81,13 +113,9 @@ export function SuperadminSidebar({ isOpen, toggleSidebar }: SuperadminSidebarPr
           <div className="space-y-1">
             {items.map((item) => {
               const active =
-                item.path === routes.superadmin.analytics
-                  ? pathname === routes.superadmin.analytics
-                  : item.path === routes.superadmin.weeklyPosters
-                    ? pathname === routes.superadmin.weeklyPosters
-                  : item.path === routes.superadmin.users
-                    ? pathname.startsWith('/superadmin/users')
-                    : pathname === routes.superadmin.home || pathname === '/superadmin/';
+                item.path === routes.superadmin.home
+                  ? pathname === routes.superadmin.home || pathname === '/superadmin/'
+                  : pathname.startsWith(item.path);
               return (
                 <Link
                   key={item.path}

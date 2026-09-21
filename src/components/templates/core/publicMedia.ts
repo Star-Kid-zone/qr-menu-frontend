@@ -7,7 +7,9 @@ import type { GalleryItem } from './types';
 export function resolvePublicImageUrl(item: Pick<GalleryItem, 'image_url' | 'image_path'>): string | null {
   const raw = (item.image_url?.trim() || item.image_path?.trim()) ?? '';
   if (!raw) return null;
-  if (/^https?:\/\//i.test(raw)) return raw;
+  // Already-complete URLs (including local blob:/data: previews used while a
+  // file is still being uploaded) — pass through unchanged.
+  if (/^(https?|blob|data):/i.test(raw)) return raw;
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   if (!origin) return raw.startsWith('/') ? raw : `/${raw}`;
   if (raw.startsWith('/')) return `${origin}${raw}`;

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  PiChartLineUpBold,
+  PiBookOpenTextBold,
   PiForkKnifeBold,
   PiGridFourBold,
   PiMegaphoneBold,
@@ -49,11 +49,10 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
           unit: "dashboard",
         },
         {
-          path: routes.admin.analytics,
-          icon: <PiChartLineUpBold />,
-          text: "Analytics",
-          description: "Traffic and engagement",
-          unit: "analytics",
+          path: routes.admin.howItWorks,
+          icon: <PiBookOpenTextBold />,
+          text: "How It Works",
+          description: "Step-by-step roadmap & guide",
         },
       ],
     },
@@ -63,7 +62,7 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
         {
           path: routes.admin.listBusiness,
           icon: <PiStorefrontBold />,
-          text: "Workspace",
+          text: "Website",
           description: "Profiles, themes and controls",
           unit: "workspace",
         },

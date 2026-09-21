@@ -115,7 +115,7 @@ export default function SuperadminPage() {
         </motion.div>
         <motion.div variants={fadeInUp}>
           <PlatformMetric
-            title="Workspaces"
+            title="Websites"
             value={data.workspaces.total}
             sub="Global deployments"
             details={[

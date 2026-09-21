@@ -317,7 +317,7 @@ export const ListOffers = forwardRef<ListOffersHandle, ListOffersProps>(({
   const header = embedded ? null : (
     <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
       <div>
-        <h1 className="text-h1 text-foreground">Workspace Offers</h1>
+        <h1 className="text-h1 text-foreground">Website Offers</h1>
         <p className="mt-1 text-body text-muted-foreground">
           Create and manage promotions for your customers.
         </p>

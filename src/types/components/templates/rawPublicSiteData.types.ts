@@ -24,9 +24,16 @@ export type RawPublicSiteData = {
     offer_type?: string | null;
   }>;
   menuItems: Menu[];
-  testimonials?: Array<{ id?: number | string; authorName?: string; authorRole?: string | null; quote?: string; rating?: number | null }>;
   faqs?: Array<{ id?: number | string; question?: string; answer?: string }>;
-  lotteryRewards?: Array<{ id?: number | string; label?: string; emoji?: string; ratioWins?: number; ratioPlays?: number }>;
+  googleReviews?: Array<{
+    id: string | number;
+    authorName: string;
+    authorPhotoUrl: string | null;
+    rating: number;
+    text: string | null;
+    relativePublishDescription: string | null;
+    publishTime?: string | null;
+  }>;
   currency?: { code?: string; symbol?: string } | null;
   workspace_gallery?: Array<{
     id?: number;
@@ -60,7 +67,6 @@ export type LandingTemplateCallbacks = {
 export type LandingTemplateProps = {
   data: RawPublicSiteData;
   routeSlug: string | null;
-  lotteryEnabled?: boolean;
   /** Resolved template slug (from TenantLandingPage's getSafeSlug) — used by GenericLandingTemplate to look up its theme. Ignored by bespoke templates. */
   themeSlug?: string;
 } & LandingTemplateCallbacks;

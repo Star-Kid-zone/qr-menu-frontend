@@ -5,8 +5,6 @@ export type WorkspaceTabId = | 'workspace'
       | 'banners'
       | 'offers'
       | 'gallery'
-      | 'features'
       | 'content'
-      | 'testimonials'
       | 'faqs'
-      | 'lottery';
+      | 'reviews';

@@ -5,7 +5,7 @@ import type { LandingTemplateProps } from "@/types/components/templates/rawPubli
 import { getRichContent } from "./defaults";
 import { getThemeImages } from "./themeImages";
 import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/templates/core/socialPlatforms";
-import { LotterySection } from "./structures/sections";
+import { GoogleReviewsSection } from "./structures/sections";
 
 function GoogleFont({ fontFamily }: { fontFamily: string }) {
   const name = fontFamily.match(/"([^"]+)"/)?.[1];
@@ -30,7 +30,6 @@ import {
   FloatingBlob,
 } from "./animations";
 import {
-  HiTicket,
   HiMenuAlt2,
   HiCreditCard,
   HiStar,
@@ -65,8 +64,6 @@ export interface ThemeConfig {
 interface Props extends LandingTemplateProps {
   theme: ThemeConfig;
 }
-
-const STARS = [1, 2, 3, 4, 5];
 
 export default function BaseTemplate({ theme: themeConfig, ...p }: Props) {
   const c = getRichContent(p.data, themeConfig.slug);
@@ -242,8 +239,7 @@ export default function BaseTemplate({ theme: themeConfig, ...p }: Props) {
           c.cta.payBtn       && { label: "Pay Online", icon: HiCreditCard },
           c.cta.reviewBtn    && { label: "Reviews",    icon: HiStar },
           c.offers.length > 0 && { label: "Offers",    icon: HiTag },
-          p.lotteryEnabled   && { label: "Lucky Draw", icon: HiTicket },
-        ].filter(Boolean) as { label: string; icon: typeof HiTicket }[];
+        ].filter(Boolean) as { label: string; icon: typeof HiTag }[];
 
         if (badges.length === 0) return null;
         return (
@@ -356,37 +352,6 @@ export default function BaseTemplate({ theme: themeConfig, ...p }: Props) {
           </div>
         </div>
       </section>
-      )}
-
-      {/* ── Amenities ─────────────────────────────────────────────────── */}
-      {c.amenities.length > 0 && (
-        <section
-          style={{ background: sectionBg, borderColor: t.border }}
-          className="border-y px-5 py-14 sm:px-10"
-        >
-          <div className="mx-auto max-w-5xl">
-            <FadeIn>
-              <p
-                style={{ color: t.accent }}
-                className="mb-6 text-center text-xs font-bold uppercase tracking-[0.4em]"
-              >
-                What We Offer
-              </p>
-            </FadeIn>
-            <div className="flex flex-wrap justify-center gap-3">
-              {c.amenities.map((a, i) => (
-                <FadeIn key={a} delay={i * 0.04}>
-                  <span
-                    style={{ background: t.bg, borderColor: t.border, color: t.textPrimary }}
-                    className="inline-block rounded-full border px-4 py-2 text-xs font-semibold"
-                  >
-                    {a}
-                  </span>
-                </FadeIn>
-              ))}
-            </div>
-          </div>
-        </section>
       )}
 
       {/* ── Featured Items ────────────────────────────────────────────── */}
@@ -648,71 +613,8 @@ export default function BaseTemplate({ theme: themeConfig, ...p }: Props) {
       </section>
       )}
 
-      {/* ── Testimonials ──────────────────────────────────────────────── */}
-      {c.testimonials.length > 0 && (
-      <section style={{ background: t.bg }} className="px-5 py-20 sm:px-10">
-        <div className="mx-auto max-w-5xl">
-          <FadeIn>
-            <p
-              style={{ color: t.accent }}
-              className="mb-2 text-center text-xs font-bold uppercase tracking-[0.4em]"
-            >
-              Guest Reviews
-            </p>
-            <h2
-              style={{ color: t.textPrimary }}
-              className={`text-center text-3xl font-bold ${t.headingClass ?? ""}`}
-            >
-              What Our Guests Say
-            </h2>
-          </FadeIn>
-          <StaggerGroup className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {c.testimonials.slice(0, 3).map((t2) => (
-              <StaggerItem key={t2.name}>
-                <div
-                  style={{ background: sectionBg, borderColor: t.border }}
-                  className="rounded-xl border p-6 flex flex-col h-full"
-                >
-                  <div className="mb-3 flex gap-0.5">
-                    {STARS.map((s) => (
-                      <span
-                        key={s}
-                        style={{ color: t.accent }}
-                        className="text-sm"
-                      >
-                        {s <= (t2.rating ?? 5) ? "★" : "☆"}
-                      </span>
-                    ))}
-                  </div>
-                  <p
-                    style={{ color: t.textSecondary }}
-                    className="flex-1 text-sm leading-relaxed italic"
-                  >
-                    "{t2.text}"
-                  </p>
-                  <div
-                    className="mt-4 border-t pt-4"
-                    style={{ borderColor: t.border }}
-                  >
-                    <p
-                      style={{ color: t.textPrimary }}
-                      className="font-bold text-sm"
-                    >
-                      {t2.name}
-                    </p>
-                    {t2.role && (
-                      <p style={{ color: t.accent }} className="text-xs">
-                        {t2.role}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </StaggerItem>
-            ))}
-          </StaggerGroup>
-        </div>
-      </section>
-      )}
+      {/* ── Google Reviews ────────────────────────────────────────────── */}
+      <GoogleReviewsSection c={c} t={t} />
 
       {/* ── Hours + Contact ───────────────────────────────────────────── */}
       <section
@@ -920,9 +822,6 @@ export default function BaseTemplate({ theme: themeConfig, ...p }: Props) {
         </div>
       </section>
 
-      {/* ── Lottery Section ─────────────────────────────────────────── */}
-      <LotterySection c={c} t={t} p={p} />
-
       {/* ── FAQ ───────────────────────────────────────────────────────── */}
       {c.faqs.length > 0 && (
       <section style={{ background: t.bg }} className="px-5 py-20 sm:px-10">
@@ -943,7 +842,7 @@ export default function BaseTemplate({ theme: themeConfig, ...p }: Props) {
           </FadeIn>
           <div className="mt-10 space-y-4">
             {c.faqs.map((f, i) => (
-              <FadeIn key={f.q} delay={i * 0.07}>
+              <FadeIn key={`${f.q}-${i}`} delay={i * 0.07}>
                 <div
                   style={{ background: sectionBg, borderColor: t.border }}
                   className="rounded-xl border p-6"

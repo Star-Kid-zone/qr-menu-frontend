@@ -11,6 +11,8 @@ interface AdminFormPageProps {
   onSubmit: () => void;
   submitLabel: string;
   submitting?: boolean;
+  /** Optional extra element rendered to the left of the Cancel/Submit buttons */
+  headerExtra?: ReactNode;
   children: ReactNode;
 }
 
@@ -29,6 +31,7 @@ export function AdminFormPage({
   onSubmit,
   submitLabel,
   submitting = false,
+  headerExtra,
   children,
 }: AdminFormPageProps) {
   return (
@@ -40,6 +43,7 @@ export function AdminFormPage({
         backLabel={backLabel}
         actions={
           <div className="flex items-center gap-2">
+            {headerExtra}
             <Button
               type="button"
               variant="secondary"

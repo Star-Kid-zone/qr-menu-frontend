@@ -14,7 +14,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   PiDeviceMobileBold,
   PiLinkBold,
-  PiListBulletsBold,
   PiMegaphoneBold,
   PiPencilSimpleBold,
   PiPlusBold,
@@ -104,35 +103,21 @@ const ListOffers = lazy(() =>
     default: m.ListOffers,
   })),
 );
-const WorkspaceFeatureLibrarySection = lazy(() =>
-  import("@/components/admin/workspace/WorkspaceFeatureLibrarySection").then(
-    (m) => ({
-      default: m.WorkspaceFeatureLibrarySection,
-    }),
-  ),
-);
-const ListTestimonials = lazy(() =>
-  import("@/components/admin/workspace/ListTestimonials").then((m) => ({
-    default: m.ListTestimonials,
-  })),
-);
 const ListFaqs = lazy(() =>
   import("@/components/admin/workspace/ListFaqs").then((m) => ({
     default: m.ListFaqs,
   })),
 );
-const ListLottery = lazy(() =>
-  import("@/components/admin/workspace/ListLottery").then((m) => ({
-    default: m.ListLottery,
+const ListGoogleReviews = lazy(() =>
+  import("@/components/admin/workspace/ListGoogleReviews").then((m) => ({
+    default: m.ListGoogleReviews,
   })),
 );
 
 import type { ListOffersHandle } from "@/components/admin/workspace/ListOffers";
 import type { ListGalleryHandle } from "@/components/admin/workspace/ListGallery";
-import type { ListTestimonialsHandle } from "@/components/admin/workspace/ListTestimonials";
 import type { ListFaqsHandle } from "@/components/admin/workspace/ListFaqs";
-import type { ListLotteryHandle } from "@/components/admin/workspace/ListLottery";
-import type { WorkspaceTestimonial, WorkspaceFaq, WorkspaceLotteryReward } from "@/services/workspace.service";
+import type { WorkspaceFaq, GoogleReviewRecord } from "@/services/workspace.service";
 
 const isWorkspaceTabId = (value: string | null): value is WorkspaceTabId =>
   TABS.some((tab) => tab.id === value);
@@ -163,9 +148,8 @@ function ListBusinessPageContent() {
     WorkspaceGalleryItem[]
   >([]);
   const [workspaceOffers, setWorkspaceOffers] = useState<WorkspaceOfferItem[]>([]);
-  const [workspaceTestimonials, setWorkspaceTestimonials] = useState<WorkspaceTestimonial[]>([]);
   const [workspaceFaqs, setWorkspaceFaqs] = useState<WorkspaceFaq[]>([]);
-  const [workspaceLotteryRewards, setWorkspaceLotteryRewards] = useState<WorkspaceLotteryReward[]>([]);
+  const [workspaceGoogleReviews, setWorkspaceGoogleReviews] = useState<GoogleReviewRecord[]>([]);
   const [workspacePayment, setWorkspacePayment] = useState<WorkspacePaymentConfig | null>(null);
   const [workspaceReview, setWorkspaceReview] = useState<WorkspaceReviewConfig | null>(null);
   const [workspaceMenuItems, setWorkspaceMenuItems] = useState<Array<Record<string, unknown>>>([]);
@@ -191,9 +175,7 @@ function ListBusinessPageContent() {
   const [deleteBusinessId, setDeleteBusinessId] = useState<number | null>(null);
   const listOffersRef = useRef<ListOffersHandle>(null);
   const listGalleryRef = useRef<ListGalleryHandle>(null);
-  const listTestimonialsRef = useRef<ListTestimonialsHandle>(null);
   const listFaqsRef = useRef<ListFaqsHandle>(null);
-  const listLotteryRef = useRef<ListLotteryHandle>(null);
   const [addWorkspaceModalOpen, setAddWorkspaceModalOpen] = useState(false);
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   const [workspaceEditMode, setWorkspaceEditMode] = useState(false);
@@ -292,11 +274,9 @@ function ListBusinessPageContent() {
         paybtn_status: data.buttons?.paybtnStatus ?? true,
         reviewbtn_status: data.buttons?.reviewbtnStatus ?? true,
         special_offer_status: data.buttons?.specialOfferStatus ?? true,
-        lottery_status: data.buttons?.lotteryStatus ?? false,
         announcement_enabled: data.announcement?.enabled ?? false,
         announcement_text: data.announcement?.text || "",
         currency_id: data.currency ? null : null,
-        industry_feature_catalog: data.industryFeatureCatalog || {},
         logo_url: data.theme?.logoUrl || "",
         banner_url: data.theme?.bannerUrl || "",
       } as any;
@@ -304,9 +284,7 @@ function ListBusinessPageContent() {
       setWorkspace(mappedWorkspace);
       setWorkspaceGallery(data.gallery as any || []);
       setWorkspaceOffers(data.offers as any || []);
-      setWorkspaceTestimonials(data.testimonials || []);
       setWorkspaceFaqs(data.faqs || []);
-      setWorkspaceLotteryRewards(data.lotteryRewards || []);
       setWorkspacePayment(data.payment || null);
       setWorkspaceReview(data.review || null);
       const nextContentDraft = {
@@ -327,6 +305,19 @@ function ListBusinessPageContent() {
   useEffect(() => {
     void fetchWorkspaceData();
   }, [fetchWorkspaceData]);
+
+  const fetchGoogleReviews = useCallback(async () => {
+    try {
+      const response = await workspaceService.getGoogleReviews();
+      setWorkspaceGoogleReviews(response.data.reviews || []);
+    } catch (fetchError) {
+      console.error("Error fetching Google reviews:", fetchError);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchGoogleReviews();
+  }, [fetchGoogleReviews]);
 
   useEffect(() => {
     if (activeTab !== "workspace") {
@@ -483,7 +474,6 @@ function ListBusinessPageContent() {
             business_hours: (effectiveBusiness as any).businessHours ?? null,
             whatsapp_number: (effectiveBusiness as any).whatsappNumber ?? null,
             location_url: (effectiveBusiness as any).locationUrl ?? null,
-            features: (effectiveBusiness as any).features ?? null,
             website_url: effectiveBusiness.website_url,
             social_media: effectiveBusiness.social_media,
             availability: effectiveBusiness.availability,
@@ -502,9 +492,8 @@ function ListBusinessPageContent() {
       gallery: workspaceGallery as unknown as RawPublicSiteData["gallery"],
       offers: workspaceOffers as unknown as RawPublicSiteData["offers"],
       menuItems: workspaceMenuItems as unknown as RawPublicSiteData["menuItems"],
-      testimonials: workspaceTestimonials as RawPublicSiteData["testimonials"],
       faqs: workspaceFaqs as RawPublicSiteData["faqs"],
-      lotteryRewards: workspaceLotteryRewards as RawPublicSiteData["lotteryRewards"],
+      googleReviews: workspaceGoogleReviews.filter((r) => r.isFeatured) as RawPublicSiteData["googleReviews"],
       currency: (workspace as any)?.currency ?? null,
     };
   }, [
@@ -519,9 +508,8 @@ function ListBusinessPageContent() {
     contentDraft,
     workspaceGallery,
     workspaceOffers,
-    workspaceTestimonials,
     workspaceFaqs,
-    workspaceLotteryRewards,
+    workspaceGoogleReviews,
     workspacePayment,
     workspaceReview,
     workspaceMenuItems,
@@ -587,12 +575,11 @@ function ListBusinessPageContent() {
             paybtnStatus: values.paybtn_status,
             reviewbtnStatus: values.reviewbtn_status,
             specialOfferStatus: values.special_offerstatus,
-            lotteryStatus: values.lottery_status,
           },
           currencyId: values.currency_id?.toString() || null,
         });
         setWorkspaceEditMode(false);
-        toast.success("Workspace settings saved successfully!");
+        toast.success("Website settings saved successfully!");
         await fetchWorkspaceData();
       } catch (err: unknown) {
         toast.error("Failed to save workspace settings.");
@@ -695,14 +682,6 @@ function ListBusinessPageContent() {
     setDeleteModalOpen(true);
   };
 
-  const workspaceFeatureLibraryTarget =
-    workspace?.id != null
-      ? {
-          id: workspace.id,
-          industry_feature_catalog: workspace.industry_feature_catalog,
-        }
-      : null;
-
   const tabMetric = (tab: WorkspaceTabId) => {
     if (tab === "workspace") return workspace ? "Ready" : "Setup";
     if (tab === "businesses") return `${businesses.length}`;
@@ -714,13 +693,11 @@ function ListBusinessPageContent() {
       return workspace?.announcement_enabled ? "On" : "Off";
     if (tab === "offers") return `${workspaceOffers.length}`;
     if (tab === "gallery") return `${workspaceGallery.length}`;
-    if (tab === "features")
-      return workspaceFeatureLibraryTarget ? "Live" : "Locked";
     if (tab === "content")
       return contentDraft.storyHeadline || contentDraft.storyBody || contentDraft.stats.length > 0 ? "Set" : "Empty";
-    if (tab === "testimonials") return `${workspaceTestimonials.length}`;
     if (tab === "faqs") return `${workspaceFaqs.length}`;
-    if (tab === "lottery") return `${workspaceLotteryRewards.length}`;
+    if (tab === "reviews")
+      return `${workspaceGoogleReviews.filter((r) => r.isFeatured).length}/${workspaceGoogleReviews.length}`;
     return "";
   };
 
@@ -862,7 +839,7 @@ function ListBusinessPageContent() {
   const renderWorkspaceTab = () => (
     <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
       <PageHeader
-        title="Workspace"
+        title="Website"
         className="shrink-0 px-1"
         actions={
           workspace ? (
@@ -1288,40 +1265,6 @@ function ListBusinessPageContent() {
     </div>
   );
 
-  const renderTestimonialsTab = () => (
-    <div className="flex h-full min-h-0 flex-col gap-4">
-      <PageHeader
-        className="shrink-0"
-        title="Testimonials"
-        description="Real guest quotes shown on your landing page. Nothing shows there until you add one."
-        actions={
-          <Button
-            size="sm"
-            onClick={() => listTestimonialsRef.current?.openNew()}
-            startIcon={<PiPlusBold className="size-4" />}
-          >
-            New Testimonial
-          </Button>
-        }
-      />
-
-      <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-border bg-card p-4 md:p-6">
-        <Suspense
-          fallback={
-            <div className="flex h-full min-h-[12rem] items-center justify-center"><Spinner size="md" /></div>
-          }
-        >
-          <ListTestimonials
-            ref={listTestimonialsRef}
-            embedded
-            initialTestimonials={workspaceTestimonials}
-            onChanged={() => void fetchWorkspaceData()}
-          />
-        </Suspense>
-      </div>
-    </div>
-  );
-
   const renderFaqsTab = () => (
     <div className="flex h-full min-h-0 flex-col gap-4">
       <PageHeader
@@ -1356,21 +1299,12 @@ function ListBusinessPageContent() {
     </div>
   );
 
-  const renderLotteryTab = () => (
+  const renderReviewsTab = () => (
     <div className="flex h-full min-h-0 flex-col gap-4">
       <PageHeader
         className="shrink-0"
-        title="Lucky Draw"
-        description="Rewards, odds, and who's played and won. Enable it from the Workspace tab's toggles."
-        actions={
-          <Button
-            size="sm"
-            onClick={() => listLotteryRef.current?.openNew()}
-            startIcon={<PiPlusBold className="size-4" />}
-          >
-            New Reward
-          </Button>
-        }
+        title="Google Reviews"
+        description="Pick which real Google reviews appear on your landing page."
       />
 
       <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-border bg-card p-4 md:p-6">
@@ -1379,11 +1313,10 @@ function ListBusinessPageContent() {
             <div className="flex h-full min-h-[12rem] items-center justify-center"><Spinner size="md" /></div>
           }
         >
-          <ListLottery
-            ref={listLotteryRef}
+          <ListGoogleReviews
             embedded
-            initialRewards={workspaceLotteryRewards}
-            onChanged={() => void fetchWorkspaceData()}
+            initialReviews={workspaceGoogleReviews}
+            onChanged={() => void fetchGoogleReviews()}
           />
         </Suspense>
       </div>
@@ -1487,47 +1420,6 @@ function ListBusinessPageContent() {
     </div>
   );
 
-  const renderFeaturesTab = () => (
-    <div className="flex h-full min-h-0 flex-col gap-4">
-      <PageHeader
-        className="shrink-0"
-        title="Features"
-        description="Manage industry-driven features."
-      />
-
-      {workspaceFeatureLibraryTarget ? (
-        <div className="min-h-0 flex-1 overflow-y-auto rounded-lg border border-border bg-card p-4 pr-3 md:p-6">
-          <Suspense
-            fallback={
-              <div className="flex min-h-[12rem] items-center justify-center"><Spinner size="md" /></div>
-            }
-          >
-            <WorkspaceFeatureLibrarySection
-              workspace={workspaceFeatureLibraryTarget}
-              onSaved={fetchWorkspaceData}
-            />
-          </Suspense>
-        </div>
-      ) : (
-        <div className="min-h-0 flex-1">
-          <EmptyState
-            icon={<PiListBulletsBold className="size-8" />}
-            title="Create a workspace first"
-            description="The feature library needs a workspace before it can save feature selections."
-            action={
-              <Button
-                onClick={() => setAddWorkspaceModalOpen(true)}
-                startIcon={<PiPlusBold className="size-5" />}
-              >
-                Create workspace
-              </Button>
-            }
-          />
-        </div>
-      )}
-    </div>
-  );
-
   const renderPanel = () => {
     if (activeTab === "workspace") return renderWorkspaceTab();
     if (activeTab === "businesses") return renderBusinessesTab();
@@ -1535,11 +1427,9 @@ function ListBusinessPageContent() {
     if (activeTab === "banners") return renderBannersTab();
     if (activeTab === "offers") return renderOffersTab();
     if (activeTab === "gallery") return renderGalleryTab();
-    if (activeTab === "features") return renderFeaturesTab();
     if (activeTab === "content") return renderContentTab();
-    if (activeTab === "testimonials") return renderTestimonialsTab();
     if (activeTab === "faqs") return renderFaqsTab();
-    if (activeTab === "lottery") return renderLotteryTab();
+    if (activeTab === "reviews") return renderReviewsTab();
     return renderWorkspaceTab();
   };
 
@@ -1551,7 +1441,7 @@ function ListBusinessPageContent() {
             <ScrollableTabRow
               activeKey={activeTab}
               role="tablist"
-              aria-label="Workspace sections"
+              aria-label="Website sections"
               scrollContainerClassName="gap-1"
             >
               {visibleTabs.map((tab) => {

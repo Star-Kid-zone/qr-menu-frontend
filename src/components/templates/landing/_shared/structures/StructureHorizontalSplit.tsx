@@ -7,11 +7,11 @@ import { buildTheme } from "../buildTheme";
 import { FadeIn, StaggerGroup, StaggerItem } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
 import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/templates/core/socialPlatforms";
-import { LotterySection } from "./sections";
+import { ReviewCard } from "./sections";
 
 /** Split on the HORIZONTAL axis instead of vertical: a full-width fixed
  * hero/CTA band across the top, then a two-column body below it (dishes,
- * popular items, offers, gallery on the left; reviews/hours/full
+ * popular items, offers, gallery on the left; hours/full
  * contact/FAQ on the right). Every section from the content model appears
  * — nothing is trimmed to "just a few" the way an early draft might. */
 export default function StructureHorizontalSplit(p: LandingTemplateProps) {
@@ -64,7 +64,7 @@ export default function StructureHorizontalSplit(p: LandingTemplateProps) {
       </section>
 
       <div className="flex flex-wrap justify-center gap-2 px-5 py-3 sm:px-10">
-        {[c.cta.menuBtn && c.terms.catalogLabel, c.cta.payBtn && "Pay Online", c.cta.reviewBtn && "Reviews", c.offers.length > 0 && "Offers", p.lotteryEnabled && "Lucky Draw"]
+        {[c.cta.menuBtn && c.terms.catalogLabel, c.cta.payBtn && "Pay Online", c.cta.reviewBtn && "Reviews", c.offers.length > 0 && "Offers"]
           .filter(Boolean)
           .map((b) => <span key={b as string} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider">{b}</span>)}
       </div>
@@ -77,12 +77,6 @@ export default function StructureHorizontalSplit(p: LandingTemplateProps) {
               <p className="text-[10px] uppercase tracking-wider opacity-80">{s.label}</p>
             </div>
           ))}
-        </div>
-      )}
-
-      {c.amenities.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-2 px-5 py-6 sm:px-10">
-          {c.amenities.map((a) => <span key={a} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3.5 py-1.5 text-xs font-semibold">{a}</span>)}
         </div>
       )}
 
@@ -149,7 +143,7 @@ export default function StructureHorizontalSplit(p: LandingTemplateProps) {
             </div>
           )}
           {c.gallery.length > 0 && (
-            <div>
+            <div className="mb-10">
               <p style={{ color: t.accent }} className="mb-4 text-[10px] font-bold uppercase tracking-[0.3em]">Gallery</p>
               <div className="grid grid-cols-3 gap-3">
                 {c.gallery.map((g, i) => (
@@ -160,23 +154,20 @@ export default function StructureHorizontalSplit(p: LandingTemplateProps) {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Right: reviews + hours + full contact + faq, stacked narrow */}
-        <div className="space-y-8">
-          {c.testimonials.length > 0 && (
+          {c.googleReviews.length > 0 && (
             <div>
-              <p style={{ color: t.accent }} className="mb-3 text-[10px] font-bold uppercase tracking-[0.3em]">Reviews</p>
-              <div className="space-y-3">
-                {c.testimonials.map((tst, i) => (
-                  <div key={i} style={{ background: sectionBg, borderColor: t.border }} className="rounded-xl border p-4">
-                    <p style={{ color: t.textSecondary }} className="text-xs italic leading-relaxed">"{tst.text}"</p>
-                    <p style={{ color: t.textPrimary }} className="mt-2 text-xs font-bold">{tst.name}</p>
-                  </div>
+              <p style={{ color: t.accent }} className="mb-4 text-[10px] font-bold uppercase tracking-[0.3em]">Google Reviews</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {c.googleReviews.slice(0, 4).map((r) => (
+                  <ReviewCard key={r.id} review={r} t={t} />
                 ))}
               </div>
             </div>
           )}
+        </div>
+
+        {/* Right: hours + full contact + faq, stacked narrow */}
+        <div className="space-y-8">
           {c.hours.length > 0 && (
             <div>
               <p style={{ color: t.accent }} className="mb-3 text-[10px] font-bold uppercase tracking-[0.3em]">Hours</p>
@@ -225,8 +216,6 @@ export default function StructureHorizontalSplit(p: LandingTemplateProps) {
           )}
         </div>
       </section>
-
-      <LotterySection c={c} p={p} t={t} />
 
       <footer style={{ background: t.footerBg ?? t.bg, borderColor: t.border }} className="border-t px-6 py-8 text-center sm:px-10">
         <p style={{ color: t.textPrimary }} className="font-bold">{c.businessName}</p>

@@ -45,11 +45,9 @@ export interface LandingSettingState {
   paybtn_status: boolean;
   reviewbtn_status: boolean;
   special_offerstatus: boolean;
-  lottery_status: boolean;
   menu_theme: string | null;
   landing_theme: string;
   loading_screen_theme: string;
   announcement_text: string | null;
   announcement_enabled: boolean;
-  industry_feature_catalog: Record<string, Record<string, Array<{ id: number; name: string }>>>;
 }

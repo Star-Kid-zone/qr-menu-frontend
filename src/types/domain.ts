@@ -40,7 +40,11 @@ export interface Menu {
   image?: string;
   image_url?: string;
   imageUrl?: string;
-  images?: { id: number; url: string }[];
+  /** Extra gallery photos beyond the cover `image_url`/`imageUrl` — stored as plain URL
+   *  strings, though some legacy data may still hand back `{id, url}` objects. */
+  images?: (string | { id: number; url: string })[];
+  /** Extra promo videos for the item — plain URL strings. */
+  videos?: string[];
   category: string;
   type: string;
   popular: boolean;
@@ -103,7 +107,6 @@ export interface Setting {
   paybtn_status?: boolean;
   reviewbtn_status?: boolean;
   special_offerstatus?: boolean;
-  lottery_status?: boolean;
   menu_theme?: number | string;
   landing_theme?: number | string;
   loading_screen_theme?: string;
@@ -111,7 +114,6 @@ export interface Setting {
   announcement_enabled?: boolean;
   currency_id?: number | null;
   currency?: Currency;
-  industry_feature_catalog?: Record<string, Record<string, Array<{ id: number; name: string }>>>;
   created_at?: string;
   updated_at?: string;
 }

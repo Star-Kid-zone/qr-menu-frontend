@@ -8,7 +8,7 @@ import { getThemeImages } from "../themeImages";
 import { FadeIn, StaggerGroup, StaggerItem, Marquee } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
 import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/templates/core/socialPlatforms";
-import { LotterySection } from "./sections";
+import { ReviewCard } from "./sections";
 
 export default function StructureMinimal(p: LandingTemplateProps) {
   const c = getRichContent(p.data, (p.data.settings as any)?.landing_theme ?? "swiss");
@@ -106,9 +106,9 @@ export default function StructureMinimal(p: LandingTemplateProps) {
         </div>
       )}
 
-      {(c.cta.menuBtn || c.cta.payBtn || c.cta.reviewBtn || c.offers.length > 0 || p.lotteryEnabled) && (
+      {(c.cta.menuBtn || c.cta.payBtn || c.cta.reviewBtn || c.offers.length > 0) && (
         <div className="flex flex-wrap justify-center gap-2 px-6 py-6">
-          {[c.cta.menuBtn && c.terms.catalogLabel, c.cta.payBtn && "Pay Online", c.cta.reviewBtn && "Reviews", c.offers.length > 0 && "Offers", p.lotteryEnabled && "Lucky Draw"]
+          {[c.cta.menuBtn && c.terms.catalogLabel, c.cta.payBtn && "Pay Online", c.cta.reviewBtn && "Reviews", c.offers.length > 0 && "Offers"]
             .filter(Boolean)
             .map((b) => <span key={b as string} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3.5 py-1 text-[10px] font-bold uppercase tracking-wider">{b}</span>)}
         </div>
@@ -237,17 +237,6 @@ export default function StructureMinimal(p: LandingTemplateProps) {
       </section>
       )}
 
-      {/* ── Amenities ── */}
-      {c.amenities.length > 0 && (
-        <section className="px-6 py-10 text-center sm:px-10">
-          <div className="flex flex-wrap justify-center gap-2">
-            {c.amenities.map((a) => (
-              <span key={a} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3.5 py-1.5 text-xs font-semibold">{a}</span>
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* ── Offers ── */}
       {c.offers.length > 0 && (
         <section style={{ background: sectionBg, borderColor: t.border }} className="border-y px-6 py-20 text-center sm:px-10">
@@ -282,20 +271,20 @@ export default function StructureMinimal(p: LandingTemplateProps) {
         </section>
       )}
 
-      {/* ── Testimonials ── */}
-      {c.testimonials.length > 0 && (
-        <section style={{ background: sectionBg, borderColor: t.border }} className="border-y px-6 py-20 text-center sm:px-10">
+      {/* ── Google Reviews ── */}
+      {c.googleReviews.length > 0 && (
+        <section style={{ background: t.bg }} className="px-6 py-20 sm:px-10">
           <FadeIn>
-            <h2 style={{ color: t.textPrimary }} className="mb-10 text-3xl font-bold">What Guests Say</h2>
+            <p style={{ color: t.accent }} className="mb-2 text-center text-[10px] font-bold uppercase tracking-[0.4em]">Google Reviews</p>
+            <h2 style={{ color: t.textPrimary }} className="mb-10 text-center text-3xl font-bold">What People Are Saying</h2>
           </FadeIn>
-          <div className="mx-auto grid max-w-4xl gap-5 sm:grid-cols-3">
-            {c.testimonials.map((tst, i) => (
-              <div key={i} style={{ background: t.bg, borderColor: t.border }} className="rounded-2xl border p-5 text-left">
-                <p style={{ color: t.textSecondary }} className="text-sm italic leading-relaxed">"{tst.text}"</p>
-                <p style={{ color: t.textPrimary }} className="mt-3 text-xs font-bold">{tst.name}</p>
-              </div>
+          <StaggerGroup className="mx-auto grid max-w-4xl gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {c.googleReviews.slice(0, 6).map((r) => (
+              <StaggerItem key={r.id}>
+                <ReviewCard review={r} t={{ ...t, surface: sectionBg }} />
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerGroup>
         </section>
       )}
 
@@ -336,9 +325,6 @@ export default function StructureMinimal(p: LandingTemplateProps) {
           </div>
         </section>
       )}
-
-      {/* ── Lottery (modal, triggered by a floating button) ── */}
-      <LotterySection c={c} p={p} t={t} />
 
       {/* ── FAQ ── */}
       {c.faqs.length > 0 && (

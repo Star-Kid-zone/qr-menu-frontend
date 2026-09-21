@@ -7,7 +7,7 @@ import { buildTheme } from "../buildTheme";
 import { FadeIn } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
 import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/templates/core/socialPlatforms";
-import { LotterySection } from "./sections";
+import { ReviewCard } from "./sections";
 
 /** A "link-in-bio" style compact storefront: one narrow centered column, a
  * small non-fullscreen avatar/hero, and everything else stacked tight as
@@ -22,7 +22,6 @@ export default function StructureCompact(p: LandingTemplateProps) {
 
   return (
     <div style={{ fontFamily: t.fontFamily, backgroundColor: t.bg, color: t.textSecondary }} className="min-h-screen">
-      <LotterySection c={c} p={p} t={t} />
       {c.announcement && (
         <div style={{ background: t.border, color: t.textPrimary }} className="px-3 py-1.5 text-center text-[10px] font-semibold uppercase tracking-widest">{c.announcement}</div>
       )}
@@ -44,9 +43,9 @@ export default function StructureCompact(p: LandingTemplateProps) {
           </div>
         </FadeIn>
 
-        {(c.offers.length > 0 || p.lotteryEnabled) && (
+        {c.offers.length > 0 && (
           <div className="mt-4 flex flex-wrap justify-center gap-1.5">
-            {[c.offers.length > 0 && "Offers", p.lotteryEnabled && "Lucky Draw"]
+            {[c.offers.length > 0 && "Offers"]
               .filter(Boolean)
               .map((b) => <span key={b as string} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider">{b}</span>)}
           </div>
@@ -98,13 +97,6 @@ export default function StructureCompact(p: LandingTemplateProps) {
               {c.story.body && <p style={{ color: t.textSecondary }} className="mt-1 text-xs leading-relaxed line-clamp-4">{c.story.body}</p>}
             </div>
           </FadeIn>
-        )}
-
-        {/* ── Amenities ── */}
-        {c.amenities.length > 0 && (
-          <div className="mt-6 flex flex-wrap justify-center gap-1.5">
-            {c.amenities.map((a) => <span key={a} style={{ background: sectionBg, color: t.textPrimary }} className="rounded-full px-2.5 py-1 text-[10px] font-semibold">{a}</span>)}
-          </div>
         )}
 
         {/* ── Dish list rows (compact) ── */}
@@ -168,16 +160,13 @@ export default function StructureCompact(p: LandingTemplateProps) {
           </div>
         )}
 
-        {/* ── Testimonials ── */}
-        {c.testimonials.length > 0 && (
+        {/* ── Google Reviews ── */}
+        {c.googleReviews.length > 0 && (
           <div className="mt-6">
-            <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-widest">Guest Reviews</p>
-            <div className="space-y-2">
-              {c.testimonials.map((tst, i) => (
-                <div key={i} className="rounded-lg px-3 py-2" style={{ background: sectionBg }}>
-                  <p style={{ color: t.textSecondary }} className="text-xs italic">"{tst.text}"</p>
-                  <p style={{ color: t.textPrimary }} className="mt-1 text-xs font-bold">{tst.name}</p>
-                </div>
+            <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-widest">Google Reviews</p>
+            <div className="space-y-3">
+              {c.googleReviews.slice(0, 3).map((r) => (
+                <ReviewCard key={r.id} review={r} t={t} />
               ))}
             </div>
           </div>

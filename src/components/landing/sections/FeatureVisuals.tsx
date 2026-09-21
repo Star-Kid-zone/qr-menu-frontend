@@ -110,7 +110,7 @@ export function PaymentVisual() {
 }
 
 export function StaffVisual() {
-  const items = ["Menu", "Workspace", "Analytics", "Payments", "Marketing"];
+  const items = ["Menu", "Website", "Analytics", "Payments", "Marketing"];
   return (
     <div className={FRAME}>
       <div className="grid w-full max-w-xs grid-cols-2 gap-3">

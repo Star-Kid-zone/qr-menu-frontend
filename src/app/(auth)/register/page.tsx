@@ -158,7 +158,7 @@ export default function RegisterPage() {
               onClick={onVerifyOtp}
               disabled={otp.length !== 6}
             >
-              {isVerifying ? "Verifying…" : "Verify & Open Workspace"}
+              {isVerifying ? "Verifying…" : "Verify & Open Website"}
             </Button>
           </div>
 

@@ -47,7 +47,6 @@ export const workspaceSettingsSchema = z.object({
   paybtn_status:       z.boolean(),
   reviewbtn_status:    z.boolean(),
   special_offerstatus: z.boolean(),
-  lottery_status:      z.boolean(),
   announcement_enabled: z.boolean(),
   announcement_text:   z.string(),
   currency_id:         z.number().int().positive().nullable(),

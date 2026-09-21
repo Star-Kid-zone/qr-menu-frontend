@@ -45,7 +45,6 @@ export interface WorkspaceButtons {
   paybtnStatus: boolean;
   reviewbtnStatus: boolean;
   specialOfferStatus: boolean;
-  lotteryStatus: boolean;
 }
 
 export interface WorkspaceAnnouncement {
@@ -67,7 +66,6 @@ export interface WorkspaceBusinessProfile {
   // the public-site template mapper, and admin/listbusiness's editor).
   socialLinks?: SocialLink[] | null;
   availability?: any;
-  features?: unknown;
 }
 
 export interface WorkspaceReviewConfig {
@@ -95,6 +93,7 @@ export interface GoogleReviewRecord {
   relativePublishDescription: string | null;
   publishTime: string | null;
   createdAt: string;
+  isFeatured: boolean;
 }
 
 export interface WorkspacePaymentConfig {
@@ -144,18 +143,6 @@ export interface WorkspaceContent {
   stats: Array<{ label: string; value: string }>;
 }
 
-export interface WorkspaceTestimonial {
-  id: string;
-  workspaceId: string;
-  authorName: string;
-  authorRole: string | null;
-  quote: string;
-  rating: number | null;
-  isVisible: boolean;
-  sortOrder: number;
-  createdAt: string;
-}
-
 export interface WorkspaceFaq {
   id: string;
   workspaceId: string;
@@ -163,28 +150,6 @@ export interface WorkspaceFaq {
   answer: string;
   isVisible: boolean;
   sortOrder: number;
-  createdAt: string;
-}
-
-export interface WorkspaceLotteryReward {
-  id: string;
-  workspaceId: string;
-  label: string;
-  emoji: string;
-  ratioWins: number;
-  ratioPlays: number;
-  isActive: boolean;
-  sortOrder: number;
-  createdAt: string;
-}
-
-export interface WorkspaceLotteryEntry {
-  id: string;
-  guestName: string | null;
-  won: boolean;
-  rewardLabel: string | null;
-  rewardEmoji: string | null;
-  playedDate: string;
   createdAt: string;
 }
 
@@ -201,12 +166,8 @@ export interface WorkspaceData {
   content: WorkspaceContent;
   gallery: WorkspaceGalleryItem[];
   offers: WorkspaceOfferItem[];
-  testimonials: WorkspaceTestimonial[];
   faqs: WorkspaceFaq[];
-  lotteryRewards: WorkspaceLotteryReward[];
   currency: WorkspaceCurrency | null;
-  industryFeatureCatalog?: any;
-  industry_feature_catalog?: any;
   currencyId?: string | null;
 }
 
@@ -218,19 +179,10 @@ export const workspaceService = {
   addOfferItem: (data: FormData) => api.post<{ message: string, offer: WorkspaceOfferItem }>('/workspace/offers', data),
   updateOfferItem: (offerId: string, data: FormData) => api.put<{ message: string, offer: WorkspaceOfferItem }>(`/workspace/offers/${offerId}`, data),
   removeOfferItem: (offerId: string) => api.delete<{ message: string }>(`/workspace/offers/${offerId}`),
-  addTestimonial: (data: Record<string, unknown>) => api.post<{ message: string, testimonial: WorkspaceTestimonial }>('/workspace/testimonials', data),
-  updateTestimonial: (id: string, data: Record<string, unknown>) => api.put<{ message: string, testimonial: WorkspaceTestimonial }>(`/workspace/testimonials/${id}`, data),
-  toggleTestimonial: (id: string) => api.patch<{ message: string, testimonial: WorkspaceTestimonial }>(`/workspace/testimonials/${id}/toggle`),
-  removeTestimonial: (id: string) => api.delete<{ message: string }>(`/workspace/testimonials/${id}`),
   addFaq: (data: Record<string, unknown>) => api.post<{ message: string, faq: WorkspaceFaq }>('/workspace/faqs', data),
   updateFaq: (id: string, data: Record<string, unknown>) => api.put<{ message: string, faq: WorkspaceFaq }>(`/workspace/faqs/${id}`, data),
   toggleFaq: (id: string) => api.patch<{ message: string, faq: WorkspaceFaq }>(`/workspace/faqs/${id}/toggle`),
   removeFaq: (id: string) => api.delete<{ message: string }>(`/workspace/faqs/${id}`),
-  getLotteryRewards: () => api.get<{ rewards: WorkspaceLotteryReward[] }>('/workspace/lottery/rewards'),
-  addLotteryReward: (data: Record<string, unknown>) => api.post<{ message: string, reward: WorkspaceLotteryReward }>('/workspace/lottery/rewards', data),
-  updateLotteryReward: (id: string, data: Record<string, unknown>) => api.put<{ message: string, reward: WorkspaceLotteryReward }>(`/workspace/lottery/rewards/${id}`, data),
-  removeLotteryReward: (id: string) => api.delete<{ message: string }>(`/workspace/lottery/rewards/${id}`),
-  getLotteryEntries: (page = 1, pageSize = 20) => api.get<{ entries: WorkspaceLotteryEntry[], page: number, pageSize: number, total: number, totalPages: number }>('/workspace/lottery/entries', { params: { page, pageSize } }),
   getCurrencies: () => api.get<any[]>('/workspace/currencies'),
   uploadPaymentQr: (data: FormData) => api.post<{ message: string, url: string }>('/workspace/payment-qr', data),
   checkSlugAvailability: (slug: string) =>
@@ -245,4 +197,6 @@ export const workspaceService = {
     ),
   syncGoogleReviews: () =>
     api.post<{ message: string; reviews: GoogleReviewRecord[] }>('/workspace/reviews/google/sync'),
+  toggleGoogleReviewFeatured: (id: string | number) =>
+    api.patch<{ message: string, review: GoogleReviewRecord }>(`/workspace/reviews/google/${id}/toggle`),
 };

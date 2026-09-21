@@ -13,4 +13,8 @@ export {
   setRawStorageItem,
   setStoredUserRole,
   storageKeys,
+  getImpersonationSession,
+  setImpersonationSession,
+  clearImpersonationSession,
 } from '@/utils/storage';
+export type { ImpersonationSession } from '@/utils/storage';

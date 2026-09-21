@@ -43,12 +43,6 @@ export type PublicBusinessBranch = {
   active?: boolean;
 };
 
-/** Industry catalog keys for “Features enabled” strip (workspace `industry_feature_catalog`). */
-export type PublicFeatureCatalogEntry = { key: string; label: string };
-
-/** Grouped industry catalog (API: `industry_feature_catalog[industryId][groupName]` → `{ id, name }[]`). */
-export type PublicFeatureGroup = { group: string; items: string[] };
-
 export type PublicLandingTemplateProps = {
   businessName: string;
   phone: string;
@@ -81,12 +75,6 @@ export type PublicLandingTemplateProps = {
   themeColour?: string | null;
   /** Workspace id — for analytics. */
   workspaceId?: number | null;
-  /** When true, workspace has lottery promotions enabled (`lottery_status`). */
-  lotteryEnabled?: boolean;
-  /** Flat chips derived from the industry catalog (all item names). */
-  featureCatalogEntries?: PublicFeatureCatalogEntry[];
-  /** Grouped sections for the same catalog (preferred when present). */
-  featureCatalogGroups?: PublicFeatureGroup[];
   [key: string]: unknown;
 };
 
@@ -133,9 +121,6 @@ export type PublicMenuTemplateProps = {
   LinkComponent: PublicLink;
   gallery: GalleryItem[];
   workspaceId?: number | null;
-  lotteryEnabled?: boolean;
-  featureCatalogEntries?: PublicFeatureCatalogEntry[];
-  featureCatalogGroups?: PublicFeatureGroup[];
   offers?: OfferRow[];
   offersOn?: boolean;
   /** Workspace typography / extended colors — used to override menu template defaults */

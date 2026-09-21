@@ -287,7 +287,7 @@ function StaffPageContent() {
                       <p className="mt-1 text-[11px] text-muted-foreground">
                         {isManager
                           ? "Full dashboard, menu & analytics access."
-                          : "Menu & Workspace management only."}
+                          : "Menu & Website management only."}
                       </p>
                     </div>
                   </div>

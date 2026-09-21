@@ -77,9 +77,6 @@ export function useLandingTemplateData(mapped: MappedPublicUserDetails, routeSlu
     aboutHighlights: mapped.aboutHighlights,
     themeColour: mapped.themeColour,
     workspaceId: mapped.workspaceId,
-    lotteryEnabled: mapped.lotteryStatus,
-    featureCatalogEntries: mapped.featureCatalogEntries,
-    featureCatalogGroups: mapped.featureCatalogGroups,
   };
 }
 
@@ -224,9 +221,6 @@ export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: strin
     workspaceId: mapped.workspaceId,
     offersOn: mapped.offersSectionEnabled,
     offers: mapped.offers,
-    featureCatalogEntries: mapped.featureCatalogEntries,
-    featureCatalogGroups: mapped.featureCatalogGroups,
-    lotteryEnabled: mapped.lotteryStatus,
     // Menu-specific design settings (fall back to shared settings if menu-specific not set)
     fontFamily:    (settings.menu_font_family          as string) || (settings.font_family          as string) || '',
     cardStyle:     (settings.menu_card_style           as string) || (settings.card_style           as string) || '',

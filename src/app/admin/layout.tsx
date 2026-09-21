@@ -6,6 +6,8 @@ import Sidebar from "@/components/layouts/Sidebar";
 import Navbar from "@/components/layouts/Navbar";
 import { GlobalProgressBar } from "@/components/layouts/GlobalProgressBar";
 import { GlobalLoaderOverlay } from "@/components/layouts/GlobalLoaderOverlay";
+import { ImpersonationBanner } from "@/components/layouts/ImpersonationBanner";
+import { TenantAnnouncementBanner } from "@/components/layouts/TenantAnnouncementBanner";
 
 export default function AdminLayout({
   children,
@@ -35,6 +37,8 @@ export default function AdminLayout({
           identityLabel="Administrator"
           identityInitials="AD"
         />
+        <ImpersonationBanner />
+        <TenantAnnouncementBanner />
         <main className="min-h-0 flex-1 overflow-hidden p-4 sm:p-6">
           <div className="mx-auto h-full w-full max-w-[1800px]">{children}</div>
         </main>

@@ -4,18 +4,18 @@ import Image from "next/image";
 import type { LandingTemplateProps } from "@/types/components/templates/rawPublicSiteData.types";
 import { getRichContent } from "../defaults";
 import { buildTheme } from "../buildTheme";
-import { FadeIn, StaggerGroup, StaggerItem } from "../animations";
+import { FadeIn } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
 import {
   AnnouncementBar, DecorativeMarquee, FeatureBadges,
-  AmenitiesRow, PopularMenuSection, OffersSection, ContactSection, LotterySection,
+  PopularMenuSection, OffersSection, GoogleReviewsSection, ContactSection,
   FooterSection,
 } from "./sections";
 
 /** Asymmetric editorial layout: big hero block beside a stacked story/stats
- * sidebar, a full-width dish carousel row, then a two-column testimonial
- * masonry — every other section from the full content model is still present,
- * just folded into the shared blocks below the editorial spread. */
+ * sidebar, a full-width dish carousel row, then a gallery grid — every other
+ * section from the full content model is still present, just folded into
+ * the shared blocks below the editorial spread. */
 export default function StructureMagazine(p: LandingTemplateProps) {
   const c = getRichContent(p.data, (p.data.settings as any)?.landing_theme ?? "swiss");
   const t = buildTheme(c);
@@ -96,7 +96,6 @@ export default function StructureMagazine(p: LandingTemplateProps) {
       </section>
 
       <FeatureBadges c={c} p={p} t={t} />
-      <AmenitiesRow c={c} t={t} />
 
       {/* ── Full-width dish carousel row ── */}
       {c.signatureDishes.length > 0 && (
@@ -142,29 +141,9 @@ export default function StructureMagazine(p: LandingTemplateProps) {
         </section>
       )}
 
-      {/* ── Testimonial masonry ── */}
-      {c.testimonials.length > 0 && (
-        <section style={{ background: sectionBg }} className="px-5 py-14 sm:px-10">
-          <div className="mx-auto max-w-6xl">
-            <FadeIn>
-              <h2 style={{ color: t.textPrimary }} className="mb-8 text-2xl font-bold">What Guests Say</h2>
-            </FadeIn>
-            <StaggerGroup className="columns-1 gap-5 sm:columns-2">
-              {c.testimonials.map((tst, i) => (
-                <StaggerItem key={i}>
-                  <div style={{ background: t.bg, borderColor: t.border }} className="mb-5 break-inside-avoid rounded-xl border p-5">
-                    <p style={{ color: t.textSecondary }} className="text-sm italic leading-relaxed">"{tst.text}"</p>
-                    <p style={{ color: t.textPrimary }} className="mt-3 text-xs font-bold">{tst.name}</p>
-                  </div>
-                </StaggerItem>
-              ))}
-            </StaggerGroup>
-          </div>
-        </section>
-      )}
+      <GoogleReviewsSection c={c} t={t} />
 
       <ContactSection {...ctx} />
-      <LotterySection c={c} p={p} t={t} />
 
       {/* ── FAQ ── */}
       {c.faqs.length > 0 && (

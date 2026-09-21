@@ -1,24 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
-import { AnimatePresence, motion } from "framer-motion";
 import type { LandingTemplateProps } from "@/types/components/templates/rawPublicSiteData.types";
-import type { RichContent } from "../defaults";
+import type { RichContent, GoogleReviewItem } from "../defaults";
 import type { ThemeConfig } from "../BaseTemplate";
 import { FadeIn, StaggerGroup, StaggerItem, Marquee } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
 import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/templates/core/socialPlatforms";
-import { HiTicket, HiSparkles, HiX } from "react-icons/hi";
-import { LotteryGame, hasPlayedLotteryToday } from "./LotteryGame";
+import { HiStar } from "react-icons/hi";
 
 /**
  * Shared, non-negotiable sections every landing "structure" must include
  * somewhere on the page (announcement, banner, decorative
- * marquee, feature-status badges, amenities, popular menu, offers, full
- * contact block, lottery, footer). Each structure still owns its
+ * marquee, feature-status badges, popular menu, offers, full
+ * contact block, footer). Each structure still owns its
  * OWN distinctive treatment of hero / story / signature dishes / gallery /
- * testimonials / stats / hours / FAQ — these helpers only guarantee the rest
+ * stats / hours / FAQ — these helpers only guarantee the rest
  * of the content model is never silently dropped.
  */
 
@@ -56,13 +54,12 @@ export function DecorativeMarquee({ c, t }: Pick<Ctx, "c" | "t">) {
   );
 }
 
-export function FeatureBadges({ c, p, t }: Ctx) {
+export function FeatureBadges({ c, t }: Ctx) {
   const badges = [
     c.cta.menuBtn && c.terms.catalogLabel,
     c.cta.payBtn && "Pay Online",
     c.cta.reviewBtn && "Reviews",
     c.offers.length > 0 && "Offers",
-    p.lotteryEnabled && "Lucky Draw",
   ].filter(Boolean) as string[];
   if (badges.length === 0) return null;
   return (
@@ -70,19 +67,6 @@ export function FeatureBadges({ c, p, t }: Ctx) {
       {badges.map((b) => (
         <span key={b} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider">
           {b}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-export function AmenitiesRow({ c, t }: Pick<Ctx, "c" | "t">) {
-  if (c.amenities.length === 0) return null;
-  return (
-    <div className="flex flex-wrap justify-center gap-2 px-5 py-6 sm:px-10">
-      {c.amenities.map((a) => (
-        <span key={a} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3.5 py-1.5 text-xs font-semibold">
-          {a}
         </span>
       ))}
     </div>
@@ -156,6 +140,100 @@ export function OffersSection({ c, t }: Pick<Ctx, "c" | "t">) {
                   )}
                 </div>
               </div>
+            </StaggerItem>
+          ))}
+        </StaggerGroup>
+      </div>
+    </section>
+  );
+}
+
+/** 5-star rating display, filled up to the rounded `rating` value. Shared by
+ * `ReviewCard` and any structure that wants to render a review's rating
+ * without pulling in the whole `GoogleReviewsSection` layout. */
+export function StarRating({ rating, color }: { rating: number; color: string }) {
+  const filled = Math.round(Math.max(0, Math.min(5, rating || 0)));
+  return (
+    <div className="flex items-center gap-0.5" role="img" aria-label={`${rating} out of 5 stars`}>
+      {[...Array(5)].map((_, i) => (
+        <HiStar key={i} className="size-3.5" style={{ color: i < filled ? color : `${color}33` }} />
+      ))}
+    </div>
+  );
+}
+
+/** Reviewer avatar — the real Google profile photo when present (loaded as a
+ * plain `<img>`, since Google-hosted photo URLs aren't a configured
+ * `next/image` remote pattern and typically require `referrerPolicy="no-referrer"`
+ * to load at all), falling back to an initial-letter avatar when there's no
+ * photo or it fails to load. */
+export function ReviewAvatar({ review, t, size = 40 }: { review: GoogleReviewItem; t: Pick<ThemeConfig, "accent" | "accentText">; size?: number }) {
+  const [errored, setErrored] = useState(false);
+  const initial = review.authorName?.trim()?.[0]?.toUpperCase() || "?";
+  if (review.authorPhotoUrl && !errored) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={review.authorPhotoUrl}
+        alt={review.authorName}
+        referrerPolicy="no-referrer"
+        onError={() => setErrored(true)}
+        width={size}
+        height={size}
+        style={{ width: size, height: size }}
+        className="shrink-0 rounded-full object-cover"
+      />
+    );
+  }
+  return (
+    <div
+      style={{ background: t.accent, color: t.accentText, width: size, height: size }}
+      className="flex shrink-0 items-center justify-center rounded-full text-sm font-bold"
+    >
+      {initial}
+    </div>
+  );
+}
+
+/** Single review card — author, rating, review text, and relative publish
+ * time. The reusable unit behind `GoogleReviewsSection`; structures with
+ * their own card/tile conventions can embed this directly instead of
+ * re-implementing avatars/star ratings. */
+export function ReviewCard({ review, t }: { review: GoogleReviewItem; t: Pick<ThemeConfig, "surface" | "border" | "textPrimary" | "textSecondary" | "accent" | "accentText"> }) {
+  return (
+    <div style={{ background: t.surface, borderColor: t.border }} className="flex h-full flex-col gap-3 rounded-xl border p-5">
+      <div className="flex items-center gap-3">
+        <ReviewAvatar review={review} t={t} />
+        <div className="min-w-0 flex-1">
+          <p style={{ color: t.textPrimary }} className="truncate text-sm font-bold">{review.authorName}</p>
+          {review.relativePublishDescription && (
+            <p style={{ color: t.textSecondary }} className="text-[11px] opacity-80">{review.relativePublishDescription}</p>
+          )}
+        </div>
+      </div>
+      <StarRating rating={review.rating} color={t.accent} />
+      {review.text && (
+        <p style={{ color: t.textSecondary }} className="line-clamp-4 text-sm leading-relaxed">{review.text}</p>
+      )}
+    </div>
+  );
+}
+
+/** Shared "What People Are Saying" section: a responsive grid of real,
+ * owner-featured Google reviews. Hidden entirely when there are none. */
+export function GoogleReviewsSection({ c, t }: Pick<Ctx, "c" | "t">) {
+  if (!c.googleReviews || c.googleReviews.length === 0) return null;
+  return (
+    <section style={{ background: t.sectionBg ?? t.surface, borderColor: t.border }} className="border-y px-5 py-14 sm:px-10">
+      <div className="mx-auto max-w-5xl">
+        <FadeIn>
+          <p style={{ color: t.accent }} className="mb-2 text-center text-[10px] font-bold uppercase tracking-[0.4em]">Google Reviews</p>
+          <h2 style={{ color: t.textPrimary }} className="mb-8 text-center text-2xl font-bold">What People Are Saying</h2>
+        </FadeIn>
+        <StaggerGroup className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {c.googleReviews.slice(0, 6).map((r) => (
+            <StaggerItem key={r.id}>
+              <ReviewCard review={r} t={t} />
             </StaggerItem>
           ))}
         </StaggerGroup>
@@ -250,105 +328,6 @@ export function ContactSection({ c, t, p }: Ctx) {
         )}
       </div>
     </section>
-  );
-}
-
-/**
- * Lucky Draw is presented as a modal rather than an inline page section: it
- * opens automatically on load (if enabled and this browser hasn't played
- * today), and closing it leaves behind a floating button so the guest can
- * still get back to it. Once played, the button just reflects that state
- * instead of re-opening an empty "come back tomorrow" dialog.
- */
-export function LotterySection({ c, p, t }: Ctx) {
-  const workspaceId = (p.data.settings as any)?.id ?? null;
-  const [isOpen, setIsOpen] = useState(false);
-  const [playedToday, setPlayedToday] = useState(false);
-
-  useEffect(() => {
-    if (!p.lotteryEnabled || !workspaceId) return;
-    const played = hasPlayedLotteryToday(workspaceId);
-    setPlayedToday(played);
-    if (!played) setIsOpen(true);
-  }, [p.lotteryEnabled, workspaceId]);
-
-  if (!p.lotteryEnabled || !workspaceId) return null;
-
-  return (
-    <>
-      <AnimatePresence>
-        {!isOpen && (
-          <motion.button
-            type="button"
-            onClick={() => setIsOpen(true)}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            style={{ background: t.accent, color: t.accentText }}
-            className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full px-5 py-3 text-sm font-bold shadow-lg"
-          >
-            <HiTicket className="size-5 shrink-0" />
-            {playedToday ? "Already played today" : "Lucky Draw"}
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="absolute inset-0 bg-black/60" onClick={() => setIsOpen(false)} />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              style={{ background: t.sectionBg ?? t.surface, borderColor: t.accent }}
-              className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[2rem] border-2 p-8 text-center sm:p-10"
-            >
-              <div className="absolute -right-10 -top-10 opacity-10"><HiTicket className="size-40 rotate-12" style={{ color: t.accent }} /></div>
-              <div className="absolute -bottom-10 -left-10 opacity-10"><HiSparkles className="size-40 -rotate-12" style={{ color: t.accent }} /></div>
-
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                aria-label="Close Lucky Draw"
-                style={{ color: t.textSecondary }}
-                className="absolute right-4 top-4 z-10 rounded-full p-2 transition-opacity hover:opacity-70"
-              >
-                <HiX className="size-5" />
-              </button>
-
-              <div className="relative">
-                <div style={{ background: t.accent, color: t.accentText }} className="mx-auto mb-5 flex size-14 items-center justify-center rounded-2xl">
-                  <HiTicket className="size-7" />
-                </div>
-                <h2 style={{ color: t.textPrimary }} className="text-2xl font-bold sm:text-3xl">Lucky Draw & Rewards</h2>
-                <p style={{ color: t.textSecondary }} className="mx-auto mt-4 max-w-xl leading-relaxed">
-                  We love rewarding our guests. Spin for a chance to win real prizes from {c.businessName}.
-                </p>
-                <div className="mt-8">
-                  <LotteryGame
-                    workspaceId={workspaceId}
-                    rewards={c.lotteryRewards}
-                    accent={t.accent}
-                    accentText={t.accentText}
-                    textPrimary={t.textPrimary}
-                    textSecondary={t.textSecondary}
-                    border={t.border}
-                    surface={t.bg}
-                    onPlayed={() => setPlayedToday(true)}
-                  />
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
   );
 }
 

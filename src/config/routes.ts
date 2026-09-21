@@ -9,7 +9,7 @@ export const routes = {
   },
   admin: {
     home: "/admin/home",
-    analytics: "/admin/analytics",
+    howItWorks: "/admin/how-it-works",
     addQrCode: "/admin/addqrcode",
     listMenu: "/admin/listmenu",
     addMenu: "/admin/addmenu",
@@ -36,5 +36,8 @@ export const routes = {
     userDetail: (id: string | number) => `/superadmin/users/${id}`,
     analytics: "/superadmin/analytics",
     weeklyPosters: "/superadmin/weekly-posters",
+    blueprints: "/superadmin/blueprints",
+    announcements: "/superadmin/announcements",
+    jobs: "/superadmin/jobs",
   },
 } as const;

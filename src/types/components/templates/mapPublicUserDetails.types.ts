@@ -1,5 +1,5 @@
 import type { SocialLink } from "@/types";
-import type { GalleryItem, OfferRow, PublicBusinessBranch, PublicFeatureCatalogEntry, PublicFeatureGroup } from '@/components/templates/core/types';
+import type { GalleryItem, OfferRow, PublicBusinessBranch } from '@/components/templates/core/types';
 
 export type MappedPublicUserDetails = {
       userId: number;
@@ -18,7 +18,6 @@ export type MappedPublicUserDetails = {
       paybtnStatus: boolean;
       reviewbtnStatus: boolean;
       specialOfferStatus: boolean;
-      lotteryStatus: boolean;
       announcementEnabled: boolean;
       announcementText: string;
       currency: { id?: number; symbol: string; code?: string; name?: string } | null;
@@ -40,7 +39,4 @@ export type MappedPublicUserDetails = {
       workspaceOffersCount: number;
       /** Parsed from `business.about_features` (industry feature blocks). */
       aboutHighlights: string[];
-      industryFeatureCatalog: Record<string, unknown> | null;
-      featureCatalogEntries: PublicFeatureCatalogEntry[];
-      featureCatalogGroups: PublicFeatureGroup[];
     };

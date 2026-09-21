@@ -7,10 +7,10 @@ import { buildTheme } from "../buildTheme";
 import { FadeIn, StaggerGroup, StaggerItem, Marquee } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
 import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/templates/core/socialPlatforms";
-import { LotterySection } from "./sections";
+import { ReviewCard } from "./sections";
 
 /** App-like stacked-cards layout: every section — including popular items,
- * offers, amenities, full contact details, and lottery — is
+ * offers, and full contact details — is
  * its own large rounded card with generous whitespace between, instead of
  * blended full-bleed sections. Nothing from the content model is dropped;
  * it's simply every section, each as its own card. */
@@ -28,8 +28,6 @@ export default function StructureCards(p: LandingTemplateProps) {
 
   return (
     <div style={{ fontFamily: t.fontFamily, backgroundColor: t.bg, color: t.textSecondary }} className="min-h-screen">
-      <LotterySection c={c} p={p} t={t} />
-
       <div className="mx-auto max-w-2xl space-y-6 px-5 py-10 sm:px-6">
         {c.announcement && (
           <div style={{ background: t.accent, color: t.accentText }} className="rounded-xl px-4 py-3 text-center text-sm font-semibold">
@@ -80,10 +78,10 @@ export default function StructureCards(p: LandingTemplateProps) {
           </Marquee>
         </div>
 
-        {(c.cta.menuBtn || c.cta.payBtn || c.cta.reviewBtn || c.offers.length > 0 || p.lotteryEnabled) && (
+        {(c.cta.menuBtn || c.cta.payBtn || c.cta.reviewBtn || c.offers.length > 0) && (
           <Card>
             <div className="flex flex-wrap justify-center gap-2">
-              {[c.cta.menuBtn && c.terms.catalogLabel, c.cta.payBtn && "Pay Online", c.cta.reviewBtn && "Reviews", c.offers.length > 0 && "Offers", p.lotteryEnabled && "Lucky Draw"]
+              {[c.cta.menuBtn && c.terms.catalogLabel, c.cta.payBtn && "Pay Online", c.cta.reviewBtn && "Reviews", c.offers.length > 0 && "Offers"]
                 .filter(Boolean)
                 .map((b) => (
                   <span key={b as string} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider">{b}</span>
@@ -100,15 +98,6 @@ export default function StructureCards(p: LandingTemplateProps) {
               {c.story.body && <p style={{ color: t.textSecondary }} className="mt-2 text-sm leading-relaxed">{c.story.body}</p>}
             </Card>
           </FadeIn>
-        )}
-
-        {c.amenities.length > 0 && (
-          <Card>
-            <p style={{ color: t.accent }} className="mb-3 text-[10px] font-bold uppercase tracking-widest">What We Offer</p>
-            <div className="flex flex-wrap gap-2">
-              {c.amenities.map((a) => <span key={a} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3 py-1.5 text-xs font-semibold">{a}</span>)}
-            </div>
-          </Card>
         )}
 
         {c.signatureDishes.length > 0 && (
@@ -200,16 +189,13 @@ export default function StructureCards(p: LandingTemplateProps) {
           </FadeIn>
         )}
 
-        {c.testimonials.length > 0 && (
+        {c.googleReviews.length > 0 && (
           <FadeIn delay={0.25}>
             <Card>
-              <p style={{ color: t.accent }} className="mb-4 text-[10px] font-bold uppercase tracking-widest">Guest Reviews</p>
+              <p style={{ color: t.accent }} className="mb-4 text-[10px] font-bold uppercase tracking-widest">Google Reviews</p>
               <div className="space-y-4">
-                {c.testimonials.slice(0, 3).map((tst, i) => (
-                  <div key={i} style={{ borderColor: t.border }} className="border-b pb-4 last:border-0 last:pb-0">
-                    <p style={{ color: t.textSecondary }} className="text-sm italic">"{tst.text}"</p>
-                    <p style={{ color: t.textPrimary }} className="mt-2 text-xs font-bold">{tst.name}</p>
-                  </div>
+                {c.googleReviews.slice(0, 4).map((r) => (
+                  <ReviewCard key={r.id} review={r} t={{ ...t, surface: t.bg }} />
                 ))}
               </div>
             </Card>

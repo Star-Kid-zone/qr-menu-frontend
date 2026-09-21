@@ -5,7 +5,6 @@ export type WorkspaceToggleKey =
   | "paybtn_status"
   | "reviewbtn_status"
   | "special_offerstatus"
-  | "lottery_status"
   | "announcement_enabled";
 
 export type WorkspaceColorKey =
@@ -75,7 +74,6 @@ export interface WorkspaceSettingsFormValues {
   paybtn_status: boolean;
   reviewbtn_status: boolean;
   special_offerstatus: boolean;
-  lottery_status: boolean;
   announcement_enabled: boolean;
   announcement_text: string;
   currency_id: number | null;

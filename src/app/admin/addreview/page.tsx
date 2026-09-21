@@ -94,6 +94,17 @@ function AddReviewPageContent() {
       });
       setReviewLink(selectedPlace.reviewLink);
       toast.success("Review link saved");
+
+      // Pull the linked place's reviews right away, so the admin lands on
+      // Reviews with real data already there instead of an empty list they'd
+      // have to remember to hit "Sync Now" for.
+      try {
+        await workspaceService.syncGoogleReviews();
+        toast.success("Google reviews synced");
+      } catch (syncError) {
+        toast.error(getApiErrorMessage(syncError, "Link saved, but review sync failed — try Sync Now on the Reviews page."));
+      }
+
       router.push("/admin/listreview");
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Failed to save review link"));

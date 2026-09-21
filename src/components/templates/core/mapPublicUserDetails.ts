@@ -7,8 +7,6 @@ import type {
   GalleryItem,
   OfferRow,
   PublicBusinessBranch,
-  PublicFeatureCatalogEntry,
-  PublicFeatureGroup,
 } from './types';
 import type { SocialLink } from '@/types';
 import { MappedPublicUserDetails } from "@/types/components/templates/mapPublicUserDetails.types";
@@ -29,46 +27,6 @@ function num(v: unknown): number | null {
   if (typeof v === 'number' && Number.isFinite(v)) return v;
   if (typeof v === 'string' && v.trim() && /^\d+$/.test(v.trim())) return Number(v.trim());
   return null;
-}
-
-/**
- * API shape: `industry_feature_catalog` is keyed by industry id (`"2"`, `"3"`, …).
- * Each value is an object: group name → array of `{ id, name }` (or legacy strings).
- */
-function extractCatalogForIndustry(
-  cat: Record<string, unknown> | null,
-  industryId: number | null
-): { groups: PublicFeatureGroup[]; flat: PublicFeatureCatalogEntry[] } {
-  const groups: PublicFeatureGroup[] = [];
-  const flat: PublicFeatureCatalogEntry[] = [];
-  if (!cat || industryId == null || industryId <= 0) {
-    return { groups, flat };
-  }
-  const bucket = cat[String(industryId)];
-  if (!bucket || typeof bucket !== 'object' || Array.isArray(bucket)) {
-    return { groups, flat };
-  }
-  for (const [groupName, val] of Object.entries(bucket as Record<string, unknown>)) {
-    if (!groupName || groupName.startsWith('_')) continue;
-    const items: string[] = [];
-    if (!Array.isArray(val)) continue;
-    let idx = 0;
-    for (const row of val) {
-      let label = '';
-      if (row && typeof row === 'object' && !Array.isArray(row)) {
-        const o = row as Record<string, unknown>;
-        label = safeString(o.name ?? o.title, '');
-      } else if (typeof row === 'string' && row.trim()) {
-        label = row.trim();
-      }
-      if (!label) continue;
-      items.push(label);
-      idx += 1;
-      flat.push({ key: `${groupName}:${label}:${idx}`, label });
-    }
-    if (items.length) groups.push({ group: groupName, items });
-  }
-  return { groups, flat };
 }
 
 function parseCurrency(settings: Record<string, unknown>): MappedPublicUserDetails['currency'] {
@@ -196,15 +154,6 @@ export function mapPublicUserDetailsFromApi(data: unknown): { ok: true; value: M
   const aboutRaw = bizForSocial.about_features;
   const aboutHighlights = parseAboutHighlights(aboutRaw);
 
-  const cat = settings.industry_feature_catalog;
-  const industryFeatureCatalog =
-    cat && typeof cat === 'object' && !Array.isArray(cat) ? (cat as Record<string, unknown>) : null;
-  const industryId = business ? num(business.industry_id) : null;
-  const { groups: featureCatalogGroups, flat: featureCatalogEntries } = extractCatalogForIndustry(
-    industryFeatureCatalog,
-    industryId
-  );
-
   const wid = num(settings.id);
 
   const value: MappedPublicUserDetails = {
@@ -222,7 +171,6 @@ export function mapPublicUserDetailsFromApi(data: unknown): { ok: true; value: M
     paybtnStatus: Boolean(settings.paybtn_status),
     reviewbtnStatus: Boolean(settings.reviewbtn_status),
     specialOfferStatus: Boolean(settings.special_offerstatus),
-    lotteryStatus: Boolean(settings.lottery_status),
     announcementEnabled: Boolean(settings.announcement_enabled),
     announcementText: typeof settings.announcement_text === 'string' ? settings.announcement_text : '',
     currency: parseCurrency(settings),
@@ -238,9 +186,6 @@ export function mapPublicUserDetailsFromApi(data: unknown): { ok: true; value: M
     workspaceGallery,
     workspaceOffersCount: rawWsOffers.length,
     aboutHighlights,
-    industryFeatureCatalog,
-    featureCatalogEntries,
-    featureCatalogGroups,
   };
 
   return { ok: true, value };

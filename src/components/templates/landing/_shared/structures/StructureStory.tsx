@@ -7,16 +7,16 @@ import { buildTheme } from "../buildTheme";
 import { FadeIn } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
 import {
-  AnnouncementBar, BannerImage, FeatureBadges, AmenitiesRow,
-  PopularMenuSection, OffersSection, ContactSection, LotterySection,
+  AnnouncementBar, BannerImage, FeatureBadges,
+  PopularMenuSection, OffersSection, GoogleReviewsSection, ContactSection,
   FooterSection,
 } from "./sections";
 
 /** Narrow single-column narrative scroll: full-bleed alternating left/right
- * image-text blocks for the story and top dishes, a stats strip, a full-bleed
- * quote slider for testimonials, then a gallery — every remaining section
- * (popular items, offers, amenities, full contact, lottery) still
- * appears via the shared blocks so nothing from the content model is cut. */
+ * image-text blocks for the story and top dishes, a stats strip, then a
+ * gallery — every remaining section (popular items, offers, full contact)
+ * still appears via the shared blocks so nothing from the content model is
+ * cut. */
 export default function StructureStory(p: LandingTemplateProps) {
   const c = getRichContent(p.data, (p.data.settings as any)?.landing_theme ?? "swiss");
   const t = buildTheme(c);
@@ -73,8 +73,6 @@ export default function StructureStory(p: LandingTemplateProps) {
           </div>
         </section>
       )}
-
-      <AmenitiesRow c={c} t={t} />
 
       {/* ── Alternating narrative blocks ── */}
       {blocks.map((block, idx) => {
@@ -133,22 +131,9 @@ export default function StructureStory(p: LandingTemplateProps) {
         </section>
       )}
 
-      {/* ── Full-bleed quote slider ── */}
-      {c.testimonials.length > 0 && (
-        <section style={{ background: t.accent, color: t.accentText }} className="px-6 py-20 text-center sm:px-10">
-          <div className="mx-auto max-w-2xl space-y-10">
-            {c.testimonials.map((tst, i) => (
-              <FadeIn key={i} delay={i * 0.1}>
-                <p className="text-xl italic leading-relaxed sm:text-2xl">"{tst.text}"</p>
-                <p className="mt-4 text-xs font-bold uppercase tracking-widest opacity-80">{tst.name}</p>
-              </FadeIn>
-            ))}
-          </div>
-        </section>
-      )}
+      <GoogleReviewsSection c={c} t={t} />
 
       <ContactSection {...ctx} />
-      <LotterySection c={c} p={p} t={t} />
 
       {/* ── FAQ, still narrow-column ── */}
       {c.faqs.length > 0 && (

@@ -56,7 +56,6 @@ export function TenantLandingPage({
     typeof settings.public_slug === "string"
       ? settings.public_slug.trim().toLowerCase()
       : null;
-  const lotteryStatus = Boolean(settings.lottery_status);
   const paymentLink = toSafeExternalUrl((data.payment as any)?.payment_link);
   const reviewLink = toSafeExternalUrl((data.review as any)?.review_link);
 
@@ -106,7 +105,6 @@ export function TenantLandingPage({
         onReview={onReview}
         track={track}
         LinkComponent={NextLinkAdapter}
-        lotteryEnabled={lotteryStatus}
       />
     </Suspense>
   );

@@ -145,7 +145,7 @@ export const ListGallery = forwardRef<ListGalleryHandle, ListGalleryProps>(({
               <span className="rounded-lg bg-primary/10 p-2 text-primary">
                 <PiImageBold />
               </span>
-              Workspace Gallery
+              Website Gallery
             </h1>
             <p className="mt-2 text-body text-muted-foreground">
               Upload ambiance shots and food photography to showcase on your landing page.

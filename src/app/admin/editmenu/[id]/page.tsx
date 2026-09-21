@@ -2,26 +2,28 @@
 
 import { useState, useEffect, use } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Select } from "@/components/ui/Select";
+import { ToggleCard } from "@/components/ui/ToggleCard";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PromptDialog } from "@/components/ui/PromptDialog";
+import { MenuItemPreviewCard } from "@/components/admin/MenuItemPreviewCard";
 import {
-  PiCheckCircleFill,
-  PiCircle,
   PiImageBold,
   PiVideoCameraBold,
   PiTrashBold,
-  PiSparkleBold,
   PiClockBold,
+  PiWarningCircleBold,
 } from "react-icons/pi";
 import { toast } from "@/components/ui/toast";
 import industryService from "@/services/industry.service";
 import { menuService } from "@/services/menu.service";
-import { Industry, IndustryCategory, IndustryType } from "@/types";
+import { workspaceService } from "@/services/workspace.service";
+import { IndustryCategory, IndustryType } from "@/types";
 import { getApiErrorMessage } from "@/utils/errors";
 import { cn } from "@/utils/cn";
 
@@ -39,17 +41,22 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
   const [description, setDescription] = useState("");
 
   const [images, setImages] = useState<File[]>([]);
+  const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [newVideoPreviewUrl, setNewVideoPreviewUrl] = useState<string | null>(null);
 
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [existingVideos, setExistingVideos] = useState<string[]>([]);
   const [mediaKeysToDelete, setMediaKeysToDelete] = useState<string[]>([]);
 
-  const [industries, setIndustries] = useState<Industry[]>([]);
   const [categories, setCategories] = useState<IndustryCategory[]>([]);
   const [types, setTypes] = useState<IndustryType[]>([]);
 
-  const [selectedIndustry, setSelectedIndustry] = useState<string>("");
+  // Industry is a business-level setting (managed once from the Menu Items
+  // page) — read it here, never asked for on this form.
+  const [industryId, setIndustryId] = useState<number | null>(null);
+  const [industryLoading, setIndustryLoading] = useState(true);
+
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedType, setSelectedType] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
@@ -60,9 +67,13 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
   const [typeSubmitting, setTypeSubmitting] = useState(false);
 
   useEffect(() => {
-    industryService.getIndustries().then((res) => {
-      setIndustries(res.data || []);
-    }).catch(console.error);
+    workspaceService.getWorkspace()
+      .then((res) => {
+        const id = res.data.business?.industryId;
+        setIndustryId(id != null ? Number(id) : null);
+      })
+      .catch(console.error)
+      .finally(() => setIndustryLoading(false));
 
     menuService.getMenu(menuId).then((res) => {
       if (res.data) {
@@ -94,14 +105,30 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
   }, [menuId]);
 
   useEffect(() => {
-    if (selectedIndustry) {
-      industryService.getCategories(selectedIndustry).then(res => setCategories(res.data || [])).catch(console.error);
-      industryService.getTypes(selectedIndustry).then(res => setTypes(res.data || [])).catch(console.error);
+    if (industryId) {
+      industryService.getCategories(industryId).then(res => setCategories(res.data || [])).catch(console.error);
+      industryService.getTypes(industryId).then(res => setTypes(res.data || [])).catch(console.error);
     } else {
       setCategories([]);
       setTypes([]);
     }
-  }, [selectedIndustry]);
+  }, [industryId]);
+
+  useEffect(() => {
+    const urls = images.map((img) => URL.createObjectURL(img));
+    setNewImagePreviews(urls);
+    return () => { urls.forEach((url) => URL.revokeObjectURL(url)); };
+  }, [images]);
+
+  useEffect(() => {
+    if (!videoFile) {
+      setNewVideoPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(videoFile);
+    setNewVideoPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [videoFile]);
 
   const toggleTime = (time: string) => {
     if (time === "All Day") { setSelectedTimes(["All Day"]); return; }
@@ -112,19 +139,20 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
   };
 
   const handleCreateCategory = () => {
-    if (!selectedIndustry) return toast.error("Please select an industry first");
+    if (!industryId) return toast.error("Set your industry on the Menu Items page first");
     setCategoryDialogOpen(true);
   };
 
   const handleCreateType = () => {
-    if (!selectedIndustry) return toast.error("Please select an industry first");
+    if (!industryId) return toast.error("Set your industry on the Menu Items page first");
     setTypeDialogOpen(true);
   };
 
   const handleSubmitCategory = async (name: string) => {
+    if (!industryId) return;
     setCategorySubmitting(true);
     try {
-      const res = await industryService.createCategory({ industry_id: Number(selectedIndustry), name });
+      const res = await industryService.createCategory({ industry_id: industryId, name });
       setCategories([...categories, res.data]);
       setSelectedCategory(res.data.name);
       toast.success("Category created");
@@ -137,9 +165,10 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
   };
 
   const handleSubmitType = async (name: string) => {
+    if (!industryId) return;
     setTypeSubmitting(true);
     try {
-      const res = await industryService.createType({ industry_id: Number(selectedIndustry), name });
+      const res = await industryService.createType({ industry_id: industryId, name });
       setTypes([...types, res.data]);
       setSelectedType(res.data.name);
       toast.success("Type created");
@@ -152,7 +181,7 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
   };
 
   const handleUpdateItem = async () => {
-    if (!itemName || !price || !description || !selectedCategory || !selectedType) {
+    if (!itemName || !price || !selectedCategory || !selectedType) {
       toast.error("Please fill in all required fields.");
       return;
     }
@@ -224,11 +253,14 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
         }
       />
 
-      {/* Two-column layout */}
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto lg:grid-cols-12 lg:overflow-hidden">
+      {/* Scrollable body */}
+      <div className="min-h-0 flex-1 overflow-y-auto pr-0.5 pb-4">
+      <div className="flex flex-col gap-4">
+      {/* Two-column layout: form fields + live preview */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
 
         {/* ── Left column (8/12) ── */}
-        <div className="flex flex-col gap-4 lg:col-span-8 lg:overflow-y-auto lg:pb-1">
+        <div className="flex flex-col gap-4 lg:col-span-8">
 
           {/* Basic Information */}
           <div className="rounded-xl border border-border bg-card p-5">
@@ -259,36 +291,21 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
 
               <div>
                 {fieldLabel("Highlight")}
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={isPopular}
-                  onClick={() => setIsPopular(!isPopular)}
-                  className={cn(
-                    "flex h-9 w-full cursor-pointer items-center justify-between rounded-lg border px-3 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98]",
-                    isPopular
-                      ? "border-primary/30 bg-primary/8 text-primary"
-                      : "border-border bg-muted text-muted-foreground hover:bg-muted/70"
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    <PiSparkleBold size={14} />
-                    <span className="text-xs font-semibold">Popular Item</span>
-                  </div>
-                  {isPopular ? (
-                    <PiCheckCircleFill size={16} className="text-primary" />
-                  ) : (
-                    <PiCircle size={16} className="text-muted-foreground" />
-                  )}
-                </button>
+                <ToggleCard
+                  checked={isPopular}
+                  onChange={setIsPopular}
+                  label="Popular Item"
+                  description="Feature this dish"
+                  className="p-3"
+                />
               </div>
 
               <div className="md:col-span-2">
-                {fieldLabel("Description", true)}
+                {fieldLabel("Description")}
                 <Textarea
                   id="item-description"
                   rows={3}
-                  placeholder="Ingredients, dietary notes, allergens..."
+                  placeholder="Ingredients, dietary notes, allergens... (optional)"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
@@ -302,63 +319,65 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
             {/* Categorization */}
             <div className="rounded-xl border border-border bg-card p-5">
               {sectionLabel("Categorization")}
-              <div className="flex flex-col gap-4">
-                <div>
-                  {fieldLabel("Industry")}
-                  <Select
-                    id="industry"
-                    value={selectedIndustry}
-                    onChange={(e) => setSelectedIndustry(e.target.value)}
-                  >
-                    <option value="">Select Industry</option>
-                    {industries.map(ind => (
-                      <option key={ind.id} value={ind.id}>{ind.name}</option>
-                    ))}
-                  </Select>
-                </div>
 
-                <div>
-                  {fieldLabel("Category", true)}
-                  <Select
-                    id="category"
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                  >
-                    <option value="">Select category</option>
-                    {categories.map(cat => (
-                      <option key={cat.id} value={cat.name}>{cat.name}</option>
-                    ))}
-                  </Select>
-                  <button
-                    type="button"
-                    onClick={handleCreateCategory}
-                    className="mt-1 text-[11px] font-semibold text-primary hover:underline focus-visible:outline-none"
-                  >
-                    + Create New
-                  </button>
+              {!industryLoading && !industryId ? (
+                <div className="flex items-start gap-2 rounded-lg border border-amber-300/60 bg-amber-50 p-3 text-[11px] text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300">
+                  <PiWarningCircleBold size={15} className="mt-0.5 shrink-0" />
+                  <span>
+                    No industry set yet.{" "}
+                    <Link href="/admin/listmenu" className="font-semibold underline underline-offset-2">
+                      Set it on the Menu Items page
+                    </Link>{" "}
+                    to enable categories &amp; types.
+                  </span>
                 </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    {fieldLabel("Category", true)}
+                    <Select
+                      id="category"
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      disabled={industryLoading}
+                    >
+                      <option value="">Select</option>
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.name}>{cat.name}</option>
+                      ))}
+                    </Select>
+                    <button
+                      type="button"
+                      onClick={handleCreateCategory}
+                      className="mt-1 text-[11px] font-semibold text-primary hover:underline focus-visible:outline-none"
+                    >
+                      + New
+                    </button>
+                  </div>
 
-                <div>
-                  {fieldLabel("Type", true)}
-                  <Select
-                    id="type"
-                    value={selectedType}
-                    onChange={(e) => setSelectedType(e.target.value)}
-                  >
-                    <option value="">Select type</option>
-                    {types.map(typ => (
-                      <option key={typ.id} value={typ.name}>{typ.name}</option>
-                    ))}
-                  </Select>
-                  <button
-                    type="button"
-                    onClick={handleCreateType}
-                    className="mt-1 text-[11px] font-semibold text-primary hover:underline focus-visible:outline-none"
-                  >
-                    + Create New
-                  </button>
+                  <div>
+                    {fieldLabel("Type", true)}
+                    <Select
+                      id="type"
+                      value={selectedType}
+                      onChange={(e) => setSelectedType(e.target.value)}
+                      disabled={industryLoading}
+                    >
+                      <option value="">Select</option>
+                      {types.map(typ => (
+                        <option key={typ.id} value={typ.name}>{typ.name}</option>
+                      ))}
+                    </Select>
+                    <button
+                      type="button"
+                      onClick={handleCreateType}
+                      className="mt-1 text-[11px] font-semibold text-primary hover:underline focus-visible:outline-none"
+                    >
+                      + New
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Availability */}
@@ -424,8 +443,27 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
           </div>
         </div>
 
-        {/* ── Right column (4/12) ── */}
-        <div className="flex flex-col gap-4 lg:col-span-4 lg:overflow-y-auto lg:pb-1">
+        {/* ── Right column (4/12): Live Preview only ── */}
+        <div className="lg:col-span-4">
+          <div className="rounded-xl border border-border bg-card p-5 lg:sticky lg:top-0">
+            {sectionLabel("Live Preview")}
+            <MenuItemPreviewCard
+              images={[...existingImages, ...newImagePreviews]}
+              videos={[...existingVideos, ...(newVideoPreviewUrl ? [newVideoPreviewUrl] : [])]}
+              name={itemName}
+              price={price}
+              description={description}
+              category={selectedCategory}
+              type={selectedType}
+              popular={isPopular}
+              available={isActive}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Media row: Photos, Video ── */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
           {/* Photos */}
           <div className="rounded-xl border border-border bg-card p-5">
@@ -466,7 +504,7 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
                 >
                   {/* blob preview, cannot be optimized */}
                   <Image
-                    src={URL.createObjectURL(img)}
+                    src={newImagePreviews[idx] ?? URL.createObjectURL(img)}
                     alt="preview"
                     fill
                     className="object-cover"
@@ -572,7 +610,8 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
               )}
             </div>
           </div>
-        </div>
+      </div>
+      </div>
       </div>
 
       <PromptDialog

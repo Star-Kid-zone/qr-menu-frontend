@@ -8,7 +8,15 @@ export const storageKeys = {
   themeMode: 'theme-mode',
   visitorId: 'visitor_id',
   permissions: 'permissions',
+  impersonation: 'impersonation_session',
 } as const;
+
+export interface ImpersonationSession {
+  isImpersonating: boolean;
+  originalSuperadminId: string;
+  targetUserId: string;
+  targetUserName: string;
+}
 
 const CSRF_COOKIE_NAME = 'csrfToken';
 
@@ -165,4 +173,16 @@ export function getOrCreateVisitorId(factory: () => string) {
   const nextValue = factory();
   setRawStorageItem(storageKeys.visitorId, nextValue);
   return nextValue;
+}
+
+export function getImpersonationSession(): ImpersonationSession | null {
+  return getJsonStorageItem<ImpersonationSession>(storageKeys.impersonation, null);
+}
+
+export function setImpersonationSession(session: ImpersonationSession): void {
+  setJsonStorageItem(storageKeys.impersonation, session);
+}
+
+export function clearImpersonationSession(): void {
+  removeStorageItem(storageKeys.impersonation);
 }

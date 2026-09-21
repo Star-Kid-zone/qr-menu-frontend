@@ -8,9 +8,9 @@ import { buildTheme } from "../buildTheme";
 import { FadeIn } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
 import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/templates/core/socialPlatforms";
-import { LotterySection } from "./sections";
+import { ReviewCard } from "./sections";
 
-type TabId = "menu" | "about" | "gallery" | "reviews" | "community" | "visit";
+type TabId = "menu" | "about" | "gallery" | "reviews" | "visit";
 
 /** The only non-scroll-everything structure: a compact hero followed by a
  * horizontal tab bar that swaps the section shown below instead of stacking
@@ -26,10 +26,9 @@ export default function StructureTabs(p: LandingTemplateProps) {
   const tabs = useMemo(() => {
     const list: { id: TabId; label: string }[] = [];
     if (c.signatureDishes.length > 0 || c.popularItems.length > 0 || c.offers.length > 0) list.push({ id: "menu", label: c.terms.catalogLabel });
-    if (c.story || c.stats.length > 0 || c.amenities.length > 0) list.push({ id: "about", label: "About" });
+    if (c.story || c.stats.length > 0) list.push({ id: "about", label: "About" });
     if (c.gallery.length > 0) list.push({ id: "gallery", label: "Gallery" });
-    if (c.testimonials.length > 0 || c.faqs.length > 0) list.push({ id: "reviews", label: "Reviews" });
-    if (p.lotteryEnabled) list.push({ id: "community", label: "Community" });
+    if (c.googleReviews.length > 0 || c.faqs.length > 0) list.push({ id: "reviews", label: "Reviews" });
     list.push({ id: "visit", label: "Visit" });
     return list;
   }, [c, p]);
@@ -39,7 +38,6 @@ export default function StructureTabs(p: LandingTemplateProps) {
 
   return (
     <div style={{ fontFamily: t.fontFamily, backgroundColor: t.bg, color: t.textSecondary }} className="min-h-screen">
-      <LotterySection c={c} p={p} t={t} />
       {c.announcement && (
         <div style={{ background: t.border, color: t.textPrimary }} className="px-4 py-2 text-center text-xs font-semibold uppercase tracking-widest">{c.announcement}</div>
       )}
@@ -76,7 +74,7 @@ export default function StructureTabs(p: LandingTemplateProps) {
       </section>
 
       <div className="flex flex-wrap justify-center gap-2 px-5 py-3 sm:px-10">
-        {[c.cta.menuBtn && c.terms.catalogLabel, c.cta.payBtn && "Pay Online", c.cta.reviewBtn && "Reviews", c.offers.length > 0 && "Offers", p.lotteryEnabled && "Lucky Draw"]
+        {[c.cta.menuBtn && c.terms.catalogLabel, c.cta.payBtn && "Pay Online", c.cta.reviewBtn && "Reviews", c.offers.length > 0 && "Offers"]
           .filter(Boolean)
           .map((b) => <span key={b as string} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider">{b}</span>)}
       </div>
@@ -167,13 +165,6 @@ export default function StructureTabs(p: LandingTemplateProps) {
                 ))}
               </div>
             )}
-            {c.amenities.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {c.amenities.map((a) => (
-                  <span key={a} style={{ background: sectionBg, borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3 py-1.5 text-xs font-semibold">{a}</span>
-                ))}
-              </div>
-            )}
           </FadeIn>
         )}
 
@@ -191,34 +182,31 @@ export default function StructureTabs(p: LandingTemplateProps) {
 
         {currentTab === "reviews" && (
           <FadeIn>
-            {c.testimonials.length > 0 && (
-              <div className="mb-8 grid gap-4 sm:grid-cols-2">
-                {c.testimonials.map((tst, i) => (
-                  <div key={i} style={{ background: sectionBg, borderColor: t.border }} className="rounded-xl border p-5">
-                    <p style={{ color: t.textSecondary }} className="text-sm italic leading-relaxed">"{tst.text}"</p>
-                    <p style={{ color: t.textPrimary }} className="mt-2 text-xs font-bold">{tst.name}</p>
-                  </div>
-                ))}
+            {c.googleReviews.length > 0 && (
+              <div className={c.faqs.length > 0 ? "mb-10" : undefined}>
+                <h3 style={{ color: t.accent }} className="mb-4 text-[10px] font-bold uppercase tracking-widest">Google Reviews</h3>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {c.googleReviews.slice(0, 6).map((r) => (
+                    <ReviewCard key={r.id} review={r} t={t} />
+                  ))}
+                </div>
               </div>
             )}
             {c.faqs.length > 0 && (
-              <div className="space-y-3">
-                {c.faqs.map((f, i) => (
-                  <div key={i} style={{ background: sectionBg, borderColor: t.border }} className="rounded-xl border p-4">
-                    <p style={{ color: t.textPrimary }} className="text-sm font-bold">{f.q}</p>
-                    <p style={{ color: t.textSecondary }} className="mt-1 text-xs leading-relaxed">{f.a}</p>
-                  </div>
-                ))}
+              <div>
+                {c.googleReviews.length > 0 && (
+                  <h3 style={{ color: t.accent }} className="mb-4 text-[10px] font-bold uppercase tracking-widest">FAQ</h3>
+                )}
+                <div className="space-y-3">
+                  {c.faqs.map((f, i) => (
+                    <div key={i} style={{ background: sectionBg, borderColor: t.border }} className="rounded-xl border p-4">
+                      <p style={{ color: t.textPrimary }} className="text-sm font-bold">{f.q}</p>
+                      <p style={{ color: t.textSecondary }} className="mt-1 text-xs leading-relaxed">{f.a}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
-          </FadeIn>
-        )}
-
-        {currentTab === "community" && (
-          <FadeIn>
-            <p style={{ color: t.textSecondary }} className="mb-8 text-center text-sm">
-              🎟 The Lucky Draw is open — look for the floating button to play.
-            </p>
           </FadeIn>
         )}
 

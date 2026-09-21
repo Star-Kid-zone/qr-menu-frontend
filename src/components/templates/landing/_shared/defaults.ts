@@ -3,11 +3,18 @@ import { toSafeExternalUrl } from '@/utils/url';
 import { resolveTerms } from './industryTerms';
 
 export type SignatureDish = { name: string; description: string; price?: string; image?: string };
-export type Testimonial = { name: string; text: string; role?: string; rating?: number };
 export type Faq = { q: string; a: string };
 export type HoursRow = { day: string; hours: string; startTime?: string; endTime?: string };
 export type StatItem = { label: string; value: string };
-export type LotteryReward = { id: string; label: string; emoji: string; ratioWins: number; ratioPlays: number };
+export type GoogleReviewItem = {
+  id: string | number;
+  authorName: string;
+  authorPhotoUrl: string | null;
+  rating: number;
+  text: string | null;
+  relativePublishDescription: string | null;
+  publishTime?: string | null;
+};
 
 export type RichContent = ReturnType<typeof getRichContent>;
 
@@ -117,10 +124,6 @@ export function getRichContent(data: RawPublicSiteData, slug: string) {
   const logoUrl   = (settings.logo_url   as string) || '';
   const bannerUrl = (settings.banner_url as string) || '';
 
-  const amenities = Array.isArray(business.features)
-    ? (business.features as unknown[]).filter((f): f is string => typeof f === 'string' && f.trim().length > 0)
-    : [];
-
   // "Our Story" — real copy only; null (section hidden) when the tenant hasn't written anything.
   const storyHeadline = (settings.story_headline as string) ?? '';
   const storyBody = (settings.story_body as string) ?? '';
@@ -133,28 +136,15 @@ export function getRichContent(data: RawPublicSiteData, slug: string) {
     ? (settings.stats as StatItem[]).filter((s) => s?.label && s?.value)
     : [];
 
-  // Testimonials / FAQs — already filtered to visible + ordered by the backend.
-  const testimonials: Testimonial[] = Array.isArray(data.testimonials)
-    ? data.testimonials.map((t: any) => ({
-        name: t.authorName ?? '',
-        role: t.authorRole ?? undefined,
-        text: t.quote ?? '',
-        rating: t.rating ?? undefined,
-      }))
-    : [];
-
+  // FAQs — already filtered to visible + ordered by the backend.
   const faqs: Faq[] = Array.isArray(data.faqs)
     ? data.faqs.map((f: any) => ({ q: f.question ?? '', a: f.answer ?? '' }))
     : [];
 
-  const lotteryRewards: LotteryReward[] = Array.isArray(data.lotteryRewards)
-    ? data.lotteryRewards.map((r: any) => ({
-        id: String(r.id ?? ''),
-        label: r.label ?? '',
-        emoji: r.emoji ?? '🎁',
-        ratioWins: Number(r.ratioWins) || 1,
-        ratioPlays: Number(r.ratioPlays) || 1,
-      }))
+  // Google Reviews — already filtered to only the owner-featured reviews and
+  // ordered most-recent-first by the backend.
+  const googleReviews: GoogleReviewItem[] = Array.isArray(data.googleReviews)
+    ? data.googleReviews.filter((r) => r && typeof r.authorName === 'string')
     : [];
 
   // Slogan/tagline — single source of truth is the admin-entered hero tagline; no theme fallback text.
@@ -183,13 +173,11 @@ export function getRichContent(data: RawPublicSiteData, slug: string) {
     popularItems,
     logoUrl,
     bannerUrl,
-    amenities,
     currencySymbol,
     slogan,
     story,
-    testimonials,
     faqs,
-    lotteryRewards,
+    googleReviews,
     hours,
     stats,
   };

@@ -7,11 +7,11 @@ import { buildTheme } from "../buildTheme";
 import { FadeIn } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
 import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/templates/core/socialPlatforms";
-import { LotterySection } from "./sections";
+import { StarRating, ReviewAvatar } from "./sections";
 
 /** Bento/dashboard grid: variable-sized tiles for every section in the
- * content model (story, stats, dishes, popular items, offers, amenities,
- * gallery, testimonials, hours, full contact, lottery, FAQ) all
+ * content model (story, stats, dishes, popular items, offers,
+ * gallery, hours, full contact, FAQ) all
  * visible in one CSS grid without a long single scroll — the wireframe here
  * is the tile arrangement itself, not a linear reading order, but nothing
  * from the data model is left out. */
@@ -29,7 +29,6 @@ export default function StructureDashboard(p: LandingTemplateProps) {
 
   return (
     <div style={{ fontFamily: t.fontFamily, backgroundColor: t.bg, color: t.textSecondary }} className="min-h-screen">
-      <LotterySection c={c} p={p} t={t} />
       {c.announcement && (
         <div style={{ background: t.border, color: t.textPrimary }} className="px-4 py-2 text-center text-xs font-semibold uppercase tracking-widest">{c.announcement}</div>
       )}
@@ -69,7 +68,7 @@ export default function StructureDashboard(p: LandingTemplateProps) {
 
       <div className="mx-auto max-w-6xl px-5 py-3 sm:px-10">
         <div className="flex flex-wrap justify-center gap-2">
-          {[c.cta.menuBtn && c.terms.catalogLabel, c.cta.payBtn && "Pay Online", c.cta.reviewBtn && "Reviews", c.offers.length > 0 && "Offers", p.lotteryEnabled && "Lucky Draw"]
+          {[c.cta.menuBtn && c.terms.catalogLabel, c.cta.payBtn && "Pay Online", c.cta.reviewBtn && "Reviews", c.offers.length > 0 && "Offers"]
             .filter(Boolean)
             .map((b) => <span key={b as string} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider">{b}</span>)}
         </div>
@@ -90,15 +89,6 @@ export default function StructureDashboard(p: LandingTemplateProps) {
               <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-widest">Our Story</p>
               {c.story.headline && <h3 style={{ color: t.textPrimary }} className="font-bold">{c.story.headline}</h3>}
               {c.story.body && <p style={{ color: t.textSecondary }} className="mt-2 text-sm leading-relaxed line-clamp-6">{c.story.body}</p>}
-            </Tile>
-          )}
-
-          {c.amenities.length > 0 && (
-            <Tile className="col-span-2">
-              <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-widest">What We Offer</p>
-              <div className="flex flex-wrap gap-1.5">
-                {c.amenities.map((a) => <span key={a} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-2.5 py-1 text-[10px] font-semibold">{a}</span>)}
-              </div>
             </Tile>
           )}
 
@@ -134,14 +124,6 @@ export default function StructureDashboard(p: LandingTemplateProps) {
             </Tile>
           ))}
 
-          {c.testimonials.slice(0, 1).map((tst, i) => (
-            <Tile key={i} className="col-span-2 row-span-2">
-              <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-widest">Guest Review</p>
-              <p style={{ color: t.textSecondary }} className="text-sm italic leading-relaxed">"{tst.text}"</p>
-              <p style={{ color: t.textPrimary }} className="mt-2 text-xs font-bold">{tst.name}</p>
-            </Tile>
-          ))}
-
           {c.hours.length > 0 && (
             <Tile className="col-span-2">
               <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-widest">Hours</p>
@@ -173,6 +155,19 @@ export default function StructureDashboard(p: LandingTemplateProps) {
               </div>
             </Tile>
           )}
+
+          {c.googleReviews.slice(0, 2).map((r) => (
+            <Tile key={r.id} className="col-span-2 sm:col-span-1">
+              <div className="mb-2 flex items-center gap-2">
+                <ReviewAvatar review={r} t={t} size={32} />
+                <div className="min-w-0">
+                  <p style={{ color: t.textPrimary }} className="truncate text-xs font-bold">{r.authorName}</p>
+                  <StarRating rating={r.rating} color={t.accent} />
+                </div>
+              </div>
+              {r.text && <p style={{ color: t.textSecondary }} className="text-xs leading-relaxed line-clamp-3">{r.text}</p>}
+            </Tile>
+          ))}
 
           {c.faqs.slice(0, 4).map((f, i) => (
             <Tile key={i} className="col-span-2 sm:col-span-1">

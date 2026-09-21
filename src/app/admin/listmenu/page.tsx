@@ -4,9 +4,12 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/Select";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { menuService } from "@/services/menu.service";
+import { workspaceService, type WorkspaceData } from "@/services/workspace.service";
+import industryService from "@/services/industry.service";
 import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
 import { toast } from "@/components/ui/toast";
 import {
@@ -24,6 +27,8 @@ import { downloadCsv } from "@/utils/downloadCsv";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { cn } from "@/utils/cn";
 import { NoImagePlaceholder } from "@/components/templates/core/NoImagePlaceholder";
+import { getApiErrorMessage } from "@/utils/errors";
+import type { Industry } from "@/types";
 
 interface MenuItem {
   id: string;
@@ -45,6 +50,50 @@ export default function ListMenuPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [deleteTarget, setDeleteTarget] = useState<MenuItem | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  // Industry — a business-level setting (set once), which drives the
+  // Category/Type options available when adding/editing menu items.
+  const [workspace, setWorkspace] = useState<WorkspaceData | null>(null);
+  const [industries, setIndustries] = useState<Industry[]>([]);
+  const [industryLoading, setIndustryLoading] = useState(true);
+  const [industrySaving, setIndustrySaving] = useState(false);
+
+  useEffect(() => {
+    async function loadIndustryContext() {
+      try {
+        setIndustryLoading(true);
+        const [wsRes, indRes] = await Promise.all([
+          workspaceService.getWorkspace(),
+          industryService.getIndustries(),
+        ]);
+        setWorkspace(wsRes.data);
+        setIndustries(indRes.data || []);
+      } catch (err) {
+        console.error("Failed to load industry context:", err);
+      } finally {
+        setIndustryLoading(false);
+      }
+    }
+    loadIndustryContext();
+  }, []);
+
+  const currentIndustryId = workspace?.business?.industryId != null ? Number(workspace.business.industryId) : null;
+
+  const handleIndustryChange = async (value: string) => {
+    setIndustrySaving(true);
+    try {
+      const industryId = value ? Number(value) : null;
+      await workspaceService.updateWorkspace({ business: { industryId } });
+      setWorkspace((prev) =>
+        prev && prev.business ? { ...prev, business: { ...prev.business, industryId } } : prev,
+      );
+      toast.success("Industry updated");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to update industry"));
+    } finally {
+      setIndustrySaving(false);
+    }
+  };
 
   const {
     data: itemsData,
@@ -71,14 +120,20 @@ export default function ListMenuPage() {
     }
   };
 
-  const categories = ["All", ...Array.from(new Set(items.map((item) => item.category).filter(Boolean)))];
+  // "All" and "Popular" are pinned quick-filters; the rest are the business's
+  // actual categories, sorted alphabetically.
+  const dynamicCategories = Array.from(new Set(items.map((item) => item.category).filter(Boolean)))
+    .sort((a, b) => a.localeCompare(b));
+  const categories = ["All", "Popular", ...dynamicCategories];
 
   const filteredItems = items.filter((item) => {
     const matchesSearch =
       getItemDisplayName(item).toLowerCase().includes(search.toLowerCase()) ||
       (item.category && item.category.toLowerCase().includes(search.toLowerCase())) ||
       (item.type && item.type.toLowerCase().includes(search.toLowerCase()));
-    const matchesCategory = selectedCategory === "All" || item.category === selectedCategory;
+    const matchesCategory =
+      selectedCategory === "All" ||
+      (selectedCategory === "Popular" ? !!item.popular : item.category === selectedCategory);
     return matchesSearch && matchesCategory;
   });
 
@@ -89,11 +144,28 @@ export default function ListMenuPage() {
         <div>
           <h1 className="text-lg font-bold text-foreground sm:text-xl">Menu Items</h1>
           <p className="text-[11px] text-muted-foreground sm:text-xs">
-            {items.length} dishes in {Math.max(categories.length - 1, 1)} categories
+            {items.length} dishes in {Math.max(dynamicCategories.length, 1)} categories
           </p>
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Industry (set once; drives Category/Type on Add/Edit Menu Item) */}
+          {!industryLoading && (
+            <Select
+              value={currentIndustryId ? String(currentIndustryId) : ""}
+              onChange={(e) => handleIndustryChange(e.target.value)}
+              disabled={industrySaving}
+              className="h-8 w-[6.5rem] px-2 py-0 text-[11px] sm:h-9 sm:w-36 sm:text-xs"
+            >
+              <option value="">Set Industry</option>
+              {industries.map((ind) => (
+                <option key={ind.id} value={ind.id}>
+                  {ind.name}
+                </option>
+              ))}
+            </Select>
+          )}
+
           {/* View Switcher (Desktop/Tablet) */}
           <div className="hidden items-center rounded-lg border border-border bg-card p-0.5 shadow-xs sm:flex">
             <button
@@ -172,7 +244,12 @@ export default function ListMenuPage() {
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 pt-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap">
           {categories.map((cat) => {
             const selected = cat === selectedCategory;
-            const count = cat === "All" ? items.length : items.filter((i) => i.category === cat).length;
+            const count =
+              cat === "All"
+                ? items.length
+                : cat === "Popular"
+                  ? items.filter((i) => i.popular).length
+                  : items.filter((i) => i.category === cat).length;
             return (
               <button
                 key={cat}

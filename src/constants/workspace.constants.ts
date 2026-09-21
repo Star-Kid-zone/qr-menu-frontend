@@ -250,10 +250,5 @@ export const WORKSPACE_TOGGLE_OPTIONS: WorkspaceToggleOption[] = [
     label: "Announcement banner",
     description: "Display a short message on the landing page",
   },
-  {
-    id: "lottery_status",
-    label: "Slot Lottery",
-    description: "Enable daily slot game popup on landing pages",
-  },
 ];
 

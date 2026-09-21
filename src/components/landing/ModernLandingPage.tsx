@@ -322,7 +322,7 @@ export function ModernLandingPage() {
           <div className="space-y-3 text-xs">
             <p className="font-bold text-white uppercase tracking-wider">Portals</p>
             <ul className="space-y-2 text-zinc-400">
-              <li><Link href={routes.public.login} className="hover:text-white transition">Admin Workspace</Link></li>
+              <li><Link href={routes.public.login} className="hover:text-white transition">Admin Panel</Link></li>
               <li><Link href={routes.public.register} className="hover:text-white transition">Restaurant Registration</Link></li>
               <li><Link href={routes.superadmin.home} className="hover:text-white transition">Superadmin Control</Link></li>
               <li><a href="#calculator" className="hover:text-white transition">ROI Estimator</a></li>

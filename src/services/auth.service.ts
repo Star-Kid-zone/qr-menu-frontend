@@ -11,4 +11,8 @@ export const authService = {
   changePassword: (data: Record<string, unknown>) => api.post('/auth/change-password', data),
   getProfile: () => api.get('/auth/profile'),
   logout: () => api.post('/auth/logout'),
+  exitImpersonation: () =>
+    api.post<{ message: string; user: { id: string; name: string; phone: string; role: string } }>(
+      '/auth/exit-impersonation'
+    ),
 };
