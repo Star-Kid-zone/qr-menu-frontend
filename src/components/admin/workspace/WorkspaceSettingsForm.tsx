@@ -192,6 +192,7 @@ export function WorkspaceSettingsForm({
         <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground px-1">Landing Page Design</p>
 
         <div className={layoutGridClass}>
+            {/* Brand palette — hidden, keeping only Layout visible for now
             <section className={cn("space-y-4 rounded-2xl border border-border bg-card p-4", layoutSectionClass)}>
               <div className="flex items-center gap-3">
                 <div className="rounded-xl bg-primary/10 p-2 text-primary"><PiPaletteBold className="size-5" /></div>
@@ -251,6 +252,7 @@ export function WorkspaceSettingsForm({
                 ))}
               </div>
             </section>
+            */}
 
             <section className={cn("space-y-3 rounded-2xl border border-border bg-card p-4", layoutSectionClass)}>
               <div className="flex items-center gap-3">
@@ -276,6 +278,7 @@ export function WorkspaceSettingsForm({
               </FormField>
             </section>
 
+            {/* Typography & style, Text customisation — hidden, keeping only Layout visible for now
             <section className={cn("space-y-3 rounded-2xl border border-border bg-card p-4", layoutSectionClass)}>
               <div className="flex items-center gap-3">
                 <PiSparkleBold className="size-5 text-primary" />
@@ -380,9 +383,11 @@ export function WorkspaceSettingsForm({
                 />
               </FormField>
             </section>
+            */}
         </div>
 
         {/* ── VISIBILITY ────────────────────────────────────────────────────── */}
+        {/* Visibility — hidden, keeping only Layout visible for now
         <section className="space-y-4 rounded-2xl border border-border bg-card p-4 md:p-5">
           <div className="flex items-center gap-3">
             <PiSparkleBold className="size-5 text-primary" />
@@ -394,6 +399,7 @@ export function WorkspaceSettingsForm({
             ))}
           </div>
         </section>
+        */}
       </div>
       )}
 
@@ -403,6 +409,7 @@ export function WorkspaceSettingsForm({
         <p className="text-caption font-semibold uppercase tracking-wide text-muted-foreground px-1">Menu Page Design</p>
 
         <div className={layoutGridClass}>
+            {/* Brand palette — hidden, keeping only Layout visible for now
             <section className={cn("space-y-4 rounded-2xl border border-border bg-card p-4", layoutSectionClass)}>
               <div className="flex items-center gap-3">
                 <div className="rounded-xl bg-primary/10 p-2 text-primary"><PiPaletteBold className="size-5" /></div>
@@ -462,6 +469,7 @@ export function WorkspaceSettingsForm({
                 ))}
               </div>
             </section>
+            */}
 
             <section className={cn("space-y-3 rounded-2xl border border-border bg-card p-4", layoutSectionClass)}>
               <div className="flex items-center gap-3">
@@ -480,6 +488,7 @@ export function WorkspaceSettingsForm({
               </FormField>
             </section>
 
+            {/* Typography & style — hidden, keeping only Layout visible for now
             <section className={cn("space-y-3 rounded-2xl border border-border bg-card p-4", layoutSectionClass)}>
               <div className="flex items-center gap-3">
                 <PiSparkleBold className="size-5 text-primary" />
@@ -513,6 +522,7 @@ export function WorkspaceSettingsForm({
                 />
               </FormField>
             </section>
+            */}
         </div>
       </div>
       )}

@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  PiBookOpenTextBold,
   PiForkKnifeBold,
   PiGridFourBold,
   PiMegaphoneBold,
@@ -47,12 +46,6 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
           text: "Dashboard",
           description: "Priorities and setup",
           unit: "dashboard",
-        },
-        {
-          path: routes.admin.howItWorks,
-          icon: <PiBookOpenTextBold />,
-          text: "How It Works",
-          description: "Step-by-step roadmap & guide",
         },
       ],
     },

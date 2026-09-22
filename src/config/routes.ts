@@ -9,7 +9,6 @@ export const routes = {
   },
   admin: {
     home: "/admin/home",
-    howItWorks: "/admin/how-it-works",
     addQrCode: "/admin/addqrcode",
     listMenu: "/admin/listmenu",
     addMenu: "/admin/addmenu",

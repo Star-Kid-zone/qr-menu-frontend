@@ -24,7 +24,6 @@ export interface NavbarProps {
  */
 const PAGE_TITLES: { path: string; text: string }[] = [
   { path: routes.admin.home, text: "Dashboard" },
-  { path: routes.admin.howItWorks, text: "How It Works" },
   { path: routes.admin.listBusiness, text: "Website" },
   { path: routes.admin.listMenu, text: "Menu" },
   { path: routes.admin.addMenu, text: "Menu" },
