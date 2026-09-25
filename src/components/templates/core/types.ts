@@ -109,6 +109,11 @@ export type PublicMenuTemplateProps = {
   /** When true, only popular items are shown */
   popularOnly: boolean;
   setPopularOnly: (v: boolean) => void;
+  /** All dietary tags present on at least one item (e.g. 'vegetarian') */
+  allDietaryTags: string[];
+  /** Active dietary-tag filter — null means all */
+  activeDietaryTag: string | null;
+  setActiveDietaryTag: (tag: string | null) => void;
   /** Currently open item-detail modal, if any. */
   selectedItem: Menu | null;
   openItem: (item: Menu) => void;

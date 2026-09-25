@@ -53,6 +53,8 @@ export function mapWorkspaceSettingToFormValues(setting: WorkspaceSetting | null
     special_offerstatus: !!s?.special_offerstatus,
     announcement_enabled: !!s?.announcement_enabled,
     announcement_text:   s?.announcement_text || '',
+    announcement_starts_at: s?.announcement_starts_at || '',
+    announcement_ends_at:   s?.announcement_ends_at   || '',
     currency_id: s?.currency_id ? Number(s.currency_id) : null,
   };
 }
@@ -98,6 +100,8 @@ export function getDefaultWorkspaceSettings(): WorkspaceSettingsFormValues {
     special_offerstatus: true,
     announcement_enabled: false,
     announcement_text:   '',
+    announcement_starts_at: '',
+    announcement_ends_at:   '',
     currency_id: null,
   };
 }
@@ -146,6 +150,23 @@ export function buildWorkspaceSettingsPayload(values: WorkspaceSettingsFormValue
     special_offerstatus:  values.special_offerstatus,
     announcement_enabled: values.announcement_enabled,
     announcement_text:    values.announcement_text,
+    announcement_starts_at: values.announcement_starts_at || null,
+    announcement_ends_at:   values.announcement_ends_at   || null,
     currency_id:          values.currency_id,
   } as any;
+}
+
+/** "YYYY-MM-DDTHH:mm" (datetime-local input value, browser-local time) <-> ISO string. */
+export function isoToDatetimeLocal(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+export function datetimeLocalToIso(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
 }

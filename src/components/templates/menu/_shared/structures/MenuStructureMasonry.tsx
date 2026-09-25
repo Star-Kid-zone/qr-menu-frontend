@@ -5,6 +5,8 @@ import { useMenuTemplateData } from "@/components/templates/core/useTemplateData
 import { MenuItemImage } from "@/components/templates/core/MenuImage";
 import { buildMenuTheme } from "./buildMenuTheme";
 import { MenuItemDetailModal, MenuPayFooter } from "./MenuItemDetailModal";
+import { DietaryFilterPills } from "./DietaryFilterPills";
+import { DietaryBadges } from "./DietaryBadges";
 
 /** Masonry Gallery: a Pinterest-style masonry grid of dish photos with the
  * name/price overlaid at the bottom of each tile — visual-first browsing,
@@ -32,6 +34,9 @@ export default function MenuStructureMasonry({ payload, routeSlug }: { payload: 
               <button key={cat} onClick={() => p.setActiveCategory(p.activeCategory === cat ? null : cat)} style={p.activeCategory === cat ? { background: t.accent, color: t.accentText } : { borderColor: t.border, color: t.textSecondary }} className={`rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-widest ${p.activeCategory === cat ? "" : "border"}`}>{cat}</button>
             ))}
           </div>
+          <div className="mt-2">
+            <DietaryFilterPills p={p} t={t} />
+          </div>
         </div>
       </header>
 
@@ -51,6 +56,7 @@ export default function MenuStructureMasonry({ payload, routeSlug }: { payload: 
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
                   <p className="truncate text-sm font-bold text-white">{item.item}</p>
                   <p className="font-mono text-xs font-bold text-white/90">{p.currencySymbol}{item.price}</p>
+                  <DietaryBadges item={item} className="mt-1 text-white" />
                 </div>
                 {item.popular && (
                   <span style={{ background: t.accent, color: t.accentText }} className="absolute right-2 top-2 rounded-full px-2 py-0.5 text-[9px] font-black">⭐</span>

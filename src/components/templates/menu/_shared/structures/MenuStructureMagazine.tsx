@@ -6,6 +6,8 @@ import { MenuItemImage } from "@/components/templates/core/MenuImage";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
 import { buildMenuTheme } from "./buildMenuTheme";
 import { MenuItemDetailModal, MenuPayFooter } from "./MenuItemDetailModal";
+import { DietaryFilterPills } from "./DietaryFilterPills";
+import { DietaryBadges } from "./DietaryBadges";
 
 /** Magazine Menu: a big hero banner up top, then alternating editorial rows —
  * each category gets a full-width image beside its item list, left/right
@@ -29,6 +31,9 @@ export default function MenuStructureMagazine({ payload, routeSlug }: { payload:
             style={{ background: t.bg, borderColor: t.border, color: t.textPrimary }}
             className="w-full rounded-full border px-5 py-2.5 text-sm outline-none"
           />
+        </div>
+        <div className="mx-auto mt-4 max-w-sm">
+          <DietaryFilterPills p={p} t={t} />
         </div>
       </section>
 
@@ -57,11 +62,14 @@ export default function MenuStructureMagazine({ payload, routeSlug }: { payload:
                         <div
                           key={item.id}
                           onClick={() => p.openItem(item)}
-                          className="animate-fade-in-up flex cursor-pointer items-baseline justify-between gap-3 border-b pb-2 transition-transform duration-150 ease-out active:scale-[0.98]"
+                          className="animate-fade-in-up cursor-pointer border-b pb-2 transition-transform duration-150 ease-out active:scale-[0.98]"
                           style={{ borderColor: t.border, animationDelay: `${Math.min(itemIdx, 8) * 40}ms` }}
                         >
-                          <span style={{ color: t.textPrimary }} className="min-w-0 truncate font-semibold">{item.item}</span>
-                          <span style={{ color: t.accent }} className="shrink-0 font-mono text-sm font-bold">{p.currencySymbol}{item.price}</span>
+                          <div className="flex items-baseline justify-between gap-3">
+                            <span style={{ color: t.textPrimary }} className="min-w-0 truncate font-semibold">{item.item}</span>
+                            <span style={{ color: t.accent }} className="shrink-0 font-mono text-sm font-bold">{p.currencySymbol}{item.price}</span>
+                          </div>
+                          <DietaryBadges item={item} className="mt-1.5" />
                         </div>
                       ))}
                     </div>

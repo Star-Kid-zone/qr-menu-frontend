@@ -42,6 +42,11 @@ export const businessSchema = z.object({
     }),
   ),
   active: z.boolean(),
+  // India commerce fields — all optional
+  gstin: z.string().max(32).optional().or(z.literal("")),
+  pincode: z.string().max(16).optional().or(z.literal("")),
+  tax_inclusive: z.boolean(),
+  service_charge_percent: z.string().optional().or(z.literal("")),
 });
 
 export type BusinessSchemaValues = z.infer<typeof businessSchema>;
@@ -75,6 +80,10 @@ export interface BusinessFormInitialData {
   social_media?: RawSocialLink[];
   social_links?: RawSocialLink[];
   availability?: Array<{ day: string; startTime: string; endTime: string }>;
+  gstin?: string | null;
+  pincode?: string | null;
+  taxInclusive?: boolean;
+  serviceChargePercent?: number | string | null;
 }
 
 export const editBusinessFormId = (id: number) => `inline-edit-business-${id}`;
@@ -127,6 +136,10 @@ export function BusinessForm({
       social_media: [],
       availability: [],
       active: true,
+      gstin: "",
+      pincode: "",
+      tax_inclusive: true,
+      service_charge_percent: "",
     },
   });
 
@@ -155,6 +168,10 @@ export function BusinessForm({
               endTime: to24HourTime(slot.endTime),
             }))
           : [],
+        gstin: initialData.gstin || "",
+        pincode: initialData.pincode || "",
+        tax_inclusive: initialData.taxInclusive ?? true,
+        service_charge_percent: initialData.serviceChargePercent != null ? String(initialData.serviceChargePercent) : "",
       });
     }
   }, [initialData, reset]);
@@ -276,6 +293,64 @@ export function BusinessForm({
                   disabled={disabled}
                   {...register("address")}
                 />
+              </FormField>
+              <FormField
+                label="PIN Code"
+                htmlFor="business-pincode"
+                error={errors.pincode?.message}
+              >
+                <Input
+                  id="business-pincode"
+                  placeholder="e.g. 600001"
+                  invalid={Boolean(errors.pincode)}
+                  disabled={disabled}
+                  {...register("pincode")}
+                />
+              </FormField>
+              <FormField
+                label="GSTIN (optional)"
+                htmlFor="business-gstin"
+                error={errors.gstin?.message}
+              >
+                <Input
+                  id="business-gstin"
+                  placeholder="e.g. 33AAAAA0000A1Z5"
+                  invalid={Boolean(errors.gstin)}
+                  disabled={disabled}
+                  {...register("gstin")}
+                />
+              </FormField>
+              <FormField
+                label="Service Charge % (optional)"
+                htmlFor="business-service-charge"
+                error={errors.service_charge_percent?.message}
+              >
+                <Input
+                  id="business-service-charge"
+                  type="number"
+                  step="any"
+                  min="0"
+                  max="100"
+                  placeholder="e.g. 5"
+                  invalid={Boolean(errors.service_charge_percent)}
+                  disabled={disabled}
+                  {...register("service_charge_percent")}
+                />
+              </FormField>
+              <FormField
+                label="Menu Prices"
+                htmlFor="business-tax-inclusive"
+              >
+                <div className="pt-1">
+                  <ToggleCard
+                    checked={watch("tax_inclusive")}
+                    onChange={(checked) => {
+                      if (!disabled) setValue("tax_inclusive", checked, { shouldDirty: true });
+                    }}
+                    label="Prices include GST"
+                    description="Off = GST added at checkout/receipt"
+                  />
+                </div>
               </FormField>
             </div>
           </Card>

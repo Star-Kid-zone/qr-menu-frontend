@@ -50,6 +50,12 @@ export interface Menu {
   popular: boolean;
   availability: boolean;
   availability_time?: string;
+  /** e.g. ['vegetarian', 'gluten_free'] — see constants/dietary.constants.ts */
+  dietaryTags?: string[];
+  allergens?: string[];
+  /** 0 (not spicy) to 3 (hot); undefined/null = not specified */
+  spiceLevel?: number | null;
+  calories?: number | null;
   created_at?: string;
   updated_at?: string;
 }

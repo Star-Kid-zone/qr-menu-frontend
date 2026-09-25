@@ -6,6 +6,8 @@ import { MenuItemImage } from "@/components/templates/core/MenuImage";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
 import { buildMenuTheme } from "./buildMenuTheme";
 import { MenuItemDetailModal, MenuPayFooter } from "./MenuItemDetailModal";
+import { DietaryFilterPills } from "./DietaryFilterPills";
+import { DietaryBadges } from "./DietaryBadges";
 
 /** Story Menu: each category is its own full-width banner section with a
  * short intro line, items listed beneath — mirrors the landing page's
@@ -29,6 +31,9 @@ export default function MenuStructureStory({ payload, routeSlug }: { payload: Pu
             style={{ background: t.sectionBg, borderColor: t.border, color: t.textPrimary }}
             className="w-full rounded-full border px-5 py-2.5 text-sm outline-none"
           />
+        </div>
+        <div className="mt-4 flex justify-center">
+          <DietaryFilterPills p={p} t={t} />
         </div>
       </header>
 
@@ -59,6 +64,7 @@ export default function MenuStructureStory({ payload, routeSlug }: { payload: Pu
                       <div className="min-w-0">
                         <h3 style={{ color: t.textPrimary }} className="font-bold">{item.item}</h3>
                         {item.description && <p style={{ color: t.textSecondary }} className="mt-1 text-sm leading-relaxed">{item.description}</p>}
+                        <DietaryBadges item={item} className="mt-1.5" />
                       </div>
                       <span style={{ color: t.accent }} className="shrink-0 font-mono font-bold">{p.currencySymbol}{item.price}</span>
                     </div>

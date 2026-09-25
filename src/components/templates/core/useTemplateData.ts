@@ -21,11 +21,47 @@ function safeString(v: unknown, fallback = ''): string {
   return typeof v === 'string' && v.trim() ? v : fallback;
 }
 
+/**
+ * Captures how the guest arrived — UTM params (if this link was tagged) and
+ * the referring site's hostname (if any) — read once per page load. Absent
+ * on a direct visit or a same-site navigation with no query params, which is
+ * expected; the dashboard falls back to "direct" for those.
+ */
+function getAcquisitionMetadata(): Record<string, string> {
+  if (typeof window === 'undefined') return {};
+  const meta: Record<string, string> = {};
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const utmSource = params.get('utm_source');
+    const utmMedium = params.get('utm_medium');
+    const utmCampaign = params.get('utm_campaign');
+    if (utmSource) meta.utmSource = utmSource;
+    if (utmMedium) meta.utmMedium = utmMedium;
+    if (utmCampaign) meta.utmCampaign = utmCampaign;
+  } catch {
+    // ignore malformed query string
+  }
+
+  try {
+    if (document.referrer) {
+      const referrerHost = new URL(document.referrer).hostname;
+      if (referrerHost && referrerHost !== window.location.hostname) {
+        meta.referrerHost = referrerHost;
+      }
+    }
+  } catch {
+    // ignore malformed referrer
+  }
+
+  return meta;
+}
+
 export function useLandingTemplateData(mapped: MappedPublicUserDetails, routeSlug: string | null): PublicLandingTemplateProps {
   const { track } = useAnalytics({ userId: mapped.userId });
 
   useEffect(() => {
-    track('visit', 'landing_page', { page: 'landing', path: window.location.pathname });
+    track('visit', 'landing_page', { page: 'landing', path: window.location.pathname, ...getAcquisitionMetadata() });
   }, [track]);
 
   const isSubdomain = useIsSubdomain();
@@ -87,10 +123,11 @@ export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: strin
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [activeType, setActiveType] = useState<string | null>(null);
   const [popularOnly, setPopularOnly] = useState(false);
+  const [activeDietaryTag, setActiveDietaryTag] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<Menu | null>(null);
 
   useEffect(() => {
-    track('visit', 'menu_page', { page: 'menu', path: window.location.pathname });
+    track('visit', 'menu_page', { page: 'menu', path: window.location.pathname, ...getAcquisitionMetadata() });
   }, [track]);
 
   const openItem = useCallback(
@@ -124,6 +161,14 @@ export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: strin
 
   const hasPopular = useMemo(() => menuItems.some((it) => it.popular), [menuItems]);
 
+  const allDietaryTags = useMemo(() => {
+    const seen = new Set<string>();
+    for (const it of menuItems) {
+      (it.dietaryTags || []).forEach((tag) => tag && seen.add(tag));
+    }
+    return Array.from(seen);
+  }, [menuItems]);
+
   // ── Apply all active filters ──────────────────────────────────────────────
   const filtered = useMemo(() => {
     let list = menuItems;
@@ -137,6 +182,9 @@ export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: strin
     if (activeType) {
       list = list.filter((it) => it.type === activeType);
     }
+    if (activeDietaryTag) {
+      list = list.filter((it) => (it.dietaryTags || []).includes(activeDietaryTag));
+    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter(
@@ -148,7 +196,7 @@ export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: strin
     }
 
     return list;
-  }, [menuItems, popularOnly, activeCategory, activeType, searchQuery]);
+  }, [menuItems, popularOnly, activeCategory, activeType, activeDietaryTag, searchQuery]);
 
   // ── Track guest searches, debounced so we log intent, not keystrokes ──────
   useEffect(() => {
@@ -204,6 +252,9 @@ export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: strin
     setActiveType,
     popularOnly,
     setPopularOnly,
+    allDietaryTags,
+    activeDietaryTag,
+    setActiveDietaryTag,
     selectedItem,
     openItem,
     closeItem,

@@ -6,6 +6,8 @@ import { useMenuTemplateData } from "@/components/templates/core/useTemplateData
 import { MenuItemImage } from "@/components/templates/core/MenuImage";
 import { buildMenuTheme } from "./buildMenuTheme";
 import { MenuItemDetailModal, MenuPayFooter } from "./MenuItemDetailModal";
+import { DietaryFilterPills } from "./DietaryFilterPills";
+import { DietaryBadges } from "./DietaryBadges";
 
 /** Accordion Categories: each category collapses/expands independently
  * (several can be open at once) instead of a persistent scroll or a
@@ -41,6 +43,9 @@ export default function MenuStructureAccordion({ payload, routeSlug }: { payload
             style={{ background: t.sectionBg, borderColor: t.border, color: t.textPrimary }}
             className="mt-3 w-full rounded-full border px-5 py-2.5 text-sm outline-none"
           />
+          <div className="mt-2">
+            <DietaryFilterPills p={p} t={t} />
+          </div>
         </div>
       </header>
 
@@ -76,6 +81,7 @@ export default function MenuStructureAccordion({ payload, routeSlug }: { payload
                               <span style={{ color: t.accent }} className="shrink-0 font-mono text-xs font-bold">{p.currencySymbol}{item.price}</span>
                             </div>
                             {item.description && <p style={{ color: t.textSecondary }} className="mt-1 line-clamp-1 text-xs">{item.description}</p>}
+                            <DietaryBadges item={item} className="mt-1.5" />
                           </div>
                         </div>
                       ))}

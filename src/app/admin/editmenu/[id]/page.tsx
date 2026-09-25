@@ -12,6 +12,7 @@ import { ToggleCard } from "@/components/ui/ToggleCard";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PromptDialog } from "@/components/ui/PromptDialog";
 import { MenuItemPreviewCard } from "@/components/admin/MenuItemPreviewCard";
+import { DietaryNutritionFields } from "@/components/admin/DietaryNutritionFields";
 import {
   PiImageBold,
   PiVideoCameraBold,
@@ -61,6 +62,11 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
   const [selectedType, setSelectedType] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
 
+  const [dietaryTags, setDietaryTags] = useState<string[]>([]);
+  const [allergens, setAllergens] = useState<string[]>([]);
+  const [spiceLevel, setSpiceLevel] = useState<number | null>(null);
+  const [calories, setCalories] = useState("");
+
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [typeDialogOpen, setTypeDialogOpen] = useState(false);
   const [categorySubmitting, setCategorySubmitting] = useState(false);
@@ -100,6 +106,12 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
         if (res.data.videos && Array.isArray(res.data.videos)) {
           setExistingVideos(res.data.videos);
         }
+
+        const data = res.data as unknown as Record<string, unknown>;
+        if (Array.isArray(data.dietaryTags)) setDietaryTags(data.dietaryTags as string[]);
+        if (Array.isArray(data.allergens)) setAllergens(data.allergens as string[]);
+        if (typeof data.spiceLevel === "number") setSpiceLevel(data.spiceLevel);
+        if (typeof data.calories === "number") setCalories(String(data.calories));
       }
     }).catch(console.error);
   }, [menuId]);
@@ -196,6 +208,10 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
       formData.append("availabilityTime", selectedTimes.join(","));
       formData.append("category", selectedCategory);
       formData.append("type", selectedType);
+      formData.append("dietaryTags", JSON.stringify(dietaryTags));
+      formData.append("allergens", JSON.stringify(allergens));
+      formData.append("spiceLevel", spiceLevel !== null ? String(spiceLevel) : "");
+      formData.append("calories", calories);
       if (mediaKeysToDelete.length > 0) {
         formData.append("mediaKeysToDelete", JSON.stringify(mediaKeysToDelete));
       }
@@ -441,6 +457,17 @@ export default function EditMenuPage({ params }: { params: Promise<{ id: string 
               </div>
             </div>
           </div>
+
+          <DietaryNutritionFields
+            dietaryTags={dietaryTags}
+            onDietaryTagsChange={setDietaryTags}
+            allergens={allergens}
+            onAllergensChange={setAllergens}
+            spiceLevel={spiceLevel}
+            onSpiceLevelChange={setSpiceLevel}
+            calories={calories}
+            onCaloriesChange={setCalories}
+          />
         </div>
 
         {/* ── Right column (4/12): Live Preview only ── */}

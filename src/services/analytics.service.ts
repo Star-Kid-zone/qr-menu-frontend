@@ -53,6 +53,8 @@ export interface DashboardData {
     count: number;
   }>;
   topSearches: Array<{ query: string; count: number }>;
+  /** How guests arrived — 'direct' when no UTM param or cross-site referrer was captured. */
+  acquisition: Array<{ source: string; count: number }>;
 }
 
 export interface VisitorRow {

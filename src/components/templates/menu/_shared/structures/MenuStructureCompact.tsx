@@ -4,6 +4,8 @@ import type { PublicMenuPayload } from "@/types/public-site";
 import { useMenuTemplateData } from "@/components/templates/core/useTemplateData";
 import { buildMenuTheme } from "./buildMenuTheme";
 import { MenuItemDetailModal, MenuPayFooter } from "./MenuItemDetailModal";
+import { DietaryFilterPills } from "./DietaryFilterPills";
+import { DietaryBadges } from "./DietaryBadges";
 
 /** Compact Table: dense single-column rows with a dotted leader between name
  * and price, minimal imagery — reads like a printed menu card rather than an
@@ -26,6 +28,9 @@ export default function MenuStructureCompact({ payload, routeSlug }: { payload: 
             style={{ borderColor: t.border, color: t.textPrimary, background: "transparent" }}
             className="w-full rounded-full border px-4 py-1.5 text-xs outline-none"
           />
+        </div>
+        <div className="mt-3 flex justify-center">
+          <DietaryFilterPills p={p} t={t} />
         </div>
       </header>
 
@@ -50,6 +55,7 @@ export default function MenuStructureCompact({ payload, routeSlug }: { payload: 
                       <span style={{ color: t.accent }} className="shrink-0 font-mono text-sm font-bold">{p.currencySymbol}{item.price}</span>
                     </div>
                     {item.description && <p style={{ color: t.textSecondary }} className="mt-0.5 text-xs italic">{item.description}</p>}
+                    <DietaryBadges item={item} className="mt-1.5" />
                   </div>
                 ))}
               </div>

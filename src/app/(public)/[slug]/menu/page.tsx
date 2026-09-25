@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { requireMenuBySlug } from "@/services/public-site.service";
 import { getTenantPublicUrl } from "@/config/app.constants";
 import { TenantMenuPage } from "../../menu/TenantMenuPage";
+import { MenuItemSchema } from "@/components/seo/MenuItemSchema";
 
 export async function generateMetadata({
   params,
@@ -58,12 +59,21 @@ export default async function SlugMenuPage({
   const menuTheme = payload.mapped.menuThemeRaw ?? "swiss";
   const rawMenuStructure = payload.mapped.settings?.menu_structure;
   const menuStructure = typeof rawMenuStructure === "string" ? rawMenuStructure : "";
+  const businessName = (payload.mapped.business?.business_name as string) || "Restaurant";
 
   return (
-    <TenantMenuPage
-      payload={payload}
-      menuTheme={menuTheme}
-      menuStructure={menuStructure}
-    />
+    <>
+      <MenuItemSchema
+        menuItems={payload.menuItems}
+        businessName={businessName}
+        url={getTenantPublicUrl(slug)}
+        currencyCode={payload.mapped.currency?.code || "USD"}
+      />
+      <TenantMenuPage
+        payload={payload}
+        menuTheme={menuTheme}
+        menuStructure={menuStructure}
+      />
+    </>
   );
 }

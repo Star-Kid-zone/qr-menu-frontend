@@ -4,8 +4,10 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  PiCalendarCheckBold,
   PiForkKnifeBold,
   PiGridFourBold,
+  PiListChecksBold,
   PiMegaphoneBold,
   PiQrCodeBold,
   PiStarBold,
@@ -98,6 +100,25 @@ const Sidebar = ({ isOpen, toggleSidebar }: SidebarProps) => {
           text: "QR assets",
           description: "Codes and printouts",
           unit: "qr-assets",
+        },
+      ],
+    },
+    {
+      label: "Operations",
+      items: [
+        {
+          path: routes.admin.schedule,
+          icon: <PiCalendarCheckBold />,
+          text: "Schedule",
+          description: "Shift board",
+          unit: "operations",
+        },
+        {
+          path: routes.admin.checklists,
+          icon: <PiListChecksBold />,
+          text: "Checklists",
+          description: "Opening & closing tasks",
+          unit: "operations",
         },
       ],
     },

@@ -11,6 +11,7 @@ export const PERMISSION_UNITS = [
   'reviews',
   'marketing',
   'qr-assets',
+  'operations',
 ] as const;
 
 export type PermissionUnit = (typeof PERMISSION_UNITS)[number];
@@ -18,6 +19,6 @@ export type PermissionUnit = (typeof PERMISSION_UNITS)[number];
 export type StaffRole = 'manager' | 'staff';
 
 export const ROLE_PERMISSIONS: Record<StaffRole, PermissionUnit[]> = {
-  manager: ['dashboard', 'analytics', 'workspace', 'menu', 'payments', 'reviews', 'marketing', 'qr-assets'],
-  staff: ['menu', 'workspace'],
+  manager: ['dashboard', 'analytics', 'workspace', 'menu', 'payments', 'reviews', 'marketing', 'qr-assets', 'operations'],
+  staff: ['menu', 'workspace', 'operations'],
 };

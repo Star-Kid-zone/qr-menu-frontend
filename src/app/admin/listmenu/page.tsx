@@ -11,6 +11,8 @@ import { menuService } from "@/services/menu.service";
 import { workspaceService, type WorkspaceData } from "@/services/workspace.service";
 import industryService from "@/services/industry.service";
 import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
+import { MenuImportModal } from "@/components/admin/MenuImportModal";
+import { BulkPriceAdjustModal } from "@/components/admin/BulkPriceAdjustModal";
 import { toast } from "@/components/ui/toast";
 import {
   PiForkKnifeBold,
@@ -18,6 +20,8 @@ import {
   PiPlusBold,
   PiTrashBold,
   PiDownloadSimpleBold,
+  PiUploadSimpleBold,
+  PiCalculatorBold,
   PiSparkleFill,
   PiMagnifyingGlassBold,
   PiSquaresFourBold,
@@ -50,6 +54,9 @@ export default function ListMenuPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [deleteTarget, setDeleteTarget] = useState<MenuItem | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [importOpen, setImportOpen] = useState(false);
+  const [bulkPriceOpen, setBulkPriceOpen] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   // Industry — a business-level setting (set once), which drives the
   // Category/Type options available when adding/editing menu items.
@@ -117,6 +124,19 @@ export default function ListMenuPage() {
       fetchMenus();
     } catch {
       toast.error("Failed to delete item");
+    }
+  };
+
+  const handleToggleAvailability = async (item: MenuItem) => {
+    setTogglingId(item.id);
+    try {
+      const res = await menuService.toggleAvailability(item.id);
+      toast.success((res.data as { message?: string })?.message || "Availability updated");
+      fetchMenus();
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to update availability"));
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -195,6 +215,28 @@ export default function ListMenuPage() {
               <PiListDashesBold size={15} />
             </button>
           </div>
+
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="hidden sm:inline-flex"
+            leftIcon={<PiCalculatorBold size={14} />}
+            onClick={() => setBulkPriceOpen(true)}
+          >
+            Bulk Price
+          </Button>
+
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="hidden sm:inline-flex"
+            leftIcon={<PiUploadSimpleBold size={14} />}
+            onClick={() => setImportOpen(true)}
+          >
+            Import
+          </Button>
 
           <Button
             type="button"
@@ -334,11 +376,19 @@ export default function ListMenuPage() {
                       <span className="text-[10px] font-bold uppercase tracking-wider text-primary truncate">
                         {item.category || "Dish"}
                       </span>
-                      {!item.availability && (
-                        <span className="rounded bg-muted px-1.5 py-0.2 text-[9px] font-semibold text-muted-foreground">
-                          Unavailable
-                        </span>
-                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleToggleAvailability(item); }}
+                        disabled={togglingId === item.id}
+                        className={cn(
+                          "rounded px-1.5 py-0.2 text-[9px] font-semibold transition-colors active:scale-95",
+                          item.availability
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400"
+                            : "bg-muted text-muted-foreground",
+                        )}
+                      >
+                        {togglingId === item.id ? "..." : item.availability ? "Available" : "Sold Out"}
+                      </button>
                     </div>
                     <h3 className="truncate text-xs font-bold text-foreground">
                       {getItemDisplayName(item)}
@@ -403,16 +453,20 @@ export default function ListMenuPage() {
                         </div>
 
                         <div className="absolute right-2.5 top-2.5">
-                          <span
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleToggleAvailability(item); }}
+                            disabled={togglingId === item.id}
+                            title="Tap to toggle sold-out status"
                             className={cn(
-                              "rounded-md px-2 py-0.5 text-[10px] font-bold shadow-xs backdrop-blur-xs",
+                              "rounded-md px-2 py-0.5 text-[10px] font-bold shadow-xs backdrop-blur-xs transition active:scale-95",
                               item.availability
-                                ? "bg-emerald-500 text-white"
-                                : "bg-black/60 text-white/90"
+                                ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                                : "bg-black/60 text-white/90 hover:bg-black/70"
                             )}
                           >
-                            {item.availability ? "Available" : "Unavailable"}
-                          </span>
+                            {togglingId === item.id ? "..." : item.availability ? "Available" : "Sold Out"}
+                          </button>
                         </div>
                       </div>
 
@@ -504,16 +558,19 @@ export default function ListMenuPage() {
                           <td className="px-4 py-3 text-muted-foreground">{item.type || "—"}</td>
                           <td className="px-4 py-3 font-bold tabular-figures text-foreground">${Number(item.price).toFixed(2)}</td>
                           <td className="px-4 py-3">
-                            <span
+                            <button
+                              type="button"
+                              onClick={() => handleToggleAvailability(item)}
+                              disabled={togglingId === item.id}
                               className={cn(
-                                "rounded-md px-2 py-0.5 text-[10px] font-bold",
+                                "rounded-md px-2 py-0.5 text-[10px] font-bold transition active:scale-95",
                                 item.availability
-                                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400"
-                                  : "bg-muted text-muted-foreground"
+                                  ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-400"
+                                  : "bg-muted text-muted-foreground hover:bg-muted/70"
                               )}
                             >
-                              {item.availability ? "Available" : "Unavailable"}
-                            </span>
+                              {togglingId === item.id ? "..." : item.availability ? "Available" : "Sold Out"}
+                            </button>
                           </td>
                           <td className="px-4 py-3 text-right">
                             <div className="flex items-center justify-end gap-1.5">
@@ -556,6 +613,19 @@ export default function ListMenuPage() {
         description={`Are you sure you want to delete "${
           deleteTarget ? getItemDisplayName(deleteTarget) : "this menu item"
         }"? This action cannot be undone.`}
+      />
+
+      <MenuImportModal
+        isOpen={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={fetchMenus}
+      />
+
+      <BulkPriceAdjustModal
+        isOpen={bulkPriceOpen}
+        onClose={() => setBulkPriceOpen(false)}
+        categories={dynamicCategories}
+        onApplied={fetchMenus}
       />
     </div>
   );

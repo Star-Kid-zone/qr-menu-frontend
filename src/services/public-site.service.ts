@@ -2,7 +2,7 @@ import 'server-only';
 
 import { cache } from 'react';
 import { headers } from 'next/headers';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { APP_NAME, SERVER_API_BASE_URL } from '@/config/app.constants';
 import { mapPublicUserDetailsFromApi } from '@/components/templates/core/mapPublicUserDetails';
@@ -12,12 +12,16 @@ import { normalizeMenuItems } from '@/utils/public-site.utils';
 import type { PublicMenuPayload } from '@/types/public-site';
 import { getTenantSlugFromHost } from '@/utils/tenantHost';
 
-export const PUBLIC_REVALIDATE_SECONDS = 0;
+// Guest pages are cached for up to a minute and invalidated immediately on
+// any admin edit via on-demand revalidation (see revalidatePortal on the
+// backend + /api/revalidate below) — this restores real ISR/CDN caching
+// instead of re-fetching from the API on every single guest request.
+export const PUBLIC_REVALIDATE_SECONDS = 60;
 
-async function fetchJson(path: string, init?: RequestInit & { revalidate?: number }) {
+async function fetchJson(path: string, init?: RequestInit & { revalidate?: number; tags?: string[] }) {
   const response = await fetch(`${SERVER_API_BASE_URL}${path}`, {
     ...init,
-    next: { revalidate: init?.revalidate ?? PUBLIC_REVALIDATE_SECONDS },
+    next: { revalidate: init?.revalidate ?? PUBLIC_REVALIDATE_SECONDS, tags: init?.tags },
     headers: {
       Accept: 'application/json',
       'X-Requested-With': 'XMLHttpRequest',
@@ -33,7 +37,10 @@ async function fetchJson(path: string, init?: RequestInit & { revalidate?: numbe
 }
 
 export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<RawPublicSiteData> => {
-  const portalResponse = await fetchJson(`/public/portal/${encodeURIComponent(slug.trim())}`);
+  const normalizedSlug = slug.trim().toLowerCase();
+  const portalResponse = await fetchJson(`/public/portal/${encodeURIComponent(slug.trim())}`, {
+    tags: [`portal:${normalizedSlug}`],
+  });
   if (!portalResponse) throw new Error('Empty response');
   const portal = portalResponse as any;
 
@@ -54,6 +61,10 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
           image_url: item.imageUrl ?? null,  // API uses camelCase, Menu type uses snake_case
           images: Array.isArray(item.images) ? item.images : [],
           videos: Array.isArray(item.videos) ? item.videos : [],
+          dietaryTags: Array.isArray(item.dietaryTags) ? item.dietaryTags : [],
+          allergens: Array.isArray(item.allergens) ? item.allergens : [],
+          spiceLevel: typeof item.spiceLevel === 'number' ? item.spiceLevel : null,
+          calories: typeof item.calories === 'number' ? item.calories : null,
         });
       });
     });
@@ -238,11 +249,40 @@ export function buildPublicMetadata({
   };
 }
 
+/**
+ * Checks whether an unresolved slug/path has a stored redirect (see the
+ * Redirects admin page — created automatically whenever a workspace changes
+ * its public slug) before giving up with a 404, so a bookmarked/shared/
+ * indexed old URL still lands somewhere. Uses Next's `redirect()` (a 307),
+ * not a literal 301/302 — matching the exact stored status code would
+ * require a middleware-level redirect instead of one thrown from a Server
+ * Component, which is a reasonable follow-up but out of scope here.
+ */
+async function redirectOrNotFound(path: string): Promise<never> {
+  let redirectTarget: string | null = null;
+
+  try {
+    const res = await fetchJson(`/public/redirects/${encodeURIComponent(path.trim().toLowerCase())}`, { revalidate: 0 });
+    const { target, targetType } = res as { target?: string; targetType?: 'internal' | 'external' };
+    if (target) {
+      redirectTarget = targetType === 'external' ? target : `/${target}`;
+    }
+  } catch {
+    // No redirect for this path — fall through to notFound() below.
+  }
+
+  // `redirect()` throws a special Next.js control-flow error — it must NOT
+  // be called inside the try/catch above, or its own throw would be
+  // swallowed by the `catch` meant only for the fetch failing.
+  if (redirectTarget) redirect(redirectTarget);
+  notFound();
+}
+
 export async function requireRawLandingBySlug(slug: string): Promise<RawPublicSiteData> {
   try {
     return await getRawLandingWithMenuBySlug(slug);
   } catch {
-    notFound();
+    return await redirectOrNotFound(slug);
   }
 }
 
@@ -250,7 +290,7 @@ export async function requireLandingBySlug(slug: string) {
   try {
     return await getLandingBySlug(slug);
   } catch {
-    notFound();
+    return await redirectOrNotFound(slug);
   }
 }
 
@@ -258,7 +298,7 @@ export async function requireLandingById(id: string) {
   try {
     return await getLandingById(id);
   } catch {
-    notFound();
+    return await redirectOrNotFound(id);
   }
 }
 
@@ -266,7 +306,7 @@ export async function requireMenuBySlug(slug: string) {
   try {
     return await getMenuBySlug(slug);
   } catch {
-    notFound();
+    return await redirectOrNotFound(slug);
   }
 }
 
@@ -274,7 +314,7 @@ export async function requireMenuById(id: string) {
   try {
     return await getMenuById(id);
   } catch {
-    notFound();
+    return await redirectOrNotFound(id);
   }
 }
 

@@ -11,6 +11,7 @@ import { PromptDialog } from "@/components/ui/PromptDialog";
 import { AdminFormPage } from "@/components/admin/AdminFormPage";
 import { MenuScanModal } from "@/components/admin/MenuScanModal";
 import { MenuItemPreviewCard } from "@/components/admin/MenuItemPreviewCard";
+import { DietaryNutritionFields } from "@/components/admin/DietaryNutritionFields";
 import Link from "next/link";
 import {
   PiImageBold,
@@ -59,6 +60,11 @@ export default function AddMenuPage() {
   const [selectedType, setSelectedType] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [scanModalOpen, setScanModalOpen] = useState(false);
+
+  const [dietaryTags, setDietaryTags] = useState<string[]>([]);
+  const [allergens, setAllergens] = useState<string[]>([]);
+  const [spiceLevel, setSpiceLevel] = useState<number | null>(null);
+  const [calories, setCalories] = useState("");
 
   useEffect(() => {
     workspaceService.getWorkspace()
@@ -165,6 +171,10 @@ export default function AddMenuPage() {
       formData.append("availabilityTime", selectedTimes.join(","));
       formData.append("category", selectedCategory);
       formData.append("type", selectedType);
+      formData.append("dietaryTags", JSON.stringify(dietaryTags));
+      formData.append("allergens", JSON.stringify(allergens));
+      if (spiceLevel !== null) formData.append("spiceLevel", String(spiceLevel));
+      if (calories) formData.append("calories", calories);
       if (images.length > 0) images.forEach((img) => formData.append("images", img));
       if (videoFile) formData.append("videos", videoFile);
       await menuService.createMenu(formData);
@@ -394,6 +404,17 @@ export default function AddMenuPage() {
               </div>
             </div>
           </div>
+
+          <DietaryNutritionFields
+            dietaryTags={dietaryTags}
+            onDietaryTagsChange={setDietaryTags}
+            allergens={allergens}
+            onAllergensChange={setAllergens}
+            spiceLevel={spiceLevel}
+            onSpiceLevelChange={setSpiceLevel}
+            calories={calories}
+            onCaloriesChange={setCalories}
+          />
         </div>
 
         {/* ── Right column (4/12): Live Preview only ── */}

@@ -62,6 +62,8 @@ import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSi
 import {
   buildWorkspaceSettingsPayload,
   mapWorkspaceSettingToFormValues,
+  isoToDatetimeLocal,
+  datetimeLocalToIso,
 } from "@/utils/workspace.utils";
 
 import type {
@@ -276,6 +278,8 @@ function ListBusinessPageContent() {
         special_offer_status: data.buttons?.specialOfferStatus ?? true,
         announcement_enabled: data.announcement?.enabled ?? false,
         announcement_text: data.announcement?.text || "",
+        announcement_starts_at: isoToDatetimeLocal(data.announcement?.startsAt as string | null | undefined),
+        announcement_ends_at: isoToDatetimeLocal(data.announcement?.endsAt as string | null | undefined),
         currency_id: data.currency ? null : null,
         logo_url: data.theme?.logoUrl || "",
         banner_url: data.theme?.bannerUrl || "",
@@ -525,6 +529,8 @@ function ListBusinessPageContent() {
     return {
       announcement_enabled: v.announcement_enabled,
       announcement_text: v.announcement_text,
+      announcement_starts_at: v.announcement_starts_at,
+      announcement_ends_at: v.announcement_ends_at,
     };
   }, [workspace]);
 
@@ -594,6 +600,8 @@ function ListBusinessPageContent() {
     async (bannerValues: {
       announcement_enabled: boolean;
       announcement_text: string;
+      announcement_starts_at?: string;
+      announcement_ends_at?: string;
     }) => {
       if (!workspace?.id) return;
       setBannersSaveLoading(true);
@@ -603,6 +611,8 @@ function ListBusinessPageContent() {
           announcement: {
             enabled: bannerValues.announcement_enabled,
             text: bannerValues.announcement_text,
+            startsAt: datetimeLocalToIso(bannerValues.announcement_starts_at),
+            endsAt: datetimeLocalToIso(bannerValues.announcement_ends_at),
           }
         });
         setBannersEditMode(false);
@@ -1093,6 +1103,10 @@ function ListBusinessPageContent() {
                       socialLinks: values.social_media,
                       availability: values.availability,
                       industryId: values.industry_id,
+                      gstin: values.gstin || null,
+                      pincode: values.pincode || null,
+                      taxInclusive: values.tax_inclusive,
+                      serviceChargePercent: values.service_charge_percent ? Number(values.service_charge_percent) : null,
                     },
                   });
                   setBusinessEditMode(false);

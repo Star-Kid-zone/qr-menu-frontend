@@ -571,6 +571,52 @@ export default function AdminHomePage() {
               </p>
             )}
           </div>
+
+          {/* Acquisition Sources */}
+          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Traffic</p>
+                <p className="text-sm font-semibold text-foreground">Acquisition Sources</p>
+              </div>
+              <span className="text-xs font-medium text-muted-foreground">
+                {(data?.acquisition || []).reduce((sum, a) => sum + a.count, 0)} visits
+              </span>
+            </div>
+
+            {loading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-6 w-full" />)}
+              </div>
+            ) : data?.acquisition && data.acquisition.length > 0 ? (
+              <div className="space-y-3">
+                {(() => {
+                  const totalAcquisition = data.acquisition.reduce((sum, a) => sum + a.count, 0) || 1;
+                  return data.acquisition.slice(0, 8).map(({ source, count }) => {
+                    const pct = Math.round((count / totalAcquisition) * 100);
+                    return (
+                      <div key={source} className="space-y-1">
+                        <div className="flex items-center justify-between text-xs font-medium">
+                          <span className="capitalize text-foreground">{source}</span>
+                          <span className="text-muted-foreground">{count} visits ({pct}%)</span>
+                        </div>
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full rounded-full bg-primary transition-all duration-300"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            ) : (
+              <p className="py-4 text-center text-xs text-muted-foreground">
+                No visits recorded yet for this range.
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Right Column (1/3): Highlights & Modules */}

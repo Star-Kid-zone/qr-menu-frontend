@@ -5,6 +5,8 @@ import { useMenuTemplateData } from "@/components/templates/core/useTemplateData
 import { MenuItemImage } from "@/components/templates/core/MenuImage";
 import { buildMenuTheme } from "./buildMenuTheme";
 import { MenuItemDetailModal, MenuPayFooter } from "./MenuItemDetailModal";
+import { DietaryFilterPills } from "./DietaryFilterPills";
+import { DietaryBadges } from "./DietaryBadges";
 
 /** List Classic: the intentional, named version of a single-column grouped
  * item list with top filter chips — the baseline browsing pattern, now
@@ -12,7 +14,7 @@ import { MenuItemDetailModal, MenuPayFooter } from "./MenuItemDetailModal";
 export default function MenuStructureList({ payload, routeSlug }: { payload: PublicMenuPayload; routeSlug: string | null }) {
   const p = useMenuTemplateData(payload, routeSlug);
   const t = buildMenuTheme(p);
-  const filtersActive = p.popularOnly || !!p.activeCategory || !!p.activeType;
+  const filtersActive = p.popularOnly || !!p.activeCategory || !!p.activeType || !!p.activeDietaryTag;
 
   return (
     <div style={{ background: t.bg, fontFamily: t.fontFamily, color: t.textPrimary }} className="min-h-screen pb-32">
@@ -45,11 +47,12 @@ export default function MenuStructureList({ payload, routeSlug }: { payload: Pub
               </button>
             ))}
             {filtersActive && (
-              <button onClick={() => { p.setActiveCategory(null); p.setActiveType(null); p.setPopularOnly(false); }} style={{ color: t.textSecondary }} className="text-[10px] uppercase tracking-widest underline underline-offset-2 opacity-70">
+              <button onClick={() => { p.setActiveCategory(null); p.setActiveType(null); p.setPopularOnly(false); p.setActiveDietaryTag(null); }} style={{ color: t.textSecondary }} className="text-[10px] uppercase tracking-widest underline underline-offset-2 opacity-70">
                 ✕ Clear
               </button>
             )}
           </div>
+          <DietaryFilterPills p={p} t={t} />
         </div>
       </header>
 
@@ -80,6 +83,7 @@ export default function MenuStructureList({ payload, routeSlug }: { payload: Pub
                         <span style={{ color: t.accent }} className="shrink-0 font-mono text-sm font-bold">{p.currencySymbol}{item.price}</span>
                       </div>
                       {item.description && <p style={{ color: t.textSecondary }} className="mt-1 line-clamp-2 text-xs">{item.description}</p>}
+                      <DietaryBadges item={item} className="mt-1.5" />
                     </div>
                   </div>
                 ))}

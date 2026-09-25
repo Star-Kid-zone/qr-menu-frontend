@@ -5,6 +5,8 @@ import { useMenuTemplateData } from "@/components/templates/core/useTemplateData
 import { MenuItemImage } from "@/components/templates/core/MenuImage";
 import { buildMenuTheme } from "./buildMenuTheme";
 import { MenuItemDetailModal, MenuPayFooter } from "./MenuItemDetailModal";
+import { DietaryFilterPills } from "./DietaryFilterPills";
+import { DietaryBadges } from "./DietaryBadges";
 
 /** Sidebar Categories: a sticky left category nav; the right pane shows only
  * the selected category's items (not an all-categories scroll) — closer to a
@@ -32,6 +34,9 @@ export default function MenuStructureSidebar({ payload, routeSlug }: { payload: 
             style={{ background: t.sectionBg, borderColor: t.border, color: t.textPrimary }}
             className="w-24 min-w-0 shrink rounded-full border px-3 py-2 text-sm outline-none xs:w-32 sm-mobile:w-40 sm:w-64"
           />
+        </div>
+        <div className="mx-auto mt-2 max-w-5xl">
+          <DietaryFilterPills p={p} t={t} />
         </div>
       </header>
 
@@ -88,6 +93,7 @@ export default function MenuStructureSidebar({ payload, routeSlug }: { payload: 
                         <span style={{ color: t.accent }} className="shrink-0 font-mono text-sm font-bold">{p.currencySymbol}{item.price}</span>
                       </div>
                       {item.description && <p style={{ color: t.textSecondary }} className="mt-1 line-clamp-2 text-xs">{item.description}</p>}
+                      <DietaryBadges item={item} className="mt-1.5" />
                     </div>
                   </div>
                 ))}

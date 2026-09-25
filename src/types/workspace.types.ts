@@ -76,6 +76,9 @@ export interface WorkspaceSettingsFormValues {
   special_offerstatus: boolean;
   announcement_enabled: boolean;
   announcement_text: string;
+  /** datetime-local input values ("YYYY-MM-DDTHH:mm") or "" for unset. */
+  announcement_starts_at: string;
+  announcement_ends_at: string;
   currency_id: number | null;
 }
 
@@ -143,6 +146,10 @@ export interface WorkspaceBusiness {
     id: number;
     name: string;
   } | null;
+  gstin?: string | null;
+  pincode?: string | null;
+  taxInclusive?: boolean;
+  serviceChargePercent?: number | string | null;
 }
 
 export interface WorkspaceOffer {

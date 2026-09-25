@@ -5,6 +5,8 @@ import { useMenuTemplateData } from "@/components/templates/core/useTemplateData
 import { MenuItemImage } from "@/components/templates/core/MenuImage";
 import { buildMenuTheme } from "./buildMenuTheme";
 import { MenuItemDetailModal, MenuPayFooter } from "./MenuItemDetailModal";
+import { DietaryFilterPills } from "./DietaryFilterPills";
+import { DietaryBadges } from "./DietaryBadges";
 
 /** Grid Cards: image-forward 2-3 column item grid instead of vertical rows —
  * more like a product catalog than a printed menu list. */
@@ -39,6 +41,9 @@ export default function MenuStructureGrid({ payload, routeSlug }: { payload: Pub
               <button key={cat} onClick={() => p.setActiveCategory(p.activeCategory === cat ? null : cat)} style={p.activeCategory === cat ? { background: t.accent, color: t.accentText } : { borderColor: t.border, color: t.textSecondary }} className={`rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-widest ${p.activeCategory === cat ? "" : "border"}`}>{cat}</button>
             ))}
           </div>
+          <div className="mt-2">
+            <DietaryFilterPills p={p} t={t} />
+          </div>
         </div>
       </header>
 
@@ -64,6 +69,7 @@ export default function MenuStructureGrid({ payload, routeSlug }: { payload: Pub
                         <span style={{ color: t.accent }} className="font-mono text-sm font-bold">{p.currencySymbol}{item.price}</span>
                         {item.popular && <span style={{ background: t.accent, color: t.accentText }} className="rounded-full px-1.5 py-0.5 text-[9px] font-black">⭐</span>}
                       </div>
+                      <DietaryBadges item={item} className="mt-1.5" />
                     </div>
                   </div>
                 ))}

@@ -4,6 +4,7 @@ import { Modal } from "@/components/Modal";
 import { MenuItemGallery } from "@/components/templates/core/MenuItemGallery";
 import type { PublicMenuTemplateProps } from "@/components/templates/core/types";
 import type { MenuStructureTheme } from "./buildMenuTheme";
+import { DietaryBadges } from "./DietaryBadges";
 
 /** Shared item-detail modal reused by every menu structure — keeps the same
  * "tap an item to see the full description" affordance consistent across
@@ -39,6 +40,7 @@ export function MenuItemDetailModal({ p, t }: { p: PublicMenuTemplateProps; t: M
           {p.selectedItem.category && (
             <p style={{ color: t.accent }} className="text-[10px] font-black uppercase tracking-[0.4em]">{p.selectedItem.category}</p>
           )}
+          <DietaryBadges item={p.selectedItem} />
           {p.selectedItem.description && (
             <p style={{ color: t.textSecondary }} className="text-sm leading-relaxed">{p.selectedItem.description}</p>
           )}

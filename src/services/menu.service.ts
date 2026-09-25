@@ -9,6 +9,24 @@ export interface MenuStats {
   popular: number;
 }
 
+export interface MenuImportRow {
+  item: string;
+  price: number;
+  description: string;
+  category: string;
+  type: string;
+  dietaryTags?: string[];
+  allergens?: string[];
+  spiceLevel?: number | null;
+  calories?: number | null;
+}
+
+export interface MenuImportPreviewResult {
+  valid: MenuImportRow[];
+  errors: Array<{ row: number; message: string }>;
+  totalRows: number;
+}
+
 export const menuService = {
   getMenus: () => api.get('/menu'),
   getStats: () => api.get<MenuStats>('/menu/stats'),
@@ -28,4 +46,22 @@ export const menuService = {
     api.delete(`/menu/${id}/image`, { data }),
   deleteMenuVideo: (id: string | number, data: Record<string, unknown>) =>
     api.delete(`/menu/${id}/video`, { data }),
+
+  /** 1-tap sold-out toggle — flips availability; the backend auto-schedules revival at end of business day when marking sold out. */
+  toggleAvailability: (id: string | number) => api.patch(`/menu/${id}/toggle-availability`),
+
+  bulkPriceAdjust: (payload: { itemIds?: (string | number)[]; category?: string; percent?: number; delta?: number; roundTo?: number }) =>
+    api.patch<{ message: string; count: number }>('/menu/bulk-price-adjust', payload),
+
+  /** Uploads a CSV for review — no DB write happens until importCommit is called with the reviewed rows. */
+  importPreview: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<MenuImportPreviewResult>('/menu/import/preview', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  importCommit: (items: MenuImportRow[]) =>
+    api.post<{ message: string; count: number }>('/menu/import/commit', { items }),
 };

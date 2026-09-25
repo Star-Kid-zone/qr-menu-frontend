@@ -21,6 +21,8 @@ export const routes = {
     listSetting: "/admin/listsetting",
     socialMedia: "/admin/social-media",
     staff: "/admin/staff",
+    schedule: "/admin/schedule",
+    checklists: "/admin/checklists",
   },
   user: {
     dashboard: "/",

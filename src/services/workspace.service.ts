@@ -50,6 +50,8 @@ export interface WorkspaceButtons {
 export interface WorkspaceAnnouncement {
   text: string | null;
   enabled: boolean;
+  startsAt?: string | null;
+  endsAt?: string | null;
 }
 
 export interface WorkspaceBusinessProfile {
@@ -66,6 +68,10 @@ export interface WorkspaceBusinessProfile {
   // the public-site template mapper, and admin/listbusiness's editor).
   socialLinks?: SocialLink[] | null;
   availability?: any;
+  gstin?: string | null;
+  taxInclusive?: boolean;
+  serviceChargePercent?: number | string | null;
+  pincode?: string | null;
 }
 
 export interface WorkspaceReviewConfig {

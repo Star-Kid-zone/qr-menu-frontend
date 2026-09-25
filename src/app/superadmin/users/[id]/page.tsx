@@ -75,6 +75,7 @@ import {
 } from "@/components/ui";
 import { fadeIn, fadeInUp } from "@/lib/motion";
 import { setStoredUserRole, setImpersonationSession } from "@/utils/storage.utils";
+import { TenantRedirectsPanel } from "./TenantRedirectsPanel";
 
 type TabId =
   | "overview"
@@ -84,6 +85,7 @@ type TabId =
   | "feedback"
   | "payments_reviews"
   | "staff"
+  | "redirects"
   | "analytics";
 
 interface Props {
@@ -523,6 +525,7 @@ function SuperadminUserDetailContent({ id }: Props) {
       id: "staff" as const,
       label: `Sub-Users / Staff (${detail.staff?.length ?? 0})`,
     },
+    { id: "redirects" as const, label: "Redirects" },
     { id: "analytics" as const, label: "Tenant Analytics" },
   ];
 
@@ -2014,6 +2017,11 @@ function SuperadminUserDetailContent({ id }: Props) {
             </AnimatePresence>
           </div>
         )}
+
+        {/* ========================================================================= */}
+        {/* TAB: REDIRECTS (superadmin-only) */}
+        {/* ========================================================================= */}
+        {activeTab === "redirects" && <TenantRedirectsPanel userId={userId} />}
 
         {/* ========================================================================= */}
         {/* TAB 4: OFFERS & PROMOTIONS (NEW!) */}

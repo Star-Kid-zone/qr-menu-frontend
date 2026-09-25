@@ -49,5 +49,7 @@ export const workspaceSettingsSchema = z.object({
   special_offerstatus: z.boolean(),
   announcement_enabled: z.boolean(),
   announcement_text:   z.string(),
+  announcement_starts_at: z.string(),
+  announcement_ends_at:   z.string(),
   currency_id:         z.number().int().positive().nullable(),
 });

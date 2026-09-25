@@ -350,7 +350,40 @@ export const superadminService = {
   updateTenantWorkspace(userId: string | number, data: TenantWorkspaceSettings) {
     return unwrap<any>(api.patch(`/superadmin/users/${userId}/workspace`, data));
   },
+
+  listTenantRedirects(userId: string | number) {
+    return unwrap<TenantRedirect[]>(api.get(`/superadmin/users/${userId}/redirects`));
+  },
+
+  createTenantRedirect(userId: string | number, data: CreateTenantRedirectInput) {
+    return unwrap<{ message: string; redirect: TenantRedirect }>(
+      api.post(`/superadmin/users/${userId}/redirects`, data)
+    );
+  },
+
+  deleteTenantRedirect(userId: string | number, redirectId: string | number) {
+    return unwrap<{ message: string }>(api.delete(`/superadmin/users/${userId}/redirects/${redirectId}`));
+  },
 };
+
+export interface TenantRedirect {
+  id: string;
+  workspaceId: string;
+  sourcePath: string;
+  targetType: 'internal' | 'external';
+  target: string;
+  statusCode: 301 | 302;
+  hitCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTenantRedirectInput {
+  sourcePath: string;
+  targetType?: 'internal' | 'external';
+  target: string;
+  statusCode?: 301 | 302;
+}
 
 export interface BlueprintMenuItem {
   item: string;
