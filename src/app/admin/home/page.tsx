@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Pagination } from "@/components/ui/Pagination";
-import { analyticsService, type DashboardData, type VisitorsPage } from "@/services/analytics.service";
+import { analyticsService, type DashboardData } from "@/services/analytics.service";
 import { workspaceService, type WorkspaceData } from "@/services/workspace.service";
 import { menuService, type MenuStats } from "@/services/menu.service";
 import { deriveAnalyticsMetrics } from "@/utils/analyticsMetrics";
@@ -15,35 +14,17 @@ import { downloadCsv } from "@/utils/downloadCsv";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/utils/cn";
 import {
-  PiCheckCircleFill,
-  PiCircleDashedBold,
   PiCursorClickBold,
-  PiImagesBold,
   PiPlusBold,
   PiQrCodeBold,
-  PiStarFill,
   PiStorefrontBold,
-  PiTicketBold,
   PiTrendUpBold,
   PiUsersBold,
   PiWarningCircleBold,
-  PiArrowSquareOutBold,
-  PiCreditCardBold,
-  PiGoogleLogoBold,
-  PiSparkleFill,
   PiMagnifyingGlassBold,
   PiForkKnifeBold,
   PiDownloadSimpleBold,
-  PiDeviceMobileBold,
-  PiDesktopBold,
-  PiDeviceTabletBold,
 } from "react-icons/pi";
-
-interface HealthCheck {
-  label: string;
-  done: boolean;
-  href: string;
-}
 
 type RangeKey = '7d' | '30d' | 'all';
 
@@ -59,17 +40,11 @@ export default function AdminHomePage() {
   const [range, setRange] = useState<RangeKey>('30d');
 
   const [workspace, setWorkspace] = useState<WorkspaceData | null>(null);
-  const [workspaceLoading, setWorkspaceLoading] = useState(true);
 
   const [menuStats, setMenuStats] = useState<MenuStats | null>(null);
   const [menuStatsLoading, setMenuStatsLoading] = useState(true);
 
   const [error, setError] = useState<string | null>(null);
-  const [showChecklist, setShowChecklist] = useState(false);
-
-  const [visitorsPage, setVisitorsPage] = useState<VisitorsPage | null>(null);
-  const [visitorsLoading, setVisitorsLoading] = useState(true);
-  const [visitorsPageNum, setVisitorsPageNum] = useState(1);
 
   useEffect(() => {
     async function loadDashboard() {
@@ -89,13 +64,10 @@ export default function AdminHomePage() {
   useEffect(() => {
     async function loadWorkspace() {
       try {
-        setWorkspaceLoading(true);
         const res = await workspaceService.getWorkspace();
         setWorkspace(res.data);
       } catch (err) {
         setError(getApiErrorMessage(err, "Failed to load dashboard data"));
-      } finally {
-        setWorkspaceLoading(false);
       }
     }
     loadWorkspace();
@@ -116,54 +88,7 @@ export default function AdminHomePage() {
     loadMenuStats();
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function loadVisitors() {
-      try {
-        setVisitorsLoading(true);
-        const res = await analyticsService.getVisitors(visitorsPageNum, 10);
-        if (!cancelled) setVisitorsPage(res);
-      } catch (err) {
-        console.error('Failed to load visitors:', err);
-      } finally {
-        if (!cancelled) setVisitorsLoading(false);
-      }
-    }
-    loadVisitors();
-    return () => { cancelled = true; };
-  }, [visitorsPageNum]);
 
-  const formatDevice = useCallback((userAgent: string | null) => {
-    if (!userAgent) return { label: 'Unknown', icon: <PiDesktopBold size={14} /> };
-    const ua = userAgent.toLowerCase();
-    if (/ipad|tablet/.test(ua)) return { label: 'Tablet', icon: <PiDeviceTabletBold size={14} /> };
-    if (/mobi|iphone|android/.test(ua)) return { label: 'Mobile', icon: <PiDeviceMobileBold size={14} /> };
-    return { label: 'Desktop', icon: <PiDesktopBold size={14} /> };
-  }, []);
-
-  const healthChecks: HealthCheck[] = useMemo(() => {
-    if (!workspace) return [];
-    const socialLinksCount = Array.isArray(workspace.business?.socialLinks) ? workspace.business!.socialLinks.length : 0;
-    return [
-      { label: "Menu items added", done: (menuStats?.total ?? 0) > 0, href: "/admin/listmenu" },
-      { label: "Review link set", done: !!workspace.review.googleReviewLink, href: "/admin/listreview" },
-      { label: "Payment configured", done: !!(workspace.payment.link || workspace.payment.qrImage), href: "/admin/listpayment" },
-      { label: "QR code generated", done: !!workspace.qrCode?.url, href: "/admin/addqrcode" },
-      {
-        label: "Business profile complete",
-        done: !!(workspace.business?.name && workspace.business?.phone && workspace.business?.address),
-        href: "/admin/listbusiness",
-      },
-      { label: "Social links added", done: socialLinksCount > 0, href: "/admin/social-media" },
-      { label: "Gallery has images", done: workspace.gallery.length > 0, href: "/admin/listbusiness" },
-      { label: "Offers active", done: workspace.offers.some((o) => o.isActive), href: "/admin/listbusiness" },
-      { label: "Announcement configured", done: workspace.announcement.enabled && !!workspace.announcement.text?.trim(), href: "/admin/listbusiness" },
-    ];
-  }, [workspace, menuStats]);
-
-  const healthDoneCount = healthChecks.filter((c) => c.done).length;
-  const healthPct = healthChecks.length > 0 ? Math.round((healthDoneCount / healthChecks.length) * 100) : 0;
-  const firstIncompleteCheck = healthChecks.find((c) => !c.done);
 
   const derived = useMemo(() => deriveAnalyticsMetrics(data), [data]);
 
@@ -222,8 +147,6 @@ export default function AdminHomePage() {
     },
   ];
 
-  const clickBreakdownEntries = Object.entries(data?.clickBreakdown || {}).sort(([, a], [, b]) => b - a);
-  const totalClicks = derived.totalClickSum || 1;
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto pr-1 pb-6">
@@ -304,74 +227,6 @@ export default function AdminHomePage() {
         </div>
       </div>
 
-      {/* ─── Compact Setup Status (Only takes minimal room) ─────────────── */}
-      {!workspaceLoading && healthChecks.length > 0 && (
-        <div className="shrink-0 rounded-xl border border-border bg-card p-3 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <PiSparkleFill size={14} />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-xs font-bold text-foreground">
-                    Store Setup {healthPct === 100 ? "Complete" : `${healthDoneCount}/${healthChecks.length} Ready`}
-                  </p>
-                  <span className="text-[10px] font-semibold text-muted-foreground">({healthPct}%)</span>
-                </div>
-                {firstIncompleteCheck ? (
-                  <p className="text-[11px] text-muted-foreground">
-                    Next step: <Link href={firstIncompleteCheck.href} className="font-semibold text-primary hover:underline">{firstIncompleteCheck.label} →</Link>
-                  </p>
-                ) : (
-                  <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
-                    All core features and configurations are active.
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="hidden h-2 w-28 overflow-hidden rounded-full bg-muted sm:block">
-                <div
-                  className="h-full rounded-full bg-primary transition-all duration-500"
-                  style={{ width: `${healthPct}%` }}
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowChecklist(!showChecklist)}
-                className="text-[11px] font-semibold text-muted-foreground hover:text-foreground"
-              >
-                {showChecklist ? "Hide Checklist" : "View Checklist"}
-              </button>
-            </div>
-          </div>
-
-          {/* Expandable checklist */}
-          {showChecklist && (
-            <div className="mt-3 grid grid-cols-1 gap-2 border-t border-border pt-3 sm:grid-cols-2 lg:grid-cols-3">
-              {healthChecks.map((check) => (
-                <Link
-                  key={check.label}
-                  href={check.href}
-                  className="flex items-center gap-2 rounded-lg p-1.5 text-xs transition hover:bg-muted/60"
-                >
-                  {check.done ? (
-                    <PiCheckCircleFill size={15} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
-                  ) : (
-                    <PiCircleDashedBold size={15} className="shrink-0 text-muted-foreground/40" />
-                  )}
-                  <span className={check.done ? "text-foreground" : "text-muted-foreground"}>{check.label}</span>
-                  {!check.done && (
-                    <span className="ml-auto text-[10px] font-bold text-primary">Setup →</span>
-                  )}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ─── 5 Primary KPI Cards ────────────────────────────────────────── */}
       <div className="grid shrink-0 grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
@@ -398,385 +253,133 @@ export default function AdminHomePage() {
         ))}
       </div>
 
-      {/* ─── Main Grid: Visit Trends (2 cols) + Performance Insights (1 col) ─── */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      {/* ─── Main Grid: Visit Trends ───────────────────────────────────── */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
 
-        {/* Left Column (2/3): Visit Trends, New vs Returning, Click Breakdown */}
-        <div className="flex flex-col gap-4 lg:col-span-2">
-
-          {/* Visits Over Time Chart */}
-          <Card className="rounded-xl border border-border bg-card shadow-sm">
-            <CardHeader className="border-b border-border px-5 py-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-sm font-semibold text-foreground">Traffic Over Time</CardTitle>
-                  <p className="text-xs text-muted-foreground">{rangeLabels[range]} · Daily guest visits</p>
-                </div>
-                <div className="flex items-center gap-2 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Peak: {derived.peakCount} visits ({derived.peakDay})
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="flex flex-col p-5">
-              {loading ? (
-                <div className="flex h-48 items-end gap-2">
-                  {Array.from({ length: 14 }).map((_, i) => (
-                    <Skeleton key={i} className="h-32 flex-1 rounded-t-md" />
-                  ))}
-                </div>
-              ) : data?.visitHistory && data.visitHistory.length > 0 ? (
-                <div>
-                  <div className="flex h-48 items-end gap-1.5 pt-6">
-                    {(() => {
-                      const maxCount = Math.max(...data.visitHistory.map((d) => d.count), 1);
-                      return data.visitHistory.map((val, i) => {
-                        const heightPct = (val.count / maxCount) * 100;
-                        return (
-                          <div key={i} className="group relative flex h-full flex-1 flex-col items-center justify-end">
-                            <span className="pointer-events-none absolute -top-8 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-popover px-2 py-1 text-[10px] font-bold text-popover-foreground shadow-md opacity-0 transition-opacity group-hover:opacity-100">
-                              {val.count} visits · {val.date}
-                            </span>
-                            <div
-                              className="w-full rounded-t bg-primary/75 transition-all duration-150 hover:bg-primary"
-                              style={{ height: `${Math.max(heightPct, 4)}%` }}
-                            />
-                            <span className="mt-2 text-[9px] font-medium text-muted-foreground">
-                              {new Date(val.date).toLocaleDateString(undefined, { weekday: 'narrow' })}
-                            </span>
-                          </div>
-                        );
-                      });
-                    })()}
-                  </div>
-                  <div className="mt-3 flex justify-between border-t border-border pt-2.5 text-[10px] font-medium text-muted-foreground">
-                    <span>{data.visitHistory[0]?.date}</span>
-                    <span>Average: <strong className="text-foreground">{derived.avgDailyVisits}</strong> visits/day</span>
-                    <span>{data.visitHistory[data.visitHistory.length - 1]?.date}</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex h-48 items-center justify-center text-xs text-muted-foreground">
-                  No visit history yet. Scan the QR code to record your first visit.
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* New vs Returning Visitors Trend */}
-          <Card className="rounded-xl border border-border bg-card shadow-sm">
-            <CardHeader className="border-b border-border px-5 py-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-sm font-semibold text-foreground">New vs. Returning Visitors</CardTitle>
-                  <p className="text-xs text-muted-foreground">Customer retention and acquisition breakdown</p>
-                </div>
-                <div className="flex items-center gap-3 text-xs font-semibold">
-                  <span className="flex items-center gap-1 text-primary">
-                    <span className="size-2 rounded-full bg-primary" /> New
-                  </span>
-                  <span className="flex items-center gap-1 text-muted-foreground">
-                    <span className="size-2 rounded-full bg-primary/30" /> Returning
-                  </span>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-5">
-              {loading ? (
-                <div className="flex h-40 items-end gap-2">
-                  {Array.from({ length: 14 }).map((_, i) => (
-                    <Skeleton key={i} className="h-28 flex-1 rounded-t-md" />
-                  ))}
-                </div>
-              ) : data?.visitorTrend && data.visitorTrend.length > 0 ? (
-                <div>
-                  <div className="flex h-40 items-end gap-1.5 pt-6">
-                    {(() => {
-                      const maxTotal = Math.max(
-                        ...data.visitorTrend.map((d) => d.newVisitors + d.returningVisitors),
-                        1,
-                      );
-                      return data.visitorTrend.map((day, i) => {
-                        const dayTotal = day.newVisitors + day.returningVisitors;
-                        const heightPct = (dayTotal / maxTotal) * 100;
-                        const newPct = dayTotal > 0 ? (day.newVisitors / dayTotal) * 100 : 0;
-                        return (
-                          <div key={i} className="group relative flex h-full flex-1 flex-col items-center justify-end">
-                            <span className="pointer-events-none absolute -top-8 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-popover px-2 py-1 text-[10px] font-bold text-popover-foreground shadow-md opacity-0 transition-opacity group-hover:opacity-100">
-                              {day.newVisitors} new · {day.returningVisitors} returning
-                            </span>
-                            <div
-                              className="flex w-full flex-col-reverse overflow-hidden rounded-t"
-                              style={{ height: `${Math.max(heightPct, 4)}%` }}
-                            >
-                              <div className="w-full bg-primary/30" style={{ height: `${100 - newPct}%` }} />
-                              <div className="w-full bg-primary" style={{ height: `${newPct}%` }} />
-                            </div>
-                            <span className="mt-2 text-[9px] font-medium text-muted-foreground">
-                              {new Date(day.date).toLocaleDateString(undefined, { weekday: 'narrow' })}
-                            </span>
-                          </div>
-                        );
-                      });
-                    })()}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex h-40 items-center justify-center text-xs text-muted-foreground">
-                  No visitor trend data recorded yet.
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Click Distribution */}
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-            <div className="mb-3 flex items-center justify-between">
+        {/* Visits Over Time Chart */}
+        <Card className="rounded-xl border border-border bg-card shadow-sm">
+          <CardHeader className="border-b border-border px-5 py-4">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Customer Activity</p>
-                <p className="text-sm font-semibold text-foreground">Click Breakdown</p>
+                <CardTitle className="text-sm font-semibold text-foreground">Traffic Over Time</CardTitle>
+                <p className="text-xs text-muted-foreground">{rangeLabels[range]} · Daily guest visits</p>
               </div>
-              <span className="text-xs font-medium text-muted-foreground">
-                {data?.summary.totalClicks || 0} total interactions
-              </span>
+              <div className="flex items-center gap-2 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+                <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Peak: {derived.peakCount} visits ({derived.peakDay})
+              </div>
             </div>
-
+          </CardHeader>
+          <CardContent className="flex flex-col p-5">
             {loading ? (
-              <div className="space-y-2">
-                {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-6 w-full" />)}
+              <div className="flex h-48 items-end gap-2">
+                {Array.from({ length: 14 }).map((_, i) => (
+                  <Skeleton key={i} className="h-32 flex-1 rounded-t-md" />
+                ))}
               </div>
-            ) : clickBreakdownEntries.length > 0 ? (
-              <div className="space-y-3">
-                {clickBreakdownEntries.map(([target, count]) => {
-                  const pct = Math.round((count / totalClicks) * 100);
-                  return (
-                    <div key={target} className="space-y-1">
-                      <div className="flex items-center justify-between text-xs font-medium">
-                        <span className="capitalize text-foreground">{target.replaceAll('_', ' ')}</span>
-                        <span className="text-muted-foreground">{count} clicks ({pct}%)</span>
-                      </div>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full rounded-full bg-primary transition-all duration-300"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="py-4 text-center text-xs text-muted-foreground">
-                No customer interactions recorded yet.
-              </p>
-            )}
-          </div>
-
-          {/* Acquisition Sources */}
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-            <div className="mb-3 flex items-center justify-between">
+            ) : data?.visitHistory && data.visitHistory.length > 0 ? (
               <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Traffic</p>
-                <p className="text-sm font-semibold text-foreground">Acquisition Sources</p>
-              </div>
-              <span className="text-xs font-medium text-muted-foreground">
-                {(data?.acquisition || []).reduce((sum, a) => sum + a.count, 0)} visits
-              </span>
-            </div>
-
-            {loading ? (
-              <div className="space-y-2">
-                {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-6 w-full" />)}
-              </div>
-            ) : data?.acquisition && data.acquisition.length > 0 ? (
-              <div className="space-y-3">
-                {(() => {
-                  const totalAcquisition = data.acquisition.reduce((sum, a) => sum + a.count, 0) || 1;
-                  return data.acquisition.slice(0, 8).map(({ source, count }) => {
-                    const pct = Math.round((count / totalAcquisition) * 100);
-                    return (
-                      <div key={source} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs font-medium">
-                          <span className="capitalize text-foreground">{source}</span>
-                          <span className="text-muted-foreground">{count} visits ({pct}%)</span>
-                        </div>
-                        <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                <div className="flex h-48 items-end gap-1.5 pt-6">
+                  {(() => {
+                    const maxCount = Math.max(...data.visitHistory.map((d) => d.count), 1);
+                    return data.visitHistory.map((val, i) => {
+                      const heightPct = (val.count / maxCount) * 100;
+                      return (
+                        <div key={i} className="group relative flex h-full flex-1 flex-col items-center justify-end">
+                          <span className="pointer-events-none absolute -top-8 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-popover px-2 py-1 text-[10px] font-bold text-popover-foreground shadow-md opacity-0 transition-opacity group-hover:opacity-100">
+                            {val.count} visits · {val.date}
+                          </span>
                           <div
-                            className="h-full rounded-full bg-primary transition-all duration-300"
-                            style={{ width: `${pct}%` }}
+                            className="w-full rounded-t bg-primary/75 transition-all duration-150 hover:bg-primary"
+                            style={{ height: `${Math.max(heightPct, 4)}%` }}
                           />
+                          <span className="mt-2 text-[9px] font-medium text-muted-foreground">
+                            {new Date(val.date).toLocaleDateString(undefined, { weekday: 'narrow' })}
+                          </span>
                         </div>
-                      </div>
-                    );
-                  });
-                })()}
+                      );
+                    });
+                  })()}
+                </div>
+                <div className="mt-3 flex justify-between border-t border-border pt-2.5 text-[10px] font-medium text-muted-foreground">
+                  <span>{data.visitHistory[0]?.date}</span>
+                  <span>Average: <strong className="text-foreground">{derived.avgDailyVisits}</strong> visits/day</span>
+                  <span>{data.visitHistory[data.visitHistory.length - 1]?.date}</span>
+                </div>
               </div>
             ) : (
-              <p className="py-4 text-center text-xs text-muted-foreground">
-                No visits recorded yet for this range.
-              </p>
+              <div className="flex h-48 items-center justify-center text-xs text-muted-foreground">
+                No visit history yet. Scan the QR code to record your first visit.
+              </div>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Right Column (1/3): Highlights & Modules */}
-        <div className="flex flex-col gap-4">
-
-          {/* Top Highlights Card */}
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">Store Performance</p>
-            <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-950 dark:text-amber-400">
-                <PiStarFill size={18} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Most Popular Item</p>
-                <p className="truncate text-sm font-bold text-foreground">
-                  {data?.summary.popularItem || "None recorded yet"}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <div className="rounded-lg border border-border bg-muted/20 p-3 text-center">
-                <p className="text-[10px] font-semibold uppercase text-muted-foreground">Menu Items</p>
-                <p className="mt-0.5 text-lg font-bold text-foreground">{menuStats?.total ?? 0}</p>
-              </div>
-              <div className="rounded-lg border border-border bg-muted/20 p-3 text-center">
-                <p className="text-[10px] font-semibold uppercase text-muted-foreground">Active Offers</p>
-                <p className="mt-0.5 text-lg font-bold text-foreground">
-                  {workspace?.offers.filter((o) => o.isActive).length ?? 0}
-                </p>
-              </div>
-              <div className="rounded-lg border border-border bg-muted/20 p-3 text-center">
-                <p className="text-[10px] font-semibold uppercase text-muted-foreground">Avg Daily Traffic</p>
-                <p className="mt-0.5 text-lg font-bold text-foreground">{derived.avgDailyVisits}</p>
-              </div>
-              <div className="rounded-lg border border-border bg-muted/20 p-3 text-center">
-                <p className="text-[10px] font-semibold uppercase text-muted-foreground">Conversion Rate</p>
-                <p className="mt-0.5 text-lg font-bold text-foreground">{derived.conversionRate}%</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Top Menu Items */}
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-            <div className="mb-3 flex items-center gap-2">
-              <div className="flex size-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400">
-                <PiStarFill size={14} />
-              </div>
+        {/* New vs Returning Visitors Trend */}
+        <Card className="rounded-xl border border-border bg-card shadow-sm">
+          <CardHeader className="border-b border-border px-5 py-4">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Popularity</p>
-                <p className="text-sm font-semibold text-foreground">Top Viewed Dishes</p>
+                <CardTitle className="text-sm font-semibold text-foreground">New vs. Returning Visitors</CardTitle>
+                <p className="text-xs text-muted-foreground">Customer retention and acquisition breakdown</p>
+              </div>
+              <div className="flex items-center gap-3 text-xs font-semibold">
+                <span className="flex items-center gap-1 text-primary">
+                  <span className="size-2 rounded-full bg-primary" /> New
+                </span>
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <span className="size-2 rounded-full bg-primary/30" /> Returning
+                </span>
               </div>
             </div>
-
+          </CardHeader>
+          <CardContent className="p-5">
             {loading ? (
-              <div className="space-y-2">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <Skeleton key={i} className="h-8 w-full" />
+              <div className="flex h-40 items-end gap-2">
+                {Array.from({ length: 14 }).map((_, i) => (
+                  <Skeleton key={i} className="h-28 flex-1 rounded-t-md" />
                 ))}
               </div>
-            ) : data?.topMenuItems && data.topMenuItems.length > 0 ? (
-              <ul className="divide-y divide-border">
-                {data.topMenuItems.slice(0, 5).map((item, i) => (
-                  <li key={item.menuItemId} className="flex items-center justify-between py-2.5">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-muted text-[10px] font-bold text-muted-foreground">
-                        {i + 1}
-                      </span>
-                      <p className="truncate text-xs font-semibold text-foreground">{item.item}</p>
-                    </div>
-                    <span className="shrink-0 text-xs font-semibold text-muted-foreground">
-                      {item.count} views
-                    </span>
-                  </li>
-                ))}
-              </ul>
+            ) : data?.visitorTrend && data.visitorTrend.length > 0 ? (
+              <div>
+                <div className="flex h-40 items-end gap-1.5 pt-6">
+                  {(() => {
+                    const maxTotal = Math.max(
+                      ...data.visitorTrend.map((d) => d.newVisitors + d.returningVisitors),
+                      1,
+                    );
+                    return data.visitorTrend.map((day, i) => {
+                      const dayTotal = day.newVisitors + day.returningVisitors;
+                      const heightPct = (dayTotal / maxTotal) * 100;
+                      const newPct = dayTotal > 0 ? (day.newVisitors / dayTotal) * 100 : 0;
+                      return (
+                        <div key={i} className="group relative flex h-full flex-1 flex-col items-center justify-end">
+                          <span className="pointer-events-none absolute -top-8 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-popover px-2 py-1 text-[10px] font-bold text-popover-foreground shadow-md opacity-0 transition-opacity group-hover:opacity-100">
+                            {day.newVisitors} new · {day.returningVisitors} returning
+                          </span>
+                          <div
+                            className="flex w-full flex-col-reverse overflow-hidden rounded-t"
+                            style={{ height: `${Math.max(heightPct, 4)}%` }}
+                          >
+                            <div className="w-full bg-primary/30" style={{ height: `${100 - newPct}%` }} />
+                            <div className="w-full bg-primary" style={{ height: `${newPct}%` }} />
+                          </div>
+                          <span className="mt-2 text-[9px] font-medium text-muted-foreground">
+                            {new Date(day.date).toLocaleDateString(undefined, { weekday: 'narrow' })}
+                          </span>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
             ) : (
-              <p className="py-4 text-center text-xs text-muted-foreground">No menu item views recorded yet.</p>
+              <div className="flex h-40 items-center justify-center text-xs text-muted-foreground">
+                No visitor trend data recorded yet.
+              </div>
             )}
-          </div>
-
-          {/* Connected Modules & Integrations */}
-          <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">Features & Integrations</p>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between rounded-lg border border-border p-2.5">
-                <div className="flex items-center gap-2">
-                  <PiGoogleLogoBold size={16} className="text-primary" />
-                  <span className="text-xs font-medium text-foreground">Google Reviews</span>
-                </div>
-                {workspace?.review?.googleReviewLink ? (
-                  <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-                    Active
-                  </span>
-                ) : (
-                  <Link href="/admin/addreview" className="text-[10px] font-bold text-primary hover:underline">
-                    Connect →
-                  </Link>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between rounded-lg border border-border p-2.5">
-                <div className="flex items-center gap-2">
-                  <PiCreditCardBold size={16} className="text-primary" />
-                  <span className="text-xs font-medium text-foreground">Payment Gateway</span>
-                </div>
-                {workspace?.payment?.link || workspace?.payment?.qrImage ? (
-                  <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-                    Active
-                  </span>
-                ) : (
-                  <Link href="/admin/addpayment" className="text-[10px] font-bold text-primary hover:underline">
-                    Set up →
-                  </Link>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between rounded-lg border border-border p-2.5">
-                <div className="flex items-center gap-2">
-                  <PiImagesBold size={16} className="text-primary" />
-                  <span className="text-xs font-medium text-foreground">Gallery Images</span>
-                </div>
-                <span className="text-xs font-bold text-muted-foreground">
-                  {workspace?.gallery?.length ?? 0} photos
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between rounded-lg border border-border p-2.5">
-                <div className="flex items-center gap-2">
-                  <PiTicketBold size={16} className="text-primary" />
-                  <span className="text-xs font-medium text-foreground">Special Offers</span>
-                </div>
-                <span className="text-xs font-bold text-muted-foreground">
-                  {workspace?.buttons?.specialOfferStatus ? "Enabled" : "Disabled"}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick links banner */}
-          {workspace?.publicSlug && (
-            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold text-foreground">Your Public Menu</p>
-                  <p className="text-[11px] text-muted-foreground">View what your customers see</p>
-                </div>
-                <a
-                  href={`/${workspace.publicSlug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-7 items-center gap-1 rounded-lg bg-primary px-2.5 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-                >
-                  Visit <PiArrowSquareOutBold size={12} />
-                </a>
-              </div>
-            </div>
-          )}
-
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* ─── Secondary Section: Search Intelligence & Menu Health ─────── */}
@@ -895,79 +498,6 @@ export default function AdminHomePage() {
         </Card>
       </div>
 
-      {/* ─── Visitors Activity Log ─────────────────────────────────────── */}
-      <Card className="rounded-xl border border-border bg-card shadow-sm">
-        <CardHeader className="border-b border-border px-5 py-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle className="text-sm font-semibold text-foreground">Recent Guest Sessions</CardTitle>
-              <p className="text-xs text-muted-foreground">Detailed log of individual customer visits</p>
-            </div>
-            {visitorsPage && (
-              <span className="text-xs font-semibold text-muted-foreground">
-                {visitorsPage.total} total visitors recorded
-              </span>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          {visitorsLoading ? (
-            <div className="space-y-3 p-5">
-              {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
-            </div>
-          ) : visitorsPage && visitorsPage.visitors.length > 0 ? (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/30 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                      <th className="px-5 py-3">Visitor ID</th>
-                      <th className="px-5 py-3">Device</th>
-                      <th className="px-5 py-3">First Seen</th>
-                      <th className="px-5 py-3">Last Active</th>
-                      <th className="px-5 py-3 text-right">Visits</th>
-                      <th className="px-5 py-3 text-right">Clicks</th>
-                      <th className="px-5 py-3 text-right">Searches</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {visitorsPage.visitors.map((v) => {
-                      const device = formatDevice(v.userAgent);
-                      return (
-                        <tr key={v.visitorId} className="transition hover:bg-muted/30">
-                          <td className="px-5 py-3 font-mono text-[11px] text-muted-foreground">{v.visitorId.slice(0, 8)}…</td>
-                          <td className="px-5 py-3">
-                            <span className="flex items-center gap-1.5 font-medium text-foreground">
-                              {device.icon}
-                              {device.label}
-                            </span>
-                          </td>
-                          <td className="px-5 py-3 text-muted-foreground">{new Date(v.firstSeen).toLocaleDateString()}</td>
-                          <td className="px-5 py-3 text-muted-foreground">{new Date(v.lastSeen).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                          <td className="px-5 py-3 text-right font-bold tabular-figures text-foreground">{v.visits}</td>
-                          <td className="px-5 py-3 text-right font-bold tabular-figures text-foreground">{v.clicks}</td>
-                          <td className="px-5 py-3 text-right font-bold tabular-figures text-foreground">{v.searches}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <div className="border-t border-border p-3">
-                <Pagination
-                  page={visitorsPage.page}
-                  pageCount={visitorsPage.totalPages}
-                  totalItems={visitorsPage.total}
-                  pageSize={visitorsPage.pageSize}
-                  onPageChange={(p) => setVisitorsPageNum(p)}
-                />
-              </div>
-            </>
-          ) : (
-            <div className="py-8 text-center text-xs text-muted-foreground">No visitors recorded yet.</div>
-          )}
-        </CardContent>
-      </Card>
 
     </div>
   );

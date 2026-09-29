@@ -100,6 +100,9 @@ export interface GoogleReviewRecord {
   publishTime: string | null;
   createdAt: string;
   isFeatured: boolean;
+  replyText?: string | null;
+  replyTime?: string | null;
+  isAutoReplied?: boolean;
 }
 
 export interface WorkspacePaymentConfig {

@@ -181,6 +181,7 @@ function ListBusinessPageContent() {
   const [addWorkspaceModalOpen, setAddWorkspaceModalOpen] = useState(false);
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   const [workspaceEditMode, setWorkspaceEditMode] = useState(false);
+  const [workspaceActiveSubSection, setWorkspaceActiveSubSection] = useState<string | null>(null);
   const [bannersEditMode, setBannersEditMode] = useState(false);
   const [workspaceCurrencies, setWorkspaceCurrencies] = useState<Currency[]>(
     [],
@@ -585,6 +586,7 @@ function ListBusinessPageContent() {
           currencyId: values.currency_id?.toString() || null,
         });
         setWorkspaceEditMode(false);
+        setWorkspaceActiveSubSection(null);
         toast.success("Website settings saved successfully!");
         await fetchWorkspaceData();
       } catch (err: unknown) {
@@ -860,6 +862,7 @@ function ListBusinessPageContent() {
                   type="button"
                   onClick={() => {
                     setWorkspaceEditMode(false);
+                    setWorkspaceActiveSubSection(null);
                     setWorkspaceSaveError(null);
                   }}
                   disabled={workspaceSaveLoading}
@@ -883,6 +886,7 @@ function ListBusinessPageContent() {
                 variant="secondary"
                 onClick={() => {
                   setWorkspaceSaveError(null);
+                  setWorkspaceActiveSubSection(null);
                   setWorkspaceEditMode(true);
                 }}
                 startIcon={<PiPencilSimpleBold className="size-4" />}
@@ -923,6 +927,12 @@ function ListBusinessPageContent() {
               currencies={workspaceCurrencies}
               showPalettePresets={workspaceEditMode}
               onValuesChange={setWorkspaceDraft}
+              initialActiveSubSection={workspaceActiveSubSection}
+              onStartEditing={(subSectionKey) => {
+                setWorkspaceSaveError(null);
+                setWorkspaceActiveSubSection(subSectionKey || null);
+                setWorkspaceEditMode(true);
+              }}
             />
           </div>
         ) : (

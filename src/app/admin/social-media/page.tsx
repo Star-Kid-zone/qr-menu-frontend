@@ -1,20 +1,42 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import {
   PiCalendarBlankBold,
   PiClockBold,
   PiDeviceMobileBold,
   PiFacebookLogoBold,
+  PiFacebookLogoFill,
   PiImagesBold,
   PiInstagramLogoBold,
+  PiInstagramLogoFill,
   PiPaperPlaneTiltBold,
   PiPlusBold,
   PiShareNetworkBold,
   PiUploadSimpleBold,
   PiWarningCircleBold,
   PiXBold,
+  PiVideoFill,
+  PiRepeatBold,
+  PiArrowsCounterClockwiseBold,
+  PiXLogoBold,
+  PiLinkedinLogoBold,
+  PiLinkedinLogoFill,
+  PiTiktokLogoBold,
+  PiTiktokLogoFill,
+  PiCheckCircleBold,
+  PiShieldCheckBold,
+  PiLightningBold,
+  PiSparkleBold,
+  PiPlayCircleBold,
+  PiArrowRightBold,
+  PiCheckBold,
+  PiTrashBold,
+  PiEyeBold,
+  PiTagBold,
+  PiHashBold,
 } from "react-icons/pi";
+import { SiX } from "react-icons/si";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,10 +49,15 @@ import { toast } from "@/components/ui/toast";
 import { SocialPostPreview } from "@/components/admin/social/SocialPostPreview";
 import {
   socialService,
+  type CreatePostInput,
   type SocialAccount,
   type SocialAsset,
+  type SocialPlatform,
   type SocialPost,
   type WeeklyPoster,
+  PLATFORM_META,
+  tokenStatusBadge,
+  tokenDaysLeft,
 } from "@/services/social.service";
 import { getApiErrorMessage } from "@/utils/errors";
 import { cn } from "@/utils/cn";
@@ -59,11 +86,6 @@ function SocialMediaPageContent() {
   // Composer selection
   const [assetId, setAssetId] = useState("");
   const [weeklyPosterId, setWeeklyPosterId] = useState("");
-  const [facebookSelected, setFacebookSelected] = useState(true);
-  const [instagramSelected, setInstagramSelected] = useState(true);
-  const [syncCaptions, setSyncCaptions] = useState(true);
-  const [facebookCaption, setFacebookCaption] = useState("");
-  const [instagramCaption, setInstagramCaption] = useState("");
   const [title, setTitle] = useState("");
   const [schedule, setSchedule] = useState("");
 
@@ -72,12 +94,27 @@ function SocialMediaPageContent() {
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
-  const [libraryFilter, setLibraryFilter] = useState<"all" | "uploads" | "weekly">("all");
+  const [libraryFilter, setLibraryFilter] = useState<"all" | "uploads" | "videos" | "weekly">("all");
   const [historyFilter, setHistoryFilter] = useState<"all" | "published" | "scheduled" | "draft">("all");
 
   // Disconnect modal
   const [disconnectModalOpen, setDisconnectModalOpen] = useState(false);
   const [accountToDisconnect, setAccountToDisconnect] = useState<SocialAccount | null>(null);
+
+  // ─── Per-platform caption state ───────────────────────────────────────────
+  // Map: accountId → caption string. Each connected account gets its own caption.
+  const [captions, setCaptions] = useState<Record<string, string>>({});
+  const [selectedAccountIds, setSelectedAccountIds] = useState<Set<string>>(new Set());
+  const [syncCaptions, setSyncCaptions] = useState(true);
+  // activeComposerPlatform is the tab currently shown in the per-platform composer
+  const [activeComposerPlatform, setActiveComposerPlatform] = useState<SocialPlatform | null>(null);
+
+  // ─── Recurrence ───────────────────────────────────────────────────────────
+  const [recurrenceRule, setRecurrenceRule] = useState<"daily" | "weekly" | "biweekly" | "monthly" | "">("");
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState("");
+
+  // ─── Media preview for video ──────────────────────────────────────────────
+  const [assetIsVideo, setAssetIsVideo] = useState(false);
 
   async function loadData() {
     try {
@@ -110,7 +147,7 @@ function SocialMediaPageContent() {
     loadData();
   }, []);
 
-  async function connectPlatform(platform: "facebook" | "instagram") {
+  async function connectPlatform(platform: SocialPlatform) {
     try {
       const { data } = await socialService.startOAuth(platform);
       if (data?.url) {
@@ -138,33 +175,43 @@ function SocialMediaPageContent() {
 
   async function handleUpload(file?: File) {
     if (!file) return;
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
+    if (!isVideo && !isImage) {
+      toast.error("Only image and video files are supported.");
+      return;
+    }
     setUploading(true);
     try {
       const { data } = await socialService.uploadAsset(file);
       setAssets((current) => [data.asset, ...current]);
       setAssetId(data.asset.id);
+      setAssetIsVideo(data.asset.mediaType === 'video' || data.asset.mediaType === 'reel');
       setWeeklyPosterId("");
-      toast.success("Poster image uploaded successfully.");
+      toast.success(isVideo ? "Video uploaded successfully. It will post as a Reel on Instagram." : "Poster image uploaded successfully.");
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Poster upload failed."));
+      toast.error(getApiErrorMessage(error, "Asset upload failed."));
     } finally {
       setUploading(false);
     }
   }
 
   async function handlePublishOrSchedule(action: "now" | "schedule") {
-    const selectedAccounts = accounts.filter(
-      (a) =>
-        (a.platform === "facebook" && facebookSelected && facebookCaption.trim()) ||
-        (a.platform === "instagram" && instagramSelected && instagramCaption.trim()),
-    );
+    // Build destinations from selected accounts
+    const destinations = accounts
+      .filter((a) => selectedAccountIds.has(a.id) && a.status === 'connected')
+      .map((a) => ({
+        accountId: a.id,
+        caption: (captions[a.id] ?? captions[a.platform] ?? captions['all'] ?? "").trim(),
+      }))
+      .filter((d) => d.caption.length > 0);
 
     if (!assetId && !weeklyPosterId) {
-      toast.warning("Please select a poster image from the library.");
+      toast.warning("Please select a poster image or video from the library.");
       return;
     }
 
-    if (!selectedAccounts.length) {
+    if (!destinations.length) {
       toast.warning("Select at least one connected destination and enter a caption.");
       return;
     }
@@ -176,20 +223,15 @@ function SocialMediaPageContent() {
 
     setBusy(true);
     try {
-      const payload: Record<string, any> = {
+      const payload: CreatePostInput = {
         title: title.trim() || undefined,
         scheduledAt: action === "schedule" ? new Date(schedule).toISOString() : undefined,
-        destinations: selectedAccounts.map((a) => ({
-          accountId: a.id,
-          caption: a.platform === "facebook" ? facebookCaption : instagramCaption,
-        })),
+        destinations,
+        assetId: assetId || undefined,
+        weeklyPosterId: weeklyPosterId || undefined,
+        recurrenceRule: recurrenceRule || null,
+        recurrenceEndDate: recurrenceEndDate || null,
       };
-
-      if (weeklyPosterId) {
-        payload.weeklyPosterId = weeklyPosterId;
-      } else if (assetId) {
-        payload.assetId = assetId;
-      }
 
       const { data } = await socialService.createPost(payload);
       setPosts((current) => [data, ...current]);
@@ -197,9 +239,11 @@ function SocialMediaPageContent() {
 
       // Reset form fields
       setTitle("");
-      setFacebookCaption("");
-      setInstagramCaption("");
+      setCaptions({});
+      setSelectedAccountIds(new Set());
       setSchedule("");
+      setRecurrenceRule("");
+      setRecurrenceEndDate("");
       setActiveTab("history");
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Could not create post."));
@@ -232,27 +276,6 @@ function SocialMediaPageContent() {
     }
   }
 
-  function handleCaptionChange(value: string, platform: "facebook" | "instagram") {
-    if (syncCaptions) {
-      setFacebookCaption(value);
-      setInstagramCaption(value);
-    } else {
-      if (platform === "facebook") setFacebookCaption(value);
-      if (platform === "instagram") setInstagramCaption(value);
-    }
-  }
-
-  function appendHashtag(tag: string) {
-    if (syncCaptions) {
-      const nextFb = facebookCaption ? `${facebookCaption} ${tag}` : tag;
-      const nextIg = instagramCaption ? `${instagramCaption} ${tag}` : tag;
-      setFacebookCaption(nextFb);
-      setInstagramCaption(nextIg);
-    } else {
-      const nextIg = instagramCaption ? `${instagramCaption} ${tag}` : tag;
-      setInstagramCaption(nextIg);
-    }
-  }
 
   // Active poster resolver
   const activePoster = useMemo(() => {
@@ -263,16 +286,21 @@ function SocialMediaPageContent() {
           url: item.thumbnailUrl ?? item.imageUrl,
           title: item.title,
           type: "Weekly Special",
+          isVideo: false,
         };
       }
     }
     if (assetId) {
       const item = assets.find((a) => a.id === assetId);
       if (item) {
+        const isVid = item.mediaType === "video" || item.mediaType === "reel" || (typeof item.mimeType === "string" && item.mimeType.startsWith("video/"));
         return {
           url: item.thumbnailUrl ?? item.publishingUrl,
           title: item.originalFilename,
-          type: "Your Upload",
+          type: isVid ? "Video / Reel" : "Your Upload",
+          isVideo: isVid,
+          mimeType: item.mimeType,
+          mediaType: item.mediaType,
         };
       }
     }
@@ -310,445 +338,1018 @@ function SocialMediaPageContent() {
   const igAccount = accounts.find((a) => a.platform === "instagram");
 
   // Tab 1: Compose & Publish
-  const renderComposeTab = () => (
-    <div className="flex h-full min-h-0 flex-col gap-4">
-      <PageHeader
-        className="shrink-0"
-        title="Compose & Publish"
-        actions={
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              startIcon={<PiClockBold className="size-4" />}
-              onClick={() => setActiveTab("history")}
-            >
-              Post History
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              startIcon={<PiImagesBold className="size-4" />}
-              onClick={() => setActiveTab("library")}
-            >
-              Poster Library
-            </Button>
-          </div>
-        }
-      />
+  const renderComposeTab = () => {
+    const COMPOSE_PLATFORMS: Array<{
+      id: SocialPlatform;
+      name: string;
+      subname: string;
+      capabilities: string;
+      icon: React.ReactNode;
+      brandColor: string;
+      gradient: string;
+      glowShadow: string;
+    }> = [
+      {
+        id: "instagram",
+        name: "Instagram",
+        subname: "Reels & Feed",
+        capabilities: "Reels · Feed · Carousels",
+        icon: <PiInstagramLogoFill className="size-5" />,
+        brandColor: "#E1306C",
+        gradient: "from-[#f09433] via-[#dc2743] to-[#bc1888]",
+        glowShadow: "rgba(225, 48, 108, 0.35)",
+      },
+      {
+        id: "facebook",
+        name: "Facebook",
+        subname: "Page & Videos",
+        capabilities: "Page Posts · Videos · Feed",
+        icon: <PiFacebookLogoFill className="size-5" />,
+        brandColor: "#1877F2",
+        gradient: "from-[#1877F2] to-[#0D65D9]",
+        glowShadow: "rgba(24, 119, 242, 0.35)",
+      },
+      {
+        id: "twitter",
+        name: "Twitter / X",
+        subname: "Short Updates & Media",
+        capabilities: "Tweets · 280 chars · Media",
+        icon: <SiX className="size-4" />,
+        brandColor: "#FFFFFF",
+        gradient: "from-neutral-800 to-black",
+        glowShadow: "rgba(255, 255, 255, 0.2)",
+      },
+      {
+        id: "linkedin",
+        name: "LinkedIn",
+        subname: "Professional Network",
+        capabilities: "Articles · Company Feed",
+        icon: <PiLinkedinLogoFill className="size-5" />,
+        brandColor: "#0A66C2",
+        gradient: "from-[#0A66C2] to-[#004182]",
+        glowShadow: "rgba(10, 102, 194, 0.35)",
+      },
+      {
+        id: "tiktok",
+        name: "TikTok",
+        subname: "Short-form Vertical Reels",
+        capabilities: "9:16 Video · Sound",
+        icon: <PiTiktokLogoFill className="size-5" />,
+        brandColor: "#FE2C55",
+        gradient: "from-neutral-950 via-neutral-900 to-black",
+        glowShadow: "rgba(254, 44, 85, 0.35)",
+      },
+    ];
 
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-        <div className="space-y-4 pb-6">
-          {/* Section 1: Selected Media Card */}
-          <Card>
-            <CardHeader className="p-4 pb-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-sm font-bold">1. Poster Image</CardTitle>
-                </div>
-                <label className="cursor-pointer">
-                  <span className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-semibold text-foreground shadow-xs transition hover:bg-muted">
-                    <PiUploadSimpleBold className="size-3.5" /> Upload Image
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    className="hidden"
-                    onChange={(e) => handleUpload(e.target.files?.[0])}
-                    disabled={uploading}
-                  />
-                </label>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 pt-2">
-              {activePoster ? (
-                <div className="flex flex-col gap-3 rounded-xl border border-border/80 bg-muted/20 p-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="relative size-16 shrink-0 overflow-hidden rounded-lg border border-border bg-background shadow-xs">
-                      {activePoster.url ? (
-                        <img
-                          src={activePoster.url}
-                          alt={activePoster.title}
-                          className="size-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex size-full items-center justify-center bg-primary/10 text-primary">
-                          <PiImagesBold size={24} />
-                        </div>
+    const connectedCount = accounts.filter((a) => a.status === "connected").length;
+
+    const selectAllConnected = () => {
+      const ids = accounts.filter((a) => a.status === "connected").map((a) => a.id);
+      setSelectedAccountIds(new Set(ids));
+    };
+
+    const deselectAll = () => {
+      setSelectedAccountIds(new Set());
+    };
+
+    const setScheduleOffsetMinutes = (minutes: number) => {
+      const target = new Date(Date.now() + minutes * 60 * 1000);
+      const local = new Date(target.getTime() - target.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16);
+      setSchedule(local);
+    };
+
+    const setScheduleTimeOfDay = (targetHour: number, daysAhead = 0) => {
+      const d = new Date();
+      d.setDate(d.getDate() + daysAhead);
+      d.setHours(targetHour, 0, 0, 0);
+      if (daysAhead === 0 && d.getTime() <= Date.now()) {
+        d.setDate(d.getDate() + 1);
+      }
+      const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16);
+      setSchedule(local);
+    };
+
+    return (
+      <div className="flex h-full min-h-0 flex-col gap-4">
+        {/* Top Header */}
+        <PageHeader
+          className="shrink-0"
+          title="Compose & Publish"
+          description="Design once, customize per network, and broadcast everywhere in one click."
+          actions={
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                startIcon={<PiClockBold className="size-4 text-muted-foreground" />}
+                onClick={() => setActiveTab("history")}
+                className="shadow-2xs hover:border-primary/40 transition-colors"
+              >
+                Post History
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                startIcon={<PiImagesBold className="size-4 text-muted-foreground" />}
+                onClick={() => setActiveTab("library")}
+                className="shadow-2xs hover:border-primary/40 transition-colors"
+              >
+                Poster Library
+              </Button>
+            </div>
+          }
+        />
+
+        <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+          <div className="space-y-5 pb-8">
+            {/* ── STEP 1: MEDIA ASSET ─────────────────────────────────────── */}
+            <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-card via-card to-card/95 p-5 shadow-xs transition-all hover:border-primary/30">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/40">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex size-7 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-black text-xs shadow-md shadow-primary/25 shrink-0">
+                    01
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <span>Media Asset</span>
+                      {activePoster && (
+                        <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold">
+                          <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          Selected
+                        </span>
                       )}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="truncate font-semibold text-foreground text-xs sm:text-sm">
-                          {activePoster.title}
-                        </p>
-                        <Badge tone="primary" className="shrink-0 text-[8px]">
-                          {activePoster.type}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      startIcon={<PiImagesBold className="size-3.5" />}
-                      onClick={() => setActiveTab("library")}
-                    >
-                      Browse Library
-                    </Button>
+                    </h3>
+                    <p className="text-[11px] text-muted-foreground">
+                      Photo, promotional banner, or 9:16 vertical video reel
+                    </p>
                   </div>
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border py-6 text-center">
-                  <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                    <PiImagesBold size={20} />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-foreground">No poster selected</p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="primary"
-                    size="sm"
-                    className="mt-1"
-                    startIcon={<PiImagesBold className="size-3.5" />}
-                    onClick={() => setActiveTab("library")}
-                  >
-                    Select from Library
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
-          {/* Section 2: Destination Channels */}
-          <Card>
-            <CardHeader className="p-4 pb-2">
-              <CardTitle className="text-sm font-bold">2. Destinations</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-3 p-4 pt-2 sm:grid-cols-2">
-              {/* Facebook Card */}
-              <div
-                onClick={() => setFacebookSelected(!facebookSelected)}
-                className={cn(
-                  "cursor-pointer rounded-xl border p-3.5 transition-all",
-                  facebookSelected
-                    ? "border-[#1877f2]/50 bg-[#1877f2]/5 shadow-xs"
-                    : "border-border bg-card hover:bg-muted/30 opacity-70",
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex size-8 items-center justify-center rounded-lg bg-[#1877f2]/15 text-[#1877f2]">
-                      <PiFacebookLogoBold size={20} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-foreground text-xs">Facebook Page</p>
-                      <p className="text-[11px] text-muted-foreground">
-                        {fbAccount ? fbAccount.displayName : "No page connected"}
-                      </p>
-                    </div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={facebookSelected}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      setFacebookSelected(e.target.checked);
-                    }}
-                    className="size-4 rounded border-border text-primary focus:ring-primary"
-                  />
-                </div>
-                {!fbAccount && (
-                  <div className="mt-2.5 flex items-center justify-between border-t border-border/40 pt-2">
-                    <span className="text-[10px] text-warning flex items-center gap-1">
-                      <PiWarningCircleBold size={12} /> Account needed
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        connectPlatform("facebook");
-                      }}
-                      className="text-[11px] font-semibold text-[#1877f2] hover:underline"
-                    >
-                      Connect Page &rarr;
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Instagram Card */}
-              <div
-                onClick={() => setInstagramSelected(!instagramSelected)}
-                className={cn(
-                  "cursor-pointer rounded-xl border p-3.5 transition-all",
-                  instagramSelected
-                    ? "border-[#e1306c]/50 bg-[#e1306c]/5 shadow-xs"
-                    : "border-border bg-card hover:bg-muted/30 opacity-70",
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex size-8 items-center justify-center rounded-lg bg-[#e1306c]/15 text-[#e1306c]">
-                      <PiInstagramLogoBold size={20} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-foreground text-xs">Instagram Professional</p>
-                      <p className="text-[11px] text-muted-foreground">
-                        {igAccount ? `@${igAccount.username || igAccount.displayName}` : "No account connected"}
-                      </p>
-                    </div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={instagramSelected}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      setInstagramSelected(e.target.checked);
-                    }}
-                    className="size-4 rounded border-border text-primary focus:ring-primary"
-                  />
-                </div>
-                {!igAccount && (
-                  <div className="mt-2.5 flex items-center justify-between border-t border-border/40 pt-2">
-                    <span className="text-[10px] text-warning flex items-center gap-1">
-                      <PiWarningCircleBold size={12} /> Account needed
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        connectPlatform("instagram");
-                      }}
-                      className="text-[11px] font-semibold text-[#e1306c] hover:underline"
-                    >
-                      Connect Instagram &rarr;
-                    </button>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Section 3: Captions & Copy */}
-          <Card>
-            <CardHeader className="p-4 pb-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <CardTitle className="text-sm font-bold">3. Content</CardTitle>
-                </div>
                 <div className="flex items-center gap-2">
-                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+                  <label className="cursor-pointer">
+                    <span className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-primary/30 bg-primary/10 px-3 text-xs font-semibold text-primary shadow-xs transition hover:bg-primary hover:text-primary-foreground active:scale-95">
+                      {uploading ? (
+                        <Spinner size="sm" />
+                      ) : (
+                        <PiUploadSimpleBold className="size-3.5" />
+                      )}
+                      <span>Upload Photo / Video</span>
+                    </span>
                     <input
-                      type="checkbox"
-                      checked={syncCaptions}
-                      onChange={(e) => setSyncCaptions(e.target.checked)}
-                      className="size-3.5 rounded border-border"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm"
+                      className="hidden"
+                      onChange={(e) => handleUpload(e.target.files?.[0])}
+                      disabled={uploading}
                     />
-                    <span>Sync Facebook & Instagram</span>
                   </label>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3.5 p-4 pt-2">
-              <div>
-                <label className="mb-1 block text-caption font-semibold text-foreground">
-                  Campaign Title (optional)
-                </label>
-                <input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Weekend Special Promo"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-body focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
-
-              {syncCaptions ? (
-                <div>
-                  <div className="mb-1 flex items-center justify-between">
-                    <label className="text-caption font-semibold text-foreground">
-                      Unified Caption
-                    </label>
-                    <span className="text-[10px] text-muted-foreground">
-                      {instagramCaption.length} characters
-                    </span>
-                  </div>
-                  <textarea
-                    value={instagramCaption}
-                    onChange={(e) => handleCaptionChange(e.target.value, "instagram")}
-                    placeholder="Write your caption..."
-                    rows={4}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-body focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                </div>
-              ) : (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <div className="mb-1 flex items-center justify-between">
-                      <label className="flex items-center gap-1.5 text-caption font-semibold text-foreground">
-                        <PiFacebookLogoBold className="text-[#1877f2]" /> Facebook Caption
-                      </label>
-                      <span className="text-[10px] text-muted-foreground">
-                        {facebookCaption.length} chars
-                      </span>
-                    </div>
-                    <textarea
-                      disabled={!facebookSelected}
-                      value={facebookCaption}
-                      onChange={(e) => handleCaptionChange(e.target.value, "facebook")}
-                      placeholder="Write Facebook caption..."
-                      rows={4}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-body disabled:opacity-50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
-                  </div>
-                  <div>
-                    <div className="mb-1 flex items-center justify-between">
-                      <label className="flex items-center gap-1.5 text-caption font-semibold text-foreground">
-                        <PiInstagramLogoBold className="text-[#e1306c]" /> Instagram Caption
-                      </label>
-                      <span className="text-[10px] text-muted-foreground">
-                        {instagramCaption.length} chars
-                      </span>
-                    </div>
-                    <textarea
-                      disabled={!instagramSelected}
-                      value={instagramCaption}
-                      onChange={(e) => handleCaptionChange(e.target.value, "instagram")}
-                      placeholder="Write Instagram caption..."
-                      rows={4}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-body disabled:opacity-50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Hashtag Helper Pills */}
-              <div>
-                <p className="mb-1.5 text-[11px] font-semibold text-muted-foreground">
-                  Hashtags:
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {POPULAR_HASHTAGS.map((tag) => (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => appendHashtag(tag)}
-                      className="rounded-full border border-border bg-muted/40 px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground transition hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Section 4: Schedule & Action Bar */}
-          <Card>
-            <CardHeader className="p-4 pb-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <CardTitle className="text-sm font-bold">4. Publish or Schedule</CardTitle>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-muted-foreground">Channels:</span>
-                  <div className="flex items-center gap-1">
-                    {facebookSelected && (
-                      <Badge tone={fbAccount ? "success" : "neutral"} className="text-[9px]">
-                        Facebook
-                      </Badge>
-                    )}
-                    {instagramSelected && (
-                      <Badge tone={igAccount ? "success" : "neutral"} className="text-[9px]">
-                        Instagram
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 pt-3">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                {/* Left: Schedule picker */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 shadow-xs focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
-                    <PiCalendarBlankBold className="size-4 text-muted-foreground shrink-0" />
-                    <input
-                      type="datetime-local"
-                      value={schedule}
-                      onChange={(e) => setSchedule(e.target.value)}
-                      className="bg-transparent text-xs text-foreground focus:outline-none [color-scheme:dark]"
-                    />
-                  </div>
                   <Button
                     type="button"
                     variant="secondary"
                     size="sm"
-                    disabled={busy || !schedule}
-                    onClick={() => handlePublishOrSchedule("schedule")}
-                    startIcon={<PiClockBold className="size-3.5" />}
+                    startIcon={<PiImagesBold className="size-3.5" />}
+                    onClick={() => setActiveTab("library")}
+                    className="shadow-2xs"
                   >
-                    Schedule Post
-                  </Button>
-                  {schedule && (
-                    <button
-                      type="button"
-                      onClick={() => setSchedule("")}
-                      className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 ml-1"
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-
-                {/* Right: Publish Now button */}
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="primary"
-                    size="md"
-                    disabled={busy}
-                    onClick={() => handlePublishOrSchedule("now")}
-                    startIcon={busy ? undefined : <PiPaperPlaneTiltBold className="size-4" />}
-                    loading={busy}
-                    className="shadow-sm font-semibold px-5"
-                  >
-                    Publish Now
+                    Browse Library
                   </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+
+              <div className="pt-4">
+                {activePoster ? (
+                  <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-br from-card/90 via-muted/20 to-card p-4 shadow-sm group">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        {/* Thumbnail */}
+                        <div className="relative size-20 sm:size-24 shrink-0 overflow-hidden rounded-2xl border border-border bg-neutral-950 shadow-md group-hover:scale-[1.02] transition-transform duration-300">
+                          {activePoster.isVideo ? (
+                            <div className="relative size-full bg-neutral-950 flex items-center justify-center">
+                              <video
+                                src={activePoster.url}
+                                className="size-full object-cover"
+                                muted
+                                playsInline
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[1px]">
+                                <div className="flex size-9 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md shadow-lg ring-1 ring-white/30">
+                                  <PiPlayCircleBold size={22} className="text-white" />
+                                </div>
+                              </div>
+                            </div>
+                          ) : activePoster.url ? (
+                            <img
+                              src={activePoster.url}
+                              alt={activePoster.title}
+                              className="size-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex size-full items-center justify-center bg-primary/10 text-primary">
+                              <PiImagesBold size={28} />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Metadata */}
+                        <div className="min-w-0 space-y-1.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-bold text-foreground text-sm truncate max-w-sm">
+                              {activePoster.title}
+                            </p>
+                            {activePoster.isVideo ? (
+                              <span className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-red-500/20 text-pink-400 border border-pink-500/30 px-2.5 py-0.5 text-[9px] font-black tracking-wide shadow-xs">
+                                <PiVideoFill size={11} className="text-pink-400 animate-pulse" />
+                                9:16 REEL / VIDEO
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 text-[9px] font-bold">
+                                <PiCheckCircleBold size={11} /> PHOTO READY
+                              </span>
+                            )}
+                            <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border">
+                              {activePoster.type}
+                            </span>
+                          </div>
+
+                          {activePoster.isVideo ? (
+                            <p className="text-xs text-pink-400/90 font-medium">
+                              ✨ Video formatted for Instagram Reels, TikTok, and X Video posts.
+                            </p>
+                          ) : (
+                            <p className="text-xs text-muted-foreground">
+                              Photo ready for Facebook, Instagram feed, Twitter / X &amp; LinkedIn.
+                            </p>
+                          )}
+
+                          {/* Quick Platform Readiness Chips */}
+                          <div className="flex items-center gap-1.5 pt-1 flex-wrap">
+                            <span className="text-[10px] font-semibold text-muted-foreground mr-1">
+                              Ready for:
+                            </span>
+                            {COMPOSE_PLATFORMS.map((p) => (
+                              <span
+                                key={p.id}
+                                className="inline-flex items-center gap-1 rounded-md bg-background px-2 py-0.5 text-[10px] font-semibold border border-border/80 text-foreground/80 shadow-2xs"
+                              >
+                                <span className="size-1.5 rounded-full" style={{ backgroundColor: p.brandColor }} />
+                                {p.name}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right actions */}
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setActiveTab("library")}
+                          className="shadow-2xs"
+                        >
+                          Change Media
+                        </Button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAssetId("");
+                            setWeeklyPosterId("");
+                          }}
+                          className="flex size-8 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30 transition-colors"
+                          title="Remove media"
+                        >
+                          <PiTrashBold className="size-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border/80 bg-gradient-to-b from-card to-primary/5 py-8 px-4 text-center transition-all hover:border-primary/50">
+                    <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20">
+                      <PiUploadSimpleBold size={26} />
+                    </div>
+                    <div className="max-w-md space-y-1">
+                      <p className="text-sm font-bold text-foreground">
+                        Select media for your post
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Upload high-res restaurant photos, promotional posters, or short-form MP4/MOV videos for Instagram Reels &amp; TikTok.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 pt-2 flex-wrap justify-center">
+                      <label className="cursor-pointer">
+                        <span className="inline-flex h-9 items-center gap-2 rounded-xl bg-primary px-4 text-xs font-bold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-95">
+                          <PiUploadSimpleBold className="size-4" />
+                          <span>Upload File</span>
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm"
+                          className="hidden"
+                          onChange={(e) => handleUpload(e.target.files?.[0])}
+                          disabled={uploading}
+                        />
+                      </label>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="md"
+                        startIcon={<PiImagesBold className="size-4" />}
+                        onClick={() => setActiveTab("library")}
+                        className="shadow-2xs"
+                      >
+                        Choose from Poster Library
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ── STEP 2: DESTINATIONS ────────────────────────────────────── */}
+            <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-card via-card to-card/95 p-5 shadow-xs transition-all hover:border-primary/30">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/40">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex size-7 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-black text-xs shadow-md shadow-primary/25 shrink-0">
+                    02
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <span>Destinations</span>
+                      {selectedAccountIds.size > 0 && (
+                        <span className="flex items-center gap-1 rounded-full bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 text-[10px] font-bold">
+                          {selectedAccountIds.size} Selected
+                        </span>
+                      )}
+                    </h3>
+                    <p className="text-[11px] text-muted-foreground">
+                      Choose which social channels will broadcast this campaign
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {connectedCount > 0 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={selectAllConnected}
+                        className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted transition-colors shadow-2xs"
+                      >
+                        Select All
+                      </button>
+                      <button
+                        type="button"
+                        onClick={deselectAll}
+                        className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shadow-2xs"
+                      >
+                        Deselect
+                      </button>
+                    </>
+                  )}
+                  <span className="text-[11px] font-medium text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-lg border border-border/50">
+                    {connectedCount} of {COMPOSE_PLATFORMS.length} Connected
+                  </span>
+                </div>
+              </div>
+
+              {/* Dynamic Platform Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
+                {COMPOSE_PLATFORMS.map((platform) => {
+                  const platformAccounts = accounts.filter((a) => a.platform === platform.id);
+                  const isConnected = platformAccounts.length > 0;
+
+                  if (!isConnected) {
+                    return (
+                      <div
+                        key={platform.id}
+                        className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card/70 p-4 transition-all duration-200 hover:border-border hover:bg-card hover:shadow-xs flex items-center justify-between gap-3"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className={cn(
+                              "flex size-11 shrink-0 items-center justify-center rounded-xl text-white shadow-md bg-gradient-to-br transition-transform group-hover:scale-105",
+                              platform.gradient
+                            )}
+                          >
+                            {platform.icon}
+                          </div>
+                          <div className="min-w-0 space-y-0.5">
+                            <p className="font-bold text-foreground text-sm truncate">
+                              {platform.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              Not connected yet
+                            </p>
+                            <span className="inline-block text-[10px] text-muted-foreground/70">
+                              {platform.capabilities}
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => connectPlatform(platform.id)}
+                          className="flex items-center gap-1.5 rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground shadow-2xs transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary group-hover:scale-105 active:scale-95 shrink-0"
+                        >
+                          <span>Connect</span>
+                          <PiArrowRightBold className="size-3 transition-transform group-hover:translate-x-0.5" />
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  // Platform is connected: render for each connected account
+                  return platformAccounts.map((account) => {
+                    const isSelected = selectedAccountIds.has(account.id);
+                    const badge = tokenStatusBadge(account);
+
+                    return (
+                      <div
+                        key={account.id}
+                        onClick={() => {
+                          setSelectedAccountIds((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(account.id)) next.delete(account.id);
+                            else next.add(account.id);
+                            return next;
+                          });
+                          if (!activeComposerPlatform) setActiveComposerPlatform(platform.id);
+                        }}
+                        className={cn(
+                          "group relative cursor-pointer overflow-hidden rounded-2xl border p-4 transition-all duration-200 select-none flex items-center justify-between gap-3",
+                          isSelected
+                            ? "border-primary/60 bg-gradient-to-r from-card to-primary/10 shadow-sm ring-1 ring-primary/30"
+                            : "border-border/80 bg-card hover:border-border hover:bg-muted/30"
+                        )}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="relative shrink-0">
+                            <div
+                              className={cn(
+                                "flex size-11 items-center justify-center rounded-xl text-white shadow-md bg-gradient-to-br transition-transform group-hover:scale-105",
+                                platform.gradient
+                              )}
+                            >
+                              {platform.icon}
+                            </div>
+                            <span className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-emerald-500 ring-2 ring-card shadow-xs" />
+                          </div>
+
+                          <div className="min-w-0 space-y-0.5">
+                            <div className="flex items-center gap-1.5">
+                              <p className="font-bold text-foreground text-sm truncate">
+                                {platform.name}
+                              </p>
+                              <span
+                                className="text-[9px] font-bold px-1.5 py-0.2 rounded-full"
+                                style={{
+                                  color: badge.color,
+                                  backgroundColor: badge.color + "20",
+                                }}
+                              >
+                                {badge.label}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground font-medium truncate">
+                              {account.username ? `@${account.username}` : account.displayName}
+                            </p>
+                            <span className="inline-block text-[10px] text-muted-foreground/70">
+                              {platform.capabilities}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div
+                            className={cn(
+                              "flex size-6 items-center justify-center rounded-lg border transition-all duration-200",
+                              isSelected
+                                ? "bg-primary border-primary text-primary-foreground shadow-xs"
+                                : "border-border bg-background text-transparent group-hover:border-primary/40"
+                            )}
+                          >
+                            <PiCheckBold className={cn("size-3.5 stroke-[3]", isSelected ? "opacity-100" : "opacity-0")} />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  });
+                })}
+              </div>
+            </div>
+
+            {/* ── STEP 3: CONTENT & CAPTIONS ──────────────────────────────── */}
+            <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-card via-card to-card/95 p-5 shadow-xs transition-all hover:border-primary/30">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/40">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex size-7 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-black text-xs shadow-md shadow-primary/25 shrink-0">
+                    03
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground">Content &amp; Captions</h3>
+                    <p className="text-[11px] text-muted-foreground">
+                      Compose customized copy per platform or mirror one unified caption
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer bg-muted/40 px-3 py-1.5 rounded-xl border border-border/60 hover:text-foreground transition-colors shadow-2xs">
+                    <input
+                      type="checkbox"
+                      checked={syncCaptions}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setSyncCaptions(checked);
+                        if (checked) {
+                          const first = Object.values(captions).find((c) => c.trim()) || "";
+                          if (first) {
+                            const sync: Record<string, string> = { all: first };
+                            selectedAccountIds.forEach((id) => {
+                              sync[id] = first;
+                            });
+                            (
+                              ['facebook', 'instagram', 'twitter', 'linkedin', 'tiktok'] as const
+                            ).forEach((p) => {
+                              sync[p] = first;
+                            });
+                            setCaptions((prev) => ({ ...prev, ...sync }));
+                          }
+                        }
+                      }}
+                      className="size-4 rounded border-border text-primary focus:ring-primary"
+                    />
+                    <span className="font-semibold text-foreground">Mirror caption across all channels</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4">
+                {/* Campaign title */}
+                <div>
+                  <label className="mb-1.5 flex items-center gap-1.5 text-xs font-bold text-foreground">
+                    <PiTagBold className="size-3.5 text-primary" />
+                    <span>Campaign Title (optional internal note)</span>
+                  </label>
+                  <input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. Weekend Brunch Special or Chef's Tasting Menu"
+                    className="w-full rounded-xl border border-border bg-background px-3.5 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 shadow-2xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                  />
+                </div>
+
+                {/* Per-Platform Switcher Tabs (when not synced) */}
+                {!syncCaptions && (
+                  <div className="space-y-2 pt-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                        Customize by Channel:
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">
+                        Each network enforces unique length limits and formatting
+                      </span>
+                    </div>
+
+                    <div className="flex gap-2 border-b border-border/60 pb-2 overflow-x-auto">
+                      {COMPOSE_PLATFORMS.map((plat) => {
+                        const meta = PLATFORM_META[plat.id];
+                        const currentPlat = activeComposerPlatform || "instagram";
+                        const isTabActive = currentPlat === plat.id;
+                        const platCaption = captions[plat.id] ?? (captions["all"] ?? "");
+                        const charCount = platCaption.length;
+                        const isOver = meta.maxCaptionLength
+                          ? charCount > meta.maxCaptionLength
+                          : false;
+
+                        return (
+                          <button
+                            key={plat.id}
+                            type="button"
+                            onClick={() => setActiveComposerPlatform(plat.id)}
+                            className={cn(
+                              "flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border shadow-2xs",
+                              isTabActive
+                                ? "text-white shadow-sm ring-1 ring-white/20"
+                                : "border-border/60 bg-muted/30 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                            )}
+                            style={
+                              isTabActive
+                                ? { backgroundColor: plat.brandColor, borderColor: plat.brandColor }
+                                : {}
+                            }
+                          >
+                            <span className="text-xs">{plat.icon}</span>
+                            <span>{plat.name}</span>
+                            <span
+                              className={cn(
+                                "text-[10px] px-1.5 py-0.5 rounded-md font-mono",
+                                isOver
+                                  ? "bg-red-500 text-white font-bold"
+                                  : isTabActive
+                                    ? "bg-black/30 text-white/95"
+                                    : "bg-muted text-muted-foreground"
+                              )}
+                            >
+                              {charCount}/{meta.maxCaptionLength}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Textarea */}
+                {syncCaptions ? (
+                  <div>
+                    <div className="mb-1.5 flex items-center justify-between">
+                      <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                        <PiSparkleBold className="size-3.5 text-primary" />
+                        <span>Unified Caption (Mirrored across all connected platforms)</span>
+                      </label>
+                      <span className="text-[11px] text-muted-foreground font-mono">
+                        {(captions["all"] ?? Object.values(captions)[0] ?? "").length} characters
+                      </span>
+                    </div>
+                    <textarea
+                      value={captions["all"] ?? Object.values(captions)[0] ?? ""}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        const sync: Record<string, string> = { all: v };
+                        selectedAccountIds.forEach((id) => {
+                          sync[id] = v;
+                        });
+                        (
+                          ['facebook', 'instagram', 'twitter', 'linkedin', 'tiktok'] as const
+                        ).forEach((p) => {
+                          sync[p] = v;
+                        });
+                        setCaptions((prev) => ({ ...prev, ...sync }));
+                      }}
+                      placeholder="Write an appetizing description of your special, include ingredients, timing, and calls to action..."
+                      rows={4}
+                      className="w-full rounded-xl border border-border bg-background p-3 text-sm text-foreground placeholder:text-muted-foreground/60 shadow-2xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all leading-relaxed"
+                    />
+                  </div>
+                ) : (
+                  (() => {
+                    const plat = activeComposerPlatform || "instagram";
+                    const meta = PLATFORM_META[plat];
+                    const currentPlatObj = COMPOSE_PLATFORMS.find((p) => p.id === plat);
+                    const currentVal = captions[plat] ?? (captions["all"] ?? "");
+                    const charCount = currentVal.length;
+                    const isOver = meta.maxCaptionLength
+                      ? charCount > meta.maxCaptionLength
+                      : false;
+
+                    return (
+                      <div>
+                        <div className="mb-1.5 flex items-center justify-between">
+                          <label className="text-xs font-bold text-foreground flex items-center gap-2">
+                            <span
+                              className="flex size-5 items-center justify-center rounded-md text-[10px] font-bold text-white shadow-2xs"
+                              style={{ backgroundColor: meta.color }}
+                            >
+                              {currentPlatObj?.icon}
+                            </span>
+                            <span>{meta.label} Custom Caption</span>
+                            {plat === "twitter" && (
+                              <span className="text-[10px] text-muted-foreground font-normal">
+                                (Tweet limit: 280 chars)
+                              </span>
+                            )}
+                            {plat === "instagram" && (
+                              <span className="text-[10px] text-muted-foreground font-normal">
+                                (Reel &amp; Feed caption)
+                              </span>
+                            )}
+                            {plat === "linkedin" && (
+                              <span className="text-[10px] text-muted-foreground font-normal">
+                                (Professional post)
+                              </span>
+                            )}
+                          </label>
+                          <span
+                            className={cn(
+                              "text-[11px] font-mono",
+                              isOver ? "text-red-500 font-bold" : "text-muted-foreground"
+                            )}
+                          >
+                            {charCount} / {meta.maxCaptionLength} {isOver && "⚠️ EXCEEDS LIMIT"}
+                          </span>
+                        </div>
+                        <textarea
+                          value={currentVal}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setCaptions((prev) => {
+                              const next = { ...prev, [plat]: v };
+                              const matchedAcc = accounts.find((a) => a.platform === plat);
+                              if (matchedAcc) next[matchedAcc.id] = v;
+                              return next;
+                            });
+                          }}
+                          placeholder={`Write custom ${meta.label} caption with relevant tags...`}
+                          rows={4}
+                          className={cn(
+                            "w-full rounded-xl border bg-background p-3 text-sm text-foreground placeholder:text-muted-foreground/60 shadow-2xs focus:outline-none focus:ring-1 transition-all leading-relaxed",
+                            isOver
+                              ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                              : "border-border focus:border-primary focus:ring-primary"
+                          )}
+                        />
+                      </div>
+                    );
+                  })()
+                )}
+
+                {/* Quick Hashtags Toolbar */}
+                <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <p className="text-[11px] font-bold text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
+                      <PiHashBold className="size-3 text-primary" />
+                      <span>Popular Restaurant Hashtags</span>
+                    </p>
+                    <span className="text-[10px] text-muted-foreground">Click to append</span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1.5">
+                    {POPULAR_HASHTAGS.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => {
+                          const plat = activeComposerPlatform || "instagram";
+                          if (syncCaptions) {
+                            const prevAll = captions["all"] ?? Object.values(captions)[0] ?? "";
+                            const nextVal = prevAll ? `${prevAll} ${tag}` : tag;
+                            const sync: Record<string, string> = { all: nextVal };
+                            selectedAccountIds.forEach((id) => {
+                              sync[id] = nextVal;
+                            });
+                            (
+                              ['facebook', 'instagram', 'twitter', 'linkedin', 'tiktok'] as const
+                            ).forEach((p) => {
+                              sync[p] = nextVal;
+                            });
+                            setCaptions((prev) => ({ ...prev, ...sync }));
+                          } else {
+                            const prevPlat = captions[plat] ?? (captions["all"] ?? "");
+                            const nextVal = prevPlat ? `${prevPlat} ${tag}` : tag;
+                            setCaptions((prev) => {
+                              const next = { ...prev, [plat]: nextVal };
+                              const matchedAcc = accounts.find((a) => a.platform === plat);
+                              if (matchedAcc) next[matchedAcc.id] = nextVal;
+                              return next;
+                            });
+                          }
+                        }}
+                        className="flex items-center gap-1 rounded-full border border-border/80 bg-background px-2.5 py-1 text-[11px] font-semibold text-muted-foreground transition-all hover:border-primary/50 hover:bg-primary/10 hover:text-primary active:scale-95 shadow-2xs"
+                      >
+                        <span className="text-primary/70">#</span>
+                        <span>{tag.replace(/^#/, "")}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Recurring Post / Autopilot Section */}
+                <div className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/10 via-card to-card p-3.5 shadow-2xs">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex size-8 items-center justify-center rounded-lg bg-primary/20 text-primary shadow-xs shrink-0">
+                        <PiRepeatBold className="size-4" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                          <span>Recurring Post (Autopilot)</span>
+                          <span className="rounded-full bg-primary/20 px-2 py-0.2 text-[9px] font-bold text-primary">
+                            Smart Automation
+                          </span>
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          Automatically re-publish weekly specials, happy hours, or seasonal promos
+                        </p>
+                      </div>
+                    </div>
+
+                    <select
+                      value={recurrenceRule}
+                      onChange={(e) => setRecurrenceRule(e.target.value as any)}
+                      className="rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none shadow-2xs"
+                    >
+                      <option value="">Don't repeat</option>
+                      <option value="daily">Repeat Daily</option>
+                      <option value="weekly">Repeat Weekly</option>
+                      <option value="biweekly">Repeat Every 2 Weeks</option>
+                      <option value="monthly">Repeat Monthly</option>
+                    </select>
+                  </div>
+
+                  {recurrenceRule && (
+                    <div className="flex flex-wrap items-center gap-3 pt-3 mt-3 border-t border-border/40">
+                      <label className="text-[11px] font-bold text-muted-foreground shrink-0">
+                        Autopilot End Date:
+                      </label>
+                      <input
+                        type="date"
+                        value={recurrenceEndDate}
+                        onChange={(e) => setRecurrenceEndDate(e.target.value)}
+                        className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs text-foreground focus:border-primary focus:outline-none shadow-2xs"
+                      />
+                      {recurrenceEndDate && (
+                        <button
+                          type="button"
+                          onClick={() => setRecurrenceEndDate("")}
+                          className="text-[11px] text-muted-foreground hover:text-foreground underline"
+                        >
+                          Clear end date
+                        </button>
+                      )}
+                      <span className="text-[10px] text-primary font-medium ml-auto">
+                        Will generate next post automatically when current post succeeds.
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* ── STEP 4: LAUNCHPAD (Publish or Schedule) ──────────────────── */}
+            <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-card via-card to-card/95 p-5 shadow-xs transition-all hover:border-primary/30">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/40">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex size-7 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-black text-xs shadow-md shadow-primary/25 shrink-0">
+                    04
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground">Launchpad</h3>
+                    <p className="text-[11px] text-muted-foreground">
+                      Schedule for peak audience traffic or publish immediately
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-semibold text-muted-foreground">Targeting:</span>
+                  <div className="flex flex-wrap items-center gap-1">
+                    {accounts
+                      .filter((a) => selectedAccountIds.has(a.id))
+                      .map((a) => {
+                        const platObj = COMPOSE_PLATFORMS.find((p) => p.id === a.platform);
+                        return (
+                          <span
+                            key={a.id}
+                            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white shadow-xs"
+                            style={{ backgroundColor: platObj?.brandColor || "#1877F2" }}
+                            title={a.displayName}
+                          >
+                            {platObj?.icon}
+                            <span>{platObj?.name}</span>
+                          </span>
+                        );
+                      })}
+                    {selectedAccountIds.size === 0 && (
+                      <span className="text-[11px] text-muted-foreground italic bg-muted px-2 py-0.5 rounded-md">
+                        No channels selected yet
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 space-y-4">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  {/* Left: Schedule picker + presets */}
+                  <div className="space-y-2">
+                    <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                      <PiCalendarBlankBold className="size-4 text-primary" />
+                      <span>Schedule for Later:</span>
+                    </span>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-1.5 shadow-2xs focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
+                        <PiClockBold className="size-4 text-muted-foreground shrink-0" />
+                        <input
+                          type="datetime-local"
+                          value={schedule}
+                          onChange={(e) => setSchedule(e.target.value)}
+                          className="bg-transparent text-xs text-foreground focus:outline-none [color-scheme:dark]"
+                        />
+                      </div>
+
+                      {/* Quick Schedule Presets */}
+                      <button
+                        type="button"
+                        onClick={() => setScheduleOffsetMinutes(60)}
+                        className="rounded-lg border border-border bg-muted/40 px-2 py-1 text-[11px] font-semibold text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors"
+                      >
+                        +1 Hour
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setScheduleTimeOfDay(19, 0)}
+                        className="rounded-lg border border-border bg-muted/40 px-2 py-1 text-[11px] font-semibold text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors"
+                      >
+                        Tonight (7 PM)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setScheduleTimeOfDay(12, 1)}
+                        className="rounded-lg border border-border bg-muted/40 px-2 py-1 text-[11px] font-semibold text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors"
+                      >
+                        Tomorrow (12 PM)
+                      </button>
+
+                      {schedule && (
+                        <button
+                          type="button"
+                          onClick={() => setSchedule("")}
+                          className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 ml-1"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right: Action Buttons */}
+                  <div className="flex items-center gap-2.5 pt-2 lg:pt-0 shrink-0">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="md"
+                      disabled={busy || !schedule || selectedAccountIds.size === 0}
+                      onClick={() => handlePublishOrSchedule("schedule")}
+                      startIcon={<PiClockBold className="size-4" />}
+                      className="shadow-2xs"
+                    >
+                      Schedule Post
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="md"
+                      disabled={busy || selectedAccountIds.size === 0}
+                      onClick={() => handlePublishOrSchedule("now")}
+                      startIcon={busy ? undefined : <PiPaperPlaneTiltBold className="size-4.5" />}
+                      loading={busy}
+                      className={cn(
+                        "font-bold px-6 shadow-md transition-all active:scale-95",
+                        selectedAccountIds.size > 0 &&
+                          "bg-gradient-to-r from-primary via-primary to-primary/90 hover:from-primary/95 hover:to-primary shadow-primary/20"
+                      )}
+                    >
+                      {selectedAccountIds.size === 0
+                        ? "Select Destination(s) to Publish"
+                        : `Publish to ${selectedAccountIds.size} Channel${selectedAccountIds.size > 1 ? "s" : ""} Now`}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Tab 2: Poster Library
   const renderLibraryTab = () => {
-    const displayedAssets = libraryFilter === "weekly" ? [] : assets;
-    const displayedWeekly = libraryFilter === "uploads" ? [] : weeklyPosters;
+    const displayedAssets =
+      libraryFilter === "weekly"
+        ? []
+        : libraryFilter === "videos"
+          ? assets.filter((a) => a.mediaType === "video")
+          : assets;
+    const displayedWeekly =
+      libraryFilter === "uploads" || libraryFilter === "videos" ? [] : weeklyPosters;
 
     return (
       <div className="flex h-full min-h-0 flex-col gap-4">
         <PageHeader
           className="shrink-0"
-          title="Poster Library"
+          title="Poster & Media Library"
           actions={
             <div className="flex items-center gap-2">
               <label className="cursor-pointer">
                 <span className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-semibold text-primary-foreground shadow-xs transition hover:bg-primary/90">
                   {uploading ? <Spinner size="sm" /> : <PiUploadSimpleBold className="size-4" />}
-                  Upload Poster
+                  Upload Photo / Reel
                 </span>
                 <input
                   type="file"
-                  accept="image/jpeg,image/png,image/webp"
+                  accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm"
                   className="hidden"
                   onChange={(e) => handleUpload(e.target.files?.[0])}
                   disabled={uploading}
@@ -759,14 +1360,14 @@ function SocialMediaPageContent() {
         />
 
         {/* Filter Pills */}
-        <div className="flex shrink-0 items-center gap-2 border-b border-border pb-2">
-          {(["all", "uploads", "weekly"] as const).map((filter) => (
+        <div className="flex shrink-0 items-center gap-2 border-b border-border pb-2 overflow-x-auto">
+          {(["all", "uploads", "videos", "weekly"] as const).map((filter) => (
             <button
               key={filter}
               type="button"
               onClick={() => setLibraryFilter(filter)}
               className={cn(
-                "rounded-full px-3 py-1 text-xs font-semibold capitalize transition",
+                "rounded-full px-3 py-1 text-xs font-semibold capitalize transition shrink-0",
                 libraryFilter === filter
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "bg-muted text-muted-foreground hover:text-foreground",
@@ -776,7 +1377,9 @@ function SocialMediaPageContent() {
                 ? `All Media (${assets.length + weeklyPosters.length})`
                 : filter === "uploads"
                   ? `Your Uploads (${assets.length})`
-                  : `Weekly Specials (${weeklyPosters.length})`}
+                  : filter === "videos"
+                    ? `Videos & Reels (${assets.filter((a) => a.mediaType === "video").length})`
+                    : `Weekly Specials (${weeklyPosters.length})`}
             </button>
           ))}
         </div>
@@ -786,15 +1389,15 @@ function SocialMediaPageContent() {
             <div className="flex h-64 items-center justify-center">
               <EmptyState
                 icon={<PiImagesBold size={32} />}
-                title="No poster assets found"
+                title="No media assets found"
                 action={
                   <label className="cursor-pointer">
                     <span className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-semibold text-primary-foreground shadow-xs transition hover:bg-primary/90">
-                      <PiUploadSimpleBold className="size-4" /> Upload First Poster
+                      <PiUploadSimpleBold className="size-4" /> Upload First Photo or Reel
                     </span>
                     <input
                       type="file"
-                      accept="image/jpeg,image/png,image/webp"
+                      accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm"
                       className="hidden"
                       onChange={(e) => handleUpload(e.target.files?.[0])}
                       disabled={uploading}
@@ -859,6 +1462,7 @@ function SocialMediaPageContent() {
               {/* Uploaded Assets */}
               {displayedAssets.map((asset) => {
                 const isSelected = assetId === asset.id;
+                const isVideo = asset.mediaType === "video";
                 return (
                   <Card
                     key={`asset-${asset.id}`}
@@ -867,16 +1471,39 @@ function SocialMediaPageContent() {
                       isSelected ? "border-primary ring-2 ring-primary/30" : "border-border",
                     )}
                   >
-                    <div className="relative aspect-square w-full overflow-hidden bg-muted/30">
-                      <img
-                        src={asset.thumbnailUrl ?? asset.publishingUrl}
-                        alt={asset.originalFilename}
-                        className="size-full object-cover transition-transform duration-200 group-hover:scale-105"
-                      />
+                    <div className="relative aspect-square w-full overflow-hidden bg-muted/30 flex items-center justify-center">
+                      {isVideo ? (
+                        <>
+                          <video
+                            src={asset.publishingUrl}
+                            className="size-full object-cover"
+                            muted
+                            playsInline
+                            preload="metadata"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/20">
+                            <span className="flex size-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-xs">
+                              <PiPlayCircleBold className="size-6" />
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <img
+                          src={asset.thumbnailUrl ?? asset.publishingUrl}
+                          alt={asset.originalFilename}
+                          className="size-full object-cover transition-transform duration-200 group-hover:scale-105"
+                        />
+                      )}
                       <div className="absolute top-2 left-2">
-                        <Badge tone="neutral" className="shadow-xs text-[8px]">
-                          Upload
-                        </Badge>
+                        {isVideo ? (
+                          <Badge tone="primary" className="shadow-xs text-[8px] flex items-center gap-1">
+                            <PiVideoFill className="size-2.5" /> Reel / Video
+                          </Badge>
+                        ) : (
+                          <Badge tone="neutral" className="shadow-xs text-[8px]">
+                            Upload
+                          </Badge>
+                        )}
                       </div>
                       <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 backdrop-blur-2xs transition-opacity group-hover:opacity-100">
                         <Button
@@ -1073,151 +1700,272 @@ function SocialMediaPageContent() {
     );
   };
 
-  // Tab 5: Connected Accounts
-  const renderAccountsTab = () => (
-    <div className="flex h-full min-h-0 flex-col gap-4">
-      <PageHeader
-        className="shrink-0"
-        title="Connected Accounts"
-        actions={
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={loadData}
-            disabled={loading}
-            startIcon={<PiClockBold className="size-4" />}
-          >
-            Refresh Status
-          </Button>
-        }
-      />
+  // Tab 4: Connected Accounts
+  const renderAccountsTab = () => {
+    const supportedPlatforms: {
+      platform: SocialPlatform;
+      name: string;
+      apiName: string;
+      color: string;
+      gradient?: string;
+      icon: React.ReactNode;
+      description: string;
+      badges: string[];
+      isBeta?: boolean;
+    }[] = [
+      {
+        platform: "facebook",
+        name: "Facebook Page",
+        apiName: "Meta Graph API v20.0",
+        color: "#1877F2",
+        icon: <PiFacebookLogoBold size={24} />,
+        description: "Publish organic posts, promotional flyers, menu specials, and dining updates directly to your official Facebook Business Page.",
+        badges: ["Page Feed", "Photo Albums", "Insights & Metrics"],
+      },
+      {
+        platform: "instagram",
+        name: "Instagram Professional",
+        apiName: "Instagram Graph API",
+        color: "#E1306C",
+        gradient: "from-[#f09433] via-[#dc2743] to-[#bc1888]",
+        icon: <PiInstagramLogoBold size={24} />,
+        description: "Post high-resolution food photography and vertical video Reels directly to your restaurant's Instagram profile.",
+        badges: ["Feed Photos", "Instagram Reels", "Audio Sync", "Hashtag Cloud"],
+      },
+      {
+        platform: "twitter",
+        name: "Twitter / X",
+        apiName: "Twitter API v2 (PKCE)",
+        color: "#000000",
+        icon: <PiXLogoBold size={22} />,
+        description: "Broadcast instant lunch specials, daily deals, and timely announcements to diners with automated tweet delivery and video uploads.",
+        badges: ["280-char Tweets", "Video Uploads", "Real-time Trends", "PKCE OAuth"],
+      },
+      {
+        platform: "linkedin",
+        name: "LinkedIn",
+        apiName: "UGC Community Post API",
+        color: "#0A66C2",
+        icon: <PiLinkedinLogoBold size={24} />,
+        description: "Connect with local corporate clients, catering opportunities, and professional dinner parties through business posts.",
+        badges: ["Company Page", "Corporate Catering", "Long-form (3k chars)", "Auto-Refresh"],
+      },
+      {
+        platform: "tiktok",
+        name: "TikTok",
+        apiName: "Creator & Video API",
+        color: "#FE2C55",
+        icon: <PiTiktokLogoBold size={24} />,
+        description: "Engage foodies with behind-the-scenes chef preparations, kitchen highlights, and short-form video content.",
+        badges: ["Vertical 9:16 Video", "Food Trends", "Viral Sounds"],
+        isBeta: true,
+      },
+    ];
 
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-        <div className="space-y-4 pb-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            {/* Facebook Connection Card */}
-            <Card className="p-5">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-11 items-center justify-center rounded-xl bg-[#1877f2]/15 text-[#1877f2]">
-                    <PiFacebookLogoBold size={28} />
+    const connectedCount = accounts.filter((a) => a.status === "connected").length;
+
+    return (
+      <div className="flex h-full min-h-0 flex-col gap-4">
+        <PageHeader
+          className="shrink-0"
+          title="Connected Accounts & Platform Channels"
+          actions={
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={loadData}
+              disabled={loading}
+              startIcon={<PiArrowsCounterClockwiseBold className="size-4" />}
+            >
+              Refresh Status
+            </Button>
+          }
+        />
+
+        <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+          <div className="space-y-4 pb-6">
+            {/* Top Overview Banner */}
+            <div className="rounded-2xl border border-border/80 bg-gradient-to-br from-card via-muted/20 to-card p-4 shadow-xs">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <h3 className="text-sm font-bold text-foreground">
+                      Multi-Platform Publishing Network
+                    </h3>
+                    <Badge tone={connectedCount > 0 ? "success" : "neutral"} className="text-[10px]">
+                      {connectedCount} of 5 Channels Connected
+                    </Badge>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-foreground">Facebook Page</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Connect your restaurant's social channels to compose once and publish everywhere with automated token refreshes.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-400">
+                    <PiShieldCheckBold className="size-4" />
+                    <span>Auto Token Refresh: Active (Every 6h)</span>
                   </div>
                 </div>
-                <Badge tone={fbAccount ? "success" : "neutral"}>
-                  {fbAccount ? "Connected" : "Disconnected"}
-                </Badge>
               </div>
+            </div>
 
-              <div className="mt-4 border-t border-border pt-4">
-                {fbAccount ? (
-                  <div className="space-y-3">
+            {/* Grid of 5 Channels */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {supportedPlatforms.map((item) => {
+                const acct = accounts.find((a) => a.platform === item.platform);
+                const isConnected = !!acct && acct.status === "connected";
+                const badge = acct ? tokenStatusBadge(acct) : null;
+                const daysLeft = acct ? tokenDaysLeft(acct) : null;
+
+                return (
+                  <Card
+                    key={item.platform}
+                    className={cn(
+                      "flex flex-col justify-between p-4.5 rounded-2xl border transition-all duration-200",
+                      isConnected
+                        ? "border-border bg-card shadow-sm hover:border-primary/40"
+                        : "border-border/60 bg-card/60 hover:border-border"
+                    )}
+                  >
                     <div>
-                      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                        Page Name
-                      </p>
-                      <p className="text-xs font-bold text-foreground">{fbAccount.displayName}</p>
-                    </div>
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-[11px] text-muted-foreground">Status: Active</span>
-                      <Button
-                        type="button"
-                        variant="danger"
-                        size="sm"
-                        startIcon={<PiXBold className="size-3.5" />}
-                        onClick={() => {
-                          setAccountToDisconnect(fbAccount);
-                          setDisconnectModalOpen(true);
-                        }}
-                      >
-                        Disconnect
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="pt-1">
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="sm"
-                      onClick={() => connectPlatform("facebook")}
-                      startIcon={<PiFacebookLogoBold className="size-4" />}
-                      className="bg-[#1877f2] hover:bg-[#1877f2]/90 text-white"
-                    >
-                      Connect Facebook Page
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </Card>
+                      {/* Card Header */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className={cn(
+                              "flex size-11 shrink-0 items-center justify-center rounded-xl text-white shadow-xs",
+                              item.gradient ? `bg-gradient-to-tr ${item.gradient}` : ""
+                            )}
+                            style={!item.gradient ? { backgroundColor: item.color } : {}}
+                          >
+                            {item.icon}
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-sm font-bold text-foreground truncate">{item.name}</h4>
+                            <p className="text-[10px] text-muted-foreground font-mono">{item.apiName}</p>
+                          </div>
+                        </div>
 
-            {/* Instagram Connection Card */}
-            <Card className="p-5">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-11 items-center justify-center rounded-xl bg-[#e1306c]/15 text-[#e1306c]">
-                    <PiInstagramLogoBold size={28} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-foreground">Instagram Professional</h3>
-                  </div>
-                </div>
-                <Badge tone={igAccount ? "success" : "neutral"}>
-                  {igAccount ? "Connected" : "Disconnected"}
-                </Badge>
-              </div>
+                        {item.isBeta ? (
+                          <Badge tone="warning" className="text-[9px] shrink-0">
+                            Beta
+                          </Badge>
+                        ) : isConnected ? (
+                          <span
+                            className="text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0"
+                            style={{ color: badge?.color, backgroundColor: badge?.color + "20" }}
+                          >
+                            <span className="size-1.5 rounded-full" style={{ backgroundColor: badge?.color }} />
+                            {badge?.label}
+                          </span>
+                        ) : (
+                          <Badge tone="neutral" className="text-[9px] shrink-0">
+                            Disconnected
+                          </Badge>
+                        )}
+                      </div>
 
-              <div className="mt-4 border-t border-border pt-4">
-                {igAccount ? (
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                        Profile Handle
+                      {/* Description */}
+                      <p className="mt-3 text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                        {item.description}
                       </p>
-                      <p className="text-xs font-bold text-foreground">
-                        @{igAccount.username || igAccount.displayName}
-                      </p>
+
+                      {/* Feature Pills */}
+                      <div className="mt-3 flex flex-wrap gap-1">
+                        {item.badges.map((b) => (
+                          <span
+                            key={b}
+                            className="text-[9px] font-medium px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground border border-border/40"
+                          >
+                            {b}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Connected Details */}
+                      {isConnected && acct && (
+                        <div className="mt-3 rounded-xl border border-border/60 bg-muted/30 p-2.5 space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-[11px] text-muted-foreground">Account:</span>
+                            <span className="font-semibold text-foreground truncate max-w-[140px]">
+                              {acct.username ? `@${acct.username}` : acct.displayName}
+                            </span>
+                          </div>
+                          {daysLeft !== null && (
+                            <div className="flex items-center justify-between text-[11px]">
+                              <span className="text-muted-foreground">Token Health:</span>
+                              <span className={cn(
+                                "font-medium",
+                                daysLeft > 14 ? "text-emerald-400" : daysLeft > 7 ? "text-amber-400" : "text-red-400"
+                              )}>
+                                {daysLeft} days remaining (auto-refreshed)
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-[11px] text-muted-foreground">Status: Active</span>
-                      <Button
-                        type="button"
-                        variant="danger"
-                        size="sm"
-                        startIcon={<PiXBold className="size-3.5" />}
-                        onClick={() => {
-                          setAccountToDisconnect(igAccount);
-                          setDisconnectModalOpen(true);
-                        }}
-                      >
-                        Disconnect
-                      </Button>
+
+                    {/* Actions */}
+                    <div className="mt-4 pt-3 border-t border-border/50">
+                      {isConnected && acct ? (
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] text-emerald-400 flex items-center gap-1 font-semibold">
+                            <PiCheckCircleBold size={13} /> Active & Ready
+                          </span>
+                          <Button
+                            type="button"
+                            variant="danger"
+                            size="sm"
+                            startIcon={<PiXBold className="size-3.5" />}
+                            onClick={() => {
+                              setAccountToDisconnect(acct);
+                              setDisconnectModalOpen(true);
+                            }}
+                          >
+                            Disconnect
+                          </Button>
+                        </div>
+                      ) : item.isBeta ? (
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] text-muted-foreground italic">Creator API Integration</span>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            disabled
+                            className="opacity-60 cursor-not-allowed"
+                          >
+                            Coming Soon
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="primary"
+                          size="sm"
+                          onClick={() => connectPlatform(item.platform)}
+                          className={cn(
+                            "w-full font-semibold text-white shadow-xs transition hover:opacity-90",
+                            item.gradient ? `bg-gradient-to-r ${item.gradient}` : ""
+                          )}
+                          style={!item.gradient ? { backgroundColor: item.color } : {}}
+                        >
+                          Connect {item.name}
+                        </Button>
+                      )}
                     </div>
-                  </div>
-                ) : (
-                  <div className="pt-1">
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="sm"
-                      onClick={() => connectPlatform("instagram")}
-                      startIcon={<PiInstagramLogoBold className="size-4" />}
-                      className="bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] text-white hover:opacity-90"
-                    >
-                      Connect Instagram
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </Card>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderPanel = () => {
     switch (activeTab) {
@@ -1293,13 +2041,13 @@ function SocialMediaPageContent() {
         <SocialPostPreview
           posterUrl={activePoster?.url}
           posterTitle={activePoster?.title}
-          caption={syncCaptions ? instagramCaption : ""}
-          facebookCaption={facebookCaption}
-          instagramCaption={instagramCaption}
-          facebookSelected={facebookSelected}
-          instagramSelected={instagramSelected}
+          isVideo={assetIsVideo}
+          caption={syncCaptions ? (Object.values(captions)[0] ?? "") : ""}
+          captions={captions}
+          selectedAccountIds={selectedAccountIds}
           accounts={accounts}
           scheduledAt={schedule || null}
+          recurrenceRule={recurrenceRule || null}
         />
       </aside>
 
@@ -1338,13 +2086,13 @@ function SocialMediaPageContent() {
               <SocialPostPreview
                 posterUrl={activePoster?.url}
                 posterTitle={activePoster?.title}
-                caption={syncCaptions ? instagramCaption : ""}
-                facebookCaption={facebookCaption}
-                instagramCaption={instagramCaption}
-                facebookSelected={facebookSelected}
-                instagramSelected={instagramSelected}
+                isVideo={assetIsVideo}
+                caption={syncCaptions ? (Object.values(captions)[0] ?? "") : ""}
+                captions={captions}
+                selectedAccountIds={selectedAccountIds}
                 accounts={accounts}
                 scheduledAt={schedule || null}
+                recurrenceRule={recurrenceRule || null}
               />
             </div>
           </div>

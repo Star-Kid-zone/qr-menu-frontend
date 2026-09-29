@@ -16,4 +16,8 @@ export interface WorkspaceSettingsFormProps {
   compact?: boolean;
   /** Fires with the live (unsaved) form values on every field change — used to drive a live preview. */
   onValuesChange?: (values: WorkspaceSettingsFormValues) => void;
+  /** Optional callback to enter edit mode when user clicks an edit action inside the form */
+  onStartEditing?: (subSection?: string) => void;
+  /** Optional initially active/expanded subsection when entering edit mode */
+  initialActiveSubSection?: string | null;
 }
