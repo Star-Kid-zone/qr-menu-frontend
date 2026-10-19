@@ -80,7 +80,12 @@ export function getRichContent(data: RawPublicSiteData, slug: string) {
 
   const currencySymbol = (data.currency?.symbol as string) || '$';
 
-  const offers  = Array.isArray(data.offers)  ? data.offers.filter(Boolean) : [];
+  const offers = (Array.isArray(data.offers) ? data.offers.filter(Boolean) : []).map((o: any) => {
+    const rawVal = String(o.offer_value || '').trim();
+    const hasOff = /off$/i.test(rawVal);
+    const badgeText = o.badge_text || (rawVal ? (hasOff ? rawVal : `${rawVal} OFF`) : '');
+    return { ...o, badge_text: badgeText };
+  });
   const gallery = (Array.isArray(data.gallery) ? data.gallery : [])
     .filter((g) => typeof g.image_url === 'string' && g.image_url);
 
@@ -91,6 +96,7 @@ export function getRichContent(data: RawPublicSiteData, slug: string) {
     name:        (m?.name ?? m?.title ?? m?.item ?? `${terms.itemSingular} ${i + 1}`) as string,
     description: (m?.description ?? '') as string,
     price:       m?.price ? `${currencySymbol}${m.price}` : undefined,
+    image:       (m?.image_url ?? m?.imageUrl ?? m?.images?.[0]?.url ?? undefined) as string | undefined,
   }));
 
   // Real "Popular" picks — favours items flagged `popular`, falls back to the first few

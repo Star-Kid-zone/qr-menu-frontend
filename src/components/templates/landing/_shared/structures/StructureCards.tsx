@@ -108,7 +108,13 @@ export default function StructureCards(p: LandingTemplateProps) {
                 {c.signatureDishes.slice(0, 5).map((dish, i) => (
                   <StaggerItem key={`${dish.name}-${i}`}>
                     <div className="flex items-center gap-3">
-                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg"><ImagePlaceholder aspect="square" className="text-current" /></div>
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg">
+                        {dish.image ? (
+                          <Image src={dish.image} alt={dish.name} fill sizes="60px" className="object-cover" />
+                        ) : (
+                          <ImagePlaceholder aspect="square" className="text-current" />
+                        )}
+                      </div>
                       <div className="min-w-0 flex-1">
                         <p style={{ color: t.textPrimary }} className="truncate text-sm font-bold">{dish.name}</p>
                         {dish.description && <p style={{ color: t.textSecondary }} className="truncate text-xs">{dish.description}</p>}
@@ -151,7 +157,7 @@ export default function StructureCards(p: LandingTemplateProps) {
                   {o.title && <p style={{ color: t.textPrimary }} className="text-sm font-bold">{o.title}</p>}
                   {o.description && <p style={{ color: t.textSecondary }} className="mt-1 text-xs">{o.description}</p>}
                   {(o.offer_value || o.badge_text) && (
-                    <span style={{ background: t.accent, color: t.accentText }} className="mt-2 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold">{o.badge_text || `${o.offer_value}${o.offer_type === "percentage" ? "%" : ""} OFF`}</span>
+                    <span style={{ background: t.accent, color: t.accentText }} className="mt-2 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold">{o.badge_text || o.offer_value}</span>
                   )}
                 </div>
               ))}

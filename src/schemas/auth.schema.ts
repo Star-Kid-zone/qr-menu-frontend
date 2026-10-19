@@ -28,6 +28,7 @@ export const registerSchema = z.object({
     .string()
     .min(6, 'Password must be at least 6 characters')
     .regex(/^(?=.*[A-Za-z])(?=.*\d).+$/, 'Password must contain at least one letter and one number'),
+  blueprintId: z.string().optional(),
 });
 
 export type RegisterSchemaValues = z.infer<typeof registerSchema>;
@@ -37,6 +38,7 @@ export const registerDefaultValues: RegisterSchemaValues = {
   slug: '',
   phone: '',
   password: '',
+  blueprintId: '',
 };
 
 // Forgot Password Schema

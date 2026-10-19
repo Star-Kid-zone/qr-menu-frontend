@@ -385,7 +385,7 @@ export default function BaseTemplate({ theme: themeConfig, ...p }: Props) {
                   >
                     <div className="relative mb-4 h-36 overflow-hidden rounded-lg">
                       <Image
-                        src={img.dish}
+                        src={dish.image || img.dish}
                         alt={dish.name}
                         fill
                         className="object-cover transition-transform duration-500 hover:scale-110"

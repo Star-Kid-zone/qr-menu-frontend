@@ -31,8 +31,8 @@ const items: NavItem[] = [
   {
     path: routes.superadmin.blueprints,
     icon: <PiBookBookmarkBold />,
-    text: 'Starter blueprints',
-    description: 'Industry menu presets',
+    text: 'Onboarding templates',
+    description: 'Default signup menus',
   },
   {
     path: routes.superadmin.announcements,

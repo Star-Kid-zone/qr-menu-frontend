@@ -42,13 +42,22 @@ export function TenantAnnouncementBanner() {
     fetchAnnouncements();
   }, []);
 
-  const handleDismiss = (id: string) => {
+  const handleDismiss = async (id: string) => {
+    // 1. Optimistically hide immediately from state
+    setAnnouncements((prev) => prev.filter((a) => a.id !== id));
     const updated = [...dismissedIds, id];
     setDismissedIds(updated);
     try {
       localStorage.setItem(DISMISSED_KEY, JSON.stringify(updated));
     } catch {
       // ignore
+    }
+
+    // 2. Persist read receipt to server (cross-device sync & superadmin telemetry)
+    try {
+      await superadminService.dismissAnnouncement(id);
+    } catch (err) {
+      console.error('Failed to sync announcement dismissal with server:', err);
     }
   };
 

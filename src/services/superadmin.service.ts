@@ -42,6 +42,97 @@ export interface UsersListResponse {
   users: UserListRow[];
 }
 
+export interface BlueprintMenuItem {
+  item: string;
+  price: string;
+  category: string;
+  type: string;
+  description: string;
+  popular: boolean;
+  imageUrl: string;
+  dietaryTags?: string[];
+  allergens?: string[];
+  spiceLevel?: number | null;
+  calories?: number | null;
+}
+
+export interface BlueprintTheme {
+  landingTheme: string;
+  menuTheme: string;
+  landingStructure: string;
+  menuStructure: string;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  textPrimaryColor: string;
+  textSecondaryColor: string;
+  accentTextColor: string;
+  borderColor: string;
+  footerBgColor: string;
+  sectionBgColor: string;
+  fontFamily: string;
+  cardStyle: string;
+  heroOverlay: string;
+  themeBadge: string;
+  themeMarquee: string;
+  heroTagline: string;
+  announcementText: string;
+  announcementEnabled: boolean;
+  bannerUrl: string;
+  logoUrl: string;
+}
+
+export interface BlueprintStory {
+  headline: string;
+  body: string;
+  stats: Array<{ label: string; value: string }>;
+}
+
+export interface BlueprintBusiness {
+  businessHours: string;
+  availability: Array<{ day: string; startTime: string; endTime: string }>;
+}
+
+export interface BlueprintOffer {
+  title: string;
+  description: string;
+  discount: string;
+  badgeText?: string;
+  imageUrl: string;
+}
+
+export interface BlueprintGalleryItem {
+  imageUrl: string;
+}
+
+export interface BlueprintFaq {
+  question: string;
+  answer: string;
+}
+
+export interface MenuBlueprint {
+  id: string;
+  name: string;
+  tagline: string;
+  categoryNames: string[];
+  icon: string;
+  badge: string;
+  isCustom?: boolean;
+  items: BlueprintMenuItem[];
+  theme?: BlueprintTheme;
+  story?: BlueprintStory;
+  business?: BlueprintBusiness;
+  offers?: BlueprintOffer[];
+  gallery?: BlueprintGalleryItem[];
+  faqs?: BlueprintFaq[];
+}
+
+export interface OnboardingTemplateConfigResponse {
+  autoSeedEnabled: boolean;
+  defaultBlueprintId: string;
+  blueprints: MenuBlueprint[];
+}
+
 export interface TenantMenuItem {
   id: number;
   item: string;
@@ -290,8 +381,36 @@ export const superadminService = {
     }>(api.post(`/superadmin/users/${userId}/impersonate`));
   },
 
+  getOnboardingTemplateConfig() {
+    return unwrap<OnboardingTemplateConfigResponse>(api.get('/superadmin/onboarding-template'));
+  },
+
+  updateOnboardingTemplateConfig(data: { autoSeedEnabled?: boolean; defaultBlueprintId?: string }) {
+    return unwrap<{
+      message: string;
+      autoSeedEnabled: boolean;
+      defaultBlueprintId: string;
+    }>(api.put('/superadmin/onboarding-template', data));
+  },
+
   getBlueprints() {
     return unwrap<MenuBlueprint[]>(api.get('/superadmin/blueprints'));
+  },
+
+  createBlueprint(data: Partial<MenuBlueprint>) {
+    return unwrap<{ message: string; blueprint: MenuBlueprint }>(api.post('/superadmin/blueprints', data));
+  },
+
+  updateBlueprint(id: string, data: Partial<MenuBlueprint>) {
+    return unwrap<{ message: string; blueprint: MenuBlueprint }>(api.put(`/superadmin/blueprints/${id}`, data));
+  },
+
+  deleteBlueprint(id: string) {
+    return unwrap<{ message: string }>(api.delete(`/superadmin/blueprints/${id}`));
+  },
+
+  resetBlueprint(id: string) {
+    return unwrap<{ message: string; blueprint: MenuBlueprint }>(api.post(`/superadmin/blueprints/${id}/reset`));
   },
 
   applyBlueprint(userId: number, blueprintId: string, mode: 'append' | 'replace' = 'append') {
@@ -329,6 +448,10 @@ export const superadminService = {
 
   getActiveAnnouncements() {
     return unwrap<PlatformAnnouncement[]>(api.get('/public/announcements'));
+  },
+
+  dismissAnnouncement(id: string | number) {
+    return unwrap<{ success: boolean; message: string }>(api.post(`/public/announcements/${id}/dismiss`));
   },
 
   getJobsAndQueue() {
@@ -417,6 +540,7 @@ export interface PlatformAnnouncement {
   createdBy?: string;
   createdAt: string;
   updatedAt?: string;
+  readCount?: number;
 }
 
 export interface QueueJob {

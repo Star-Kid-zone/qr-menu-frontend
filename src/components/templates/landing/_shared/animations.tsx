@@ -25,8 +25,8 @@ export function FadeIn({
       style={style}
       initial={reduce ? false : { opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
+      viewport={{ once: true, amount: 'some', margin: '120px 0px' }}
+      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
     >
       {children}
     </motion.div>
@@ -46,7 +46,7 @@ export function StaggerGroup({
       style={style}
       initial={reduce ? false : 'hidden'}
       whileInView="show"
-      viewport={{ once: true, amount: 0.15 }}
+      viewport={{ once: true, amount: 'some', margin: '120px 0px' }}
       variants={{
         hidden: {},
         show: { transition: { staggerChildren: stagger } },

@@ -37,4 +37,5 @@ export interface RegisterFormValues {
   password?: string;
   confirmPassword?: string;
   role?: string;
+  blueprintId?: string;
 }

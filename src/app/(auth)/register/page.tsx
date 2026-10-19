@@ -71,6 +71,7 @@ export default function RegisterPage() {
         slug: data.slug.trim(),
         phone: data.phone.trim(),
         password: data.password,
+        blueprintId: data.blueprintId || undefined,
       });
       setPhone(data.phone.trim());
       setStep("otp");
@@ -263,6 +264,25 @@ export default function RegisterPage() {
                 {...register("password")}
               />
             </FormField>
+
+            {/* Starter Menu Concept */}
+            <div className="space-y-1.5 pt-1">
+              <label className="text-caption font-semibold text-foreground flex items-center justify-between">
+                <span>Starter Menu Pack (Optional)</span>
+                <span className="text-[11px] text-muted-foreground font-normal">Seeds your QR menu</span>
+              </label>
+              <select
+                {...register("blueprintId")}
+                className="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="">Platform Default (Recommended)</option>
+                <option value="cafe_bakery">☕ Artisan Cafe & Bakery</option>
+                <option value="italian_bistro">🍕 Italian Bistro & Pizzeria</option>
+                <option value="burger_craft">🍔 Craft Burgers & Hot Wings</option>
+                <option value="asian_fusion">🍜 Asian Wok, Bowls & Dim Sum</option>
+                <option value="blank">⬜ None (Start completely blank)</option>
+              </select>
+            </div>
 
             <Button type="submit" fullWidth loading={isSubmitting} className="mt-2">
               {isSubmitting ? "Creating store…" : "Register Store"}
