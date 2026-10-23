@@ -37,8 +37,10 @@ export const routes = {
     userDetail: (id: string | number) => `/superadmin/users/${id}`,
     analytics: "/superadmin/analytics",
     weeklyPosters: "/superadmin/weekly-posters",
+    creativeStudio: "/superadmin/creative-studio",
+    prompts: "/superadmin/prompts",
     blueprints: "/superadmin/blueprints",
     announcements: "/superadmin/announcements",
-    jobs: "/superadmin/jobs",
   },
+
 } as const;

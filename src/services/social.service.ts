@@ -1,4 +1,5 @@
 import api from './api.service';
+import type { PlatformMarketingAsset } from './superadmin.service';
 
 export type SocialPlatform = 'facebook' | 'instagram' | 'twitter' | 'linkedin' | 'tiktok';
 
@@ -71,6 +72,7 @@ export type SocialPost = {
 export type CreatePostInput = {
   assetId?: string;
   weeklyPosterId?: string;
+  platformAssetId?: string;
   title?: string;
   displayTimezone?: string;
   scheduledAt?: string;
@@ -139,6 +141,9 @@ export const socialService = {
 
   // ─── Calendar ────────────────────────────────────────────────────────────────
   getCalendar: () => api.get<SocialPost[]>('/meta/calendar'),
+
+  // ─── Platform Distributed Assets ─────────────────────────────────────────────
+  getPlatformAssets: () => api.get<{ data: PlatformMarketingAsset[] }>('/meta/platform-assets'),
 };
 
 // ─── Platform metadata ─────────────────────────────────────────────────────────

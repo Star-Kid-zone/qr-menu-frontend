@@ -9,7 +9,7 @@ import {
   PiUsersThreeBold,
   PiBookBookmarkBold,
   PiMegaphoneBold,
-  PiClockCountdownBold,
+  PiNotebookBold,
   PiXBold,
 } from 'react-icons/pi';
 import { routes } from '@/config/routes';
@@ -41,24 +41,25 @@ const items: NavItem[] = [
     description: 'Tenant dashboard banners',
   },
   {
-    path: routes.superadmin.jobs,
-    icon: <PiClockCountdownBold />,
-    text: 'Jobs & queue',
-    description: 'Background worker telemetry',
-  },
-  {
     path: routes.superadmin.analytics,
     icon: <PiChartLineUpBold />,
     text: 'Analytics',
     description: 'Traffic across all sites',
   },
   {
-    path: routes.superadmin.weeklyPosters,
+    path: routes.superadmin.creativeStudio,
     icon: <PiImagesBold />,
-    text: 'Weekly posters',
-    description: "Send this week's poster",
+    text: 'Creative Studio',
+    description: 'AI assets, decoder & tenant packs',
+  },
+  {
+    path: routes.superadmin.prompts,
+    icon: <PiNotebookBold />,
+    text: 'Prompt Library',
+    description: 'AI prompts & visual references',
   },
 ];
+
 
 export function SuperadminSidebar({ isOpen, toggleSidebar }: SuperadminSidebarProps) {
   const pathname = usePathname();

@@ -35,7 +35,9 @@ import {
   PiEyeBold,
   PiTagBold,
   PiHashBold,
+  PiDownloadSimpleBold,
 } from "react-icons/pi";
+import type { PlatformMarketingAsset } from "@/services/superadmin.service";
 import { SiX } from "react-icons/si";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/button";
@@ -82,10 +84,12 @@ function SocialMediaPageContent() {
   const [assets, setAssets] = useState<SocialAsset[]>([]);
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [weeklyPosters, setWeeklyPosters] = useState<WeeklyPoster[]>([]);
+  const [platformAssets, setPlatformAssets] = useState<PlatformMarketingAsset[]>([]);
 
   // Composer selection
   const [assetId, setAssetId] = useState("");
   const [weeklyPosterId, setWeeklyPosterId] = useState("");
+  const [platformAssetId, setPlatformAssetId] = useState("");
   const [title, setTitle] = useState("");
   const [schedule, setSchedule] = useState("");
 
@@ -94,7 +98,7 @@ function SocialMediaPageContent() {
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
-  const [libraryFilter, setLibraryFilter] = useState<"all" | "uploads" | "videos" | "weekly">("all");
+  const [libraryFilter, setLibraryFilter] = useState<"all" | "platform" | "uploads" | "videos" | "weekly">("all");
   const [historyFilter, setHistoryFilter] = useState<"all" | "published" | "scheduled" | "draft">("all");
 
   // Disconnect modal
@@ -119,23 +123,28 @@ function SocialMediaPageContent() {
   async function loadData() {
     try {
       setLoading(true);
-      const [accountsRes, assetsRes, postsRes, weeklyRes] = await Promise.allSettled([
+      const [accountsRes, assetsRes, postsRes, weeklyRes, platformRes] = await Promise.allSettled([
         socialService.getAccounts(),
         socialService.getAssets(),
         socialService.getPosts(),
         socialService.getWeeklyPosters(),
+        socialService.getPlatformAssets(),
       ]);
 
       if (accountsRes.status === "fulfilled") setAccounts(accountsRes.value.data || []);
       if (assetsRes.status === "fulfilled") {
         const fetchedAssets = assetsRes.value.data || [];
         setAssets(fetchedAssets);
-        if (!assetId && !weeklyPosterId && fetchedAssets[0]) {
+        if (!assetId && !weeklyPosterId && !platformAssetId && fetchedAssets[0]) {
           setAssetId(fetchedAssets[0].id);
         }
       }
       if (postsRes.status === "fulfilled") setPosts(postsRes.value.data || []);
       if (weeklyRes.status === "fulfilled") setWeeklyPosters(weeklyRes.value.data || []);
+      if (platformRes.status === "fulfilled") {
+        const pList = platformRes.value.data?.data || [];
+        setPlatformAssets(pList);
+      }
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Could not load social media data."));
     } finally {
@@ -196,6 +205,25 @@ function SocialMediaPageContent() {
     }
   }
 
+  function handleSelectPlatformAsset(item: PlatformMarketingAsset) {
+    setPlatformAssetId(item.id);
+    setAssetId("");
+    setWeeklyPosterId("");
+    if (item.title) setTitle(item.title);
+    if (item.captionSuggestion) {
+      const fullCaption = item.hashtags?.length
+        ? `${item.captionSuggestion}\n\n${item.hashtags.join(" ")}`
+        : item.captionSuggestion;
+      const nextCaps: Record<string, string> = {};
+      accounts.forEach((acc) => {
+        nextCaps[acc.id] = fullCaption;
+      });
+      setCaptions(nextCaps);
+    }
+    setActiveTab("compose");
+    toast.success(`"${item.title}" loaded with suggested captions & hashtags!`);
+  }
+
   async function handlePublishOrSchedule(action: "now" | "schedule") {
     // Build destinations from selected accounts
     const destinations = accounts
@@ -206,7 +234,7 @@ function SocialMediaPageContent() {
       }))
       .filter((d) => d.caption.length > 0);
 
-    if (!assetId && !weeklyPosterId) {
+    if (!assetId && !weeklyPosterId && !platformAssetId) {
       toast.warning("Please select a poster image or video from the library.");
       return;
     }
@@ -229,6 +257,7 @@ function SocialMediaPageContent() {
         destinations,
         assetId: assetId || undefined,
         weeklyPosterId: weeklyPosterId || undefined,
+        platformAssetId: platformAssetId || undefined,
         recurrenceRule: recurrenceRule || null,
         recurrenceEndDate: recurrenceEndDate || null,
       };
@@ -244,6 +273,7 @@ function SocialMediaPageContent() {
       setSchedule("");
       setRecurrenceRule("");
       setRecurrenceEndDate("");
+      setPlatformAssetId("");
       setActiveTab("history");
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Could not create post."));
@@ -279,6 +309,18 @@ function SocialMediaPageContent() {
 
   // Active poster resolver
   const activePoster = useMemo(() => {
+    if (platformAssetId) {
+      const item = platformAssets.find((p) => p.id === platformAssetId);
+      if (item) {
+        const isVid = item.type === "video";
+        return {
+          url: item.thumbnailUrl ?? item.mediaUrl,
+          title: item.title,
+          type: isVid ? "Platform AI Reel" : item.type === "poster_spec" ? "Platform Blueprint" : "Platform Pack",
+          isVideo: isVid,
+        };
+      }
+    }
     if (weeklyPosterId) {
       const item = weeklyPosters.find((p) => p.id === weeklyPosterId);
       if (item) {
@@ -305,7 +347,7 @@ function SocialMediaPageContent() {
       }
     }
     return null;
-  }, [weeklyPosterId, assetId, weeklyPosters, assets]);
+  }, [weeklyPosterId, assetId, platformAssetId, weeklyPosters, assets, platformAssets]);
 
   // Tab definitions matching listbusiness pattern
   const tabs = [
@@ -621,6 +663,7 @@ function SocialMediaPageContent() {
                           onClick={() => {
                             setAssetId("");
                             setWeeklyPosterId("");
+                            setPlatformAssetId("");
                           }}
                           className="flex size-8 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30 transition-colors"
                           title="Remove media"
@@ -1326,14 +1369,18 @@ function SocialMediaPageContent() {
 
   // Tab 2: Poster Library
   const renderLibraryTab = () => {
+    const displayedPlatform =
+      libraryFilter === "uploads" || libraryFilter === "videos" || libraryFilter === "weekly"
+        ? []
+        : platformAssets;
     const displayedAssets =
-      libraryFilter === "weekly"
+      libraryFilter === "weekly" || libraryFilter === "platform"
         ? []
         : libraryFilter === "videos"
           ? assets.filter((a) => a.mediaType === "video")
           : assets;
     const displayedWeekly =
-      libraryFilter === "uploads" || libraryFilter === "videos" ? [] : weeklyPosters;
+      libraryFilter === "uploads" || libraryFilter === "videos" || libraryFilter === "platform" ? [] : weeklyPosters;
 
     return (
       <div className="flex h-full min-h-0 flex-col gap-4">
@@ -1361,31 +1408,34 @@ function SocialMediaPageContent() {
 
         {/* Filter Pills */}
         <div className="flex shrink-0 items-center gap-2 border-b border-border pb-2 overflow-x-auto">
-          {(["all", "uploads", "videos", "weekly"] as const).map((filter) => (
+          {(["all", "platform", "uploads", "videos", "weekly"] as const).map((filter) => (
             <button
               key={filter}
               type="button"
               onClick={() => setLibraryFilter(filter)}
               className={cn(
-                "rounded-full px-3 py-1 text-xs font-semibold capitalize transition shrink-0",
+                "rounded-full px-3 py-1 text-xs font-semibold capitalize transition shrink-0 flex items-center gap-1.5",
                 libraryFilter === filter
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "bg-muted text-muted-foreground hover:text-foreground",
               )}
             >
+              {filter === "platform" && <PiSparkleBold className="size-3 text-amber-300" />}
               {filter === "all"
-                ? `All Media (${assets.length + weeklyPosters.length})`
-                : filter === "uploads"
-                  ? `Your Uploads (${assets.length})`
-                  : filter === "videos"
-                    ? `Videos & Reels (${assets.filter((a) => a.mediaType === "video").length})`
-                    : `Weekly Specials (${weeklyPosters.length})`}
+                ? `All Media (${assets.length + weeklyPosters.length + platformAssets.length})`
+                : filter === "platform"
+                  ? `Platform Specials (${platformAssets.length})`
+                  : filter === "uploads"
+                    ? `Your Uploads (${assets.length})`
+                    : filter === "videos"
+                      ? `Videos & Reels (${assets.filter((a) => a.mediaType === "video").length})`
+                      : `Weekly Specials (${weeklyPosters.length})`}
             </button>
           ))}
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-          {displayedWeekly.length === 0 && displayedAssets.length === 0 ? (
+          {displayedPlatform.length === 0 && displayedWeekly.length === 0 && displayedAssets.length === 0 ? (
             <div className="flex h-64 items-center justify-center">
               <EmptyState
                 icon={<PiImagesBold size={32} />}
@@ -1408,6 +1458,94 @@ function SocialMediaPageContent() {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 pb-6 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
+              {/* Platform Distributed Assets (From Superadmin Vault) */}
+              {displayedPlatform.map((pAsset) => {
+                const isSelected = platformAssetId === pAsset.id;
+                const isVideo = pAsset.type === "video";
+                return (
+                  <Card
+                    key={`platform-${pAsset.id}`}
+                    className={cn(
+                      "group relative overflow-hidden transition-all duration-150 hover:shadow-md",
+                      isSelected ? "border-amber-500 ring-2 ring-amber-500/30" : "border-border",
+                    )}
+                  >
+                    <div className="relative aspect-square w-full overflow-hidden bg-zinc-950 flex items-center justify-center">
+                      {isVideo ? (
+                        <>
+                          <video
+                            src={pAsset.mediaUrl}
+                            className="size-full object-cover"
+                            muted
+                            playsInline
+                            preload="metadata"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-black/20">
+                            <span className="flex size-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-xs">
+                              <PiPlayCircleBold className="size-6" />
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <img
+                          src={pAsset.thumbnailUrl ?? pAsset.mediaUrl}
+                          alt={pAsset.title}
+                          className="size-full object-cover transition-transform duration-200 group-hover:scale-105"
+                        />
+                      )}
+
+                      {/* Top Badges */}
+                      <div className="absolute top-2 left-2 flex items-center gap-1">
+                        <Badge tone="warning" className="shadow-xs text-[8px] flex items-center gap-1 bg-amber-500 text-white border-none font-bold">
+                          <PiSparkleBold className="size-2.5" /> Special
+                        </Badge>
+                      </div>
+
+                      {pAsset.aspectRatio && (
+                        <div className="absolute top-2 right-2">
+                          <span className="rounded bg-black/60 px-1.5 py-0.5 text-[9px] text-white font-mono backdrop-blur-xs">
+                            {pAsset.aspectRatio}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Hover Overlay */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 opacity-0 backdrop-blur-xs transition-opacity group-hover:opacity-100 p-2 text-center">
+                        <Button
+                          type="button"
+                          variant="primary"
+                          size="sm"
+                          className="w-full text-xs"
+                          startIcon={<PiPaperPlaneTiltBold className="size-3.5" />}
+                          onClick={() => handleSelectPlatformAsset(pAsset)}
+                        >
+                          Use in Post
+                        </Button>
+                        <a
+                          href={pAsset.mediaUrl}
+                          download={`${pAsset.title || 'special-asset'}.${isVideo ? 'mp4' : 'png'}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex w-full items-center justify-center gap-1 rounded-md border border-white/20 bg-white/10 px-2 py-1 text-[11px] font-medium text-white hover:bg-white/20 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <PiDownloadSimpleBold className="size-3" />
+                          Download
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="p-3 space-y-0.5">
+                      <p className="truncate font-semibold text-foreground text-xs" title={pAsset.title}>
+                        {pAsset.title}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground truncate">
+                        {pAsset.captionSuggestion || 'Ready to publish'}
+                      </p>
+                    </div>
+                  </Card>
+                );
+              })}
               {/* Weekly Special Posters */}
               {displayedWeekly.map((poster) => {
                 const isSelected = weeklyPosterId === poster.id;
