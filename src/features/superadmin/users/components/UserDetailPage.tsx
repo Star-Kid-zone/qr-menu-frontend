@@ -1,9 +1,8 @@
-"use client";
+'use client';
 
-import React, { useCallback, useEffect, useState, useMemo } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { motion, useReducedMotion } from "framer-motion";
+import React, { useMemo } from 'react';
+import Link from 'next/link';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   PiArrowLeftBold,
   PiArrowSquareOutBold,
@@ -18,36 +17,28 @@ import {
   PiDesktopBold,
   PiDeviceMobileBold,
   PiDeviceTabletBold,
-} from "react-icons/pi";
-import {
-  superadminService,
-  type DateRange,
-  type UserDetailResponse,
-  type TenantMenuItem,
-  type TenantAnalyticsData,
-} from "@/services/superadmin.service";
-import { routes } from "@/config/routes";
-import { buildPublicLandingUrl, buildPublicMenuUrl } from "@/utils/tenantHost";
+} from 'react-icons/pi';
+import { routes } from '@/config/routes';
+import { buildPublicLandingUrl, buildPublicMenuUrl } from '@/utils/tenantHost';
 import {
   Badge,
   Button,
   SubTabPills,
   EmptyState,
-  toast,
-} from "@/shared/components";
-import { fadeIn } from "@/lib/motion";
-import { setStoredUserRole, setImpersonationSession } from "@/utils/storage.utils";
+} from '@/shared/components';
+import { fadeIn } from '@/lib/motion';
 
-import type { UserDetailTabId, BusinessFormData, PaymentFormData, WorkspaceFormData } from "../types";
-import { UserOverviewTab } from "./UserOverviewTab";
-import { UserMenusTab } from "./UserMenusTab";
-import { UserGalleryTab } from "./UserGalleryTab";
-import { UserOffersTab } from "./UserOffersTab";
-import { UserFeedbackTab } from "./UserFeedbackTab";
-import { UserPaymentsReviewsTab } from "./UserPaymentsReviewsTab";
-import { UserStaffTab } from "./UserStaffTab";
-import { UserAnalyticsTab } from "./UserAnalyticsTab";
-import { TenantRedirectsPanel } from "./TenantRedirectsPanel";
+import type { UserDetailTabId } from '../types';
+import { useUserDetailState } from '../hooks/useUserDetailState';
+import { UserOverviewTab } from './UserOverviewTab';
+import { UserMenusTab } from './UserMenusTab';
+import { UserGalleryTab } from './UserGalleryTab';
+import { UserOffersTab } from './UserOffersTab';
+import { UserFeedbackTab } from './UserFeedbackTab';
+import { UserPaymentsReviewsTab } from './UserPaymentsReviewsTab';
+import { UserStaffTab } from './UserStaffTab';
+import { UserAnalyticsTab } from './UserAnalyticsTab';
+import { TenantRedirectsPanel } from './TenantRedirectsPanel';
 
 export interface UserDetailPageProps {
   id: string;
@@ -56,349 +47,62 @@ export interface UserDetailPageProps {
 export function UserDetailPage({ id }: UserDetailPageProps) {
   const userId = Number(id);
   const reduceMotion = useReducedMotion();
-  const router = useRouter();
 
-  const [detail, setDetail] = useState<UserDetailResponse | null>(null);
-  const [tenantAnalytics, setTenantAnalytics] = useState<TenantAnalyticsData | null>(null);
-  const [range, setRange] = useState<DateRange>("last_7_days");
-  const [activeTab, setActiveTab] = useState<UserDetailTabId>("overview");
-  const [feedbackSubTab, setFeedbackSubTab] = useState<"google" | "faqs">("google");
-  const [loading, setLoading] = useState(true);
-  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const [impersonating, setImpersonating] = useState(false);
-  const [statusUpdating, setStatusUpdating] = useState(false);
-
-  // Gallery Lightbox Modal State
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-
-  // Menu Search & Category Filter
-  const [menuSearch, setMenuSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-
-  // Editing Menu Modal State
-  const [editingItem, setEditingItem] = useState<TenantMenuItem | null>(null);
-  const [menuSaving, setMenuSaving] = useState(false);
-
-  // Blueprint Seeding Modal
-  const [blueprintModalOpen, setBlueprintModalOpen] = useState(false);
-  const [availableBlueprints, setAvailableBlueprints] = useState<any[]>([]);
-  const [selectedBpId, setSelectedBpId] = useState<string>("cafe_bakery");
-  const [bpMode, setBpMode] = useState<"append" | "replace">("append");
-  const [applyingBp, setApplyingBp] = useState(false);
-
-  // Editing Business Settings State
-  const [isEditingBusiness, setIsEditingBusiness] = useState(false);
-  const [businessForm, setBusinessForm] = useState<BusinessFormData>({
-    businessName: "",
-    phone: "",
-    whatsappNumber: "",
-    address: "",
-    websiteUrl: "",
-    locationUrl: "",
-    businessHours: "",
-  });
-  const [businessSaving, setBusinessSaving] = useState(false);
-
-  // Editing Payment & Review Settings State
-  const [paymentForm, setPaymentForm] = useState<PaymentFormData>({
-    paymentType: "url",
-    paymentLink: "",
-    reviewLink: "",
-  });
-  const [paymentSaving, setPaymentSaving] = useState(false);
-
-  // Editing Workspace Feature Flags & Navigation State
-  const [isEditingWorkspace, setIsEditingWorkspace] = useState(false);
-  const [workspaceForm, setWorkspaceForm] = useState<WorkspaceFormData>({
-    specialOfferStatus: false,
-    menubtnStatus: true,
-    paybtnStatus: true,
-    reviewbtnStatus: true,
-    socialApprovalRequired: false,
-    announcementEnabled: false,
-    announcementText: "",
-  });
-  const [workspaceSaving, setWorkspaceSaving] = useState(false);
-
-  const loadDetail = useCallback(async () => {
-    if (!Number.isFinite(userId)) {
-      setError("Invalid user identification token.");
-      return;
-    }
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await superadminService.getUser(userId);
-      setDetail(res);
-
-      // Seed business edit form
-      const primaryBiz = res.businesses?.[0];
-      if (primaryBiz) {
-        setBusinessForm({
-          businessName: primaryBiz.businessName || "",
-          phone: primaryBiz.phone || "",
-          whatsappNumber: primaryBiz.whatsappNumber || "",
-          address: primaryBiz.address || "",
-          websiteUrl: primaryBiz.websiteUrl || "",
-          locationUrl: primaryBiz.locationUrl || "",
-          businessHours: primaryBiz.businessHours || "",
-        });
-      }
-
-      // Seed payment & review form and workspace features
-      const primaryWs = res.workspaces?.[0];
-      if (primaryWs) {
-        setPaymentForm({
-          paymentType: primaryWs.paymentType || "url",
-          paymentLink: primaryWs.paymentLink || "",
-          reviewLink: primaryWs.reviewLink || "",
-        });
-        setWorkspaceForm({
-          specialOfferStatus: Boolean(primaryWs.specialOfferStatus),
-          menubtnStatus: Boolean(primaryWs.menubtnStatus),
-          paybtnStatus: Boolean(primaryWs.paybtnStatus),
-          reviewbtnStatus: Boolean(primaryWs.reviewbtnStatus),
-          socialApprovalRequired: Boolean(primaryWs.socialApprovalRequired),
-          announcementEnabled: Boolean(primaryWs.announcementEnabled),
-          announcementText: primaryWs.announcementText || "",
-        });
-      }
-    } catch (e) {
-      console.error(e);
-      setError("Account not found or access restricted.");
-      setDetail(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
-
-  const loadAnalytics = useCallback(async () => {
-    if (!Number.isFinite(userId)) return;
-    try {
-      setLoadingAnalytics(true);
-      const res = await superadminService.getTenantAnalytics(userId, range);
-      setTenantAnalytics(res);
-    } catch (e) {
-      console.error(e);
-      setTenantAnalytics(null);
-    } finally {
-      setLoadingAnalytics(false);
-    }
-  }, [userId, range]);
-
-  useEffect(() => {
-    loadDetail();
-  }, [loadDetail]);
-
-  useEffect(() => {
-    if (activeTab === "analytics" && detail) {
-      loadAnalytics();
-    }
-  }, [activeTab, detail, loadAnalytics]);
-
-  // Freeze / Unfreeze user account
-  const handleToggleStatus = async () => {
-    if (!detail) return;
-    const newActiveState = !detail.user.active;
-    try {
-      setStatusUpdating(true);
-      await superadminService.toggleUserStatus(userId, newActiveState);
-      setDetail((prev) =>
-        prev
-          ? {
-              ...prev,
-              user: {
-                ...prev.user,
-                active: newActiveState,
-              },
-            }
-          : prev
-      );
-      toast.success(
-        `Account has been ${newActiveState ? "activated" : "frozen"} successfully.`
-      );
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to change account status.");
-    } finally {
-      setStatusUpdating(false);
-    }
-  };
-
-  // Impersonate / Login as tenant (Support Mode)
-  const handleImpersonate = async () => {
-    if (!detail) return;
-    try {
-      setImpersonating(true);
-      const res = await superadminService.impersonateTenant(userId);
-      setImpersonationSession(res.impersonation);
-      setStoredUserRole("admin");
-      toast.success(`Entering ${res.targetUser.name}'s workspace (Support Mode)...`);
-      router.push(routes.admin.home);
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to start impersonation session.");
-      setImpersonating(false);
-    }
-  };
-
-  // Save Workspace Features & Navigation Settings
-  const handleSaveWorkspaceFeatures = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!userId) return;
-    try {
-      setWorkspaceSaving(true);
-      await superadminService.updateTenantWorkspace(userId, workspaceForm);
-      toast.success("Website features and navigation controls saved.");
-      setIsEditingWorkspace(false);
-      await loadDetail();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to update workspace features.");
-    } finally {
-      setWorkspaceSaving(false);
-    }
-  };
-
-  // Toggle menu availability
-  const handleToggleMenuAvailability = async (
-    menuId: number,
-    currentAvailability: boolean
-  ) => {
-    const newAvailability = !currentAvailability;
-    try {
-      await superadminService.toggleTenantMenuAvailability(
-        userId,
-        menuId,
-        newAvailability
-      );
-      setDetail((prev) =>
-        prev
-          ? {
-              ...prev,
-              menus: prev.menus.map((m) =>
-                m.id === menuId ? { ...m, availability: newAvailability } : m
-              ),
-            }
-          : prev
-      );
-      toast.success(
-        `Dish marked as ${newAvailability ? "Available" : "Unavailable"}.`
-      );
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to update dish availability.");
-    }
-  };
-
-  // Save Menu Item Changes
-  const handleSaveMenuItem = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingItem) return;
-
-    try {
-      setMenuSaving(true);
-      await superadminService.updateTenantMenu(userId, editingItem.id, {
-        item: editingItem.item,
-        price: editingItem.price,
-        imageUrl: editingItem.imageUrl,
-        description: editingItem.description,
-        category: editingItem.category,
-        type: editingItem.type,
-        popular: editingItem.popular,
-        availability: editingItem.availability,
-        availabilityTime: editingItem.availabilityTime,
-      });
-
-      setDetail((prev) =>
-        prev
-          ? {
-              ...prev,
-              menus: prev.menus.map((m) =>
-                m.id === editingItem.id ? { ...editingItem } : m
-              ),
-            }
-          : prev
-      );
-
-      toast.success("Menu item updated successfully.");
-      setEditingItem(null);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to update menu item.");
-    } finally {
-      setMenuSaving(false);
-    }
-  };
-
-  const handleOpenBlueprintModal = async () => {
-    setBlueprintModalOpen(true);
-    if (availableBlueprints.length === 0) {
-      try {
-        const bps = await superadminService.getBlueprints();
-        setAvailableBlueprints(bps);
-        if (bps.length > 0) setSelectedBpId(bps[0].id);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  };
-
-  const handleApplyBlueprint = async () => {
-    if (!selectedBpId) return;
-    try {
-      setApplyingBp(true);
-      const res = await superadminService.applyBlueprint(userId, selectedBpId, bpMode);
-      toast.success(res.message);
-      setBlueprintModalOpen(false);
-      await loadDetail();
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to apply blueprint.");
-    } finally {
-      setApplyingBp(false);
-    }
-  };
-
-  // Save Business Settings Changes
-  const handleSaveBusiness = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      setBusinessSaving(true);
-      await superadminService.updateTenantBusiness(userId, businessForm);
-      toast.success("Business profile saved successfully.");
-      setIsEditingBusiness(false);
-      loadDetail();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to save business settings.");
-    } finally {
-      setBusinessSaving(false);
-    }
-  };
-
-  // Save Payment & Review Settings Changes
-  const handleSavePaymentReview = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      setPaymentSaving(true);
-      await superadminService.updateTenantPaymentReview(userId, paymentForm);
-      toast.success("Payment and review settings saved.");
-      loadDetail();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to update payment/review settings.");
-    } finally {
-      setPaymentSaving(false);
-    }
-  };
-
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(`Copied ${label} to clipboard!`);
-  };
+  const {
+    detail,
+    tenantAnalytics,
+    range,
+    setRange,
+    activeTab,
+    setActiveTab,
+    feedbackSubTab,
+    setFeedbackSubTab,
+    loading,
+    loadingAnalytics,
+    error,
+    impersonating,
+    statusUpdating,
+    previewImage,
+    setPreviewImage,
+    menuSearch,
+    setMenuSearch,
+    selectedCategory,
+    setSelectedCategory,
+    editingItem,
+    setEditingItem,
+    menuSaving,
+    blueprintModalOpen,
+    setBlueprintModalOpen,
+    availableBlueprints,
+    selectedBpId,
+    setSelectedBpId,
+    bpMode,
+    setBpMode,
+    applyingBp,
+    isEditingBusiness,
+    setIsEditingBusiness,
+    businessForm,
+    setBusinessForm,
+    businessSaving,
+    paymentForm,
+    setPaymentForm,
+    paymentSaving,
+    isEditingWorkspace,
+    setIsEditingWorkspace,
+    workspaceForm,
+    setWorkspaceForm,
+    workspaceSaving,
+    handleToggleStatus,
+    handleImpersonate,
+    handleSaveWorkspaceFeatures,
+    handleToggleMenuAvailability,
+    handleSaveMenuItem,
+    handleOpenBlueprintModal,
+    handleApplyBlueprint,
+    handleSaveBusiness,
+    handleSavePaymentReview,
+    copyToClipboard,
+  } = useUserDetailState({ userId });
 
   const formatDeviceIcon = (ua: string | null) => {
     if (!ua) return <PiDesktopBold className="size-4 text-muted-foreground" />;
@@ -425,7 +129,7 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
     if (!detail?.menus) return [];
     return detail.menus.filter((m) => {
       const matchCat =
-        selectedCategory === "all" || m.category === selectedCategory;
+        selectedCategory === 'all' || m.category === selectedCategory;
       const matchSearch =
         !menuSearch ||
         m.item.toLowerCase().includes(menuSearch.toLowerCase()) ||
@@ -449,7 +153,7 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
         <EmptyState
           icon={<PiInfoBold className="size-10" />}
           title="Tenant Details Unavailable"
-          description={error || "Could not retrieve tenant account details."}
+          description={error || 'Could not retrieve tenant account details.'}
           action={
             <Button
               variant="secondary"
@@ -467,30 +171,30 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
   const primaryWorkspace = detail.workspaces?.[0];
 
   const tabOptions = [
-    { id: "overview" as const, label: "Overview & Branding" },
-    { id: "menus" as const, label: `Menus (${detail.menus.length})` },
-    { id: "gallery" as const, label: `Gallery (${detail.gallery?.length ?? 0})` },
-    { id: "offers" as const, label: `Offers (${detail.offers?.length ?? 0})` },
+    { id: 'overview' as const, label: 'Overview & Branding' },
+    { id: 'menus' as const, label: `Menus (${detail.menus.length})` },
+    { id: 'gallery' as const, label: `Gallery (${detail.gallery?.length ?? 0})` },
+    { id: 'offers' as const, label: `Offers (${detail.offers?.length ?? 0})` },
     {
-      id: "feedback" as const,
+      id: 'feedback' as const,
       label: `Reviews & FAQs (${
         (detail.googleReviews?.length ?? 0) +
         (detail.faqs?.length ?? 0)
       })`,
     },
-    { id: "payments_reviews" as const, label: "Payments & QR" },
+    { id: 'payments_reviews' as const, label: 'Payments & QR' },
     {
-      id: "staff" as const,
+      id: 'staff' as const,
       label: `Sub-Users / Staff (${detail.staff?.length ?? 0})`,
     },
-    { id: "redirects" as const, label: "Redirects" },
-    { id: "analytics" as const, label: "Tenant Analytics" },
+    { id: 'redirects' as const, label: 'Redirects' },
+    { id: 'analytics' as const, label: 'Tenant Analytics' },
   ];
 
   return (
     <motion.div
       className="flex h-full flex-col gap-5 overflow-hidden"
-      initial={reduceMotion ? false : "hidden"}
+      initial={reduceMotion ? false : 'hidden'}
       animate="visible"
       variants={fadeIn}
     >
@@ -517,7 +221,7 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
                 >
                   <PiGlobeBold className="size-3.5 text-primary" />
                   <span>
-                    Landing:{" "}
+                    Landing:{' '}
                     <span className="font-mono font-bold text-primary">
                       {primaryWorkspace.public_slug}
                     </span>
@@ -552,7 +256,7 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
             </Button>
 
             <Button
-              variant={u.active ? "secondary" : "primary"}
+              variant={u.active ? 'secondary' : 'primary'}
               size="sm"
               loading={statusUpdating}
               onClick={handleToggleStatus}
@@ -564,7 +268,7 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
                 )
               }
             >
-              {u.active ? "Freeze Account" : "Activate Account"}
+              {u.active ? 'Freeze Account' : 'Activate Account'}
             </Button>
           </div>
         </div>
@@ -578,10 +282,10 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
             <div>
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-h2 font-bold text-foreground">
-                  {u.name || "Untitled User"}
+                  {u.name || 'Untitled User'}
                 </h1>
-                <Badge tone={u.active ? "success" : "neutral"}>
-                  {u.active ? "Active" : "Frozen"}
+                <Badge tone={u.active ? 'success' : 'neutral'}>
+                  {u.active ? 'Active' : 'Frozen'}
                 </Badge>
                 <span className="rounded-md bg-accent px-2.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-accent-foreground">
                   {u.role}
@@ -596,7 +300,7 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
                 <span>ID #{u.id}</span>
                 <span>•</span>
                 <span>
-                  Joined{" "}
+                  Joined{' '}
                   {new Date((u.createdAt as string) || Date.now()).toLocaleDateString()}
                 </span>
               </div>
@@ -660,7 +364,7 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
 
       {/* Main Tab Content Area */}
       <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-        {activeTab === "overview" && (
+        {activeTab === 'overview' && (
           <UserOverviewTab
             detail={detail}
             businessForm={businessForm}
@@ -678,7 +382,7 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
           />
         )}
 
-        {activeTab === "menus" && (
+        {activeTab === 'menus' && (
           <UserMenusTab
             userId={userId}
             detail={detail}
@@ -706,7 +410,7 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
           />
         )}
 
-        {activeTab === "gallery" && (
+        {activeTab === 'gallery' && (
           <UserGalleryTab
             detail={detail}
             previewImage={previewImage}
@@ -715,11 +419,11 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
           />
         )}
 
-        {activeTab === "redirects" && <TenantRedirectsPanel userId={userId} />}
+        {activeTab === 'redirects' && <TenantRedirectsPanel userId={userId} />}
 
-        {activeTab === "offers" && <UserOffersTab detail={detail} />}
+        {activeTab === 'offers' && <UserOffersTab detail={detail} />}
 
-        {activeTab === "feedback" && (
+        {activeTab === 'feedback' && (
           <UserFeedbackTab
             detail={detail}
             feedbackSubTab={feedbackSubTab}
@@ -727,7 +431,7 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
           />
         )}
 
-        {activeTab === "payments_reviews" && (
+        {activeTab === 'payments_reviews' && (
           <UserPaymentsReviewsTab
             detail={detail}
             paymentForm={paymentForm}
@@ -737,9 +441,9 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
           />
         )}
 
-        {activeTab === "staff" && <UserStaffTab detail={detail} />}
+        {activeTab === 'staff' && <UserStaffTab detail={detail} />}
 
-        {activeTab === "analytics" && (
+        {activeTab === 'analytics' && (
           <UserAnalyticsTab
             range={range}
             setRange={setRange}
