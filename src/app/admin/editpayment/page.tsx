@@ -2,16 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "@/components/ui/toast";
-import { AdminFormPage } from "@/components/admin/AdminFormPage";
+import { toast, AdminFormPage } from "@/shared/components";
 import {
   PaymentForm,
   type PaymentFormHandle,
   type PaymentFormInitialData,
-} from "@/components/admin/PaymentForm";
+} from "@/features/payments";
 import { workspaceService } from "@/services/workspace.service";
-import { getApiErrorMessage } from "@/utils/errors";
-import { PermissionGuard } from "@/components/auth/PermissionGuard";
+import { getApiErrorMessage } from "@/shared/utils";
+import { PermissionGuard } from "@/shared/auth";
 
 function EditPaymentPageContent() {
   const router = useRouter();

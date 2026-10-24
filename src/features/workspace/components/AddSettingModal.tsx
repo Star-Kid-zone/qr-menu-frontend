@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { WorkspaceSettingsForm } from '@/components/admin/workspace/WorkspaceSettingsForm';
+import { WorkspaceSettingsForm } from './WorkspaceSettingsForm';
 import type { WorkspaceSettingsFormValues } from '@/types/workspace.types';
 import { getDefaultWorkspaceSettings } from '@/utils/workspace.utils';
-import { Button, Modal, ModalFooter } from '@/ui';
+import { Button, ModalFooter } from '@/components/ui';
 import { toast } from '@/components/ui/toast';
 import { workspaceService } from '@/services/workspace.service';
+import { Modal } from '@/components/Modal';
 import { getApiErrorMessage } from '@/utils/errors';
 
 export const ADD_WORKSPACE_FORM_ID = 'add-workspace-form';

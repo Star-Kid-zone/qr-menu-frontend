@@ -32,7 +32,7 @@ import {
   THEME_MARQUEE_OPTIONS,
   HERO_TAGLINE_OPTIONS,
 } from "@/constants/workspace.constants";
-import { DropdownWithCustomInput } from "@/components/admin/workspace/DropdownWithCustomInput";
+import { DropdownWithCustomInput } from "./DropdownWithCustomInput";
 import { getTemplatePalette } from "@/constants/templatePalettes";
 import { workspaceSettingsSchema } from "@/schemas/workspace.schema";
 import type {

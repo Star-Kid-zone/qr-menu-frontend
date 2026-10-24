@@ -17,13 +17,13 @@ import {
   LuHeartHandshake,
 } from "react-icons/lu";
 import { routes } from "@/config/routes";
-import { Navbar } from "./ui/Navbar";
-import { Spotlight } from "./ui/Spotlight";
-import { Interactive3DDevice } from "./ui/Interactive3DDevice";
-import { BentoGrid } from "./ui/BentoGrid";
-import { RoiCalculator } from "./ui/RoiCalculator";
-import { TestimonialMarquee } from "./ui/TestimonialMarquee";
-import { FaqSection } from "./ui/FaqSection";
+import { Navbar } from "./components/Navbar";
+import { Spotlight } from "./components/Spotlight";
+import { Interactive3DDevice } from "./components/Interactive3DDevice";
+import { BentoGrid } from "./components/BentoGrid";
+import { RoiCalculator } from "./components/RoiCalculator";
+import { TestimonialMarquee } from "./components/TestimonialMarquee";
+import { FaqSection } from "./components/FaqSection";
 
 export function ModernLandingPage() {
   return (

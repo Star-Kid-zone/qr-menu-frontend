@@ -4,15 +4,20 @@ import { useState, useEffect, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/Textarea";
-import { Select } from "@/components/ui/Select";
-import { ToggleCard } from "@/components/ui/ToggleCard";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { PromptDialog } from "@/components/ui/PromptDialog";
-import { MenuItemPreviewCard } from "@/components/admin/MenuItemPreviewCard";
-import { DietaryNutritionFields } from "@/components/admin/DietaryNutritionFields";
+import {
+  Button,
+  Input,
+  Textarea,
+  Select,
+  ToggleCard,
+  PageHeader,
+  PromptDialog,
+  toast,
+} from "@/shared/components";
+import {
+  MenuItemPreviewCard,
+  DietaryNutritionFields,
+} from "@/features/menu";
 import {
   PiImageBold,
   PiVideoCameraBold,
@@ -20,7 +25,6 @@ import {
   PiClockBold,
   PiWarningCircleBold,
 } from "react-icons/pi";
-import { toast } from "@/components/ui/toast";
 import industryService from "@/services/industry.service";
 import { menuService } from "@/services/menu.service";
 import { workspaceService } from "@/services/workspace.service";

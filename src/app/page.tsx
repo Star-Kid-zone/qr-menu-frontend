@@ -1,4 +1,4 @@
-import { MarketingLandingPage } from "@/components/landing/MarketingLandingPage";
+import { MarketingLandingPage } from "@/features/marketing";
 
 import { resolveLandingFromRequestHost } from '@/services/public-site.service';
 import { TenantLandingPage } from './(public)/TenantLandingPage';

@@ -2,12 +2,11 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "@/components/ui/toast";
-import { AdminFormPage } from "@/components/admin/AdminFormPage";
-import { PaymentForm, type PaymentFormHandle } from "@/components/admin/PaymentForm";
+import { toast, AdminFormPage } from "@/shared/components";
+import { PaymentForm, type PaymentFormHandle } from "@/features/payments";
 import { workspaceService } from "@/services/workspace.service";
-import { getApiErrorMessage } from "@/utils/errors";
-import { PermissionGuard } from "@/components/auth/PermissionGuard";
+import { getApiErrorMessage } from "@/shared/utils";
+import { PermissionGuard } from "@/shared/auth";
 
 function AddPaymentPageContent() {
   const router = useRouter();
