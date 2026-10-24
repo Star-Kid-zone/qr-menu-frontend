@@ -1,5 +1,4 @@
 import { forwardRef } from "react";
-import type { TextareaHTMLAttributes } from "react";
 import { cn } from "@/utils/cn";
 import { TextareaProps } from "@/types/components/ui/Textarea.types";
 

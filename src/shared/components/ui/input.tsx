@@ -1,5 +1,4 @@
 import { forwardRef } from "react";
-import type { InputHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/utils/cn";
 import { InputProps } from "@/types/components/ui/Input.types";
 
@@ -10,8 +9,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       type = "text",
       fullWidth = true,
       invalid,
-      startSlot,
-      endSlot,
+      startSlot: _startSlot,
+      endSlot: _endSlot,
       ...props
     },
     ref,

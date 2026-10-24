@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { cn } from '@/utils/cn';
 import { ModalFooterProps } from "@/types/components/ui/ModalFooter.types";
 

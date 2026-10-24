@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useId, useRef, ReactNode } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import { HiX } from 'react-icons/hi';
 import { ModalProps } from "@/types/components/Modal.types";
 

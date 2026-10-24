@@ -1,4 +1,3 @@
-import type { InputHTMLAttributes } from 'react';
 import { HiSearch } from 'react-icons/hi';
 import { cn } from '@/utils/cn';
 import { Input } from '../ui/input';

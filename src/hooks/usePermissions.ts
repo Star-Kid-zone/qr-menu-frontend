@@ -9,10 +9,14 @@ import type { PermissionUnit } from "@/constants/permissions";
  * stored permissions array limiting which units are visible/usable.
  */
 export function usePermissions() {
-  const [permissions, setPermissions] = useState<PermissionUnit[] | null>(null);
+  const [permissions, setPermissions] = useState<PermissionUnit[] | null>(() =>
+    typeof window !== "undefined" ? getStoredPermissions() : null
+  );
 
   useEffect(() => {
-    setPermissions(getStoredPermissions());
+    const onStorage = () => setPermissions(getStoredPermissions());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   const hasPermission = (unit: PermissionUnit) => permissions === null || permissions.includes(unit);

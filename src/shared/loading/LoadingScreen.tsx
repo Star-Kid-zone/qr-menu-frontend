@@ -1,6 +1,5 @@
 import { cn } from '@/utils/cn';
-import { Spinner } from '@/components/ui/Spinner';
-import type { ReactNode } from 'react';
+import { Spinner } from '@/shared/components';
 import { getLoadingScreenOption, normalizeLoadingScreenTheme } from './registry';
 import { LoadingScreenProps } from "@/types/components/LoadingScreens/LoadingScreen.types";
 
@@ -359,3 +358,5 @@ export default function LoadingScreen({
     </div>
   );
 }
+
+export { LoadingScreen };

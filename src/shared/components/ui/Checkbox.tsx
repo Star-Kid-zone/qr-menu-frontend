@@ -1,5 +1,4 @@
 import { forwardRef } from 'react';
-import type { InputHTMLAttributes, ReactNode } from 'react';
 import { cn } from '@/utils/cn';
 import { CheckboxProps } from "@/types/components/ui/Checkbox.types";
 

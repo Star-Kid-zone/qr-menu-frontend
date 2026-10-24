@@ -5,7 +5,6 @@ import {
   getLoadingScreenOption,
   groupLoadingScreenOptions,
 } from './registry';
-import type { LoadingScreenTheme } from './types';
 import { LoadingScreenPickerProps } from "@/types/components/LoadingScreens/LoadingScreenPicker.types";
 
 export function LoadingScreenPicker({

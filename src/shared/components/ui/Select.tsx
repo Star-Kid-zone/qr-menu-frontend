@@ -1,5 +1,4 @@
 import { forwardRef } from "react";
-import type { SelectHTMLAttributes } from "react";
 import { cn } from "@/utils/cn";
 import { SelectProps } from "@/types/components/ui/Select.types";
 

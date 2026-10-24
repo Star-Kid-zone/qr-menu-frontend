@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { cn } from '@/utils/cn';
 import { EmptyStateProps } from "@/types/components/ui/EmptyState.types";
 

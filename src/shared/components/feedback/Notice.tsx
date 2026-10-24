@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { cn } from '@/utils/cn';
 import { NoticeProps, NoticeTone } from "@/types/components/ui/Notice.types";
 

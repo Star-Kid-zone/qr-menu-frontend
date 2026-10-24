@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { PiShieldWarningBold } from "react-icons/pi";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { PermissionUnit } from "@/constants/permissions";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/components";
 import { routes } from "@/config/routes";
 
 interface PermissionGuardProps {
@@ -47,7 +47,7 @@ export function PermissionGuard({
         </div>
         <h2 className="text-xl font-bold text-foreground mb-2">Access Restricted</h2>
         <p className="max-w-md text-sm text-muted-foreground mb-6">
-          Your staff account does not have permission to access the "{requiredUnit}" module. Please contact your workspace manager or administrator.
+          Your staff account does not have permission to access the &quot;{requiredUnit}&quot; module. Please contact your workspace manager or administrator.
         </p>
         <Button onClick={() => router.push(routes.admin.home)} variant="primary">
           Back to Dashboard

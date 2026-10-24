@@ -22,7 +22,7 @@ export function unwrapApiResponse<T>(payload: unknown): T {
  * Safely extracts data from an Axios response promise or value.
  */
 export async function unwrapAxiosResponse<T>(
-  promiseOrResponse: Promise<AxiosResponse<any>> | AxiosResponse<any>
+  promiseOrResponse: Promise<AxiosResponse<unknown>> | AxiosResponse<unknown>
 ): Promise<T> {
   const res = await promiseOrResponse;
   return unwrapApiResponse<T>(res?.data ?? res);

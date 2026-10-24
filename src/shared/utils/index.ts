@@ -9,3 +9,4 @@ export * from '@/utils/tenantHost';
 export * from '@/utils/thumbprint.utils';
 export * from '@/utils/url';
 export * from '@/utils/workspace.utils';
+export * from '@/utils/api.utils';

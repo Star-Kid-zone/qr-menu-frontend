@@ -1,5 +1,4 @@
 import { cn } from '@/utils/cn';
-import type { ReactNode } from 'react';
 import { SpinnerProps, SpinnerSize } from "@/types/components/ui/Spinner.types";
 
 const sizeClasses: Record<SpinnerSize, string> = {

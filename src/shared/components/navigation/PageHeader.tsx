@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { cn } from "@/utils/cn";
 import { PageHeaderProps } from "@/types/components/ui/PageHeader.types";
 

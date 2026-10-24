@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { cn } from '@/utils/cn';
 import { StatusMessageProps, StatusVariant } from "@/types/components/ui/StatusMessage.types";
 

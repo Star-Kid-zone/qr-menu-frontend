@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
-import { toast } from '@/components/ui/toast';
+import { useState } from 'react';
+import { toast } from '../ui/toast';
 import { ConfirmationDialog } from './ConfirmationDialog';
 import { ConfirmDeleteModalProps } from "@/types/components/ui/ConfirmDeleteModal.types";
 import { getApiErrorMessage } from "@/utils/errors";

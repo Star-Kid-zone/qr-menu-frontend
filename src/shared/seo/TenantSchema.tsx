@@ -56,8 +56,8 @@ function buildPriceRange(menuItems: unknown): string | null {
 export function TenantSchema({ data }: { data: RawPublicSiteData }) {
   if (!data || !data.business) return null;
 
-  const b = data.business as any;
-  const logoUrl = b.logo_url || '';
+  const b = data.business;
+  const logoUrl = (b.logo_url as string | undefined) || '';
   const rawSlug = data.settings?.public_slug;
   const url = getTenantPublicUrl(typeof rawSlug === 'string' ? rawSlug : undefined);
 
@@ -67,18 +67,18 @@ export function TenantSchema({ data }: { data: RawPublicSiteData }) {
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Restaurant",
-    "name": b.business_name || 'Restaurant',
+    "name": (b.business_name as string | undefined) || 'Restaurant',
     "image": [logoUrl],
     "url": url,
-    "telephone": b.phone || '',
+    "telephone": (b.phone as string | undefined) || '',
     // Only `streetAddress` is populated — the underlying business record has
     // no separate city/region/postalCode/country fields to draw from; adding
     // those here would mean fabricating data that doesn't exist.
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": b.address || '',
+      "streetAddress": (b.address as string | undefined) || '',
     },
-    "description": b.description || b.tagline || '',
+    "description": (b.description as string | undefined) || (b.tagline as string | undefined) || '',
     "menu": `${url}/menu`,
   };
 
