@@ -45,3 +45,5 @@ export function ConfirmDeleteModal({
     />
   );
 }
+
+export default ConfirmDeleteModal;

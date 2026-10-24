@@ -1,2 +1,1 @@
-export * from './AdminLayout';
-export * from './SuperadminLayout';
+export * from '@/components/layouts';

@@ -28,3 +28,5 @@ export const CardDescription = ({ className, ...props }: HTMLAttributes<HTMLPara
 export const CardContent = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (
   <div className={cn("p-6 pt-0", className)} {...props} />
 );
+
+export default Card;

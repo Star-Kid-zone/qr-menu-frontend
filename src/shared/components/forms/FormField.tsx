@@ -37,3 +37,6 @@ export function FormField({
     </div>
   );
 }
+
+export const Field = FormField;
+export default FormField;

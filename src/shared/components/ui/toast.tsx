@@ -225,3 +225,5 @@ export function Toaster() {
     document.body,
   );
 }
+
+export default toast;

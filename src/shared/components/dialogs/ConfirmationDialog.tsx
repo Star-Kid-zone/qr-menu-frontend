@@ -46,3 +46,5 @@ export function ConfirmationDialog({
     </Modal>
   );
 }
+
+export default ConfirmationDialog;
