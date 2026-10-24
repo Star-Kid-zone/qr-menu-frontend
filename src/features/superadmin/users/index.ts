@@ -1,4 +1,7 @@
 export * from "./types";
+export * from "./hooks";
+export * from "./components/sections";
+export * from "./components/modals";
 export * from "./components/UserDetailPage";
 export * from "./components/UserListPage";
 export * from "./components/TenantRedirectsPanel";

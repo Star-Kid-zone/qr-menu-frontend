@@ -1,5 +1,6 @@
 export * from './components/SocialMediaPage';
 export * from './components/ComposeTab';
+export * from './components/compose';
 export * from './components/LibraryTab';
 export * from './components/HistoryTab';
 export * from './components/AccountsTab';

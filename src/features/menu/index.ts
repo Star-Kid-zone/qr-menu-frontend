@@ -1,4 +1,6 @@
 export * from './components/MenuListPage';
+export * from './components/sections';
+export * from './hooks';
 export * from './components/BulkPriceAdjustModal';
 export * from './components/DietaryNutritionFields';
 export * from './components/MenuImportModal';
