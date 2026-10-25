@@ -57,3 +57,35 @@ export function buildPublicLandingUrl(publicSlug: string | null | undefined): st
 export function buildPublicMenuUrl(publicSlug: string | null | undefined): string {
   return buildPublicTenantUrl(publicSlug, '/menu');
 }
+
+/** Server-side construction of a tenant's subdomain URL given the request host and proto */
+export function buildPublicTenantUrlServer(
+  publicSlug: string | null | undefined,
+  host: string,
+  proto = 'http',
+  path = '/'
+): string {
+  if (!publicSlug?.trim()) return '';
+  const [hostname, port] = host.split(':');
+  const portSuffix = port ? `:${port}` : '';
+  const slug = publicSlug.trim().toLowerCase();
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  const h = hostname.toLowerCase();
+
+  if (h === 'localhost' || h === '127.0.0.1') {
+    return `${proto}://${slug}.localhost${portSuffix}${normalizedPath}`;
+  }
+
+  const parts = h.split('.');
+  if (parts.length >= 2 && parts[parts.length - 1] === 'localhost') {
+    const rest = parts.slice(1).join('.');
+    return `${proto}://${slug}.${rest}${portSuffix}${normalizedPath}`;
+  }
+
+  if (parts.length >= 2) {
+    const rest = parts.slice(1).join('.');
+    return `${proto}://${slug}.${rest}${portSuffix}${normalizedPath}`;
+  }
+
+  return `${proto}://${slug}.${h}${portSuffix}${normalizedPath}`;
+}
