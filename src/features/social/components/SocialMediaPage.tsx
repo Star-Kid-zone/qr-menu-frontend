@@ -9,11 +9,9 @@ import {
   PiShareNetworkBold,
   PiXBold,
 } from "react-icons/pi";
-import { ConfirmDeleteModal } from "@/shared/components";
-import { ScrollableTabRow } from "@/shared/components";
-import { toast } from "@/shared/components";
-import { PermissionGuard } from "@/shared/auth";
-import { cn, getApiErrorMessage } from "@/shared/utils";
+import { ConfirmDeleteModal, ScrollableTabRow, toast } from "@/components/ui";
+import { PermissionGuard } from "@/components/auth";
+import { cn, getApiErrorMessage } from "@/utils";
 import {
   socialService,
   type CreatePostInput,

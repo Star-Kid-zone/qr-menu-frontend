@@ -7,12 +7,8 @@ import {
   PiPlusBold,
   PiXBold,
 } from "react-icons/pi";
-import { Badge } from "@/shared/components";
-import { Button } from "@/shared/components";
-import { Card } from "@/shared/components";
-import { EmptyState } from "@/shared/components";
-import { PageHeader } from "@/shared/components";
-import { cn } from "@/shared/utils";
+import { Badge, Button, Card, EmptyState, PageHeader } from "@/components/ui";
+import { cn } from "@/utils";
 import type { HistoryFilter, SocialPost } from "../types";
 
 interface HistoryTabProps {

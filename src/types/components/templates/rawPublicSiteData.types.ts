@@ -5,18 +5,18 @@ import type { Menu } from "@/types";
  * Passed directly to landing templates — no transformation applied.
  */
 export type RawPublicSiteData = {
-  user_id: number;
+  user_id: string | number;
   settings: Record<string, unknown>;
   business: Record<string, unknown> | null;
   payment: Record<string, unknown> | null;
   review: Record<string, unknown> | null;
   gallery: Array<{
-    id?: number;
+    id?: string | number;
     image_url?: string | null;
     image_path?: string | null;
   }>;
   offers: Array<{
-    id?: number;
+    id?: string | number;
     title?: string;
     description?: string | null;
     badge_text?: string | null;
@@ -36,7 +36,7 @@ export type RawPublicSiteData = {
   }>;
   currency?: { code?: string; symbol?: string } | null;
   workspace_gallery?: Array<{
-    id?: number;
+    id?: string | number;
     image_url?: string | null;
     image_path?: string | null;
   }>;

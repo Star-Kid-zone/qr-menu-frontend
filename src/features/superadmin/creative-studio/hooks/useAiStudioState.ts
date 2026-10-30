@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { superadminService } from '@/services/superadmin.service';
-import { toast } from '@/shared/components';
+import { toast } from '@/components/ui';
+import { getApiErrorMessage } from '@/utils/errors';
 
 interface UseAiStudioStateProps {
   onSaveSuccess: () => Promise<void>;
@@ -134,10 +135,7 @@ export function useAiStudioState({ onSaveSuccess }: UseAiStudioStateProps) {
       toast.success('AI food image rendered and saved to storage!');
     } catch (err: unknown) {
       console.error(err);
-      const errorMsg =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'AI image generation failed';
-      toast.error(errorMsg);
+      toast.error(getApiErrorMessage(err, 'AI image generation failed'));
     } finally {
       setGeneratingImage(false);
     }
@@ -166,10 +164,7 @@ export function useAiStudioState({ onSaveSuccess }: UseAiStudioStateProps) {
       }
     } catch (err: unknown) {
       console.error(err);
-      const errorMsg =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Video reel generation failed';
-      toast.error(errorMsg);
+      toast.error(getApiErrorMessage(err, 'Video reel generation failed'));
       setGeneratingVideo(false);
     }
   };

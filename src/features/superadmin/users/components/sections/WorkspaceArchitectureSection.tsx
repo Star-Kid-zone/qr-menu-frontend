@@ -8,7 +8,7 @@ import {
   Input,
   FormField,
   Checkbox,
-} from '@/shared/components';
+} from '@/components/ui';
 import {
   PiPencilSimpleBold,
   PiSquaresFourBold,

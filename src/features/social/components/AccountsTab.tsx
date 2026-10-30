@@ -12,11 +12,8 @@ import {
   PiXBold,
   PiXLogoBold,
 } from "react-icons/pi";
-import { Badge } from "@/shared/components";
-import { Button } from "@/shared/components";
-import { Card } from "@/shared/components";
-import { PageHeader } from "@/shared/components";
-import { cn } from "@/shared/utils";
+import { Badge, Button, Card, PageHeader } from "@/components/ui";
+import { cn } from "@/utils";
 import {
   tokenDaysLeft,
   tokenStatusBadge,

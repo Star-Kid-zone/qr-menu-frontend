@@ -8,7 +8,7 @@ import {
   PiPencilSimpleBold,
   PiTrashBold,
 } from "react-icons/pi";
-import { cn } from "@/shared/utils";
+import { cn } from "@/utils";
 import { NoImagePlaceholder } from "@/components/templates/core/NoImagePlaceholder";
 import type { MenuItem } from "../../types";
 import { getItemDisplayName } from "../../utils";

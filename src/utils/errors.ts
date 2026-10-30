@@ -9,7 +9,21 @@ export function getApiErrorMessage(err: unknown, fallback: string): string {
     err.response.data &&
     typeof err.response.data === 'object'
   ) {
-    const data = err.response.data as { error?: unknown; message?: unknown };
+    const data = err.response.data as {
+      error?: unknown;
+      message?: unknown;
+      details?: Array<{ field?: string; message?: string }>;
+    };
+
+    if (Array.isArray(data.details) && data.details.length > 0) {
+      const messages = data.details
+        .map((d) => d.message || (d.field ? `${d.field} is invalid` : ''))
+        .filter(Boolean);
+      if (messages.length > 0) {
+        return messages.join(', ');
+      }
+    }
+
     if (typeof data.error === 'string') return data.error;
     if (typeof data.message === 'string') return data.message;
   }

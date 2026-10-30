@@ -7,7 +7,7 @@ import {
   Button,
   Input,
   EmptyState,
-} from "@/shared/components";
+} from "@/components/ui";
 import {
   PiMagnifyingGlassBold,
   PiBookBookmarkBold,

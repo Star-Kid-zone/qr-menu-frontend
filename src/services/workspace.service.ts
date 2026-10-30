@@ -180,7 +180,17 @@ export interface WorkspaceData {
   currencyId?: string | null;
 }
 
+export interface WorkspaceListItem {
+  id: string;
+  publicSlug: string | null;
+  themeColour: string;
+  defaultTimezone: string;
+  role: string;
+  isDefault: boolean;
+}
+
 export const workspaceService = {
+  listWorkspaces: () => api.get<WorkspaceListItem[]>('/workspace/list'),
   getWorkspace: () => api.get<WorkspaceData>('/workspace'),
   updateWorkspace: (data: Partial<WorkspaceData>) => api.put<{ message: string, workspace: WorkspaceData }>('/workspace', data),
   addGalleryItem: (data: FormData) => api.post<{ message: string, item: WorkspaceGalleryItem }>('/workspace/gallery', data),

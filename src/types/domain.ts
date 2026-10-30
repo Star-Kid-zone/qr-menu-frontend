@@ -7,7 +7,7 @@ export interface SocialLink {
 }
 
 export interface Business {
-  id: number;
+  id: string | number;
   business_name?: string;
   name?: string;
   phone?: string;
@@ -22,17 +22,17 @@ export interface Business {
     endTime: string;
   }>;
   about_features?: unknown;
-  user_id?: number;
-  workspace_id?: number | null;
-  industry_id?: number | null;
+  user_id?: string | number;
+  workspace_id?: string | number | null;
+  industry_id?: string | number | null;
   active?: boolean | number;
   created_at?: string;
   updated_at?: string;
 }
 
 export interface Menu {
-  id: number;
-  business_id?: number;
+  id: string | number;
+  business_id?: string | number;
   name?: string;
   item: string;
   description: string;
@@ -42,7 +42,7 @@ export interface Menu {
   imageUrl?: string;
   /** Extra gallery photos beyond the cover `image_url`/`imageUrl` — stored as plain URL
    *  strings, though some legacy data may still hand back `{id, url}` objects. */
-  images?: (string | { id: number; url: string })[];
+  images?: (string | { id: string | number; url: string })[];
   /** Extra promo videos for the item — plain URL strings. */
   videos?: string[];
   category: string;
@@ -63,8 +63,8 @@ export interface Menu {
 export type MenuItem = Menu;
 
 export interface QRCode {
-  id: number;
-  business_id: number;
+  id: string | number;
+  business_id: string | number;
   code: string;
   data?: string;
   created_at?: string;
@@ -72,8 +72,8 @@ export interface QRCode {
 }
 
 export interface Payment {
-  id: number;
-  business_id: number;
+  id: string | number;
+  business_id: string | number;
   amount: number;
   status: 'pending' | 'completed' | 'failed';
   payment_method?: string;
@@ -82,27 +82,27 @@ export interface Payment {
 }
 
 export interface Review {
-  id: number;
-  business_id: number;
-  user_id: number;
+  id: string | number;
+  business_id: string | number;
+  user_id: string | number;
   rating: number;
   review_link?: string;
   comment?: string;
-  user?: { id: number; name: string };
+  user?: { id: string | number; name: string };
   created_at?: string;
   updated_at?: string;
 }
 
 export interface Currency {
-  id: number;
+  id: string | number;
   name: string;
   code: string;
   symbol: string;
 }
 
 export interface Setting {
-  id: number;
-  user_id?: number;
+  id: string | number;
+  user_id?: string | number;
   /** Tenant subdomain slug for public landing (e.g. `vimal` → vimal.localhost). */
   public_slug?: string | null;
   theme_colour?: string;
@@ -118,14 +118,14 @@ export interface Setting {
   loading_screen_theme?: string;
   announcement_text?: string | null;
   announcement_enabled?: boolean;
-  currency_id?: number | null;
+  currency_id?: string | number | null;
   currency?: Currency;
   created_at?: string;
   updated_at?: string;
 }
 
 export interface IndustryFeature {
-  id: number;
+  id: string | number;
   name: string;
 }
 
@@ -139,18 +139,18 @@ export interface BusinessAboutFeatures {
 }
 
 export interface Industry {
-  id: number;
+  id: string | number;
   name: string;
 }
 
 export interface IndustryCategory {
-  id: number;
+  id: string | number;
   name: string;
-  industry_id: number;
+  industry_id: string | number;
 }
 
 export interface IndustryType {
-  id: number;
+  id: string | number;
   name: string;
-  industry_id: number;
+  industry_id: string | number;
 }

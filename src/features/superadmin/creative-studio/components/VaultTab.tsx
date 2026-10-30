@@ -6,7 +6,7 @@ import {
   Button,
   Spinner,
   EmptyState,
-} from "@/shared/components";
+} from "@/components/ui";
 import {
   PiImagesBold,
   PiCheckCircleBold,

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Card, Button } from "@/shared/components";
+import { Card, Button } from "@/components/ui";
 import { PiTextTBold, PiCopyBold } from "react-icons/pi";
 
 export interface SmartCopywriterCardProps {

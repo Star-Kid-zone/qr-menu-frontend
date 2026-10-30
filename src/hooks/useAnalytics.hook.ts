@@ -5,14 +5,14 @@ import { API_BASE_URL } from '@/config/app.constants';
 
 interface TrackExtras {
   /** Set when tracking a click/view on a specific dish — enables exact per-item ranking. */
-  menuItemId?: number;
+  menuItemId?: string | number;
   /** Set when tracking a guest search query. */
   searchQuery?: string;
 }
 
 interface UseAnalyticsOptions {
-  userId?: number;
-  businessId?: number;
+  userId?: string | number;
+  businessId?: string | number;
   batchInterval?: number;
   maxBatchSize?: number;
 }
@@ -112,13 +112,20 @@ export function useAnalytics(options: UseAnalyticsOptions = {}) {
       if (eventQueue.current.length > 0) {
         const events = eventQueue.current;
 
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${API_BASE_URL}/public/analytics/batch`, false);
-        xhr.withCredentials = true;
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.setRequestHeader('Accept', 'application/json');
+        const payload = JSON.stringify(buildAnalyticsBatchPayload(events));
+        const url = `${API_BASE_URL}/public/analytics/batch`;
         try {
-          xhr.send(JSON.stringify(buildAnalyticsBatchPayload(events)));
+          if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+            const blob = new Blob([payload], { type: 'application/json' });
+            navigator.sendBeacon(url, blob);
+          } else if (typeof fetch === 'function') {
+            fetch(url, {
+              method: 'POST',
+              body: payload,
+              headers: { 'Content-Type': 'application/json' },
+              keepalive: true,
+            }).catch(() => {});
+          }
         } catch (error) {
           console.error('Failed to send analytics on unload:', error);
         }

@@ -3,7 +3,7 @@
 import React from "react";
 import { PiSquaresFourBold, PiPencilSimpleBold } from "react-icons/pi";
 import type { UseFormRegister, FieldErrors } from "react-hook-form";
-import { FormField, Select } from "@/shared/components";
+import { FormField, Select } from "@/components/ui";
 import {
   MENU_LAYOUT_OPTIONS,
   MENU_STRUCTURE_OPTIONS,

@@ -4,7 +4,7 @@ import React from "react";
 import {
   Card,
   Button,
-} from "@/shared/components";
+} from "@/components/ui";
 import {
   PiEyeBold,
   PiUploadSimpleBold,

@@ -10,7 +10,7 @@ import {
   Modal,
   ModalFooter,
   toast,
-} from "@/shared/components";
+} from "@/components/ui";
 import { superadminService, type TenantRedirect } from "@/services/superadmin.service";
 import { getApiErrorMessage } from "@/utils/errors";
 import { PiPlusBold, PiSignpostBold, PiTrashBold, PiArrowRightBold } from "react-icons/pi";

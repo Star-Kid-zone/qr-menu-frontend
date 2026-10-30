@@ -10,7 +10,7 @@ import {
   PiTiktokLogoFill,
 } from "react-icons/pi";
 import { SiX } from "react-icons/si";
-import { Button, PageHeader } from "@/shared/components";
+import { Button, PageHeader } from "@/components/ui";
 import type { SocialAccount, SocialPlatform } from "@/services/social.service";
 import type { ActivePosterInfo, RecurrenceRule, SocialTabId } from "../types";
 import {

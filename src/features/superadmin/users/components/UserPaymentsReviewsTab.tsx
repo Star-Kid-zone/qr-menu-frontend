@@ -9,7 +9,7 @@ import {
   Input,
   Select,
   FormField,
-} from "@/shared/components";
+} from "@/components/ui";
 import {
   PiWalletBold,
   PiStarBold,

@@ -9,13 +9,8 @@ import {
   PiUploadSimpleBold,
   PiVideoFill,
 } from "react-icons/pi";
-import { Badge } from "@/shared/components";
-import { Button } from "@/shared/components";
-import { Card } from "@/shared/components";
-import { EmptyState } from "@/shared/components";
-import { PageHeader } from "@/shared/components";
-import { Spinner } from "@/shared/components";
-import { cn } from "@/shared/utils";
+import { Badge, Button, Card, EmptyState, PageHeader, Spinner } from "@/components/ui";
+import { cn } from "@/utils";
 import type {
   LibraryFilter,
   PlatformMarketingAsset,

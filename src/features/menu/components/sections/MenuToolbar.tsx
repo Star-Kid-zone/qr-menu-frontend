@@ -2,8 +2,8 @@
 
 import React from "react";
 import { PiMagnifyingGlassBold } from "react-icons/pi";
-import { Input } from "@/shared/components";
-import { cn } from "@/shared/utils";
+import { Input } from "@/components/ui";
+import { cn } from "@/utils";
 import type { MenuItem } from "../../types";
 
 export interface MenuToolbarProps {

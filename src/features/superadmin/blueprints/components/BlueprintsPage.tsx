@@ -14,6 +14,7 @@ import {
   type MenuBlueprint,
 } from '@/services/superadmin.service';
 import { Button, EmptyState, toast } from '@/components/ui';
+import { getApiErrorMessage } from '@/utils/errors';
 import { fadeIn, staggerContainer } from '@/lib/motion';
 import { BlueprintCard } from './BlueprintCard';
 import { BlueprintPreviewModal } from './BlueprintPreviewModal';
@@ -149,7 +150,7 @@ export function BlueprintsPage() {
       toast.success(`Blueprint "${bp.name}" deleted.`);
     } catch (err: any) {
       console.error(err);
-      toast.error(err?.response?.data?.error || err?.message || 'Failed to delete blueprint');
+      toast.error(getApiErrorMessage(err, 'Failed to delete blueprint'));
     }
   };
 
@@ -176,7 +177,7 @@ export function BlueprintsPage() {
       toast.success(`Blueprint "${bp.name}" reset to factory default.`);
     } catch (err: any) {
       console.error(err);
-      toast.error(err?.response?.data?.error || err?.message || 'Failed to reset blueprint');
+      toast.error(getApiErrorMessage(err, 'Failed to reset blueprint'));
     }
   };
 

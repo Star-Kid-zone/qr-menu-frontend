@@ -7,7 +7,7 @@ import {
   PiHashBold,
   PiRepeatBold,
 } from "react-icons/pi";
-import { cn } from "@/shared/utils";
+import { cn } from "@/utils";
 import {
   PLATFORM_META,
   type SocialAccount,

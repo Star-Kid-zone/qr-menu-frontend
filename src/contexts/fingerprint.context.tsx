@@ -1,11 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { FingerprintContext } from './fingerprint-context';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { analyticsService } from '@/services/analytics.service';
 import { getDeviceFingerprint } from '@/utils/thumbprint.utils';
 
-export function FingerprintProvider({ children }: { children: React.ReactNode }) {
+export const FingerprintContext = createContext<string | null>(null);
+
+export const useFingerprint = (): string | null => {
+  return useContext(FingerprintContext);
+};
+
+export function FingerprintProvider({ children }: { children: ReactNode }) {
   // Starts as the stable localStorage visitor_id (always available, survives
   // reloads) and upgrades to the device fingerprint once it resolves, which
   // stays stable even if the visitor clears storage. If fingerprinting fails

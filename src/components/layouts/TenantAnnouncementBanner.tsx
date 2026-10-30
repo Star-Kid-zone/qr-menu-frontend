@@ -8,6 +8,7 @@ import {
   superadminService,
   type PlatformAnnouncement,
 } from '@/services/superadmin.service';
+import { getJsonStorageItem, setJsonStorageItem } from '@/utils/storage';
 
 const DISMISSED_KEY = 'dismissed_announcements';
 
@@ -17,13 +18,9 @@ export function TenantAnnouncementBanner() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(DISMISSED_KEY);
-      if (stored) {
-        setDismissedIds(JSON.parse(stored));
-      }
-    } catch {
-      // ignore storage error
+    const stored = getJsonStorageItem<string[]>(DISMISSED_KEY, []);
+    if (stored && Array.isArray(stored)) {
+      setDismissedIds(stored);
     }
 
     async function fetchAnnouncements() {
@@ -47,11 +44,7 @@ export function TenantAnnouncementBanner() {
     setAnnouncements((prev) => prev.filter((a) => a.id !== id));
     const updated = [...dismissedIds, id];
     setDismissedIds(updated);
-    try {
-      localStorage.setItem(DISMISSED_KEY, JSON.stringify(updated));
-    } catch {
-      // ignore
-    }
+    setJsonStorageItem(DISMISSED_KEY, updated);
 
     // 2. Persist read receipt to server (cross-device sync & superadmin telemetry)
     try {

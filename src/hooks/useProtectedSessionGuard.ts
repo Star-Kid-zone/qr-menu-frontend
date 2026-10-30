@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { routes } from '@/config/routes';
-import { isAuthenticated, getCurrentRole, clearStorage } from '@/utils/storage.utils';
+import { isAuthenticated, getCurrentRole, clearStorage } from '@/utils/storage';
 
 export interface ProtectedGuardOptions {
   requiredRole?: 'superadmin' | 'admin';

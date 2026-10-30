@@ -8,7 +8,7 @@ import {
   PiCaretDownBold,
   PiCaretUpBold,
 } from "react-icons/pi";
-import { Button } from "@/shared/components";
+import { Button } from "@/components/ui";
 import { cn } from "@/utils/cn";
 import { getTemplatePalette } from "@/constants/templatePalettes";
 import { workspaceSettingsSchema } from "@/schemas/workspace.schema";

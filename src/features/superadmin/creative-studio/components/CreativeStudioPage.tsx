@@ -9,7 +9,7 @@ import {
   PiEyeBold,
   PiBrowsersBold,
 } from 'react-icons/pi';
-import { Button, PageHeader, toast } from '@/shared/components';
+import { Button, PageHeader, toast } from '@/components/ui';
 
 import type { StudioTab } from '../types';
 import { VaultTab } from './VaultTab';

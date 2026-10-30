@@ -2,7 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { superadminService } from '@/services/superadmin.service';
-import { toast } from '@/shared/components';
+import { toast } from '@/components/ui';
+import { getApiErrorMessage } from '@/utils/errors';
 
 interface UsePosterDecoderStateProps {
   onSaveSuccess: () => Promise<void>;
@@ -69,10 +70,7 @@ export function usePosterDecoderState({ onSaveSuccess }: UsePosterDecoderStatePr
       toast.success('Poster successfully reverse-engineered into layout blueprint!');
     } catch (err: unknown) {
       console.error(err);
-      const errorMsg =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Poster decoding failed';
-      toast.error(errorMsg);
+      toast.error(getApiErrorMessage(err, 'Poster decoding failed'));
     } finally {
       setDecoding(false);
     }

@@ -11,8 +11,8 @@ import {
   type MenuBlueprint,
 } from '@/services/superadmin.service';
 import { routes } from '@/config/routes';
-import { toast } from '@/shared/components';
-import { setStoredUserRole, setImpersonationSession } from '@/utils/storage.utils';
+import { toast } from '@/components/ui';
+import { setStoredUserRole, setImpersonationSession } from '@/utils/storage';
 import type { UserDetailTabId, BusinessFormData, PaymentFormData, WorkspaceFormData } from '../types';
 
 interface UseUserDetailStateProps {

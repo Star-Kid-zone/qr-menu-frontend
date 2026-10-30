@@ -2,7 +2,7 @@
 
 import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Button } from "@/shared/components";
+import { Button } from "@/components/ui";
 import { PiXBold, PiCheckBold } from "react-icons/pi";
 
 export interface UserBlueprintSeedModalProps {

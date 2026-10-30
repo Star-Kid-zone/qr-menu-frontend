@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { toast } from "@/shared/components";
+import { toast } from "@/components/ui";
 import { menuService } from "@/services/menu.service";
 import { workspaceService, type WorkspaceData } from "@/services/workspace.service";
 import industryService from "@/services/industry.service";
-import { useAsyncData } from "@/shared/hooks";
-import { getApiErrorMessage } from "@/shared/utils";
-import type { Industry } from "@/shared/types";
+import { useAsyncData } from "@/hooks/useAsyncData";
+import { getApiErrorMessage } from "@/utils";
+import { getRawStorageItem, setRawStorageItem } from "@/utils/storage";
+import type { Industry } from "@/types";
 import type { MenuItem } from "../types";
 import { getItemDisplayName } from "../utils";
 
@@ -28,22 +29,14 @@ export function useMenuListState() {
   const [showOnboardingBanner, setShowOnboardingBanner] = useState(false);
 
   useEffect(() => {
-    try {
-      const dismissed = typeof window !== "undefined" ? localStorage.getItem("qr_menu_onboarding_dismissed") : null;
-      if (!dismissed) {
-        setShowOnboardingBanner(true);
-      }
-    } catch {
-      // safe ignore localStorage errors
+    const dismissed = getRawStorageItem("qr_menu_onboarding_dismissed");
+    if (!dismissed) {
+      setShowOnboardingBanner(true);
     }
   }, []);
 
   const dismissOnboardingBanner = useCallback(() => {
-    try {
-      localStorage.setItem("qr_menu_onboarding_dismissed", "true");
-    } catch {
-      // safe ignore
-    }
+    setRawStorageItem("qr_menu_onboarding_dismissed", "true");
     setShowOnboardingBanner(false);
   }, []);
 

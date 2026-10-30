@@ -9,6 +9,7 @@ import {
   type BlueprintFaq,
 } from '@/services/superadmin.service';
 import { toast } from '@/components/ui';
+import { getApiErrorMessage } from '@/utils/errors';
 
 export type EditorTab = 'basic' | 'dishes' | 'theme' | 'story' | 'offers_faqs';
 
@@ -310,11 +311,7 @@ export function useBlueprintEditorState({
       onClose();
     } catch (err: unknown) {
       console.error(err);
-      const errorMsg =
-        (err as { response?: { data?: { error?: string } }; message?: string })?.response?.data?.error ||
-        (err as Error)?.message ||
-        'Failed to save blueprint';
-      toast.error(errorMsg);
+      toast.error(getApiErrorMessage(err, 'Failed to save blueprint'));
     } finally {
       setSaving(false);
     }

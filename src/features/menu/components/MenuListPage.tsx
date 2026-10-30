@@ -9,7 +9,7 @@ import {
   EmptyState,
   ConfirmDeleteModal,
   toast,
-} from "@/shared/components";
+} from "@/components/ui";
 import { MenuImportModal } from "./MenuImportModal";
 import { BulkPriceAdjustModal } from "./BulkPriceAdjustModal";
 import {
@@ -21,7 +21,7 @@ import {
   PiSquaresFourBold,
   PiListDashesBold,
 } from "react-icons/pi";
-import { downloadCsv, cn } from "@/shared/utils";
+import { downloadCsv, cn } from "@/utils";
 import { useMenuListState } from "../hooks/useMenuListState";
 import {
   IndustryOnboardingBanner,

@@ -9,7 +9,7 @@ import {
   Textarea,
   Checkbox,
   FormField,
-} from "@/shared/components";
+} from "@/components/ui";
 import { PiXBold, PiFloppyDiskBold } from "react-icons/pi";
 import type { TenantMenuItem } from "../../types";
 

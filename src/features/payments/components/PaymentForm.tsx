@@ -11,7 +11,7 @@ import {
 } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Input, toast } from "@/shared/components";
+import { Input, toast } from "@/components/ui";
 import {
   PiCheckBold,
   PiCopyBold,
@@ -21,8 +21,8 @@ import {
   PiUploadSimpleBold,
   PiCheckCircleFill,
 } from "react-icons/pi";
-import { cn, isSafeExternalUrl } from "@/shared/utils";
-import { springDefault, easeOutTransition } from "@/shared/lib";
+import { cn, isSafeExternalUrl } from "@/utils";
+import { springDefault, easeOutTransition } from "@/lib/motion";
 
 export type PaymentMethodType = "url" | "image";
 

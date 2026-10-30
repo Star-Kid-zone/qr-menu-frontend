@@ -1,5 +1,5 @@
 import api from './api.service';
-import { getOrCreateVisitorId } from '@/utils/storage.utils';
+import { getOrCreateVisitorId } from '@/utils/storage';
 
 // Admin dashboard endpoints (authenticated, per-tenant)
 const ANALYTICS_BASE_URL = '/analytics';
@@ -11,12 +11,12 @@ export type AnalyticsActionType = 'visit' | 'click' | 'view' | 'navigation' | 's
 export interface AnalyticsEvent {
   fingerprint: string;
   visitor_id: string;
-  user_id?: number;
-  business_id?: number;
+  user_id?: string | number;
+  business_id?: string | number;
   action_type: AnalyticsActionType;
   action_target?: string;
   /** Set when tracking a click/view on a specific dish. */
-  menu_item_id?: number;
+  menu_item_id?: string | number;
   /** Set when tracking a guest search query. */
   search_query?: string;
   metadata?: Record<string, unknown>;

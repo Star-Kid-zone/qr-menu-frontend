@@ -9,7 +9,7 @@ import {
   clearImpersonationSession,
   setStoredUserRole,
   type ImpersonationSession,
-} from '@/utils/storage.utils';
+} from '@/utils/storage';
 import { authService } from '@/services/auth.service';
 import { routes } from '@/config/routes';
 import { toast } from '@/components/ui';

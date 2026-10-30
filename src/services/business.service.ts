@@ -1,14 +1,28 @@
-import { Business } from '@/types';
 import api from './api.service';
+import { workspaceService, type WorkspaceBusinessProfile } from './workspace.service';
 
+/**
+ * Business Service
+ * In this multi-tenant architecture, business profile details (name, phone, address, etc.)
+ * belong to the tenant's workspace and are managed via `/api/workspace`.
+ *
+ * For direct business profile mutations, prefer using `workspaceService`.
+ */
 export const businessService = {
-  getBusinesses: () => api.get('/business'),
-  getUserBusinesses: () => api.get('/business/user'),
-  getBusiness: (id: string | number) => api.get(`/business/${id}`),
-  createBusiness: (data: Partial<Business> | FormData) => api.post('/business', data),
-  updateBusiness: (id: string | number, data: Partial<Business> | FormData) =>
-    api.put(`/business/${id}`, data),
-  deleteBusiness: (id: string | number) => api.delete(`/business/${id}`),
-  getIndustryFeatures: (industryId: string | number) =>
-    api.get(`/industries/${industryId}/features`),
+  /**
+   * Retrieves the current tenant's workspace which includes the business profile.
+   */
+  getBusinessProfile: () => workspaceService.getWorkspace(),
+
+  /**
+   * Updates business profile fields through the workspace endpoint.
+   */
+  updateBusinessProfile: (business: WorkspaceBusinessProfile) =>
+    workspaceService.updateWorkspace({ business }),
+
+  /**
+   * Industry taxonomy queries
+   */
+  getIndustries: () => api.get('/industries'),
 };
+

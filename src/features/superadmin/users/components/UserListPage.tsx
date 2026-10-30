@@ -17,7 +17,7 @@ import {
   EmptyState,
   Pagination,
   toast,
-} from "@/shared/components";
+} from "@/components/ui";
 import {
   PiUsersBold,
   PiKeyBold,

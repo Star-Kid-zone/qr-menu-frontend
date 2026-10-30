@@ -5,6 +5,7 @@ import { PiListBold, PiMoonBold, PiSignOutBold, PiSunBold } from "react-icons/pi
 import { useThemeContext } from "@/contexts/useThemeContext";
 import { routes } from "@/config/routes";
 import { logoutSession } from "@/utils/authSession";
+import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
 export interface NavbarProps {
   isOpen: boolean;
@@ -99,6 +100,8 @@ const Navbar = ({
         </div>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          {role === "admin" && <WorkspaceSwitcher />}
+
           <button
             type="button"
             onClick={toggleTheme}

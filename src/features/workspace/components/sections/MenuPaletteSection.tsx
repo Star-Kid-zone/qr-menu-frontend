@@ -8,7 +8,7 @@ import {
   PiCaretUpBold,
 } from "react-icons/pi";
 import type { FieldErrors, UseFormSetValue } from "react-hook-form";
-import { Button, FormField, Input } from "@/shared/components";
+import { Button, FormField, Input } from "@/components/ui";
 import {
   MENU_COLOR_FIELDS,
   MENU_EXTENDED_COLOR_FIELDS,

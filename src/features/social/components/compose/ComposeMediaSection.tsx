@@ -9,7 +9,7 @@ import {
   PiVideoFill,
   PiCheckCircleBold,
 } from "react-icons/pi";
-import { Button, Spinner } from "@/shared/components";
+import { Button, Spinner } from "@/components/ui";
 import type { ActivePosterInfo, SocialTabId } from "../../types";
 import type { ComposePlatformInfo } from "./types";
 

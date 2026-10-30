@@ -1,3 +1,4 @@
-export * from '@/shared/loading';
-export { default as LoadingScreen } from '@/shared/loading/LoadingScreen';
-export { default as LoadingScreenPicker } from '@/shared/loading/LoadingScreenPicker';
+export * from './LoadingScreen';
+export * from './LoadingScreenPicker';
+export * from './registry';
+export * from './types';

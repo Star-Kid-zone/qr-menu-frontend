@@ -6,7 +6,7 @@ import {
   Button,
   Input,
   FormField,
-} from '@/shared/components';
+} from '@/components/ui';
 import {
   PiBriefcaseBold,
   PiPencilSimpleBold,

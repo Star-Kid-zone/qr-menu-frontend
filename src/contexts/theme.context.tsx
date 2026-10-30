@@ -1,8 +1,24 @@
 'use client';
 
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { ThemeContext, type ThemeMode } from './theme-store';
-import { getRawStorageItem, setRawStorageItem, storageKeys } from '@/utils/storage.utils';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { getRawStorageItem, setRawStorageItem, storageKeys } from '@/utils/storage';
+
+export type ThemeMode = 'light' | 'dark';
+
+export interface ThemeContextType {
+  mode: ThemeMode;
+  toggleTheme: () => void;
+}
+
+export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+export const useThemeContext = (): ThemeContextType => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useThemeContext must be used within ThemeProviderWrapper');
+  }
+  return context;
+};
 
 export function ThemeProviderWrapper({ children }: { children: ReactNode }) {
   // Always starts as 'light', matching what the server renders — reading localStorage

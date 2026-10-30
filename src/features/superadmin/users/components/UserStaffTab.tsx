@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Card, Badge, EmptyState } from "@/shared/components";
+import { Card, Badge, EmptyState } from "@/components/ui";
 import { PiUsersBold } from "react-icons/pi";
 import type { UserDetailResponse } from "../types";
 

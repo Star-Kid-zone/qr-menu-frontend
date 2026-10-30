@@ -5,7 +5,7 @@ import {
   superadminService,
   type PlatformMarketingAsset,
 } from '@/services/superadmin.service';
-import { toast } from '@/shared/components';
+import { toast } from '@/components/ui';
 import type { ScriptDownloadItem } from '../types';
 
 interface UseStudioAutomationStateProps {

@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { Card, EmptyState } from "@/shared/components";
+import { Card, EmptyState } from "@/components/ui";
 import {
   PiImagesBold,
   PiEyeBold,

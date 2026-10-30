@@ -1,7 +1,7 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { API_BASE_URL } from '@/config/app.constants';
 import { routes } from '@/config/routes';
-import { getCsrfToken, isAuthenticated, clearStorage } from '@/utils/storage.utils';
+import { getCsrfToken, getActiveWorkspaceId, isAuthenticated, clearStorage } from '@/utils/storage';
 import { startGlobalLoading, endGlobalLoading } from '@/utils/globalLoading.store';
 
 const MUTATING_METHODS = new Set(['post', 'put', 'patch', 'delete']);
@@ -26,6 +26,10 @@ api.interceptors.request.use(
       if (csrfToken) {
         config.headers['X-CSRF-Token'] = csrfToken;
       }
+    }
+    const activeWsId = getActiveWorkspaceId();
+    if (activeWsId) {
+      config.headers['X-Workspace-Id'] = activeWsId;
     }
     startGlobalLoading();
     return config;
@@ -54,6 +58,19 @@ type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 api.interceptors.response.use(
   (response) => {
     endGlobalLoading();
+    // Seamless unwrapping if backend sends standardized ApiResponse envelope: { success: true, data: ... }
+    if (
+      response.data &&
+      typeof response.data === 'object' &&
+      !Array.isArray(response.data) &&
+      response.data.success === true &&
+      'data' in response.data
+    ) {
+      (response as any).meta = response.data.meta;
+      (response as any).message = response.data.message;
+      (response as any).requestId = response.data.requestId;
+      response.data = response.data.data;
+    }
     return response;
   },
   async (error: AxiosError) => {

@@ -9,9 +9,21 @@ import { revalidateTag } from 'next/cache';
  * public-site.service.ts) instead of `revalidate: 0`, while still reflecting
  * edits immediately rather than waiting out the window.
  */
+import crypto from 'node:crypto';
+
 export async function POST(req: NextRequest) {
-  const secret = req.nextUrl.searchParams.get('secret');
-  if (!secret || !process.env.REVALIDATE_SECRET || secret !== process.env.REVALIDATE_SECRET) {
+  const authHeader = req.headers.get('authorization');
+  const bearerSecret = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const secret = bearerSecret || req.headers.get('x-revalidate-secret') || req.nextUrl.searchParams.get('secret');
+
+  const expectedSecret = process.env.REVALIDATE_SECRET || '';
+  if (!secret || !expectedSecret) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const expectedBuf = Buffer.from(expectedSecret);
+  const receivedBuf = Buffer.from(secret);
+  if (expectedBuf.length !== receivedBuf.length || !crypto.timingSafeEqual(expectedBuf, receivedBuf)) {
     return NextResponse.json({ error: 'Invalid secret' }, { status: 401 });
   }
 

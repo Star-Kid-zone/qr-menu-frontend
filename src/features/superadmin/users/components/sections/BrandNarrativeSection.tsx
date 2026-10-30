@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { Card } from '@/shared/components';
+import { Card } from '@/components/ui';
 import { PiSparkleBold, PiArrowSquareOutBold } from 'react-icons/pi';
 import type { UserDetailResponse } from '../../types';
 

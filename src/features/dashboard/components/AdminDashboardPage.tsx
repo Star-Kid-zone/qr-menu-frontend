@@ -47,47 +47,64 @@ export function AdminDashboardPage() {
 
   const [error, setError] = useState<string | null>(null);
 
+  // Load dashboard secondary context (workspace & menu stats) concurrently on mount
   useEffect(() => {
+    let mounted = true;
+    async function loadContext() {
+      setMenuStatsLoading(true);
+      const [wsResult, menuResult] = await Promise.allSettled([
+        workspaceService.getWorkspace(),
+        menuService.getStats(),
+      ]);
+
+      if (!mounted) return;
+
+      if (wsResult.status === 'fulfilled') {
+        setWorkspace(wsResult.value.data);
+      } else {
+        console.warn('Non-blocking: Failed to load workspace data', wsResult.reason);
+      }
+
+      if (menuResult.status === 'fulfilled') {
+        setMenuStats(menuResult.value.data);
+      } else {
+        console.warn('Non-blocking: Failed to load menu stats', menuResult.reason);
+      }
+      setMenuStatsLoading(false);
+    }
+
+    loadContext();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Load analytics whenever the range filter changes
+  useEffect(() => {
+    let mounted = true;
     async function loadDashboard() {
       try {
         setLoading(true);
+        setError(null);
         const res = await analyticsService.getDashboard(range);
-        setData(res);
+        if (mounted) {
+          setData(res);
+        }
       } catch (err) {
-        setError(getApiErrorMessage(err, 'Failed to load dashboard data'));
+        if (mounted) {
+          setError(getApiErrorMessage(err, 'Failed to load dashboard data'));
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     }
     loadDashboard();
+    return () => {
+      mounted = false;
+    };
   }, [range]);
-
-  useEffect(() => {
-    async function loadWorkspace() {
-      try {
-        const res = await workspaceService.getWorkspace();
-        setWorkspace(res.data);
-      } catch (err) {
-        setError(getApiErrorMessage(err, 'Failed to load dashboard data'));
-      }
-    }
-    loadWorkspace();
-  }, []);
-
-  useEffect(() => {
-    async function loadMenuStats() {
-      try {
-        setMenuStatsLoading(true);
-        const res = await menuService.getStats();
-        setMenuStats(res.data);
-      } catch (err) {
-        console.error('Failed to load menu stats:', err);
-      } finally {
-        setMenuStatsLoading(false);
-      }
-    }
-    loadMenuStats();
-  }, []);
 
   const derived = useMemo(() => deriveAnalyticsMetrics(data), [data]);
 

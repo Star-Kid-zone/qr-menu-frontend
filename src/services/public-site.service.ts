@@ -33,7 +33,18 @@ async function fetchJson(path: string, init?: RequestInit & { revalidate?: numbe
     throw new Error(`Request failed for ${path}: ${response.status}`);
   }
 
-  return response.json() as Promise<{ data?: unknown }>;
+  const json = await response.json();
+  if (
+    json &&
+    typeof json === 'object' &&
+    !Array.isArray(json) &&
+    json.success === true &&
+    'data' in json
+  ) {
+    return json.data as Promise<{ data?: unknown }>;
+  }
+
+  return json as Promise<{ data?: unknown }>;
 }
 
 export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<RawPublicSiteData> => {

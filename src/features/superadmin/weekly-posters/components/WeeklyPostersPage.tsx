@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { toast } from '@/components/ui/toast';
+import { getApiErrorMessage } from '@/utils/errors';
 import { socialService, type WeeklyPoster } from '@/services/social.service';
 
 export function WeeklyPostersPage() {
@@ -16,7 +17,7 @@ export function WeeklyPostersPage() {
     socialService
       .getWeeklyPosters()
       .then((response) => setPosters(Array.isArray(response.data) ? response.data : []))
-      .catch(() => toast.error('Could not load weekly posters.'));
+      .catch((err) => toast.error(getApiErrorMessage(err, 'Could not load weekly posters.')));
   }, []);
 
   async function send() {
@@ -31,7 +32,7 @@ export function WeeklyPostersPage() {
       setTitle('');
       toast.success('Weekly poster sent to all workspaces.');
     } catch (error: any) {
-      toast.error(error?.response?.data?.error ?? 'Could not send weekly poster.');
+      toast.error(getApiErrorMessage(error, 'Could not send weekly poster.'));
     }
   }
 

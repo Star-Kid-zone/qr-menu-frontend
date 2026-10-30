@@ -70,8 +70,9 @@ export function TenantLandingPage({
     trackEvent('visit', 'landing_page', { page: 'landing', path: window.location.pathname });
   }, [trackEvent]);
 
-  // On multi-tenant sites the menu always lives at /menu on the tenant's domain/subdomain
-  const menuHref = '/menu';
+  // On multi-tenant sites the menu lives at /menu on tenant subdomain, or /<slug>/menu on path routing
+  const isPathRouting = typeof window !== 'undefined' && Boolean(routeSlug) && window.location.pathname.startsWith('/' + routeSlug);
+  const menuHref = isPathRouting ? '/' + routeSlug + '/menu' : '/menu';
 
   const onPay = () => {
     track("click", "payment_button", { destination: "payment" });

@@ -8,7 +8,7 @@ import {
   PiCaretUpBold,
 } from "react-icons/pi";
 import type { UseFormRegister, UseFormSetValue } from "react-hook-form";
-import { Button, FormField, Select } from "@/shared/components";
+import { Button, FormField, Select } from "@/components/ui";
 import {
   FONT_FAMILY_OPTIONS,
   CARD_STYLE_OPTIONS,

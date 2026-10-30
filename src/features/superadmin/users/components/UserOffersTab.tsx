@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { Card, Badge, EmptyState } from "@/shared/components";
+import { Card, Badge, EmptyState } from "@/components/ui";
 import { PiTagBold } from "react-icons/pi";
 import type { UserDetailResponse } from "../types";
 

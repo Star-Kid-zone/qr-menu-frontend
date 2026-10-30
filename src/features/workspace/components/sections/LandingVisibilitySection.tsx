@@ -8,7 +8,7 @@ import {
   PiCaretUpBold,
 } from "react-icons/pi";
 import type { UseFormSetValue } from "react-hook-form";
-import { Button, ToggleCard } from "@/shared/components";
+import { Button, ToggleCard } from "@/components/ui";
 import { WORKSPACE_TOGGLE_OPTIONS } from "@/constants/workspace.constants";
 import type {
   WorkspaceSettingsFormValues,

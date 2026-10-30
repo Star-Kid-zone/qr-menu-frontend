@@ -2,7 +2,7 @@
 
 import React from "react";
 import { PiArrowRightBold, PiCheckBold } from "react-icons/pi";
-import { cn } from "@/shared/utils";
+import { cn } from "@/utils";
 import {
   tokenStatusBadge,
   type SocialAccount,

@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { normalizeTenantSlug, tenantSlugSchema } from "@/schemas/tenant.schema";
 import type { Availability } from "@/types/components/admin/workspace/PublicSlugEditor.types";
-import { toast } from "@/shared/components";
+import { toast } from "@/components/ui";
+import { getApiErrorMessage } from "@/utils/errors";
 import { industryService, menuService } from "@/services";
 import { workspaceService } from "@/services/workspace.service";
 import type { BannerAnnouncementValues } from "@/types/components/admin/workspace/BannerAnnouncementForm.types";
@@ -93,8 +94,6 @@ export function useBusinessHubState() {
   const [slugSaving, setSlugSaving] = useState(false);
   const [slugError, setSlugError] = useState<string | null>(null);
   const [slugAvailability, setSlugAvailability] = useState<Availability>("idle");
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deleteBusinessId, setDeleteBusinessId] = useState<number | null>(null);
   const listOffersRef = useRef<ListOffersHandle>(null);
   const listGalleryRef = useRef<ListGalleryHandle>(null);
   const listFaqsRef = useRef<ListFaqsHandle>(null);
@@ -643,25 +642,10 @@ export function useBusinessHubState() {
       await fetchWorkspaceData();
     } catch (err: any) {
       setSlugError(
-        err?.response?.data?.error ||
-          err?.response?.data?.message ||
-          "Failed to update slug. Please try another."
+        getApiErrorMessage(err, "Failed to update slug. Please try another.")
       );
     } finally {
       setSlugSaving(false);
-    }
-  };
-
-  const handleDeleteBusiness = async () => {
-    if (!deleteBusinessId) return;
-    try {
-      await workspaceService.updateWorkspace({ business: null });
-      toast.success("Business profile cleared.");
-      setDeleteModalOpen(false);
-      setDeleteBusinessId(null);
-      await fetchWorkspaceData();
-    } catch {
-      toast.error("Failed to remove business profile.");
     }
   };
 
@@ -705,10 +689,6 @@ export function useBusinessHubState() {
     slugAvailability,
     slugAvailabilityLabel,
     canSaveSlug,
-    deleteModalOpen,
-    setDeleteModalOpen,
-    deleteBusinessId,
-    setDeleteBusinessId,
     listOffersRef,
     listGalleryRef,
     listFaqsRef,
@@ -751,7 +731,6 @@ export function useBusinessHubState() {
     handleContentSave,
     handleUpdateBusiness,
     handleSaveSlug,
-    handleDeleteBusiness,
     copyToClipboard,
   };
 }

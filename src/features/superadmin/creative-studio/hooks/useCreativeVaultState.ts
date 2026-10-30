@@ -6,7 +6,8 @@ import {
   type PlatformMarketingAsset,
 } from '@/services/superadmin.service';
 import { industryService } from '@/services/industry.service';
-import { toast } from '@/shared/components';
+import { toast } from '@/components/ui';
+import { getApiErrorMessage } from '@/utils/errors';
 import type { IndustryItem } from '../types';
 
 export function useCreativeVaultState() {
@@ -117,10 +118,7 @@ export function useCreativeVaultState() {
       await loadAssets();
     } catch (err: unknown) {
       console.error(err);
-      const errorMsg =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
-        'Failed to publish asset';
-      toast.error(errorMsg);
+      toast.error(getApiErrorMessage(err, 'Failed to publish asset'));
     } finally {
       setPublishing(false);
     }

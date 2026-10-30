@@ -25,7 +25,7 @@ import {
   Button,
   SubTabPills,
   EmptyState,
-} from '@/shared/components';
+} from '@/components/ui';
 import { fadeIn } from '@/lib/motion';
 
 import type { UserDetailTabId } from '../types';

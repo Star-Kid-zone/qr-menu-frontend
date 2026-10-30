@@ -2,8 +2,7 @@
 
 import React, { Suspense } from "react";
 import { PiDeviceMobileBold, PiXBold } from "react-icons/pi";
-import { ConfirmDeleteModal, ScrollableTabRow } from "@/shared/components";
-import { businessService } from "@/services";
+import { ScrollableTabRow } from "@/components/ui";
 import {
   AddSettingModal,
   PhonePreview,
@@ -57,10 +56,6 @@ function BusinessHubPageContent() {
     setSlugError,
     canSaveSlug,
     slugAvailabilityLabel,
-    deleteModalOpen,
-    setDeleteModalOpen,
-    deleteBusinessId,
-    setDeleteBusinessId,
     listOffersRef,
     listGalleryRef,
     listFaqsRef,
@@ -315,21 +310,6 @@ function BusinessHubPageContent() {
         </div>
       )}
 
-      {deleteModalOpen && deleteBusinessId && (
-        <ConfirmDeleteModal
-          isOpen={deleteModalOpen}
-          onClose={() => {
-            setDeleteModalOpen(false);
-            setDeleteBusinessId(null);
-          }}
-          onConfirm={async () => {
-            await businessService.deleteBusiness(deleteBusinessId);
-          }}
-          onSuccess={fetchWorkspaceData}
-          entityName="business profile"
-          description="Are you sure you want to delete this business profile? This action will permanently remove all associated data and cannot be undone."
-        />
-      )}
 
       {addWorkspaceModalOpen ? (
         <Suspense fallback={null}>

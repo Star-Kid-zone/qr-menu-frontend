@@ -1,3 +1,1 @@
-import { createContext } from 'react';
-
-export const FingerprintContext = createContext<string | null>(null);
+export { FingerprintContext, useFingerprint } from './fingerprint.context';

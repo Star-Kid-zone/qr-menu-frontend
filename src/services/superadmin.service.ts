@@ -1,6 +1,6 @@
 import api from './api.service';
 import { API_BASE_URL } from '@/config/app.constants';
-import { getCsrfToken } from '@/utils/storage.utils';
+import { getCsrfToken } from '@/utils/storage';
 import type { DashboardData } from './analytics.service';
 
 export type DateRange = 'today' | '24h' | 'last_7_days' | 'last_30_days' | 'last_90_days' | 'all';

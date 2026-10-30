@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button } from "@/shared/components";
+import { Button } from "@/components/ui";
 import {
   PiSparkleBold,
   PiCameraBold,

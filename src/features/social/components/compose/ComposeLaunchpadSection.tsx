@@ -6,8 +6,8 @@ import {
   PiClockBold,
   PiPaperPlaneTiltBold,
 } from "react-icons/pi";
-import { Button } from "@/shared/components";
-import { cn } from "@/shared/utils";
+import { Button } from "@/components/ui";
+import { cn } from "@/utils";
 import type { SocialAccount } from "@/services/social.service";
 import type { ComposePlatformInfo } from "./types";
 

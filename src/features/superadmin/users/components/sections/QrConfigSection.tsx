@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card } from '@/shared/components';
+import { Card } from '@/components/ui';
 import { PiQrCodeBold } from 'react-icons/pi';
 import type { UserDetailResponse } from '../../types';
 

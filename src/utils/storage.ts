@@ -9,6 +9,7 @@ export const storageKeys = {
   visitorId: 'visitor_id',
   permissions: 'permissions',
   impersonation: 'impersonation_session',
+  activeWorkspaceId: 'active_workspace_id',
 } as const;
 
 export interface ImpersonationSession {
@@ -185,4 +186,16 @@ export function setImpersonationSession(session: ImpersonationSession): void {
 
 export function clearImpersonationSession(): void {
   removeStorageItem(storageKeys.impersonation);
+}
+
+export function getActiveWorkspaceId(): string | null {
+  return getRawStorageItem(storageKeys.activeWorkspaceId);
+}
+
+export function setActiveWorkspaceId(workspaceId: string | null | undefined): void {
+  if (!workspaceId) {
+    removeStorageItem(storageKeys.activeWorkspaceId);
+    return;
+  }
+  setRawStorageItem(storageKeys.activeWorkspaceId, workspaceId);
 }
