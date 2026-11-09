@@ -7,9 +7,22 @@ import {
   PiImagesBold,
   PiPaperPlaneTiltBold,
   PiShareNetworkBold,
-  PiXBold,
 } from "react-icons/pi";
-import { ConfirmDeleteModal, ScrollableTabRow, toast } from "@/components/ui";
+import { Button, ConfirmDeleteModal, EmptyState, toast } from "@/components/ui";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog";
+import { Modal } from "@/components/Modal";
+
+type PendingConfirm =
+  | { kind: "post"; networks: string[] }
+  | { kind: "publishNow"; postId: string }
+  | { kind: "cancel"; postId: string };
+
+function listNetworks(names: string[]) {
+  const pretty = names.map((n) => (n === "x" ? "X" : n.charAt(0).toUpperCase() + n.slice(1)));
+  if (pretty.length <= 1) return pretty[0] ?? "the selected network";
+  return `${pretty.slice(0, -1).join(", ")} and ${pretty[pretty.length - 1]}`;
+}
 import { PermissionGuard } from "@/components/auth";
 import { cn, getApiErrorMessage } from "@/utils";
 import {
@@ -53,6 +66,7 @@ export function SocialMediaPageContent() {
   // UI state
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
   const [uploading, setUploading] = useState(false);
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   const [libraryFilter, setLibraryFilter] = useState<LibraryFilter>("all");
@@ -75,40 +89,60 @@ export function SocialMediaPageContent() {
   // Media preview for video
   const [assetIsVideo, setAssetIsVideo] = useState(false);
 
+  function requestData() {
+    return Promise.allSettled([
+      socialService.getAccounts(),
+      socialService.getAssets(),
+      socialService.getPosts(),
+      socialService.getWeeklyPosters(),
+      socialService.getPlatformAssets(),
+    ]);
+  }
+
+  function applyData([
+    accountsRes,
+    assetsRes,
+    postsRes,
+    weeklyRes,
+    platformRes,
+  ]: Awaited<ReturnType<typeof requestData>>) {
+    if (accountsRes.status === "fulfilled") setAccounts(accountsRes.value.data || []);
+    if (assetsRes.status === "fulfilled") {
+      const fetchedAssets = assetsRes.value.data || [];
+      setAssets(fetchedAssets);
+      if (!assetId && !weeklyPosterId && !platformAssetId && fetchedAssets[0]) {
+        setAssetId(fetchedAssets[0].id);
+      }
+    }
+    if (postsRes.status === "fulfilled") setPosts(postsRes.value.data || []);
+    if (weeklyRes.status === "fulfilled") setWeeklyPosters(weeklyRes.value.data || []);
+    if (platformRes.status === "fulfilled") {
+      const pList = platformRes.value.data?.data || [];
+      setPlatformAssets(pList);
+    }
+  }
+
+  function handleLoadError(error: unknown) {
+    toast.error(getApiErrorMessage(error, "Could not load social media data."));
+  }
+
   async function loadData() {
     try {
       setLoading(true);
-      const [accountsRes, assetsRes, postsRes, weeklyRes, platformRes] = await Promise.allSettled([
-        socialService.getAccounts(),
-        socialService.getAssets(),
-        socialService.getPosts(),
-        socialService.getWeeklyPosters(),
-        socialService.getPlatformAssets(),
-      ]);
-
-      if (accountsRes.status === "fulfilled") setAccounts(accountsRes.value.data || []);
-      if (assetsRes.status === "fulfilled") {
-        const fetchedAssets = assetsRes.value.data || [];
-        setAssets(fetchedAssets);
-        if (!assetId && !weeklyPosterId && !platformAssetId && fetchedAssets[0]) {
-          setAssetId(fetchedAssets[0].id);
-        }
-      }
-      if (postsRes.status === "fulfilled") setPosts(postsRes.value.data || []);
-      if (weeklyRes.status === "fulfilled") setWeeklyPosters(weeklyRes.value.data || []);
-      if (platformRes.status === "fulfilled") {
-        const pList = platformRes.value.data?.data || [];
-        setPlatformAssets(pList);
-      }
+      applyData(await requestData());
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Could not load social media data."));
+      handleLoadError(error);
     } finally {
       setLoading(false);
     }
   }
 
+  // Initial load (`loading` starts true); loadData handles the refresh buttons.
   useEffect(() => {
-    loadData();
+    requestData()
+      .then(applyData)
+      .catch(handleLoadError)
+      .finally(() => setLoading(false));
   }, []);
 
   async function connectPlatform(platform: SocialPlatform) {
@@ -117,7 +151,7 @@ export function SocialMediaPageContent() {
       if (data?.url) {
         window.location.assign(data.url);
       } else {
-        toast.error("OAuth URL not returned by server.");
+        toast.error("Couldn't start connecting that account. Try again.");
       }
     } catch (error) {
       toast.error(getApiErrorMessage(error, `Could not connect ${platform}.`));
@@ -126,15 +160,10 @@ export function SocialMediaPageContent() {
 
   async function handleDisconnect() {
     if (!accountToDisconnect) return;
-    try {
-      await socialService.disconnect(accountToDisconnect.id);
-      setAccounts((prev) => prev.filter((a) => a.id !== accountToDisconnect.id));
-      toast.success(`${accountToDisconnect.displayName} disconnected.`);
-      setDisconnectModalOpen(false);
-      setAccountToDisconnect(null);
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to disconnect account."));
-    }
+    // ConfirmDeleteModal shows the success toast or the inline error.
+    await socialService.disconnect(accountToDisconnect.id);
+    setAccounts((prev) => prev.filter((a) => a.id !== accountToDisconnect.id));
+    setAccountToDisconnect(null);
   }
 
   async function handleUpload(file?: File) {
@@ -199,7 +228,7 @@ export function SocialMediaPageContent() {
     toast.success(`"${asset.originalFilename}" selected for your post!`);
   }
 
-  async function handlePublishOrSchedule(action: "now" | "schedule") {
+  async function handlePublishOrSchedule(action: "now" | "schedule", confirmed = false) {
     const destinations = accounts
       .filter((a) => selectedAccountIds.has(a.id) && a.status === "connected")
       .map((a) => ({
@@ -223,6 +252,16 @@ export function SocialMediaPageContent() {
       return;
     }
 
+    // Posting goes out publicly straight away and can't be pulled back from here.
+    if (action === "now" && !confirmed) {
+      const networks = accounts
+        .filter((a) => destinations.some((d) => d.accountId === a.id))
+        .map((a) => a.platform);
+      setPendingConfirm({ kind: "post", networks });
+      return;
+    }
+
+    setPendingConfirm(null);
     setBusy(true);
     try {
       const payload: CreatePostInput = {
@@ -260,7 +299,12 @@ export function SocialMediaPageContent() {
     }
   }
 
-  async function handleCancelPost(postId: string) {
+  async function handleCancelPost(postId: string, confirmed = false) {
+    if (!confirmed) {
+      setPendingConfirm({ kind: "cancel", postId });
+      return;
+    }
+    setPendingConfirm(null);
     try {
       await socialService.cancel(postId);
       setPosts((prev) =>
@@ -272,7 +316,12 @@ export function SocialMediaPageContent() {
     }
   }
 
-  async function handlePublishNow(postId: string) {
+  async function handlePublishNow(postId: string, confirmed = false) {
+    if (!confirmed) {
+      setPendingConfirm({ kind: "publishNow", postId });
+      return;
+    }
+    setPendingConfirm(null);
     try {
       await socialService.publishNow(postId);
       setPosts((prev) =>
@@ -327,27 +376,29 @@ export function SocialMediaPageContent() {
     return null;
   }, [weeklyPosterId, assetId, platformAssetId, weeklyPosters, assets, platformAssets]);
 
+  const hasConnectedAccount = accounts.some((a) => a.status === "connected");
+
   const tabs = [
     {
       id: "compose" as const,
-      label: "Compose & Publish",
+      label: "Create post",
       icon: <PiPaperPlaneTiltBold size={16} />,
     },
     {
       id: "library" as const,
-      label: "Poster Library",
+      label: "Media library",
       icon: <PiImagesBold size={16} />,
       badge: assets.length + weeklyPosters.length,
     },
     {
       id: "history" as const,
-      label: "Publishing History",
+      label: "Planned and sent",
       icon: <PiClockBold size={16} />,
       badge: posts.length,
     },
     {
       id: "accounts" as const,
-      label: "Connected Accounts",
+      label: "Connected accounts",
       icon: <PiShareNetworkBold size={16} />,
       badge: accounts.length,
     },
@@ -357,56 +408,43 @@ export function SocialMediaPageContent() {
     <div className="flex h-full w-full gap-4">
       {/* Left main pane */}
       <div className="flex h-full min-w-0 flex-1 flex-col gap-4">
-        {/* Navigation Tab strip */}
-        <div className="shrink-0">
-          <div className="w-full rounded-xl border border-border bg-card p-1.5 shadow-sm">
-            <ScrollableTabRow
-              activeKey={activeTab}
-              role="tablist"
-              aria-label="Social media sections"
-              scrollContainerClassName="gap-1"
-            >
-              {tabs.map((tab) => {
-                const selected = tab.id === activeTab;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={selected}
-                    data-tab-active={selected || undefined}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={cn(
-                      "flex shrink-0 snap-start items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      selected
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
-                    )}
-                  >
-                    <span className="shrink-0">{tab.icon}</span>
-                    <span>{tab.label}</span>
-                    {tab.badge !== undefined && tab.badge > 0 && (
-                      <span
-                        className={cn(
-                          "ml-1 rounded-full px-1.5 py-0.2 text-[10px]",
-                          selected
-                            ? "bg-primary-foreground/20 text-primary-foreground"
-                            : "bg-muted text-muted-foreground",
-                        )}
-                      >
-                        {tab.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </ScrollableTabRow>
-          </div>
+        <PageHeader title="Social posts" description="Post to your connected accounts now or schedule for later." />
+        <div role="tablist" aria-label="Social posts sections" className="flex shrink-0 gap-1 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-b border-border">
+          {tabs.map((tab) => {
+            const selected = tab.id === activeTab;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={selected}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "-mb-px flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2 text-body-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                  selected ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {tab.label}
+                {tab.badge !== undefined && tab.badge > 0 && (
+                  <span className="rounded bg-muted px-2 text-caption text-muted-foreground">{tab.badge}</span>
+                )}
+              </button>
+            );
+          })}
         </div>
-
         {/* Active Tab Panel */}
         <div className="min-h-0 flex-1 overflow-hidden">
-          {activeTab === "compose" && (
+          {activeTab === "compose" && !loading && !hasConnectedAccount && (
+            <EmptyState
+              icon={<PiShareNetworkBold className="size-7" />}
+              title="Connect a social account to start posting"
+              description="Connect Facebook, Instagram, X or LinkedIn. Your media library is ready to use once you do."
+              action={
+                <Button onClick={() => setActiveTab("accounts")}>Connect an account</Button>
+              }
+            />
+          )}
+          {activeTab === "compose" && (loading || hasConnectedAccount) && (
             <ComposeTab
               accounts={accounts}
               activePoster={activePoster}
@@ -485,7 +523,7 @@ export function SocialMediaPageContent() {
       </div>
 
       {/* Desktop Preview Column */}
-      <aside className="hidden w-[340px] shrink-0 xl:block h-full">
+      <aside className={cn("hidden w-[340px] shrink-0 h-full", (activeTab !== "compose" || hasConnectedAccount) && "xl:block")}>
         <SocialPostPreview
           posterUrl={activePoster?.url}
           posterTitle={activePoster?.title}
@@ -504,48 +542,31 @@ export function SocialMediaPageContent() {
         type="button"
         onClick={() => setMobilePreviewOpen(true)}
         aria-label="Open live social preview"
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95 xl:hidden"
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary px-4 py-3 text-xs font-bold text-primary-foreground shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95 xl:hidden"
       >
         <PiDeviceMobileBold size={17} />
         <span>Live Preview</span>
       </button>
 
-      {/* Mobile Live Preview Modal Sheet */}
-      {mobilePreviewOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-xs xl:hidden">
-          <div className="flex max-h-[92vh] w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
-            <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
-              <div className="flex items-center gap-2">
-                <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-xs">
-                  <PiDeviceMobileBold size={14} />
-                </div>
-                <p className="text-xs font-bold text-foreground">Live Social Preview</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setMobilePreviewOpen(false)}
-                aria-label="Close preview"
-                className="flex size-7 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition hover:bg-muted hover:text-foreground"
-              >
-                <PiXBold size={14} />
-              </button>
-            </div>
-            <div className="min-h-0 flex-1 overflow-y-auto p-3">
-              <SocialPostPreview
-                posterUrl={activePoster?.url}
-                posterTitle={activePoster?.title}
-                isVideo={assetIsVideo}
-                caption={syncCaptions ? Object.values(captions)[0] ?? "" : ""}
-                captions={captions}
-                selectedAccountIds={selectedAccountIds}
-                accounts={accounts}
-                scheduledAt={schedule || null}
-                recurrenceRule={recurrenceRule || null}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Mobile live preview */}
+      <Modal
+        isOpen={mobilePreviewOpen}
+        onClose={() => setMobilePreviewOpen(false)}
+        title="Preview"
+        maxWidth="max-w-sm"
+      >
+        <SocialPostPreview
+          posterUrl={activePoster?.url}
+          posterTitle={activePoster?.title}
+          isVideo={assetIsVideo}
+          caption={syncCaptions ? Object.values(captions)[0] ?? "" : ""}
+          captions={captions}
+          selectedAccountIds={selectedAccountIds}
+          accounts={accounts}
+          scheduledAt={schedule || null}
+          recurrenceRule={recurrenceRule || null}
+        />
+      </Modal>
 
       {/* Disconnect confirmation modal */}
       {disconnectModalOpen && accountToDisconnect && (
@@ -557,10 +578,39 @@ export function SocialMediaPageContent() {
           }}
           onConfirm={handleDisconnect}
           entityName={accountToDisconnect.displayName}
-          title="Disconnect Social Account"
+          successMessage={`${accountToDisconnect.displayName} disconnected`}
+          confirmLabel="Disconnect"
+          title="Disconnect this account?"
           description={`Are you sure you want to disconnect ${accountToDisconnect.displayName}? You will no longer be able to publish organic posts to this profile.`}
         />
       )}
+
+      <ConfirmationDialog
+        isOpen={pendingConfirm !== null}
+        onClose={() => setPendingConfirm(null)}
+        tone={pendingConfirm?.kind === "cancel" ? "destructive" : "default"}
+        loading={busy}
+        title={
+          pendingConfirm?.kind === "cancel"
+            ? "Cancel this scheduled post?"
+            : pendingConfirm?.kind === "post"
+              ? `Post to ${listNetworks(pendingConfirm.networks)} now?`
+              : "Post this now?"
+        }
+        description={
+          pendingConfirm?.kind === "cancel"
+            ? "It won't be posted. You can create it again later."
+            : "It goes live straight away. To remove it afterwards, delete it on the social network itself."
+        }
+        confirmLabel={pendingConfirm?.kind === "cancel" ? "Cancel post" : "Post now"}
+        cancelLabel={pendingConfirm?.kind === "cancel" ? "Keep post" : "Not yet"}
+        onConfirm={() => {
+          if (!pendingConfirm) return;
+          if (pendingConfirm.kind === "post") void handlePublishOrSchedule("now", true);
+          else if (pendingConfirm.kind === "publishNow") void handlePublishNow(pendingConfirm.postId, true);
+          else void handleCancelPost(pendingConfirm.postId, true);
+        }}
+      />
     </div>
   );
 }

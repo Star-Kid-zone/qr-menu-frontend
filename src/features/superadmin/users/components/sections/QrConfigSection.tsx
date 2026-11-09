@@ -14,10 +14,10 @@ export function QrConfigSection({ primaryWorkspace }: QrConfigSectionProps) {
 
   return (
     <Card className="overflow-hidden">
-      <div className="flex items-center gap-2.5 border-b border-border bg-muted/30 px-6 py-4">
+      <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-6 py-4">
         <PiQrCodeBold className="size-5 text-primary" />
         <h2 className="text-h3 font-bold text-foreground">
-          Custom QR Code Generator Configuration
+          QR code design
         </h2>
       </div>
       <div className="p-6">
@@ -28,7 +28,7 @@ export function QrConfigSection({ primaryWorkspace }: QrConfigSectionProps) {
             </p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               <div className="rounded-xl border border-border bg-muted/20 p-3">
-                <p className="text-[10px] font-bold uppercase text-muted-foreground">
+                <p className="text-caption font-bold uppercase text-muted-foreground">
                   Pattern Style
                 </p>
                 <p className="font-mono text-sm font-bold capitalize text-foreground mt-1">
@@ -37,7 +37,7 @@ export function QrConfigSection({ primaryWorkspace }: QrConfigSectionProps) {
               </div>
 
               <div className="rounded-xl border border-border bg-muted/20 p-3">
-                <p className="text-[10px] font-bold uppercase text-muted-foreground">
+                <p className="text-caption font-bold uppercase text-muted-foreground">
                   Finder Pattern
                 </p>
                 <p className="font-mono text-sm font-bold capitalize text-foreground mt-1">
@@ -46,7 +46,7 @@ export function QrConfigSection({ primaryWorkspace }: QrConfigSectionProps) {
               </div>
 
               <div className="rounded-xl border border-border bg-muted/20 p-3">
-                <p className="text-[10px] font-bold uppercase text-muted-foreground">
+                <p className="text-caption font-bold uppercase text-muted-foreground">
                   QR Resolution
                 </p>
                 <p className="font-mono text-sm font-bold text-foreground mt-1">

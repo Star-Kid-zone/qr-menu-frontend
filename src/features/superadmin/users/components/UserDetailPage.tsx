@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
@@ -13,7 +13,7 @@ import {
   PiGlobeBold,
   PiLockSimpleBold,
   PiLockKeyOpenBold,
-  PiPhoneBold,
+  PiEnvelopeSimpleBold,
   PiDesktopBold,
   PiDeviceMobileBold,
   PiDeviceTabletBold,
@@ -26,6 +26,7 @@ import {
   SubTabPills,
   EmptyState,
 } from '@/components/ui';
+import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
 import { fadeIn } from '@/lib/motion';
 
 import type { UserDetailTabId } from '../types';
@@ -39,6 +40,7 @@ import { UserPaymentsReviewsTab } from './UserPaymentsReviewsTab';
 import { UserStaffTab } from './UserStaffTab';
 import { UserAnalyticsTab } from './UserAnalyticsTab';
 import { TenantRedirectsPanel } from './TenantRedirectsPanel';
+import { formatDate } from "@/utils/date";
 
 export interface UserDetailPageProps {
   id: string;
@@ -103,15 +105,16 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
     handleSavePaymentReview,
     copyToClipboard,
   } = useUserDetailState({ userId });
+  const [confirmSuspend, setConfirmSuspend] = useState(false);
 
   const formatDeviceIcon = (ua: string | null) => {
     if (!ua) return <PiDesktopBold className="size-4 text-muted-foreground" />;
     const l = ua.toLowerCase();
     if (/ipad|tablet/.test(l))
-      return <PiDeviceTabletBold className="size-4 text-amber-500" />;
+      return <PiDeviceTabletBold className="size-4 text-warning-foreground" />;
     if (/mobi|android|iphone/.test(l))
-      return <PiDeviceMobileBold className="size-4 text-emerald-500" />;
-    return <PiDesktopBold className="size-4 text-blue-500" />;
+      return <PiDeviceMobileBold className="size-4 text-success" />;
+    return <PiDesktopBold className="size-4 text-info" />;
   };
 
   // Categories extraction for filtering
@@ -138,6 +141,9 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
       return matchCat && matchSearch;
     });
   }, [detail, selectedCategory, menuSearch]);
+
+  // Fallback "joined" date when the account has no createdAt: read the clock once, not on every render.
+  const [openedAt] = useState(() => Date.now());
 
   if (loading) {
     return (
@@ -168,32 +174,21 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
   }
 
   const u = detail.user;
+  const restaurantName = detail.businesses?.[0]?.businessName || u.name || 'this account';
   const primaryWorkspace = detail.workspaces?.[0];
 
   const tabOptions = [
-    { id: 'overview' as const, label: 'Overview & Branding' },
-    { id: 'menus' as const, label: `Menus (${detail.menus.length})` },
-    { id: 'gallery' as const, label: `Gallery (${detail.gallery?.length ?? 0})` },
-    { id: 'offers' as const, label: `Offers (${detail.offers?.length ?? 0})` },
-    {
-      id: 'feedback' as const,
-      label: `Reviews & FAQs (${
-        (detail.googleReviews?.length ?? 0) +
-        (detail.faqs?.length ?? 0)
-      })`,
-    },
-    { id: 'payments_reviews' as const, label: 'Payments & QR' },
-    {
-      id: 'staff' as const,
-      label: `Sub-Users / Staff (${detail.staff?.length ?? 0})`,
-    },
-    { id: 'redirects' as const, label: 'Redirects' },
-    { id: 'analytics' as const, label: 'Tenant Analytics' },
+    { id: 'overview' as const, label: 'Profile' },
+    { id: 'menus' as const, label: `Menu (${detail.menus.length})` },
+    { id: 'content' as const, label: 'Website content' },
+    { id: 'links' as const, label: 'Payments & links' },
+    { id: 'staff' as const, label: `Team (${detail.staff?.length ?? 0})` },
+    { id: 'analytics' as const, label: 'Activity' },
   ];
 
   return (
     <motion.div
-      className="flex h-full flex-col gap-5 overflow-hidden"
+      className="flex h-full flex-col gap-4 overflow-hidden"
       initial={reduceMotion ? false : 'hidden'}
       animate="visible"
       variants={fadeIn}
@@ -203,20 +198,21 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <Link
             href={routes.superadmin.users}
-            className="group inline-flex items-center gap-2 text-caption uppercase tracking-wide text-muted-foreground transition-colors hover:text-primary"
+            aria-label="Back to Restaurants"
+            title="Back to Restaurants"
+            className="flex size-10 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-[0.96]"
           >
-            <PiArrowLeftBold className="transition-transform group-hover:-translate-x-1" />
-            Back to Directory
+            <PiArrowLeftBold aria-hidden className="size-5" />
           </Link>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             {primaryWorkspace?.public_slug && (
               <>
                 <a
                   href={buildPublicLandingUrl(primaryWorkspace.public_slug)}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-primary"
                   title="Open live tenant landing page"
                 >
                   <PiGlobeBold className="size-3.5 text-primary" />
@@ -233,7 +229,7 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
                   href={buildPublicMenuUrl(primaryWorkspace.public_slug)}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/15"
+                  className="inline-flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/15"
                   title="Open live digital menu"
                 >
                   <PiStorefrontBold className="size-3.5" />
@@ -248,18 +244,18 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
               size="sm"
               loading={impersonating}
               onClick={handleImpersonate}
-              className="border-amber-500/40 bg-amber-500/10 text-amber-800 hover:bg-amber-500/20 dark:text-amber-300 font-semibold"
-              leftIcon={<PiUserSwitchBold size={14} className="text-amber-600 dark:text-amber-400" />}
+              className="border-warning/40 bg-warning/10 text-warning-foreground hover:bg-warning/20 dark:text-warning font-semibold"
+              leftIcon={<PiUserSwitchBold size={14} className="text-warning-foreground dark:text-warning" />}
               title="Sign in directly as this tenant to manage or troubleshoot their workspace"
             >
-              Login as Tenant
+              Sign in as this restaurant
             </Button>
 
             <Button
               variant={u.active ? 'secondary' : 'primary'}
               size="sm"
               loading={statusUpdating}
-              onClick={handleToggleStatus}
+              onClick={() => (u.active ? setConfirmSuspend(true) : void handleToggleStatus())}
               leftIcon={
                 u.active ? (
                   <PiLockSimpleBold size={14} />
@@ -268,40 +264,53 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
                 )
               }
             >
-              {u.active ? 'Freeze Account' : 'Activate Account'}
+              {u.active ? 'Suspend account' : 'Reactivate account'}
             </Button>
+            <ConfirmationDialog
+              isOpen={confirmSuspend}
+              onClose={() => setConfirmSuspend(false)}
+              onConfirm={async () => {
+                await handleToggleStatus();
+                setConfirmSuspend(false);
+              }}
+              loading={statusUpdating}
+              title={`Suspend ${restaurantName}?`}
+              description="The owner and their team are signed out and can't sign in, and the restaurant's website and menu stop working for guests. You can reactivate the account later."
+              confirmLabel="Suspend account"
+              typeToConfirm={restaurantName}
+            />
           </div>
         </div>
 
         {/* Tenant Profile Bar */}
-        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-neu-inset-sm">
               <PiUserBold className="size-7" />
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-h2 font-bold text-foreground">
-                  {u.name || 'Untitled User'}
+                <h1 className="text-h1 font-bold text-foreground">
+                  {restaurantName}
                 </h1>
                 <Badge tone={u.active ? 'success' : 'neutral'}>
                   {u.active ? 'Active' : 'Frozen'}
                 </Badge>
-                <span className="rounded-md bg-accent px-2.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-wider text-accent-foreground">
+                <span className="rounded-md bg-accent px-3 py-0.5 font-mono text-caption font-bold text-accent-foreground">
                   {u.role}
                 </span>
               </div>
-              <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-caption text-muted-foreground">
-                <span className="flex items-center gap-1.5 font-mono font-medium">
-                  <PiPhoneBold className="size-3.5" />
-                  {u.phone}
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-caption text-muted-foreground">
+                <span className="flex items-center gap-2 font-medium">
+                  <PiEnvelopeSimpleBold className="size-3.5" />
+                  {u.email}
                 </span>
                 <span>•</span>
                 <span>ID #{u.id}</span>
                 <span>•</span>
                 <span>
                   Joined{' '}
-                  {new Date((u.createdAt as string) || Date.now()).toLocaleDateString()}
+                  {formatDate((u.createdAt as string) || openedAt)}
                 </span>
               </div>
             </div>
@@ -309,41 +318,41 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
 
           {/* Quick Metrics Pills */}
           <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3 sm:border-t-0 sm:pt-0">
-            <div className="rounded-xl border border-border bg-muted/40 px-3.5 py-2 text-center">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                Menu Items
+            <div className="rounded-xl border border-border bg-muted/40 px-4 py-2 text-center">
+              <p className="text-overline text-muted-foreground">
+                Dishes
               </p>
               <p className="font-mono text-base font-bold text-foreground">
                 {detail.counts.menus}
               </p>
             </div>
-            <div className="rounded-xl border border-border bg-muted/40 px-3.5 py-2 text-center">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                Gallery
+            <div className="rounded-xl border border-border bg-muted/40 px-4 py-2 text-center">
+              <p className="text-overline text-muted-foreground">
+                Photos
               </p>
               <p className="font-mono text-base font-bold text-primary">
                 {detail.counts.gallery ?? 0}
               </p>
             </div>
-            <div className="rounded-xl border border-border bg-muted/40 px-3.5 py-2 text-center">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            <div className="rounded-xl border border-border bg-muted/40 px-4 py-2 text-center">
+              <p className="text-overline text-muted-foreground">
                 Offers
               </p>
               <p className="font-mono text-base font-bold text-foreground">
                 {detail.counts.offers ?? 0}
               </p>
             </div>
-            <div className="rounded-xl border border-border bg-muted/40 px-3.5 py-2 text-center">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                Sub-Users
+            <div className="rounded-xl border border-border bg-muted/40 px-4 py-2 text-center">
+              <p className="text-overline text-muted-foreground">
+                Team
               </p>
               <p className="font-mono text-base font-bold text-foreground">
                 {detail.counts.staff_members}
               </p>
             </div>
-            <div className="rounded-xl border border-border bg-muted/40 px-3.5 py-2 text-center">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                Events
+            <div className="rounded-xl border border-border bg-muted/40 px-4 py-2 text-center">
+              <p className="text-overline text-muted-foreground">
+                Guest actions
               </p>
               <p className="font-mono text-base font-bold text-foreground">
                 {detail.counts.analytics_events}
@@ -363,7 +372,7 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
       </div>
 
       {/* Main Tab Content Area */}
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+      <div className="min-h-0 flex-1 overflow-y-auto pr-0.5 pb-6">
         {activeTab === 'overview' && (
           <UserOverviewTab
             detail={detail}
@@ -410,7 +419,7 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
           />
         )}
 
-        {activeTab === 'gallery' && (
+        {activeTab === 'content' && (
           <UserGalleryTab
             detail={detail}
             previewImage={previewImage}
@@ -419,19 +428,19 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
           />
         )}
 
-        {activeTab === 'redirects' && <TenantRedirectsPanel userId={userId} />}
+        
 
-        {activeTab === 'offers' && <UserOffersTab detail={detail} />}
+        {activeTab === 'content' && <div className="mt-8"><UserOffersTab detail={detail} /></div>}
 
-        {activeTab === 'feedback' && (
-          <UserFeedbackTab
+        {activeTab === 'content' && (
+          <div className="mt-8"><UserFeedbackTab
             detail={detail}
             feedbackSubTab={feedbackSubTab}
             setFeedbackSubTab={setFeedbackSubTab}
-          />
+          /></div>
         )}
 
-        {activeTab === 'payments_reviews' && (
+        {activeTab === 'links' && (
           <UserPaymentsReviewsTab
             detail={detail}
             paymentForm={paymentForm}
@@ -440,6 +449,8 @@ export function UserDetailPage({ id }: UserDetailPageProps) {
             handleSavePaymentReview={handleSavePaymentReview}
           />
         )}
+
+        {activeTab === 'links' && <div className="mt-8"><TenantRedirectsPanel userId={userId} /></div>}
 
         {activeTab === 'staff' && <UserStaffTab detail={detail} />}
 

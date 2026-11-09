@@ -40,7 +40,7 @@ export function MenuItemDetailModal({ p, t }: { p: PublicMenuTemplateProps; t: M
           {p.selectedItem.category && (
             <p style={{ color: t.accent }} className="text-[10px] font-black uppercase tracking-[0.4em]">{p.selectedItem.category}</p>
           )}
-          <DietaryBadges item={p.selectedItem} />
+          <DietaryBadges item={p.selectedItem} detailed />
           {p.selectedItem.description && (
             <p style={{ color: t.textSecondary }} className="text-sm leading-relaxed">{p.selectedItem.description}</p>
           )}
@@ -50,13 +50,13 @@ export function MenuItemDetailModal({ p, t }: { p: PublicMenuTemplateProps; t: M
   );
 }
 
-/** Shared "Settle Bill Securely" fixed footer, reused by every structure. */
+/** Shared "Pay bill" fixed footer, reused by every structure. */
 export function MenuPayFooter({ p, t }: { p: PublicMenuTemplateProps; t: MenuStructureTheme }) {
   if (!(p.payBtn && p.paymentLink)) return null;
   return (
     <div style={{ background: t.surface, borderColor: t.border }} className="fixed bottom-0 left-0 right-0 z-40 border-t p-4 backdrop-blur">
       <button onClick={p.onPay} style={{ background: t.accent, color: t.accentText }} className="mx-auto block w-full max-w-2xl rounded-2xl py-4 text-center text-sm font-black uppercase tracking-widest">
-        Settle Bill Securely
+        Pay bill
       </button>
     </div>
   );

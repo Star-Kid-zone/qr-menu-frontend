@@ -24,7 +24,7 @@ export interface PlatformOverview {
 
 export interface UserListRow {
   id: number;
-  phone: string;
+  email: string;
   name: string;
   role: string;
   active: boolean;
@@ -151,7 +151,7 @@ export interface TenantMenuItem {
 export interface TenantStaffMember {
   id: number;
   name: string;
-  phone: string;
+  email?: string | null;
   role: 'manager' | 'staff';
   active: boolean;
   createdAt: string;
@@ -160,7 +160,7 @@ export interface TenantStaffMember {
 export interface UserDetailResponse {
   user: {
     id: number;
-    phone: string;
+    email?: string | null;
     name: string;
     role: string;
     active: boolean;
@@ -334,7 +334,7 @@ export interface PlatformAnalyticsOverview {
 export interface AnalyticsTenantRow {
   user_id: number;
   name: string;
-  phone: string;
+  email?: string | null;
   business_name?: string | null;
   public_slug?: string | null;
   total_events: number;
@@ -353,19 +353,20 @@ export interface AnalyticsByUserResponse {
   tenants: AnalyticsTenantRow[];
 }
 
-async function unwrap<T>(p: Promise<any>): Promise<T> {
+async function unwrap<T>(p: Promise<{ data?: unknown } | null | undefined>): Promise<T> {
   const res = await p;
   if (res && res.data !== undefined) {
+    const body = res.data;
     if (
-      res.data &&
-      typeof res.data === 'object' &&
-      !Array.isArray(res.data) &&
-      'data' in res.data &&
-      res.data.data !== undefined
+      body &&
+      typeof body === 'object' &&
+      !Array.isArray(body) &&
+      'data' in body &&
+      body.data !== undefined
     ) {
-      return res.data.data as T;
+      return body.data as T;
     }
-    return res.data as T;
+    return body as T;
   }
   return res as T;
 }
@@ -449,7 +450,7 @@ export const superadminService = {
   impersonateTenant(userId: number) {
     return unwrap<{
       message: string;
-      targetUser: { id: string; name: string; phone: string; role: string };
+      targetUser: { id: string; name: string; email?: string | null; role: string };
       impersonation: {
         isImpersonating: boolean;
         originalSuperadminId: string;
@@ -549,7 +550,7 @@ export const superadminService = {
   },
 
   updateTenantWorkspace(userId: string | number, data: TenantWorkspaceSettings) {
-    return unwrap<any>(api.patch(`/superadmin/users/${userId}/workspace`, data));
+    return unwrap<unknown>(api.patch(`/superadmin/users/${userId}/workspace`, data));
   },
 
   listTenantRedirects(userId: string | number) {
@@ -589,8 +590,8 @@ export const superadminService = {
     );
   },
 
-  decodePoster(data: { image: string; mode?: string; render?: string; spec?: any; model?: string; hint?: string; width?: number; height?: number }) {
-    return unwrap<{ spec: any; cost?: number }>(api.post('/superadmin/marketing-assets/decode', data));
+  decodePoster(data: { image: string; mode?: string; render?: string; spec?: Record<string, unknown>; model?: string; hint?: string; width?: number; height?: number }) {
+    return unwrap<{ spec: Record<string, unknown>; cost?: number }>(api.post('/superadmin/marketing-assets/decode', data));
   },
 
 
@@ -608,7 +609,7 @@ export const superadminService = {
   },
 
   generateMarketingCopy(data: { restaurantName?: string; cuisine?: string; tone?: string; dishName?: string; price?: string | number; description?: string; goal?: string; languages?: string[]; count?: number }) {
-    return unwrap<{ variants: any[]; cost?: number }>(api.post('/superadmin/marketing-assets/copy', data));
+    return unwrap<{ variants: Array<{ caption?: string; hashtags?: string[] }>; cost?: number }>(api.post('/superadmin/marketing-assets/copy', data));
   },
 
   publishAssetToTenants(id: string, data: { targetAudience: 'all' | 'industry' | 'selected_tenants'; targetIndustryId?: string; workspaceIds?: string[] }) {
@@ -627,6 +628,7 @@ export const superadminService = {
       headers['X-CSRF-Token'] = csrfToken;
     }
 
+    // Intentional raw fetch (exception to the `api` rule): reads a streamed response body, which axios cannot do in the browser.
     const res = await fetch(`${API_BASE_URL}/superadmin/marketing-assets/run-automation`, {
       method: 'POST',
       headers,
@@ -755,7 +757,7 @@ export interface PlatformMarketingAsset {
   thumbnailUrl?: string | null;
   captionSuggestion?: string | null;
   hashtags?: string[];
-  spec?: any;
+  spec?: Record<string, unknown>;
   aspectRatio: string;
   industryGroup?: string | null;
   categoryTag?: string | null;
@@ -846,7 +848,6 @@ export interface QueueJob {
   businessName: string | null;
   userId: number | null;
   userName: string | null;
-  userPhone: string | null;
 }
 
 export interface SocialAccountHealth {
@@ -863,7 +864,6 @@ export interface SocialAccountHealth {
   businessName: string | null;
   userId: number | null;
   userName: string | null;
-  userPhone: string | null;
 }
 
 export interface JobsAndQueueResponse {

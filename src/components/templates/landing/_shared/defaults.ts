@@ -1,3 +1,4 @@
+import type { Menu } from '@/types';
 import type { RawPublicSiteData } from '@/types/components/templates/rawPublicSiteData.types';
 import { toSafeExternalUrl } from '@/utils/url';
 import { resolveTerms } from './industryTerms';
@@ -17,6 +18,25 @@ export type GoogleReviewItem = {
 };
 
 export type RichContent = ReturnType<typeof getRichContent>;
+
+/** Menu rows as they arrive from the public API — some legacy sources also send `title`. */
+type MenuRow = Menu & { title?: string };
+
+/** First gallery photo URL when `images[0]` is a legacy `{id, url}` object (plain strings have no `.url`). */
+function firstImageObjectUrl(m: MenuRow): string | undefined {
+  const first = m?.images?.[0];
+  return first && typeof first === 'object' ? first.url : undefined;
+}
+
+/**
+ * The tenant's saved landing-theme slug (`settings.landing_theme`), defaulting to
+ * `'swiss'` when unset. `settings` is an untyped JSON bag, so non-string values
+ * (legacy numeric ids) are stringified.
+ */
+export function getLandingThemeSlug(data: RawPublicSiteData): string {
+  const landingTheme = data.settings?.landing_theme;
+  return landingTheme == null ? 'swiss' : String(landingTheme);
+}
 
 /**
  * Builds the landing page's content model entirely from real tenant data.
@@ -80,7 +100,7 @@ export function getRichContent(data: RawPublicSiteData, slug: string) {
 
   const currencySymbol = (data.currency?.symbol as string) || '$';
 
-  const offers = (Array.isArray(data.offers) ? data.offers.filter(Boolean) : []).map((o: any) => {
+  const offers = (Array.isArray(data.offers) ? data.offers.filter(Boolean) : []).map((o) => {
     const rawVal = String(o.offer_value || '').trim();
     const hasOff = /off$/i.test(rawVal);
     const badgeText = o.badge_text || (rawVal ? (hasOff ? rawVal : `${rawVal} OFF`) : '');
@@ -92,23 +112,23 @@ export function getRichContent(data: RawPublicSiteData, slug: string) {
   const menuItems = Array.isArray(data.menuItems) ? data.menuItems : [];
 
   // Real signature items only — no fake fallback list when the tenant has too few items.
-  const signatureDishes: SignatureDish[] = menuItems.slice(0, 6).map((m: any, i: number) => ({
+  const signatureDishes: SignatureDish[] = menuItems.slice(0, 6).map((m: MenuRow, i: number) => ({
     name:        (m?.name ?? m?.title ?? m?.item ?? `${terms.itemSingular} ${i + 1}`) as string,
     description: (m?.description ?? '') as string,
     price:       m?.price ? `${currencySymbol}${m.price}` : undefined,
-    image:       (m?.image_url ?? m?.imageUrl ?? m?.images?.[0]?.url ?? undefined) as string | undefined,
+    image:       (m?.image_url ?? m?.imageUrl ?? firstImageObjectUrl(m) ?? undefined) as string | undefined,
   }));
 
   // Real "Popular" picks — favours items flagged `popular`, falls back to the first few
   // available items, and carries the actual item photo when one exists.
-  const popularSource = menuItems.some((m: any) => m?.popular)
-    ? menuItems.filter((m: any) => m?.popular)
+  const popularSource = menuItems.some((m: MenuRow) => m?.popular)
+    ? menuItems.filter((m: MenuRow) => m?.popular)
     : menuItems;
-  const popularItems = popularSource.slice(0, 8).map((m: any, i: number) => ({
+  const popularItems = popularSource.slice(0, 8).map((m: MenuRow, i: number) => ({
     name:        (m?.name ?? m?.title ?? m?.item ?? `${terms.itemSingular} ${i + 1}`) as string,
     description: (m?.description ?? '') as string,
     price:       m?.price ? `${currencySymbol}${m.price}` : undefined,
-    image:       (m?.image_url ?? m?.imageUrl ?? m?.images?.[0]?.url ?? null) as string | null,
+    image:       (m?.image_url ?? m?.imageUrl ?? firstImageObjectUrl(m) ?? null) as string | null,
     category:    (m?.category ?? '') as string,
   }));
 
@@ -144,7 +164,7 @@ export function getRichContent(data: RawPublicSiteData, slug: string) {
 
   // FAQs — already filtered to visible + ordered by the backend.
   const faqs: Faq[] = Array.isArray(data.faqs)
-    ? data.faqs.map((f: any) => ({ q: f.question ?? '', a: f.answer ?? '' }))
+    ? data.faqs.map((f) => ({ q: f.question ?? '', a: f.answer ?? '' }))
     : [];
 
   // Google Reviews — already filtered to only the owner-featured reviews and

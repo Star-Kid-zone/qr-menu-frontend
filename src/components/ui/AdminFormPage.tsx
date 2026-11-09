@@ -19,8 +19,7 @@ interface AdminFormPageProps {
 /**
  * Shared scaffold for admin create/edit pages: PageHeader with a back button
  * plus a Cancel/Submit action pair, wrapping the page-specific form body.
- * Consolidates the "back button + PageHeader + Cancel/Submit footer" markup
- * that was previously hand-rolled per page with inconsistent back-button markup.
+ * Enforces uniform padding and smooth overflow behavior.
  */
 export function AdminFormPage({
   title,
@@ -65,7 +64,9 @@ export function AdminFormPage({
         }
       />
 
-      <div className="min-h-0 flex-1 overflow-y-auto pr-0.5 pb-4">{children}</div>
+      <div className="relative min-h-0 flex-1 overflow-y-auto pr-0.5 pb-6">{children}</div>
     </div>
   );
 }
+
+export default AdminFormPage;

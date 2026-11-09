@@ -5,6 +5,5 @@ export * from './components/LibraryTab';
 export * from './components/HistoryTab';
 export * from './components/AccountsTab';
 export * from './components/SocialPostPreview';
-export * from './components/GoogleBusinessCard';
 export * from './types';
 export * from './constants';

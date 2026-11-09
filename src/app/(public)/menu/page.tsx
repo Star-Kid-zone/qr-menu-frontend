@@ -1,42 +1,24 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { resolveMenuFromRequestHost } from "@/services/public-site.service";
+import { getRawLandingWithMenuBySlug, resolveMenuFromRequestHost } from "@/services/public-site.service";
 import { getTenantPublicUrl } from "@/config/app.constants";
+import { MenuItemSchema } from "@/components/seo";
+import { buildTenantMetadata, readBusinessSeo } from "@/utils/public-seo";
 import { TenantMenuPage } from "./TenantMenuPage";
 
 export async function generateMetadata(): Promise<Metadata> {
   const payload = await resolveMenuFromRequestHost();
   if (!payload) return {};
 
-  const b = payload.mapped.business;
-  const businessName = (b?.business_name as string) || "Restaurant";
-  const description = (b?.description as string) || (b?.tagline as string) || `View the digital menu for ${businessName} and order online.`;
-  const logoUrl = b?.logo_url as string | undefined;
-  const title = `Menu — ${businessName}`;
-  const canonicalUrl = `${getTenantPublicUrl(payload.mapped.publicSlug)}/menu`;
+  const business = readBusinessSeo(payload.mapped.business, payload.mapped.settings);
 
-  return {
-    title,
-    description,
-    alternates: {
-      canonical: canonicalUrl,
-    },
-    openGraph: {
-      title,
-      description,
-      url: canonicalUrl,
-      siteName: businessName,
-      images: logoUrl ? [{ url: logoUrl }] : [],
-      locale: "en_US",
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: logoUrl ? [logoUrl] : [],
-    },
-  };
+  return buildTenantMetadata({
+    title: `Menu — ${business.name}`,
+    description: business.description || `View the digital menu for ${business.name} and order online.`,
+    canonicalUrl: `${getTenantPublicUrl(payload.mapped.publicSlug)}/menu`,
+    siteName: business.name,
+    imageUrl: business.logoUrl,
+  });
 }
 
 export default async function MenuPage() {
@@ -50,5 +32,24 @@ export default async function MenuPage() {
   const rawMenuStructure = payload.mapped.settings?.menu_structure;
   const menuStructure = typeof rawMenuStructure === "string" ? rawMenuStructure : "";
 
-  return <TenantMenuPage payload={payload} menuTheme={menuTheme} menuStructure={menuStructure} />;
+  // Prices are only published as structured data when the restaurant has set a currency;
+  // defaulting to a made-up one would give search engines wrong information.
+  // (The mapped payload never carries the currency, so read it from the raw portal data —
+  // that fetch is request-cached, so this costs no extra API call.)
+  const raw = await getRawLandingWithMenuBySlug(payload.routeSlug).catch(() => null);
+  const currencyCode = raw?.currency?.code;
+
+  return (
+    <>
+      {currencyCode ? (
+        <MenuItemSchema
+          menuItems={payload.menuItems}
+          businessName={readBusinessSeo(payload.mapped.business, payload.mapped.settings).name}
+          url={getTenantPublicUrl(payload.mapped.publicSlug)}
+          currencyCode={currencyCode}
+        />
+      ) : null}
+      <TenantMenuPage payload={payload} menuTheme={menuTheme} menuStructure={menuStructure} />
+    </>
+  );
 }

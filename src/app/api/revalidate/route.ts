@@ -14,7 +14,8 @@ import crypto from 'node:crypto';
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
   const bearerSecret = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  const secret = bearerSecret || req.headers.get('x-revalidate-secret') || req.nextUrl.searchParams.get('secret');
+  // Header-only: a secret in the query string would end up in access logs and proxies.
+  const secret = bearerSecret || req.headers.get('x-revalidate-secret');
 
   const expectedSecret = process.env.REVALIDATE_SECRET || '';
   if (!secret || !expectedSecret) {

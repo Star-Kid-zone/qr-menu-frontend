@@ -29,6 +29,12 @@ import { TopDishesTab } from './TopDishesTab';
 import { PeakTimeTechTab } from './PeakTimeTechTab';
 import { TenantLeaderboardTab } from './TenantLeaderboardTab';
 
+const requestAnalytics = (range: DateRange) =>
+  Promise.all([
+    superadminService.getPlatformAnalytics(range),
+    superadminService.getAnalyticsByUser(range, 50),
+  ]);
+
 export function AnalyticsPage() {
   const reduceMotion = useReducedMotion();
   const [range, setRange] = useState<DateRange>('last_7_days');
@@ -43,29 +49,52 @@ export function AnalyticsPage() {
   const [tenantSearch, setTenantSearch] = useState('');
   const [tenantSort, setTenantSort] = useState<'events' | 'visitors' | 'conversion'>('events');
 
+  const applyAnalytics = useCallback(
+    ([p, u]: [PlatformAnalyticsOverview, AnalyticsByUserResponse]) => {
+      setPlatform(p);
+      setByUser(u);
+    },
+    []
+  );
+
+  const handleLoadError = useCallback((e: unknown) => {
+    console.error(e);
+    setError('Couldn’t load analytics. Check your connection and try again.');
+  }, []);
+
+  const finishLoading = useCallback(() => {
+    setLoading(false);
+    setRefreshing(false);
+  }, []);
+
   const load = useCallback(async (isRefresh = false) => {
     try {
       if (isRefresh) setRefreshing(true);
       else setLoading(true);
       setError(null);
-      const [p, u] = await Promise.all([
-        superadminService.getPlatformAnalytics(range),
-        superadminService.getAnalyticsByUser(range, 50),
-      ]);
-      setPlatform(p);
-      setByUser(u);
+      applyAnalytics(await requestAnalytics(range));
     } catch (e) {
-      console.error(e);
-      setError('Failed to load platform analytics telemetry.');
+      handleLoadError(e);
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      finishLoading();
     }
-  }, [range]);
+  }, [range, applyAnalytics, handleLoadError, finishLoading]);
+
+  // A new range shows the loading state again (adjusted during render);
+  // the effect below then fetches it. `loading` starts true for the first range.
+  const [requestedRange, setRequestedRange] = useState(range);
+  if (requestedRange !== range) {
+    setRequestedRange(range);
+    setLoading(true);
+    setError(null);
+  }
 
   useEffect(() => {
-    load();
-  }, [load]);
+    requestAnalytics(range)
+      .then(applyAnalytics)
+      .catch(handleLoadError)
+      .finally(finishLoading);
+  }, [range, applyAnalytics, handleLoadError, finishLoading]);
 
   // Export Analytics CSV
   const handleExportCsv = useCallback(() => {
@@ -84,10 +113,10 @@ export function AnalyticsPage() {
 
     // Tenant rankings
     lines.push('Tenant Performance Leaderboard');
-    lines.push('User ID,Name,Business,Phone,Slug,Total Events,Unique Visitors,Visits,Clicks,Searches,Conversions,Conversion Rate %');
+    lines.push('User ID,Name,Business,Email,Slug,Total Events,Unique Visitors,Visits,Clicks,Searches,Conversions,Conversion Rate %');
     byUser.tenants.forEach((t) => {
       lines.push(
-        `"${t.user_id}","${t.name}","${t.business_name || ''}","${t.phone}","${t.public_slug || ''}",${t.total_events},${t.unique_visitors},${t.visits || 0},${t.clicks || 0},${t.searches || 0},${t.conversions || 0},"${t.conversion_rate || 0}%"`
+        `"${t.user_id}","${t.name}","${t.business_name || ''}","${t.email || ''}","${t.public_slug || ''}",${t.total_events},${t.unique_visitors},${t.visits || 0},${t.clicks || 0},${t.searches || 0},${t.conversions || 0},"${t.conversion_rate || 0}%"`
       );
     });
 
@@ -118,7 +147,7 @@ export function AnalyticsPage() {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-3">
         <PiArrowClockwiseBold className="size-8 animate-spin text-primary" />
-        <p className="text-caption uppercase tracking-wider text-muted-foreground">Aggregating Global Telemetry…</p>
+        <p className="text-caption text-muted-foreground">Loading analytics…</p>
       </div>
     );
   }
@@ -152,15 +181,14 @@ export function AnalyticsPage() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <PageHeader
-          title="Platform Analytics Suite"
-          description="Cross-tenant intelligence, visitor behavior, menu demand gaps, conversion funnels, and infrastructure traffic patterns."
-          eyebrow="Global Intelligence & Telemetry"
+          title="Analytics"
+          description="Visits and guest activity across all restaurants."
         />
 
         <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-[170px]">
-            <label htmlFor="analytics-range" className="mb-1.5 ml-1 block text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              Analysis Period
+            <label htmlFor="analytics-range" className="mb-2 ml-1 block text-caption font-bold text-muted-foreground">
+              Period
             </label>
             <Select
               id="analytics-range"
@@ -206,9 +234,9 @@ export function AnalyticsPage() {
       >
         <motion.div variants={fadeInUp}>
           <MetricCard
-            title="Distinct Visitors"
+            title="Visitors"
             value={platform.total_visitors}
-            sub="Unique guest devices"
+            sub="Different people (by device)"
             icon={<PiUsersBold className="size-5" />}
             highlight
           />
@@ -216,16 +244,16 @@ export function AnalyticsPage() {
 
         <motion.div variants={fadeInUp}>
           <MetricCard
-            title="Menu & Landing Views"
+            title="Page views"
             value={platform.total_views}
-            sub="Guest browsing sessions"
+            sub="Website and menu pages opened"
             icon={<PiEyeBold className="size-5" />}
           />
         </motion.div>
 
         <motion.div variants={fadeInUp}>
           <MetricCard
-            title="Guest Interactions"
+            title="Taps and searches"
             value={platform.total_clicks + (platform.total_searches ?? 0)}
             sub={`${platform.total_clicks.toLocaleString()} clicks · ${(platform.total_searches ?? 0).toLocaleString()} searches`}
             icon={<PiCursorClickBold className="size-5" />}
@@ -234,7 +262,7 @@ export function AnalyticsPage() {
 
         <motion.div variants={fadeInUp}>
           <MetricCard
-            title="High-Intent Conversions"
+            title="Pay, Review, Call or WhatsApp taps"
             value={platform.total_conversions ?? 0}
             sub="WhatsApp, Reviews & Bills"
             badge={`${platform.conversion_rate ?? 0}% Rate`}
@@ -248,7 +276,7 @@ export function AnalyticsPage() {
           <MetricCard
             title="Active Restaurants"
             value={platform.active_tenants_count ?? byUser.tenants.length}
-            sub="Generating traffic in period"
+            sub="With visits in this period"
             icon={<PiStorefrontBold className="size-5" />}
           />
         </motion.div>
@@ -261,9 +289,9 @@ export function AnalyticsPage() {
           active={activeTab}
           onChange={(tab) => setActiveTab(tab)}
         />
-        <div className="hidden items-center gap-2 text-[11px] font-semibold text-muted-foreground md:flex">
-          <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Real-time aggregate data</span>
+        <div className="hidden items-center gap-2 text-caption font-semibold text-muted-foreground md:flex">
+          <span className="size-2 rounded-full bg-success animate-pulse" />
+          <span>Updated as guests visit</span>
         </div>
       </div>
 

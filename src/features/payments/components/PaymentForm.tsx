@@ -170,12 +170,12 @@ function PaymentFormBase(
       {/* Left — Method selector */}
       <div className="flex flex-col gap-3 lg:col-span-2">
         <div className="rounded-xl border border-border bg-card p-4">
-          <div className="mb-1 flex items-center gap-2.5">
+          <div className="mb-1 flex items-center gap-2">
             <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
               <PiCreditCardBold size={15} />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-primary">Checkout Setup</p>
+              <p className="text-overline text-primary">Checkout Setup</p>
             </div>
           </div>
           <p className="mt-2 text-sm font-bold text-foreground">Payment Configuration</p>
@@ -227,11 +227,11 @@ function PaymentFormBase(
         {/* Existing data badge (edit mode) */}
         {mode === "edit" && (initialData?.link || initialData?.qrImage) && (
           <div className="rounded-xl border border-border bg-muted/40 p-3">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <p className="mb-2 text-overline text-muted-foreground">
               Current {initialData?.type === "image" ? "Image" : "Link"}
             </p>
-            <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-2.5">
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-card p-3">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-success/10 text-success dark:bg-success dark:text-success">
                 <PiCheckBold size={12} />
               </span>
               {initialData?.type === "image" && initialData?.qrImage ? (
@@ -250,7 +250,7 @@ function PaymentFormBase(
                   aria-label="Copy payment link"
                   className="inline-flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded border border-border bg-card text-muted-foreground transition hover:border-primary/30 hover:text-primary"
                 >
-                  {copied ? <PiCheckBold size={11} className="text-emerald-600" /> : <PiCopyBold size={11} />}
+                  {copied ? <PiCheckBold size={11} className="text-success" /> : <PiCopyBold size={11} />}
                 </button>
               ) : null}
             </div>
@@ -260,7 +260,7 @@ function PaymentFormBase(
 
       {/* Right — Form content */}
       <div className="flex flex-col lg:col-span-3">
-        <div className="h-full rounded-xl border border-border bg-card p-5">
+        <div className="h-full rounded-xl border border-border bg-card p-6">
           <AnimatePresence mode="wait" initial={false}>
             {paymentType === "url" ? (
               <motion.div
@@ -288,7 +288,7 @@ function PaymentFormBase(
                     value={paymentLink}
                     onChange={(e) => setPaymentLink(e.target.value)}
                     placeholder="https://paypal.me/yourname"
-                    className="h-11 pl-9"
+                    className="h-10 pl-9"
                   />
                 </div>
 
@@ -298,7 +298,7 @@ function PaymentFormBase(
                     {["PayPal", "Stripe", "Razorpay", "Paytm", "GPay", "PhonePe", "Custom"].map((g) => (
                       <span
                         key={g}
-                        className="rounded-md border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
+                        className="rounded-md border border-border bg-card px-3 py-1 text-caption font-medium text-muted-foreground"
                       >
                         {g}
                       </span>

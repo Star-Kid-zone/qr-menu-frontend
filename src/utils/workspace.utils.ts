@@ -1,11 +1,10 @@
-import type { Setting } from '@/types';
-import type { WorkspaceSettingsFormValues, WorkspaceSetting } from '@/types/workspace.types';
+import type { WorkspaceSettingsFormValues, WorkspaceSetting, WorkspaceSettingSource } from '@/types/workspace.types';
 
 /**
  * Maps raw workspace setting domain object to the flat form values expected by UI.
  */
 export function mapWorkspaceSettingToFormValues(setting: WorkspaceSetting | null): WorkspaceSettingsFormValues {
-  const s = setting as any;
+  const s = setting;
   return {
     theme_colour:         s?.theme_colour          || '#0F766E',
     // Core colours
@@ -109,7 +108,7 @@ export function getDefaultWorkspaceSettings(): WorkspaceSettingsFormValues {
 /**
  * Builds a partial Setting payload from form values for API updates.
  */
-export function buildWorkspaceSettingsPayload(values: WorkspaceSettingsFormValues): Partial<Setting> {
+export function buildWorkspaceSettingsPayload(values: WorkspaceSettingsFormValues): WorkspaceSettingSource {
   return {
     theme_colour:         values.theme_colour,
     primary_color:        values.primary_color,
@@ -153,7 +152,7 @@ export function buildWorkspaceSettingsPayload(values: WorkspaceSettingsFormValue
     announcement_starts_at: values.announcement_starts_at || null,
     announcement_ends_at:   values.announcement_ends_at   || null,
     currency_id:          values.currency_id,
-  } as any;
+  };
 }
 
 /** "YYYY-MM-DDTHH:mm" (datetime-local input value, browser-local time) <-> ISO string. */

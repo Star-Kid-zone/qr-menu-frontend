@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useId, useRef } from 'react';
-import { HiX } from 'react-icons/hi';
+import { PiX } from "react-icons/pi";
 import { ModalProps } from "@/types/components/Modal.types";
 
 export type { ModalProps };
@@ -147,7 +147,7 @@ export const Modal: React.FC<ModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
       <div
-        className="fixed inset-0 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300"
+        className="fixed inset-0 bg-foreground/40"
         onClick={onClose}
       />
 
@@ -157,12 +157,12 @@ export const Modal: React.FC<ModalProps> = ({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`relative inset-x-4 w-[calc(100%-2rem)] sm:inset-x-0 sm:w-full ${maxWidth} bg-card rounded-[1.5rem] sm:rounded-[2rem] border border-border shadow-2xl shadow-foreground/5 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 flex flex-col max-h-[90vh]`}
+        className={`relative inset-x-4 w-[calc(100%-2rem)] sm:inset-x-0 sm:w-full ${maxWidth} bg-card rounded-lg border border-border shadow-lg overflow-hidden flex flex-col max-h-[90vh]`}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
-        <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-8 sm:py-6 border-b border-border bg-muted/20">
-          <h2 id={titleId} className="text-lg sm:text-2xl font-black text-foreground tracking-tight break-words">
+        <div className="flex items-start justify-between gap-4 px-4 pt-4 pb-3 sm:px-6 sm:pt-6">
+          <h2 id={titleId} className="text-h2 text-foreground break-words">
             {title}
           </h2>
           {showCloseButton && (
@@ -171,17 +171,17 @@ export const Modal: React.FC<ModalProps> = ({
               onClick={onClose}
               type="button"
               aria-label={`Close ${title}`}
-              className="shrink-0 p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-all active:scale-95"
+              className="-mr-2 -mt-1 shrink-0 rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
-              <HiX className="size-6" />
+              <PiX className="size-5" aria-hidden />
             </button>
           )}
         </div>
 
-        <div className="p-4 sm:p-8 overflow-y-auto">{children}</div>
+        <div className="px-4 pb-6 sm:px-6 overflow-y-auto">{children}</div>
 
         {footer && (
-          <div className="px-4 py-4 sm:px-8 sm:py-6 border-t border-border bg-muted/20 flex flex-col-reverse gap-3 xs:flex-row xs:justify-end">
+          <div className="px-4 py-3 sm:px-6 border-t border-border flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             {footer}
           </div>
         )}

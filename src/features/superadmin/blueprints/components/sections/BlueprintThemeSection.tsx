@@ -15,7 +15,7 @@ export function BlueprintThemeSection({
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-border bg-muted/10 p-4 space-y-4">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <h3 className="text-xs font-bold text-muted-foreground">
           Layout Templates
         </h3>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -65,7 +65,7 @@ export function BlueprintThemeSection({
 
       {/* Color Palette */}
       <div className="rounded-xl border border-border bg-muted/10 p-4 space-y-4">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <h3 className="text-xs font-bold text-muted-foreground">
           Color Palette (Tailored Tokens)
         </h3>
         <div className="grid gap-4 sm:grid-cols-3">
@@ -94,7 +94,7 @@ export function BlueprintThemeSection({
                     theme: { ...prev.theme, primaryColor: e.target.value } as BlueprintTheme,
                   }))
                 }
-                className="flex-1 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-mono text-foreground"
+                className="flex-1 rounded-lg border border-border bg-background px-3 py-1 text-xs font-mono text-foreground"
               />
             </div>
           </div>
@@ -124,7 +124,7 @@ export function BlueprintThemeSection({
                     theme: { ...prev.theme, secondaryColor: e.target.value } as BlueprintTheme,
                   }))
                 }
-                className="flex-1 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-mono text-foreground"
+                className="flex-1 rounded-lg border border-border bg-background px-3 py-1 text-xs font-mono text-foreground"
               />
             </div>
           </div>
@@ -152,7 +152,7 @@ export function BlueprintThemeSection({
                     theme: { ...prev.theme, accentColor: e.target.value } as BlueprintTheme,
                   }))
                 }
-                className="flex-1 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-mono text-foreground"
+                className="flex-1 rounded-lg border border-border bg-background px-3 py-1 text-xs font-mono text-foreground"
               />
             </div>
           </div>
@@ -170,7 +170,7 @@ export function BlueprintThemeSection({
                   theme: { ...prev.theme, textPrimaryColor: e.target.value } as BlueprintTheme,
                 }))
               }
-              className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-mono text-foreground"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs font-mono text-foreground"
             />
           </div>
 
@@ -185,7 +185,7 @@ export function BlueprintThemeSection({
                   theme: { ...prev.theme, textSecondaryColor: e.target.value } as BlueprintTheme,
                 }))
               }
-              className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-mono text-foreground"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs font-mono text-foreground"
             />
           </div>
         </div>
@@ -193,7 +193,7 @@ export function BlueprintThemeSection({
 
       {/* Imagery & Announcement */}
       <div className="rounded-xl border border-border bg-muted/10 p-4 space-y-3">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <h3 className="text-xs font-bold text-muted-foreground">
           Hero & Storefront Branding
         </h3>
         <div>
@@ -207,7 +207,7 @@ export function BlueprintThemeSection({
                 theme: { ...prev.theme, bannerUrl: e.target.value } as BlueprintTheme,
               }))
             }
-            className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground"
           />
         </div>
 
@@ -222,7 +222,7 @@ export function BlueprintThemeSection({
                 theme: { ...prev.theme, announcementText: e.target.value } as BlueprintTheme,
               }))
             }
-            className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground"
           />
         </div>
       </div>

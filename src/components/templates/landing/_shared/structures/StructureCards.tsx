@@ -2,12 +2,27 @@
 
 import Image from "next/image";
 import type { LandingTemplateProps } from "@/types/components/templates/rawPublicSiteData.types";
-import { getRichContent } from "../defaults";
+import { getRichContent, getLandingThemeSlug } from "../defaults";
 import { buildTheme } from "../buildTheme";
 import { FadeIn, StaggerGroup, StaggerItem, Marquee } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
 import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/templates/core/socialPlatforms";
 import { ReviewCard } from "./sections";
+
+type CardProps = {
+  children: React.ReactNode;
+  surface: string;
+  border: string;
+  cardStyle: string;
+};
+
+function Card({ children, surface, border, cardStyle }: CardProps) {
+  return (
+    <div style={{ background: surface, borderColor: border }} className={`overflow-hidden border p-6 shadow-sm sm:p-8 ${cardStyle}`}>
+      {children}
+    </div>
+  );
+}
 
 /** App-like stacked-cards layout: every section — including popular items,
  * offers, and full contact details — is
@@ -15,16 +30,10 @@ import { ReviewCard } from "./sections";
  * blended full-bleed sections. Nothing from the content model is dropped;
  * it's simply every section, each as its own card. */
 export default function StructureCards(p: LandingTemplateProps) {
-  const c = getRichContent(p.data, (p.data.settings as any)?.landing_theme ?? "swiss");
+  const c = getRichContent(p.data, getLandingThemeSlug(p.data));
   const t = buildTheme(c);
   const cardStyle = t.cardStyle ?? "rounded-2xl";
   const hasContact = c.address || c.phone || c.email || c.whatsapp || c.social.length > 0;
-
-  const Card = ({ children }: { children: React.ReactNode }) => (
-    <div style={{ background: t.surface, borderColor: t.border }} className={`overflow-hidden border p-6 shadow-sm sm:p-8 ${cardStyle}`}>
-      {children}
-    </div>
-  );
 
   return (
     <div style={{ fontFamily: t.fontFamily, backgroundColor: t.bg, color: t.textSecondary }} className="min-h-screen">
@@ -43,7 +52,7 @@ export default function StructureCards(p: LandingTemplateProps) {
 
         {/* Hero card */}
         <FadeIn>
-          <Card>
+          <Card surface={t.surface} border={t.border} cardStyle={cardStyle}>
             {t.badge && (
               <span style={{ background: t.accent, color: t.accentText }} className="mb-3 inline-block rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest">
                 {t.badge}
@@ -59,7 +68,7 @@ export default function StructureCards(p: LandingTemplateProps) {
               )}
               {c.cta.payBtn && c.cta.paymentLink && (
                 <button onClick={p.onPay} style={{ borderColor: t.accent, color: t.accent }} className="rounded-full border px-5 py-2 text-xs font-bold uppercase tracking-wider">
-                  Pay Now
+                  Pay bill
                 </button>
               )}
               {c.cta.reviewBtn && c.cta.reviewLink && (
@@ -78,21 +87,10 @@ export default function StructureCards(p: LandingTemplateProps) {
           </Marquee>
         </div>
 
-        {(c.cta.menuBtn || c.cta.payBtn || c.cta.reviewBtn || c.offers.length > 0) && (
-          <Card>
-            <div className="flex flex-wrap justify-center gap-2">
-              {[c.cta.menuBtn && c.terms.catalogLabel, c.cta.payBtn && "Pay Online", c.cta.reviewBtn && "Reviews", c.offers.length > 0 && "Offers"]
-                .filter(Boolean)
-                .map((b) => (
-                  <span key={b as string} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider">{b}</span>
-                ))}
-            </div>
-          </Card>
-        )}
 
         {c.story && (
           <FadeIn delay={0.05}>
-            <Card>
+            <Card surface={t.surface} border={t.border} cardStyle={cardStyle}>
               <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-widest">Our Story</p>
               {c.story.headline && <h2 style={{ color: t.textPrimary }} className="text-xl font-bold">{c.story.headline}</h2>}
               {c.story.body && <p style={{ color: t.textSecondary }} className="mt-2 text-sm leading-relaxed">{c.story.body}</p>}
@@ -102,7 +100,7 @@ export default function StructureCards(p: LandingTemplateProps) {
 
         {c.signatureDishes.length > 0 && (
           <FadeIn delay={0.1}>
-            <Card>
+            <Card surface={t.surface} border={t.border} cardStyle={cardStyle}>
               <p style={{ color: t.accent }} className="mb-4 text-[10px] font-bold uppercase tracking-widest">{c.terms.featuredSectionLabel}</p>
               <StaggerGroup className="space-y-3">
                 {c.signatureDishes.slice(0, 5).map((dish, i) => (
@@ -129,7 +127,7 @@ export default function StructureCards(p: LandingTemplateProps) {
         )}
 
         {c.popularItems.length > 0 && (
-          <Card>
+          <Card surface={t.surface} border={t.border} cardStyle={cardStyle}>
             <p style={{ color: t.accent }} className="mb-4 text-[10px] font-bold uppercase tracking-widest">{c.terms.popularSectionSubhead}</p>
             <div className="grid grid-cols-2 gap-3">
               {c.popularItems.slice(0, 4).map((item, i) => (
@@ -149,10 +147,10 @@ export default function StructureCards(p: LandingTemplateProps) {
         )}
 
         {c.offers.length > 0 && (
-          <Card>
+          <Card surface={t.surface} border={t.border} cardStyle={cardStyle}>
             <p style={{ color: t.accent }} className="mb-4 text-[10px] font-bold uppercase tracking-widest">Current Offers</p>
             <div className="space-y-3">
-              {c.offers.map((o: any, i: number) => (
+              {c.offers.map((o, i: number) => (
                 <div key={i} style={{ background: t.bg, borderColor: t.border }} className="rounded-lg border p-3">
                   {o.title && <p style={{ color: t.textPrimary }} className="text-sm font-bold">{o.title}</p>}
                   {o.description && <p style={{ color: t.textSecondary }} className="mt-1 text-xs">{o.description}</p>}
@@ -167,7 +165,7 @@ export default function StructureCards(p: LandingTemplateProps) {
 
         {c.stats.length > 0 && (
           <FadeIn delay={0.15}>
-            <Card>
+            <Card surface={t.surface} border={t.border} cardStyle={cardStyle}>
               <div className="grid grid-cols-2 gap-4 text-center sm:grid-cols-4">
                 {c.stats.map((s) => (
                   <div key={s.label}>
@@ -182,7 +180,7 @@ export default function StructureCards(p: LandingTemplateProps) {
 
         {c.gallery.length > 0 && (
           <FadeIn delay={0.2}>
-            <Card>
+            <Card surface={t.surface} border={t.border} cardStyle={cardStyle}>
               <p style={{ color: t.accent }} className="mb-4 text-[10px] font-bold uppercase tracking-widest">Gallery</p>
               <div className="grid grid-cols-3 gap-2">
                 {c.gallery.slice(0, 6).map((g, i) => (
@@ -197,7 +195,7 @@ export default function StructureCards(p: LandingTemplateProps) {
 
         {c.googleReviews.length > 0 && (
           <FadeIn delay={0.25}>
-            <Card>
+            <Card surface={t.surface} border={t.border} cardStyle={cardStyle}>
               <p style={{ color: t.accent }} className="mb-4 text-[10px] font-bold uppercase tracking-widest">Google Reviews</p>
               <div className="space-y-4">
                 {c.googleReviews.slice(0, 4).map((r) => (
@@ -209,7 +207,7 @@ export default function StructureCards(p: LandingTemplateProps) {
         )}
 
         {(c.hours.length > 0 || hasContact) && (
-          <Card>
+          <Card surface={t.surface} border={t.border} cardStyle={cardStyle}>
             {c.hours.length > 0 && (
               <div className="mb-5">
                 <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-widest">Opening Hours</p>
@@ -243,7 +241,7 @@ export default function StructureCards(p: LandingTemplateProps) {
 
         {c.faqs.length > 0 && (
           <FadeIn delay={0.3}>
-            <Card>
+            <Card surface={t.surface} border={t.border} cardStyle={cardStyle}>
               <p style={{ color: t.accent }} className="mb-4 text-[10px] font-bold uppercase tracking-widest">FAQ</p>
               <div className="space-y-3">
                 {c.faqs.map((f, i) => (

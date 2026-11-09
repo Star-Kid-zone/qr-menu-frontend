@@ -2,10 +2,10 @@ import type { TabId } from './types';
 
 export const TAB_OPTIONS: Array<{ id: TabId; label: string }> = [
   { id: 'traffic', label: 'Traffic & Funnel' },
-  { id: 'demand', label: 'Search & Demand Gaps' },
+  { id: 'demand', label: 'Searches' },
   { id: 'dishes', label: 'Top Dishes' },
-  { id: 'time_tech', label: 'Peak Times & Tech' },
-  { id: 'tenants', label: 'Tenant Leaderboard' },
+  { id: 'time_tech', label: 'Busy times & devices' },
+  { id: 'tenants', label: 'Restaurant ranking' },
 ];
 
 export const DONUT_COLORS = [

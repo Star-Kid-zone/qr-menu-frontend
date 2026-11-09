@@ -13,16 +13,16 @@ interface BrandNarrativeSectionProps {
 export function BrandNarrativeSection({ primaryWorkspace }: BrandNarrativeSectionProps) {
   return (
     <Card className="overflow-hidden">
-      <div className="flex items-center gap-2.5 border-b border-border bg-muted/30 px-6 py-4">
+      <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-6 py-4">
         <PiSparkleBold className="size-5 text-primary" />
         <h2 className="text-h3 font-bold text-foreground">
-          Brand Assets &amp; &quot;Our Story&quot; Narrative
+          Logo, banner and story
         </h2>
       </div>
       <div className="p-6 space-y-6">
         <div className="grid gap-6 sm:grid-cols-2">
           <div className="rounded-xl border border-border bg-muted/20 p-4">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
+            <p className="text-caption font-bold text-muted-foreground mb-2">
               Brand Logo
             </p>
             {primaryWorkspace?.logoUrl ? (
@@ -58,7 +58,7 @@ export function BrandNarrativeSection({ primaryWorkspace }: BrandNarrativeSectio
           </div>
 
           <div className="rounded-xl border border-border bg-muted/20 p-4">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
+            <p className="text-caption font-bold text-muted-foreground mb-2">
               Hero Banner Image
             </p>
             {primaryWorkspace?.bannerUrl ? (
@@ -80,14 +80,14 @@ export function BrandNarrativeSection({ primaryWorkspace }: BrandNarrativeSectio
         </div>
 
         <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p className="text-caption font-bold text-muted-foreground">
             Story Headline
           </p>
           <p className="text-base font-bold text-foreground">
             {String(primaryWorkspace?.storyHeadline || 'Crafting Culinary Memories')}
           </p>
 
-          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground pt-2">
+          <p className="text-caption font-bold text-muted-foreground pt-2">
             Story Body
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -101,8 +101,8 @@ export function BrandNarrativeSection({ primaryWorkspace }: BrandNarrativeSectio
         {Array.isArray(primaryWorkspace?.stats) &&
           primaryWorkspace.stats.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                Highlight Stats Counters
+              <p className="text-caption font-bold text-muted-foreground">
+                Highlight numbers
               </p>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {primaryWorkspace.stats.map((st: { label: string; value: string }, idx: number) => (

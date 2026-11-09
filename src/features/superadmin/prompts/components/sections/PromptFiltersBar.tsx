@@ -24,9 +24,9 @@ export function PromptFiltersBar({
   setSearchQuery,
 }: PromptFiltersBarProps) {
   return (
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
       {/* Media Type Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 pt-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex items-center gap-2 overflow-x-auto pb-0.5 pt-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {MEDIA_TYPE_TABS.map((tab) => {
           const Icon = tab.icon;
           const selected = selectedMediaType === tab.id;
@@ -36,7 +36,7 @@ export function PromptFiltersBar({
               type="button"
               onClick={() => setSelectedMediaType(tab.id)}
               className={cn(
-                "flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-3 sm:py-1",
+                "flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-1 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-3 sm:py-1",
                 selected
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "border border-border bg-card text-muted-foreground hover:border-primary/40 hover:bg-muted/70 hover:text-foreground"
@@ -54,14 +54,14 @@ export function PromptFiltersBar({
           type="button"
           onClick={() => setFavoritesOnly(!favoritesOnly)}
           className={cn(
-            "flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-semibold transition-all border",
+            "flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-1 text-xs font-semibold transition-all border",
             favoritesOnly
-              ? "border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400"
+              ? "border-warning bg-warning/15 text-warning-foreground dark:text-warning"
               : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:bg-muted/70 hover:text-foreground"
           )}
         >
           <PiStarFill
-            className={cn("h-3.5 w-3.5", favoritesOnly ? "text-amber-500" : "text-muted-foreground")}
+            className={cn("h-3.5 w-3.5", favoritesOnly ? "text-warning-foreground" : "text-muted-foreground")}
           />
           <span>Starred</span>
         </button>

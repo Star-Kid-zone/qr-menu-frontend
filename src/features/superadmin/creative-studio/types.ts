@@ -9,6 +9,13 @@ export interface ScriptDownloadItem {
   kind: "image" | "video";
 }
 
+/** One generated caption from the copywriter; the endpoint may also tag its language. */
+export interface CopyVariant {
+  caption?: string;
+  hashtags?: string[];
+  language?: string;
+}
+
 export interface IndustryItem {
   id: string;
   name?: string;

@@ -17,6 +17,7 @@ import type {
   SocialAsset,
   WeeklyPoster,
 } from "../types";
+import { formatDate } from "@/utils/date";
 
 interface LibraryTabProps {
   assets: SocialAsset[];
@@ -72,11 +73,11 @@ export function LibraryTab({
     <div className="flex h-full min-h-0 flex-col gap-4">
       <PageHeader
         className="shrink-0"
-        title="Poster & Media Library"
+        title="Media library"
         actions={
           <div className="flex items-center gap-2">
             <label className="cursor-pointer">
-              <span className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-semibold text-primary-foreground shadow-xs transition hover:bg-primary/90">
+              <span className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-xs transition hover:bg-primary/90">
                 {uploading ? (
                   <Spinner size="sm" />
                 ) : (
@@ -97,7 +98,7 @@ export function LibraryTab({
       />
 
       {/* Filter Pills */}
-      <div className="flex shrink-0 items-center gap-2 border-b border-border pb-2 overflow-x-auto">
+      <div className="flex shrink-0 items-center gap-2 border-b border-border pb-2 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {(["all", "platform", "uploads", "videos", "weekly"] as const).map(
           (filter) => (
             <button
@@ -105,14 +106,14 @@ export function LibraryTab({
               type="button"
               onClick={() => onFilterChange(filter)}
               className={cn(
-                "rounded-full px-3 py-1 text-xs font-semibold capitalize transition shrink-0 flex items-center gap-1.5",
+                "rounded-full px-3 py-1 text-xs font-semibold capitalize transition shrink-0 flex items-center gap-2",
                 libraryFilter === filter
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "bg-muted text-muted-foreground hover:text-foreground",
               )}
             >
               {filter === "platform" && (
-                <PiSparkleBold className="size-3 text-amber-300" />
+                <PiSparkleBold className="size-3 text-warning-foreground" />
               )}
               {filter === "all"
                 ? `All Media (${assets.length + weeklyPosters.length + platformAssets.length})`
@@ -138,7 +139,7 @@ export function LibraryTab({
               title="No media assets found"
               action={
                 <label className="cursor-pointer">
-                  <span className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary px-3.5 text-xs font-semibold text-primary-foreground shadow-xs transition hover:bg-primary/90">
+                  <span className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-xs transition hover:bg-primary/90">
                     <PiUploadSimpleBold className="size-4" /> Upload First Photo or Reel
                   </span>
                   <input
@@ -153,7 +154,7 @@ export function LibraryTab({
             />
           </div>
         ) : (
-          <div className="grid gap-3.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 pb-6">
+          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 pb-6">
             {/* Platform Master Specials */}
             {displayedPlatform.map((pa) => {
               const isSelected = platformAssetId === pa.id;
@@ -176,7 +177,7 @@ export function LibraryTab({
                     <div className="absolute top-2 left-2">
                       <Badge
                         tone="warning"
-                        className="shadow-xs text-[8px] flex items-center gap-1 bg-amber-500/90 text-black font-bold"
+                        className="shadow-xs text-caption flex items-center gap-1 bg-warning/90 text-black font-bold"
                       >
                         <PiSparkleBold className="size-2.5" /> Platform Special
                       </Badge>
@@ -197,7 +198,7 @@ export function LibraryTab({
                     <p className="truncate font-semibold text-foreground text-xs">
                       {pa.title}
                     </p>
-                    <p className="text-[10px] text-muted-foreground capitalize">
+                    <p className="text-caption text-muted-foreground capitalize">
                       {pa.categoryTag || "General Special"}
                     </p>
                   </div>
@@ -225,7 +226,7 @@ export function LibraryTab({
                       className="size-full object-cover transition-transform duration-200 group-hover:scale-105"
                     />
                     <div className="absolute top-2 left-2">
-                      <Badge tone="primary" className="shadow-xs text-[8px]">
+                      <Badge tone="primary" className="shadow-xs text-caption">
                         Weekly Poster
                       </Badge>
                     </div>
@@ -245,8 +246,8 @@ export function LibraryTab({
                     <p className="truncate font-semibold text-foreground text-xs">
                       {poster.title}
                     </p>
-                    <p className="text-[10px] text-muted-foreground capitalize">
-                      {poster.weekStart ? `Week of ${new Date(poster.weekStart).toLocaleDateString()}` : "Special"}
+                    <p className="text-caption text-muted-foreground capitalize">
+                      {poster.weekStart ? `Week of ${formatDate(poster.weekStart)}` : "Special"}
                     </p>
                   </div>
                 </Card>
@@ -294,12 +295,12 @@ export function LibraryTab({
                       {isVideo ? (
                         <Badge
                           tone="primary"
-                          className="shadow-xs text-[8px] flex items-center gap-1"
+                          className="shadow-xs text-caption flex items-center gap-1"
                         >
                           <PiVideoFill className="size-2.5" /> Reel / Video
                         </Badge>
                       ) : (
-                        <Badge tone="neutral" className="shadow-xs text-[8px]">
+                        <Badge tone="neutral" className="shadow-xs text-caption">
                           Upload
                         </Badge>
                       )}
@@ -320,8 +321,8 @@ export function LibraryTab({
                     <p className="truncate font-semibold text-foreground text-xs">
                       {asset.originalFilename}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      Uploaded {new Date(asset.createdAt).toLocaleDateString()}
+                    <p className="text-caption text-muted-foreground">
+                      Uploaded {formatDate(asset.createdAt)}
                     </p>
                   </div>
                 </Card>

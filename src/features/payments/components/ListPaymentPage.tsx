@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { PageHeader } from "@/components/ui/PageHeader";
 import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
 import { ReactQRCode } from "@lglab/react-qr-code";
 import { workspaceService, WorkspaceData } from "@/services/workspace.service";
 import { toast } from "@/components/ui/toast";
 import { getApiErrorMessage } from "@/utils/errors";
+import { Notice } from "@/components/ui/Notice";
+import { PaymentForm, type PaymentFormHandle } from "./PaymentForm";
+import { savePaymentMethod } from "../savePayment";
 import {
   PiPlusBold,
   PiPencilSimpleBold,
@@ -22,11 +23,35 @@ import {
   PiCheckCircleFill,
 } from "react-icons/pi";
 
-export function ListPaymentPage() {
-  const router = useRouter();
+/**
+ * Bill payment: view, add, change and remove the one payment method guests
+ * see behind "Pay bill", all on this page (edits happen in place).
+ */
+export function ListPaymentPage({ startEditing = false }: { startEditing?: boolean }) {
   const [data, setData] = useState<WorkspaceData | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(startEditing);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const formRef = useRef<PaymentFormHandle>(null);
+
+  const handleSave = async () => {
+    const payload = formRef.current?.getPayload();
+    if (!payload) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await savePaymentMethod(payload);
+      toast.success("Bill payment saved");
+      setEditing(false);
+      await fetchWorkspace();
+    } catch (err) {
+      setSaveError(getApiErrorMessage(err, "Couldn't save the payment method. Try again."));
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const fetchWorkspace = async () => {
     try {
@@ -43,16 +68,12 @@ export function ListPaymentPage() {
     fetchWorkspace();
   }, []);
 
+  // ConfirmDeleteModal shows the success toast or the inline error.
   const handleDelete = async () => {
-    try {
-      await workspaceService.updateWorkspace({
-        payment: { type: "url", link: null, qrImage: null },
-      });
-      toast.success("Payment method removed");
-      await fetchWorkspace();
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to remove payment method"));
-    }
+    await workspaceService.updateWorkspace({
+      payment: { type: "url", link: null, qrImage: null },
+    });
+    await fetchWorkspace();
   };
 
   const hasPayment = data?.payment?.link || data?.payment?.qrImage;
@@ -60,16 +81,22 @@ export function ListPaymentPage() {
   const paymentLink = isImage ? data?.payment?.qrImage : data?.payment?.link;
 
   return (
-    <div className="flex h-full flex-col gap-0">
-      {/* Header */}
-      <PageHeader
-        title="Payment Methods"
-        description="Manage how customers pay you at checkout."
-        actions={
-          hasPayment ? (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        {
+          editing ? (
+            <div className="flex items-center gap-2">
+              <Button variant="secondary" onClick={() => { setEditing(false); setSaveError(null); }} disabled={saving}>
+                Cancel
+              </Button>
+              <Button onClick={() => void handleSave()} loading={saving}>
+                Save changes
+              </Button>
+            </div>
+          ) : hasPayment ? (
             <div className="flex items-center gap-2">
               <Button
-                onClick={() => router.push("/admin/editpayment")}
+                onClick={() => setEditing(true)}
                 variant="secondary"
                 size="sm"
                 leftIcon={<PiPencilSimpleBold size={14} />}
@@ -86,51 +113,61 @@ export function ListPaymentPage() {
               </Button>
             </div>
           ) : (
-            <Button
-              onClick={() => router.push("/admin/addpayment")}
-              size="sm"
-              leftIcon={<PiPlusBold size={14} />}
-            >
-              Add Payment
+            <Button onClick={() => setEditing(true)} leftIcon={<PiPlusBold size={14} />}>
+              Add payment method
             </Button>
           )
         }
-      />
+      </div>
 
       {/* Body */}
-      <div className="min-h-0 flex-1 pt-3 sm:pt-4 flex flex-col">
+      <div className="flex flex-col">
         {loading ? (
-          <div className="flex h-full items-center justify-center">
+          <div className="flex min-h-48 items-center justify-center">
             <span className="size-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
+        ) : editing ? (
+          <div className="space-y-4">
+            {saveError ? <Notice tone="error">{saveError}</Notice> : null}
+            <PaymentForm
+              ref={formRef}
+              mode={hasPayment ? "edit" : "create"}
+              initialData={
+                data?.payment
+                  ? {
+                      type: data.payment.type === "image" ? "image" : "url",
+                      link: data.payment.link,
+                      qrImage: data.payment.qrImage,
+                    }
+                  : null
+              }
+            />
+          </div>
         ) : !hasPayment ? (
-          <div className="h-full min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-card p-4 md:p-6 flex flex-col">
+          <div className="rounded-xl border border-border bg-card p-4 md:p-6">
             <EmptyState
               icon={<PiQrCodeBold size={32} />}
-              title="No payment method yet"
-              description="Add a payment link or QR code image to start accepting payments from customers."
+              title="Let guests pay from their phone"
+              description="Add a payment link or a UPI/QR image. Guests reach it with the Pay bill button on your website and menu."
               action={
-                <Button
-                  onClick={() => router.push("/admin/addpayment")}
-                  leftIcon={<PiPlusBold size={15} />}
-                >
-                  Add Payment Method
+                <Button onClick={() => setEditing(true)} leftIcon={<PiPlusBold size={15} />}>
+                  Add payment method
                 </Button>
               }
             />
           </div>
         ) : (
-          <div className="grid h-full grid-cols-1 gap-4 lg:grid-cols-5">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
             {/* Left — QR Preview Panel */}
             <div className="flex flex-col gap-4 lg:col-span-2">
               {/* Status card */}
-              <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/40">
-                <PiCheckCircleFill size={20} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <div className="flex items-center gap-3 rounded-xl border border-success/15 bg-success/10 p-4 dark:border-success dark:bg-success/40">
+                <PiCheckCircleFill size={20} className="shrink-0 text-success dark:text-success" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">Active & Visible</p>
-                  <p className="text-xs text-emerald-600 dark:text-emerald-500">Currently shown to customers</p>
+                  <p className="text-sm font-semibold text-success dark:text-success">Active & Visible</p>
+                  <p className="text-xs text-success dark:text-success">Currently shown to customers</p>
                 </div>
-                <span className="flex shrink-0 items-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900 dark:text-emerald-300">
+                <span className="flex shrink-0 items-center gap-2 rounded-lg border border-success/15 bg-white px-3 py-1 text-caption font-bold text-success dark:border-success dark:bg-success dark:text-success">
                   {isImage ? <PiImageBold size={11} /> : <PiLinkBold size={11} />}
                   {isImage ? "Image" : "URL"}
                 </span>
@@ -154,7 +191,7 @@ export function ListPaymentPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5 rounded-full border border-border bg-muted px-4 py-1.5 text-xs font-medium text-muted-foreground">
+                  <div className="flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-2 text-xs font-medium text-muted-foreground">
                     <PiQrCodeBold size={13} />
                     Scan to Pay
                   </div>
@@ -165,7 +202,7 @@ export function ListPaymentPage() {
             {/* Right — Details Panel */}
             <div className="flex flex-col gap-4 lg:col-span-3">
               {/* Method type header */}
-              <div className="rounded-xl border border-border bg-card p-5">
+              <div className="rounded-xl border border-border bg-card p-6">
                 <div className="mb-4 flex items-center gap-3">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
                     {isImage ? <PiImageBold size={18} /> : <PiLinkBold size={18} />}
@@ -181,7 +218,7 @@ export function ListPaymentPage() {
                 </div>
 
                 <div className="rounded-lg border border-border bg-muted/40 p-1">
-                  <p className="mb-2 px-2 pt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  <p className="mb-2 px-2 pt-1 text-caption font-bold text-muted-foreground">
                     {isImage ? "Image URL" : "Destination URL"}
                   </p>
                   {paymentLink ? (
@@ -202,25 +239,6 @@ export function ListPaymentPage() {
                   ) : null}
                 </div>
               </div>
-
-              {/* Instructions */}
-              <div className="flex-1 rounded-xl border border-border bg-card p-5">
-                <p className="mb-3 text-sm font-semibold text-foreground">How it works</p>
-                <div className="space-y-3">
-                  {[
-                    { step: "1", text: "Customer opens your menu QR code" },
-                    { step: "2", text: isImage ? "They scan your payment QR image to pay" : "They tap the Pay button and land on your payment page" },
-                    { step: "3", text: "Payment is completed on your gateway" },
-                  ].map(({ step, text }) => (
-                    <div key={step} className="flex items-start gap-3">
-                      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
-                        {step}
-                      </span>
-                      <p className="text-sm text-muted-foreground">{text}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         )}
@@ -230,10 +248,11 @@ export function ListPaymentPage() {
         isOpen={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         onConfirm={handleDelete}
-        title="Remove Payment Method"
-        description="Are you sure you want to remove this payment method? Customers will no longer see it at checkout."
-        confirmLabel="Delete"
+        title="Remove bill payment?"
+        description="Guests will no longer see a Pay bill button. You can add a payment method again at any time."
+        confirmLabel="Remove"
         entityName="payment method"
+        successMessage="Bill payment removed"
       />
     </div>
   );

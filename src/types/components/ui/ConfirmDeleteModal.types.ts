@@ -9,4 +9,6 @@ export interface ConfirmDeleteModalProps {
     description: ReactNode;
     confirmLabel?: string;
     entityName?: string;
+    /** Toast on success. Defaults to "<entityName> deleted". */
+    successMessage?: string;
 }

@@ -41,7 +41,7 @@ export default function MenuStructureStory({ payload, routeSlug }: { payload: Pu
         <div style={{ color: t.textSecondary }} className="py-24 text-center text-sm italic">No items match your filters.</div>
       ) : (
         p.grouped.map(([cat, items], idx) => {
-          const banner = items.find((it: any) => it.image_url || it.imageUrl || it.image || (it.images && it.images.length > 0));
+          const banner = items.find((it) => it.image_url || it.imageUrl || it.image || (it.images && it.images.length > 0));
           return (
             <section key={cat} style={{ background: idx % 2 === 0 ? t.bg : t.sectionBg }} className="px-4 xs:px-5 py-14 sm:px-10">
               <div className="mx-auto max-w-3xl">

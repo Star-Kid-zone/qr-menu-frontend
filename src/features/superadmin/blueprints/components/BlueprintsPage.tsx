@@ -1,19 +1,16 @@
 'use client';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { useEffect, useState, useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import {
-  PiSparkleBold,
-  PiForkKnifeBold,
-  PiStarFill,
-  PiPlusBold,
-  PiMagnifyingGlassBold,
-} from 'react-icons/pi';
+import { PiPlusBold } from 'react-icons/pi';
 import {
   superadminService,
   type MenuBlueprint,
 } from '@/services/superadmin.service';
 import { Button, EmptyState, toast } from '@/components/ui';
+import { ConfirmationDialog } from '@/components/ui/ConfirmationDialog';
+import { SearchInput } from '@/components/ui/SearchInput';
 import { getApiErrorMessage } from '@/utils/errors';
 import { fadeIn, staggerContainer } from '@/lib/motion';
 import { BlueprintCard } from './BlueprintCard';
@@ -38,6 +35,10 @@ export function BlueprintsPage() {
   const [editorBlueprint, setEditorBlueprint] = useState<MenuBlueprint | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
 
+  // Confirmation state for delete / restore
+  const [pendingAction, setPendingAction] = useState<{ kind: 'delete' | 'reset'; blueprint: MenuBlueprint } | null>(null);
+  const [confirming, setConfirming] = useState(false);
+
   useEffect(() => {
     async function loadConfig() {
       try {
@@ -48,7 +49,7 @@ export function BlueprintsPage() {
         setBlueprints(Array.isArray(res.blueprints) ? res.blueprints : []);
       } catch (err) {
         console.error(err);
-        toast.error('Failed to load onboarding template configuration');
+        toast.error("We couldn't load the starter menus");
       } finally {
         setLoading(false);
       }
@@ -67,12 +68,12 @@ export function BlueprintsPage() {
       setAutoSeedEnabled(nextVal);
       toast.success(
         nextVal
-          ? 'Auto-seeding enabled! New registrations will receive the complete default storefront template.'
-          : 'Auto-seeding disabled. New registrations will start with a blank workspace.'
+          ? 'New sign-ups will start with the chosen starter menu.'
+          : 'New sign-ups will start with an empty menu.'
       );
     } catch (err) {
       console.error(err);
-      toast.error('Failed to update auto-seeding setting');
+      toast.error("We couldn't save this setting");
     } finally {
       setSavingConfig(false);
     }
@@ -88,10 +89,10 @@ export function BlueprintsPage() {
       });
       setDefaultBlueprintId(blueprintId);
       const chosen = blueprints.find((b) => b.id === blueprintId);
-      toast.success(`"${chosen?.name || blueprintId}" is now the active default onboarding template!`);
+      toast.success(`New sign-ups will now get "${chosen?.name || blueprintId}".`);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to set default template');
+      toast.error("We couldn't change the starter menu for new sign-ups");
     } finally {
       setSavingConfig(false);
     }
@@ -140,29 +141,17 @@ export function BlueprintsPage() {
   };
 
   const handleDeleteBlueprint = async (bp: MenuBlueprint) => {
-    if (!window.confirm(`Are you sure you want to delete the custom blueprint "${bp.name}"?`)) {
-      return;
-    }
-
     try {
       await superadminService.deleteBlueprint(bp.id);
       setBlueprints((prev) => prev.filter((b) => b.id !== bp.id));
-      toast.success(`Blueprint "${bp.name}" deleted.`);
-    } catch (err: any) {
+      toast.success(`Starter menu "${bp.name}" deleted.`);
+    } catch (err) {
       console.error(err);
-      toast.error(getApiErrorMessage(err, 'Failed to delete blueprint'));
+      toast.error(getApiErrorMessage(err, "We couldn't delete this starter menu"));
     }
   };
 
   const handleResetBlueprint = async (bp: MenuBlueprint) => {
-    if (
-      !window.confirm(
-        `Reset blueprint "${bp.name}" back to factory default? Any custom modifications will be reverted.`
-      )
-    ) {
-      return;
-    }
-
     try {
       const res = await superadminService.resetBlueprint(bp.id);
       setBlueprints((prev) => {
@@ -174,10 +163,25 @@ export function BlueprintsPage() {
         }
         return prev;
       });
-      toast.success(`Blueprint "${bp.name}" reset to factory default.`);
-    } catch (err: any) {
+      toast.success(`Starter menu "${bp.name}" restored to the original.`);
+    } catch (err) {
       console.error(err);
-      toast.error(getApiErrorMessage(err, 'Failed to reset blueprint'));
+      toast.error(getApiErrorMessage(err, "We couldn't restore this starter menu"));
+    }
+  };
+
+  const handleConfirmPending = async () => {
+    if (!pendingAction) return;
+    setConfirming(true);
+    try {
+      if (pendingAction.kind === 'delete') {
+        await handleDeleteBlueprint(pendingAction.blueprint);
+      } else {
+        await handleResetBlueprint(pendingAction.blueprint);
+      }
+    } finally {
+      setConfirming(false);
+      setPendingAction(null);
     }
   };
 
@@ -188,124 +192,58 @@ export function BlueprintsPage() {
       animate="visible"
       variants={fadeIn}
     >
-      {/* Top Header */}
-      <div className="flex shrink-0 flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary">
-            <span className="rounded-md bg-primary/10 px-2 py-0.5">Onboarding Automation</span>
-            <span className="text-muted-foreground">•</span>
-            <span className="text-muted-foreground">Full Storefront Preloading</span>
-          </div>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Onboarding Restaurant Blueprints
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Control the starter catalog, website branding, story, offers, and FAQs automatically seeded when a new restaurant registers.
-          </p>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2 rounded-xl border border-border bg-card/50 p-2 shadow-2xs backdrop-blur-xs">
-          <div className="rounded-lg bg-primary/10 p-2 text-primary">
-            <PiForkKnifeBold className="size-5" />
-          </div>
-          <div>
-            <span className="block font-mono text-sm font-bold text-foreground">
-              {totalDishes} Dishes in {blueprints.length} Packs
-            </span>
-            <span className="block text-[11px] text-muted-foreground">
-              + Complete Branding, Gallery & FAQs
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Control Card: Master Auto-Seed Toggle & Info */}
-      <div className="shrink-0 w-full rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-card to-card p-5 shadow-sm">
+      <PageHeader
+        title="Starter menus"
+        description={`Menus, branding and content a new restaurant can start with at sign-up. ${blueprints.length} starter menus, ${totalDishes} dishes.`}
+      />
+      <section className="shrink-0 rounded-lg border border-border bg-card p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3.5">
-            <div className="rounded-xl bg-primary p-2.5 text-primary-foreground shadow-sm">
-              <PiSparkleBold className="size-5" />
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-foreground">Automatic Storefront Seeding on Signup</h3>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                    autoSeedEnabled
-                      ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
-                      : 'bg-muted text-muted-foreground'
-                  }`}
-                >
-                  {autoSeedEnabled ? 'Enabled' : 'Disabled'}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed">
-                When enabled, newly registered restaurants will instantly have a complete live digital presence — 
-                including 8 dishes with photos & tags, curated brand colors, an authentic story, 4 gallery photos, 2 offers, and 3 FAQs.
-              </p>
-            </div>
+          <div className="space-y-1">
+            <h2 id="auto-seed-title" className="text-h3 text-foreground">Use a starter menu for new sign-ups</h2>
+            <p id="auto-seed-desc" className="max-w-2xl text-body text-muted-foreground">
+              {autoSeedEnabled
+                ? `New restaurants start with "${activeBlueprint?.name || 'Cafe & Bakery'}" instead of an empty menu.`
+                : 'New restaurants start with an empty menu.'}
+            </p>
           </div>
 
-          <div className="flex shrink-0 items-center gap-4 rounded-xl border border-border bg-card/80 p-3 shadow-2xs">
-            <div className="text-right">
-              <span className="block text-xs font-semibold text-foreground">
-                {autoSeedEnabled ? 'Auto-Seeding Active' : 'Auto-Seeding Disabled'}
-              </span>
-              <span className="block text-[11px] text-muted-foreground">
-                {autoSeedEnabled
-                  ? `Default: ${activeBlueprint?.name || 'Cafe & Bakery'}`
-                  : 'New signups will start blank'}
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleToggleAutoSeed}
-              disabled={savingConfig || loading}
-              className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                autoSeedEnabled ? 'bg-primary' : 'bg-muted'
-              }`}
-              role="switch"
-              aria-checked={autoSeedEnabled}
-            >
-              <span
-                className={`pointer-events-none inline-block size-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                  autoSeedEnabled ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Search Filter Bar */}
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-4">
-        <div className="relative w-full max-w-md">
-          <PiMagnifyingGlassBold className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search templates by name, cuisine, dish, or category..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
-            <PiStarFill className="size-3.5 text-emerald-500" />
-            <span>Active default template</span>
-          </div>
-
-          <Button
-            onClick={() => handleOpenEditor(null)}
-            variant="primary"
-            size="sm"
-            leftIcon={<PiPlusBold size={15} />}
+          <button
+            type="button"
+            onClick={handleToggleAutoSeed}
+            disabled={savingConfig || loading}
+            className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50 ${
+              autoSeedEnabled ? 'bg-primary' : 'bg-muted'
+            }`}
+            role="switch"
+            aria-checked={autoSeedEnabled}
+            aria-labelledby="auto-seed-title"
+            aria-describedby="auto-seed-desc"
           >
-            Create Blueprint
-          </Button>
+            <span
+              className={`pointer-events-none inline-block size-6 transform rounded-full bg-card shadow-sm ring-0 transition duration-200 ease-in-out ${
+                autoSeedEnabled ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
         </div>
+      </section>
+
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-4">
+        <SearchInput
+          aria-label="Search starter menus"
+          placeholder="Search by name, cuisine, dish or category"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+
+        <Button
+          onClick={() => handleOpenEditor(null)}
+          variant="primary"
+          size="sm"
+          leftIcon={<PiPlusBold size={15} aria-hidden />}
+        >
+          Add starter menu
+        </Button>
       </div>
 
       {/* Blueprint Cards Grid */}
@@ -317,11 +255,11 @@ export function BlueprintsPage() {
         </div>
       ) : filteredBlueprints.length === 0 ? (
         <EmptyState
-          title="No templates found"
-          description="Try refining your search keyword."
+          title="No starter menus found"
+          description="Try a different search."
           action={
             <Button variant="secondary" onClick={() => setSearchQuery('')}>
-              Clear Search
+              Clear search
             </Button>
           }
         />
@@ -340,13 +278,34 @@ export function BlueprintsPage() {
               savingConfig={savingConfig}
               onPreview={openPreview}
               onEdit={handleOpenEditor}
-              onDelete={handleDeleteBlueprint}
-              onReset={handleResetBlueprint}
+              onDelete={(bp) => setPendingAction({ kind: 'delete', blueprint: bp })}
+              onReset={(bp) => setPendingAction({ kind: 'reset', blueprint: bp })}
               onSetDefault={handleSetDefault}
             />
           ))}
         </motion.div>
       )}
+
+      <ConfirmationDialog
+        isOpen={pendingAction !== null}
+        onClose={() => {
+          if (!confirming) setPendingAction(null);
+        }}
+        onConfirm={handleConfirmPending}
+        loading={confirming}
+        tone={pendingAction?.kind === 'reset' ? 'default' : 'destructive'}
+        title={
+          pendingAction?.kind === 'reset'
+            ? `Restore "${pendingAction.blueprint.name}"?`
+            : `Delete "${pendingAction?.blueprint.name ?? ''}"?`
+        }
+        description={
+          pendingAction?.kind === 'reset'
+            ? 'This starter menu goes back to its original dishes, look and content. Your changes to it will be lost.'
+            : "This starter menu will be removed. This can't be undone."
+        }
+        confirmLabel={pendingAction?.kind === 'reset' ? 'Restore original' : 'Delete starter menu'}
+      />
 
       {/* Preview Full Package Modal */}
       <BlueprintPreviewModal
@@ -358,7 +317,7 @@ export function BlueprintsPage() {
         onSetDefault={handleSetDefault}
       />
 
-      {/* Create / Edit Blueprint Modal */}
+      {/* Create / Edit starter menu modal */}
       {isEditorOpen && (
         <BlueprintEditorModal
           blueprint={editorBlueprint}

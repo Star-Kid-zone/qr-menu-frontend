@@ -49,7 +49,7 @@ export function PromptDialog({
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="max-w-md" footer={footer}>
       <div className="flex flex-col gap-4">
         {label ? (
-          <label htmlFor="prompt-dialog-input" className="mb-1.5 block break-words text-caption font-semibold text-muted-foreground">
+          <label htmlFor="prompt-dialog-input" className="mb-2 block break-words text-caption font-semibold text-muted-foreground">
             {label}
           </label>
         ) : null}

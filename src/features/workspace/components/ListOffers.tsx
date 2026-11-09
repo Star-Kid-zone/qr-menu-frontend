@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useState, forwardRef, useImperativeHandle } from 'react';
 import Image from 'next/image';
 import { workspaceService } from '@/services/workspace.service';
 import {
@@ -22,6 +22,18 @@ function createDefaultOfferForm(): OfferFormData {
   return { title: '', description: '', discount: '', isActive: true };
 }
 
+function createOfferFormFor(initial: Offer | null | undefined, isEdit: boolean): OfferFormData {
+  if (initial && isEdit) {
+    return {
+      title: initial.title || '',
+      description: initial.description || '',
+      discount: initial.discount || '',
+      isActive: initial.isActive ?? true,
+    };
+  }
+  return createDefaultOfferForm();
+}
+
 function OfferFormModal({
   isOpen,
   onClose,
@@ -35,23 +47,17 @@ function OfferFormModal({
   initial?: Offer | null;
   isEdit: boolean;
 }) {
-  const [form, setForm] = useState<OfferFormData>(createDefaultOfferForm());
+  const [form, setForm] = useState<OfferFormData>(() => createOfferFormFor(initial, isEdit));
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (initial && isEdit) {
-      setForm({
-        title: initial.title || '',
-        description: initial.description || '',
-        discount: initial.discount || '',
-        isActive: initial.isActive ?? true,
-      });
-    } else {
-      setForm(createDefaultOfferForm());
-    }
+  // Reset the form when the offer being edited changes (adjusted during render).
+  const [formSource, setFormSource] = useState({ initial, isEdit });
+  if (formSource.initial !== initial || formSource.isEdit !== isEdit) {
+    setFormSource({ initial, isEdit });
+    setForm(createOfferFormFor(initial, isEdit));
     setImageFile(null);
-  }, [initial, isEdit]);
+  }
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -92,7 +98,7 @@ function OfferFormModal({
       <button
         type="button"
         onClick={onClose}
-        className="rounded-lg border border-border px-5 py-2.5 text-caption font-semibold text-foreground transition-colors hover:bg-muted"
+        className="rounded-lg border border-border px-6 py-3 text-caption font-semibold text-foreground transition-colors hover:bg-muted"
         disabled={submitting}
       >
         Cancel
@@ -100,7 +106,7 @@ function OfferFormModal({
       <button
         type="submit"
         form="offer-form"
-        className="rounded-lg bg-primary px-8 py-2.5 text-caption font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-70"
+        className="rounded-lg bg-primary px-8 py-3 text-caption font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-70"
         disabled={submitting}
       >
         {submitting ? 'Saving...' : isEdit ? 'Update Offer' : 'Create Offer'}
@@ -118,7 +124,7 @@ function OfferFormModal({
     >
       <form id="offer-form" onSubmit={handleSubmit} className="space-y-6 py-2">
         <div className="space-y-2">
-          <label className="ml-1 text-caption font-semibold uppercase tracking-wide text-muted-foreground">
+          <label className="ml-1 text-caption font-semibold text-muted-foreground">
             Offer Title *
           </label>
           <input
@@ -133,7 +139,7 @@ function OfferFormModal({
         </div>
 
         <div className="space-y-2">
-          <label className="ml-1 text-caption font-semibold uppercase tracking-wide text-muted-foreground">
+          <label className="ml-1 text-caption font-semibold text-muted-foreground">
             Description *
           </label>
           <textarea
@@ -149,7 +155,7 @@ function OfferFormModal({
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="ml-1 text-caption font-semibold uppercase tracking-wide text-muted-foreground">
+            <label className="ml-1 text-caption font-semibold text-muted-foreground">
               Discount Badge
             </label>
             <input
@@ -162,7 +168,7 @@ function OfferFormModal({
             />
           </div>
           <div className="space-y-2">
-            <label className="ml-1 text-caption font-semibold uppercase tracking-wide text-muted-foreground">
+            <label className="ml-1 text-caption font-semibold text-muted-foreground">
               Status
             </label>
             <button
@@ -187,7 +193,7 @@ function OfferFormModal({
         </div>
 
         <div className="space-y-2">
-          <label className="ml-1 text-caption font-semibold uppercase tracking-wide text-muted-foreground">
+          <label className="ml-1 text-caption font-semibold text-muted-foreground">
             Image (optional)
           </label>
           <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-border p-4 text-caption text-muted-foreground hover:border-primary/40">
@@ -239,7 +245,7 @@ function DeleteOfferModal({
       <button
         type="button"
         onClick={onClose}
-        className="rounded-lg border border-border px-5 py-2.5 text-caption font-semibold text-foreground transition-colors hover:bg-muted"
+        className="rounded-lg border border-border px-6 py-3 text-caption font-semibold text-foreground transition-colors hover:bg-muted"
         disabled={deleting}
       >
         Cancel
@@ -247,7 +253,7 @@ function DeleteOfferModal({
       <button
         type="button"
         onClick={handleDelete}
-        className="rounded-lg bg-destructive px-8 py-2.5 text-caption font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-70"
+        className="rounded-lg bg-destructive px-8 py-3 text-caption font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-70"
         disabled={deleting}
       >
         {deleting ? 'Deleting...' : 'Delete Offer'}
@@ -294,9 +300,12 @@ export const ListOffers = forwardRef<ListOffersHandle, ListOffersProps>(({
     openNewOffer: () => setShowForm(true),
   }));
 
-  useEffect(() => {
+  // Take fresh offers from the parent whenever it passes new ones (adjusted during render).
+  const [syncedOffers, setSyncedOffers] = useState(initialOffers);
+  if (syncedOffers !== initialOffers) {
+    setSyncedOffers(initialOffers);
     if (initialOffers) setOffers(initialOffers);
-  }, [initialOffers]);
+  }
 
   const { page, pageCount, pageItems, pageSize, totalItems, setPage } = usePagination(offers, 8);
 
@@ -369,13 +378,13 @@ export const ListOffers = forwardRef<ListOffersHandle, ListOffersProps>(({
                     {offer.title}
                   </h3>
                   <span
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-caption font-semibold uppercase tracking-wide ${offer.isActive ? 'bg-success/15 text-success border-success/20' : 'bg-muted text-muted-foreground border-border'}`}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-caption font-semibold ${offer.isActive ? 'bg-success/15 text-success border-success/20' : 'bg-muted text-muted-foreground border-border'}`}
                   >
                     {offer.isActive ? <PiCheckCircleBold /> : <PiXCircleBold />}
                     {offer.isActive ? 'Active' : 'Inactive'}
                   </span>
                   {offer.discount && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-caption font-semibold text-primary">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-caption font-semibold text-primary">
                       {offer.discount}
                     </span>
                   )}
@@ -390,14 +399,14 @@ export const ListOffers = forwardRef<ListOffersHandle, ListOffersProps>(({
             <div className="flex shrink-0 flex-wrap items-center gap-2">
               <button
                 onClick={() => handleEdit(offer)}
-                className="rounded-lg border border-border bg-secondary p-2.5 text-secondary-foreground transition-colors hover:bg-secondary/80"
+                className="rounded-lg border border-border bg-secondary p-3 text-secondary-foreground transition-colors hover:bg-secondary/80"
                 title="Edit"
               >
                 <PiPencilSimpleBold className="text-lg" />
               </button>
               <button
                 onClick={() => setDeleteTarget(offer)}
-                className="rounded-lg border border-border p-2.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                className="rounded-lg border border-border p-3 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                 title="Delete"
               >
                 <PiTrashBold className="text-lg" />

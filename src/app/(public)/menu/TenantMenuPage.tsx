@@ -2,7 +2,7 @@
 
 import { ComponentType, Suspense, lazy } from "react";
 import { PageLoader } from "@/components/ui/PageLoader";
-import { menuTemplates } from "@/components/templates/core/registry";
+import { menuTemplates } from "@/components/templates/core/menuRegistry";
 import type { PublicMenuPayload } from "@/types/public-site";
 
 /** Every menu template component's actual prop shape — bespoke ones ignore the extra `themeSlug`. */

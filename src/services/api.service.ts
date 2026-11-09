@@ -1,4 +1,4 @@
-import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 import { API_BASE_URL } from '@/config/app.constants';
 import { routes } from '@/config/routes';
 import { getCsrfToken, getActiveWorkspaceId, isAuthenticated, clearStorage } from '@/utils/storage';
@@ -55,6 +55,13 @@ function refreshAccessToken(): Promise<void> {
 
 type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 
+/** Envelope fields the response interceptor copies onto the Axios response before unwrapping `data`. */
+export type ApiEnvelopeFields = {
+  meta?: unknown;
+  message?: string;
+  requestId?: string;
+};
+
 api.interceptors.response.use(
   (response) => {
     endGlobalLoading();
@@ -66,9 +73,10 @@ api.interceptors.response.use(
       response.data.success === true &&
       'data' in response.data
     ) {
-      (response as any).meta = response.data.meta;
-      (response as any).message = response.data.message;
-      (response as any).requestId = response.data.requestId;
+      const enveloped = response as AxiosResponse & ApiEnvelopeFields;
+      enveloped.meta = response.data.meta;
+      enveloped.message = response.data.message;
+      enveloped.requestId = response.data.requestId;
       response.data = response.data.data;
     }
     return response;
@@ -80,24 +88,30 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
 
+      if (
+        originalRequest.url?.includes('/auth/login') ||
+        originalRequest.url?.includes('/auth/staff-login') ||
+        originalRequest.url?.includes('/auth/register') ||
+        originalRequest.url?.includes('/auth/refresh')
+      ) {
+        return Promise.reject(error);
+      }
+
+      const hadSessionMarker = isAuthenticated();
+      const onProtectedPath =
+        typeof window !== 'undefined' &&
+        (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/superadmin'));
+
+      // Public page with no session at all: nothing to refresh, nothing to redirect.
+      if (!hadSessionMarker && !onProtectedPath) {
+        return Promise.reject(error);
+      }
+
       try {
-        if (!isAuthenticated()) {
-          if (typeof window !== 'undefined' && (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/superadmin'))) {
-            clearStorage();
-            window.location.replace(`${window.location.origin}${routes.public.login}?reason=session_expired`);
-          }
-          return Promise.reject(error);
-        }
-
-        if (originalRequest.url?.includes('/auth/refresh')) {
-          clearStorage();
-          window.location.replace(`${window.location.origin}${routes.public.login}?reason=session_expired`);
-          return Promise.reject(error);
-        }
-
-        // Concurrent 401s share a single in-flight refresh instead of each
-        // triggering their own /auth/refresh call. The new access token
-        // arrives as a cookie, so the retried request just needs re-issuing.
+        // The CSRF marker cookie may be missing while the httpOnly refresh cookie
+        // is still valid, so always let the server decide. A successful refresh
+        // re-issues access, refresh and CSRF cookies. Concurrent 401s share one
+        // in-flight refresh, and the retried request just needs re-issuing.
         await refreshAccessToken();
 
         return api(originalRequest);

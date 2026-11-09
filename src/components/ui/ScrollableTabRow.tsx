@@ -85,7 +85,7 @@ export function ScrollableTabRow({
             type="button"
             aria-label="Scroll tabs left"
             onClick={() => scrollBy(-160)}
-            className="absolute left-0.5 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-border bg-card p-1.5 text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground sm:flex"
+            className="absolute left-0.5 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-border bg-card p-2 text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground sm:flex"
           >
             <PiCaretLeftBold className="size-3.5" />
           </button>
@@ -116,7 +116,7 @@ export function ScrollableTabRow({
             type="button"
             aria-label="Scroll tabs right"
             onClick={() => scrollBy(160)}
-            className="absolute right-0.5 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-border bg-card p-1.5 text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground sm:flex"
+            className="absolute right-0.5 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-border bg-card p-2 text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground sm:flex"
           >
             <PiCaretRightBold className="size-3.5" />
           </button>

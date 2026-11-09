@@ -32,7 +32,7 @@ export function QrResolutionCard({
             </label>
             <span className="font-bold text-foreground">
               {size}&times;{size}px{" "}
-              <span className="text-[10px] font-normal text-muted-foreground">
+              <span className="text-caption font-normal text-muted-foreground">
                 (~{printSizeCm}cm / {printSizeInches}&quot; @ 300dpi)
               </span>
             </span>
@@ -54,7 +54,7 @@ export function QrResolutionCard({
                 type="button"
                 onClick={() => setSize(res)}
                 className={cn(
-                  "rounded px-2 py-0.5 text-[10px] font-semibold transition-all",
+                  "rounded px-2 py-0.5 text-caption font-semibold transition-all",
                   size === res
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
@@ -92,7 +92,7 @@ export function QrResolutionCard({
                 type="button"
                 onClick={() => setMargin(m)}
                 className={cn(
-                  "rounded px-2 py-0.5 text-[10px] font-semibold transition-all",
+                  "rounded px-2 py-0.5 text-caption font-semibold transition-all",
                   margin === m
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"

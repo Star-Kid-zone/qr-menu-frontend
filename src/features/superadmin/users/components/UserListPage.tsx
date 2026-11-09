@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { superadminService, type UserListRow } from "@/services/superadmin.service";
@@ -15,6 +15,13 @@ import {
   Button,
   Select,
   EmptyState,
+  TableContainer,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
   Pagination,
   toast,
 } from "@/components/ui";
@@ -23,7 +30,7 @@ import {
   PiKeyBold,
   PiDownloadSimpleBold,
   PiArrowSquareOutBold,
-  PiPhoneBold,
+  PiEnvelopeSimpleBold,
 } from "react-icons/pi";
 import { downloadCsv } from "@/utils/downloadCsv";
 import { fadeIn } from "@/lib/motion";
@@ -47,10 +54,22 @@ export function UserListPage() {
     return () => window.clearTimeout(t);
   }, [search]);
 
-  const load = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await superadminService.listUsers({
+  // A new query shows the loading state again (adjusted during render);
+  // the effect below then fetches it. `loading` starts true for the first query.
+  const [loadedQuery, setLoadedQuery] = useState({ page, debouncedSearch, role, activeFilter });
+  if (
+    loadedQuery.page !== page ||
+    loadedQuery.debouncedSearch !== debouncedSearch ||
+    loadedQuery.role !== role ||
+    loadedQuery.activeFilter !== activeFilter
+  ) {
+    setLoadedQuery({ page, debouncedSearch, role, activeFilter });
+    setLoading(true);
+  }
+
+  useEffect(() => {
+    superadminService
+      .listUsers({
         page,
         page_size: pageSize,
         search: debouncedSearch || undefined,
@@ -59,20 +78,17 @@ export function UserListPage() {
           activeFilter === "all"
             ? undefined
             : activeFilter === "true",
-      });
-      setRows(res.users);
-      setTotal(res.total);
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to load users.");
-    } finally {
-      setLoading(false);
-    }
+      })
+      .then((res) => {
+        setRows(res.users);
+        setTotal(res.total);
+      })
+      .catch((e: unknown) => {
+        console.error(e);
+        toast.error("Failed to load users.");
+      })
+      .finally(() => setLoading(false));
   }, [page, pageSize, debouncedSearch, role, activeFilter]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const reduceMotion = useReducedMotion();
@@ -85,8 +101,8 @@ export function UserListPage() {
       variants={fadeIn}
     >
       <PageHeader
-        title="Users & Tenants"
-        description="Core tenant directory. View access permissions, verification status, and direct slugs."
+        title="Restaurants"
+        description="Every restaurant account on the platform."
         eyebrow="System Administration"
         className="shrink-0"
         actions={
@@ -109,7 +125,7 @@ export function UserListPage() {
           <div className="max-w-md flex-1">
             <label
               htmlFor="users-search"
-              className="mb-2 ml-1 block text-caption uppercase tracking-wide text-muted-foreground"
+              className="mb-2 ml-1 block text-caption text-muted-foreground"
             >
               Search Accounts
             </label>
@@ -120,7 +136,7 @@ export function UserListPage() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              placeholder="Name, phone number or slug…"
+              placeholder="Name, email or slug…"
             />
           </div>
 
@@ -128,7 +144,7 @@ export function UserListPage() {
             <div className="min-w-[130px]">
               <label
                 htmlFor="users-role-filter"
-                className="mb-2 ml-1 block text-caption uppercase tracking-wide text-muted-foreground"
+                className="mb-2 ml-1 block text-caption text-muted-foreground"
               >
                 Access Role
               </label>
@@ -149,7 +165,7 @@ export function UserListPage() {
             <div className="min-w-[130px]">
               <label
                 htmlFor="users-status-filter"
-                className="mb-2 ml-1 block text-caption uppercase tracking-wide text-muted-foreground"
+                className="mb-2 ml-1 block text-caption text-muted-foreground"
               >
                 Status
               </label>
@@ -169,140 +185,125 @@ export function UserListPage() {
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-hidden rounded-md border border-border">
-          <div className="h-full overflow-x-auto overflow-y-auto">
-            <table className="w-full min-w-[720px] border-collapse text-left text-body">
-              <thead className="border-b border-border bg-muted/40">
-                <tr>
-                  <th className="px-6 py-4 text-caption uppercase tracking-wide text-muted-foreground">
-                    Identity
-                  </th>
-                  <th className="px-6 py-4 text-caption uppercase tracking-wide text-muted-foreground">
-                    Access
-                  </th>
-                  <th className="px-6 py-4 text-caption uppercase tracking-wide text-muted-foreground">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-caption uppercase tracking-wide text-muted-foreground">
-                    Phone Num
-                  </th>
-                  <th className="px-6 py-4 text-caption uppercase tracking-wide text-muted-foreground">
-                    Slug Name
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {loading ? (
-                  <tr>
-                    <td colSpan={5} className="h-48 text-center text-muted-foreground">
-                      Loading user accounts...
-                    </td>
-                  </tr>
-                ) : rows.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-8">
-                      <EmptyState
-                        icon={<PiUsersBold className="size-8" />}
-                        title="No users matching filters"
-                        description="Try adjusting your search query or role filter."
-                      />
-                    </td>
-                  </tr>
-                ) : (
-                  rows.map((u) => (
-                    <tr
-                      key={u.id}
-                      className="group transition-colors hover:bg-muted/30"
-                    >
-                      {/* Identity */}
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <Link
-                            href={routes.superadmin.userDetail(u.id)}
-                            className="font-semibold text-foreground transition-colors hover:text-primary hover:underline"
-                          >
-                            {u.name || "Unnamed Account"}
-                          </Link>
-                          <span className="font-mono text-caption text-muted-foreground">
-                            ID #{u.id}
-                          </span>
-                        </div>
-                      </td>
+        <TableContainer className="min-h-0 flex-1">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Restaurant</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Web address</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-48 text-center text-muted-foreground">
+                    Loading user accounts...
+                  </TableCell>
+                </TableRow>
+              ) : rows.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="px-6 py-8">
+                    <EmptyState
+                      icon={<PiUsersBold className="size-8" />}
+                      title="No users matching filters"
+                      description="Try adjusting your search query or role filter."
+                    />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                rows.map((u) => (
+                  <TableRow key={u.id}>
+                    {/* Identity */}
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <Link
+                          href={routes.superadmin.userDetail(u.id)}
+                          className="font-semibold text-foreground transition-colors hover:text-primary hover:underline"
+                        >
+                          {u.name || "Unnamed Account"}
+                        </Link>
+                        <span className="font-mono text-caption text-muted-foreground">
+                          ID #{u.id}
+                        </span>
+                      </div>
+                    </TableCell>
 
-                      {/* Access */}
-                      <td className="px-6 py-4">
+                    {/* Access */}
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`rounded-md p-1.5 ${
+                            u.role === "superadmin"
+                              ? "bg-primary/10 text-primary"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          <PiKeyBold className="size-4" />
+                        </div>
+                        <span
+                          className={`text-caption uppercase tracking-wide font-medium ${
+                            u.role === "superadmin"
+                              ? "text-primary font-bold"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {u.role}
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    {/* Status */}
+                    <TableCell>
+                      <Badge tone={u.active ? "success" : "neutral"}>
+                        {u.active ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+
+                    {/* Email (legacy phone shown until the owner adds one) */}
+                    <TableCell>
+                      <div className="flex items-center gap-2 text-sm text-foreground">
+                        <PiEnvelopeSimpleBold className="size-3.5 text-muted-foreground" />
+                        <span>{u.email}</span>
+                      </div>
+                    </TableCell>
+
+                    {/* Slug Name */}
+                    <TableCell>
+                      {u.public_slug ? (
                         <div className="flex items-center gap-2">
-                          <div
-                            className={`rounded-md p-1.5 ${
-                              u.role === "superadmin"
-                                ? "bg-primary/10 text-primary"
-                                : "bg-muted text-muted-foreground"
-                            }`}
-                          >
-                            <PiKeyBold className="size-4" />
-                          </div>
-                          <span
-                            className={`text-caption uppercase tracking-wide font-medium ${
-                              u.role === "superadmin"
-                                ? "text-primary font-bold"
-                                : "text-muted-foreground"
-                            }`}
-                          >
-                            {u.role}
+                          <span className="rounded-md border border-border bg-muted/50 px-3 py-1 font-mono text-xs font-semibold text-foreground">
+                            {u.public_slug}
                           </span>
+                          <a
+                            href={
+                              buildPublicLandingUrl(u.public_slug) ||
+                              `/${u.public_slug}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+                            title={`Open live tenant landing: ${buildPublicLandingUrl(
+                              u.public_slug
+                            )}`}
+                          >
+                            <PiArrowSquareOutBold className="size-3.5" />
+                          </a>
                         </div>
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-6 py-4">
-                        <Badge tone={u.active ? "success" : "neutral"}>
-                          {u.active ? "Active" : "Inactive"}
-                        </Badge>
-                      </td>
-
-                      {/* Phone Num */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 font-mono text-sm text-foreground">
-                          <PiPhoneBold className="size-3.5 text-muted-foreground" />
-                          <span>{u.phone || "—"}</span>
-                        </div>
-                      </td>
-
-                      {/* Slug Name */}
-                      <td className="px-6 py-4">
-                        {u.public_slug ? (
-                          <div className="flex items-center gap-2">
-                            <span className="rounded-md border border-border bg-muted/50 px-2.5 py-1 font-mono text-xs font-semibold text-foreground">
-                              {u.public_slug}
-                            </span>
-                            <a
-                              href={
-                                buildPublicLandingUrl(u.public_slug) ||
-                                `/${u.public_slug}`
-                              }
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
-                              title={`Open live tenant landing: ${buildPublicLandingUrl(
-                                u.public_slug
-                              )}`}
-                            >
-                              <PiArrowSquareOutBold className="size-3.5" />
-                            </a>
-                          </div>
-                        ) : (
-                          <span className="text-caption text-muted-foreground italic">
-                            No slug configured
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                      ) : (
+                        <span className="text-caption text-muted-foreground italic">
+                          No slug configured
+                        </span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
         <div className="mt-4 shrink-0">
           <Pagination

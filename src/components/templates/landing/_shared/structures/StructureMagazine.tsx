@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { LandingTemplateProps } from "@/types/components/templates/rawPublicSiteData.types";
-import { getRichContent } from "../defaults";
+import { getRichContent, getLandingThemeSlug } from "../defaults";
 import { buildTheme } from "../buildTheme";
 import { FadeIn } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
@@ -17,7 +17,7 @@ import {
  * section from the full content model is still present, just folded into
  * the shared blocks below the editorial spread. */
 export default function StructureMagazine(p: LandingTemplateProps) {
-  const c = getRichContent(p.data, (p.data.settings as any)?.landing_theme ?? "swiss");
+  const c = getRichContent(p.data, getLandingThemeSlug(p.data));
   const t = buildTheme(c);
   const sectionBg = t.sectionBg ?? t.surface;
   // Real tenant imagery (banner upload, then first gallery photo, then logo)
@@ -50,7 +50,7 @@ export default function StructureMagazine(p: LandingTemplateProps) {
               )}
               {c.cta.payBtn && c.cta.paymentLink && (
                 <button onClick={p.onPay} style={{ borderColor: t.accent, color: t.accent }} className="rounded-full border-2 px-7 py-2.5 text-sm font-bold uppercase tracking-wider">
-                  Pay Now
+                  Pay bill
                 </button>
               )}
               {c.cta.reviewBtn && c.cta.reviewLink && (
@@ -107,7 +107,13 @@ export default function StructureMagazine(p: LandingTemplateProps) {
             <div className="flex gap-5 overflow-x-auto pb-4">
               {c.signatureDishes.map((dish, i) => (
                 <div key={`${dish.name}-${i}`} style={{ background: t.bg, borderColor: t.border }} className="w-56 shrink-0 overflow-hidden rounded-xl border">
-                  <ImagePlaceholder aspect="square" className="text-current" />
+                  {dish.image ? (
+                    <div className="relative aspect-square w-full">
+                      <Image src={dish.image} alt={dish.name} fill sizes="224px" className="object-cover" />
+                    </div>
+                  ) : (
+                    <ImagePlaceholder aspect="square" className="text-current" />
+                  )}
                   <div className="p-4">
                     {dish.price && <span style={{ background: t.accent, color: t.accentText }} className="mb-2 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold">{dish.price}</span>}
                     <h3 style={{ color: t.textPrimary }} className="text-sm font-bold">{dish.name}</h3>

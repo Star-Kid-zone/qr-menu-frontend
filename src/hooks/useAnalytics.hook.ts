@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useCallback } from 'react';
-import { FingerprintContext } from '@/contexts/fingerprint-context';
+import { FingerprintContext } from '@/contexts/fingerprint.context';
 import { analyticsService, AnalyticsEvent, buildAnalyticsBatchPayload } from '@/services/analytics.service';
 import { API_BASE_URL } from '@/config/app.constants';
 
@@ -119,6 +119,7 @@ export function useAnalytics(options: UseAnalyticsOptions = {}) {
             const blob = new Blob([payload], { type: 'application/json' });
             navigator.sendBeacon(url, blob);
           } else if (typeof fetch === 'function') {
+            // Intentional raw fetch (exception to the `api` rule): must use `keepalive` to outlive the page.
             fetch(url, {
               method: 'POST',
               body: payload,

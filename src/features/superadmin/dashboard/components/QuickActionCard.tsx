@@ -29,7 +29,7 @@ export function QuickActionCard({ title, description, href, icon }: QuickActionC
             </p>
           </div>
         </div>
-        <div className="mt-6 flex items-center gap-2 text-caption uppercase tracking-wide text-primary opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="mt-6 flex items-center gap-2 text-caption text-primary opacity-0 transition-opacity group-hover:opacity-100">
           Access Module <PiArrowRightBold className="size-3" />
         </div>
       </Card>

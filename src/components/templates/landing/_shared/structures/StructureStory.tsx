@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { LandingTemplateProps } from "@/types/components/templates/rawPublicSiteData.types";
-import { getRichContent } from "../defaults";
+import { getRichContent, getLandingThemeSlug } from "../defaults";
 import { buildTheme } from "../buildTheme";
 import { FadeIn } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
@@ -18,7 +18,7 @@ import {
  * still appears via the shared blocks so nothing from the content model is
  * cut. */
 export default function StructureStory(p: LandingTemplateProps) {
-  const c = getRichContent(p.data, (p.data.settings as any)?.landing_theme ?? "swiss");
+  const c = getRichContent(p.data, getLandingThemeSlug(p.data));
   const t = buildTheme(c);
   const sectionBg = t.sectionBg ?? t.surface;
   const ctx = { c, t, p };
@@ -47,7 +47,7 @@ export default function StructureStory(p: LandingTemplateProps) {
             )}
             {c.cta.payBtn && c.cta.paymentLink && (
               <button onClick={p.onPay} style={{ borderColor: t.accent, color: t.accent }} className="rounded-full border-2 px-8 py-3 text-sm font-bold uppercase tracking-widest">
-                Pay Now
+                Pay bill
               </button>
             )}
             {c.cta.reviewBtn && c.cta.reviewLink && (
@@ -97,7 +97,15 @@ export default function StructureStory(p: LandingTemplateProps) {
           return (
             <section key={`dish-${block.i}`} style={{ background: idx % 2 === 0 ? t.bg : sectionBg }} className="px-6 py-16 sm:px-10">
               <div className={`mx-auto flex max-w-4xl flex-col items-center gap-8 ${flip ? "sm:flex-row-reverse" : "sm:flex-row"}`}>
-                <div className="w-full sm:w-1/2"><ImagePlaceholder aspect="portrait" label={block.dish.name} className="rounded-2xl text-current" /></div>
+                <div className="w-full sm:w-1/2">
+                  {block.dish.image ? (
+                    <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl">
+                      <Image src={block.dish.image} alt={block.dish.name} fill sizes="(min-width: 640px) 50vw, 100vw" className="object-cover" />
+                    </div>
+                  ) : (
+                    <ImagePlaceholder aspect="portrait" label={block.dish.name} className="rounded-2xl text-current" />
+                  )}
+                </div>
                 <div className="w-full sm:w-1/2">
                   <FadeIn>
                     {block.dish.price && <span style={{ background: t.accent, color: t.accentText }} className="mb-2 inline-block rounded-full px-3 py-1 text-xs font-bold">{block.dish.price}</span>}

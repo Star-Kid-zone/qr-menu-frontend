@@ -41,7 +41,7 @@ export function UserPaymentsReviewsTab({
         {/* Payment Gateway Settings */}
         <Card className="overflow-hidden">
           <div className="flex items-center justify-between border-b border-border bg-muted/30 px-6 py-4">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <PiWalletBold className="size-5 text-primary" />
               <h2 className="text-h3 font-bold text-foreground">
                 Payment Link & Gateway Setup
@@ -96,7 +96,7 @@ export function UserPaymentsReviewsTab({
               </div>
 
               <div className="rounded-xl border border-border bg-muted/20 p-4">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                <p className="text-caption font-bold text-muted-foreground mb-2">
                   Payment QR Code Image
                 </p>
                 {primaryWorkspace?.paymentQrImage ? (
@@ -130,7 +130,7 @@ export function UserPaymentsReviewsTab({
         {/* Google Reviews Configuration */}
         <Card className="overflow-hidden">
           <div className="flex items-center justify-between border-b border-border bg-muted/30 px-6 py-4">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <PiStarBold className="size-5 text-primary" />
               <h2 className="text-h3 font-bold text-foreground">
                 Google Review Direct Redirect
@@ -166,7 +166,7 @@ export function UserPaymentsReviewsTab({
                 href={paymentForm.reviewLink}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                className="inline-flex items-center gap-2 text-xs font-semibold text-primary hover:underline"
               >
                 Test Google Review Link <PiArrowSquareOutBold size={13} />
               </a>

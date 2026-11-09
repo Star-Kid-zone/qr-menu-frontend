@@ -60,8 +60,8 @@ describe('storage utilities', () => {
     });
 
     it('stores and retrieves staff permissions list', () => {
-      setStoredPermissions(['menu', 'orders']);
-      expect(getStoredPermissions()).toEqual(['menu', 'orders']);
+      setStoredPermissions(['menu', 'operations']);
+      expect(getStoredPermissions()).toEqual(['menu', 'operations']);
     });
 
     it('clears stored permissions', () => {

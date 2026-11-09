@@ -36,9 +36,9 @@ export function ComposeDestinationsSection({
   deselectAll,
 }: ComposeDestinationsSectionProps) {
   return (
-    <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-card via-card to-card/95 p-5 shadow-xs transition-all hover:border-primary/30">
+    <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-card via-card to-card/95 p-6 shadow-xs transition-all hover:border-primary/30">
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/40">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <div className="flex size-7 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-black text-xs shadow-md shadow-primary/25 shrink-0">
             02
           </div>
@@ -46,12 +46,12 @@ export function ComposeDestinationsSection({
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
               <span>Destinations</span>
               {selectedAccountIds.size > 0 && (
-                <span className="flex items-center gap-1 rounded-full bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 text-[10px] font-bold">
+                <span className="flex items-center gap-1 rounded-full bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 text-caption font-bold">
                   {selectedAccountIds.size} Selected
                 </span>
               )}
             </h3>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-caption text-muted-foreground">
               Choose which social channels will broadcast this campaign
             </p>
           </div>
@@ -63,20 +63,20 @@ export function ComposeDestinationsSection({
               <button
                 type="button"
                 onClick={selectAllConnected}
-                className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted transition-colors shadow-2xs"
+                className="rounded-lg border border-border bg-background px-3 py-1 text-xs font-semibold text-foreground hover:bg-muted transition-colors shadow-2xs"
               >
                 Select All
               </button>
               <button
                 type="button"
                 onClick={deselectAll}
-                className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shadow-2xs"
+                className="rounded-lg border border-border bg-background px-3 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shadow-2xs"
               >
                 Deselect
               </button>
             </>
           )}
-          <span className="text-[11px] font-medium text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-lg border border-border/50">
+          <span className="text-caption font-medium text-muted-foreground bg-muted/60 px-3 py-1 rounded-lg border border-border/50">
             {connectedCount} of {platforms.length} Connected
           </span>
         </div>
@@ -110,7 +110,7 @@ export function ComposeDestinationsSection({
                     <p className="text-xs text-muted-foreground truncate">
                       Not connected yet
                     </p>
-                    <span className="inline-block text-[10px] text-muted-foreground/70">
+                    <span className="inline-block text-caption text-muted-foreground/70">
                       {platform.capabilities}
                     </span>
                   </div>
@@ -119,7 +119,7 @@ export function ComposeDestinationsSection({
                 <button
                   type="button"
                   onClick={() => onConnectPlatform(platform.id)}
-                  className="flex items-center gap-1.5 rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground shadow-2xs transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary group-hover:scale-105 active:scale-95 shrink-0"
+                  className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground shadow-2xs transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary group-hover:scale-105 active:scale-95 shrink-0"
                 >
                   <span>Connect</span>
                   <PiArrowRightBold className="size-3 transition-transform group-hover:translate-x-0.5" />
@@ -161,16 +161,16 @@ export function ComposeDestinationsSection({
                     >
                       {platform.icon}
                     </div>
-                    <span className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-emerald-500 ring-2 ring-card shadow-xs" />
+                    <span className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-success ring-2 ring-card shadow-xs" />
                   </div>
 
                   <div className="min-w-0 space-y-0.5">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <p className="font-bold text-foreground text-sm truncate">
                         {platform.name}
                       </p>
                       <span
-                        className="text-[9px] font-bold px-1.5 py-0.2 rounded-full"
+                        className="text-caption font-bold px-2 py-0.2 rounded-full"
                         style={{
                           color: badge.color,
                           backgroundColor: badge.color + "20",
@@ -182,7 +182,7 @@ export function ComposeDestinationsSection({
                     <p className="text-xs text-muted-foreground font-medium truncate">
                       {account.username ? `@${account.username}` : account.displayName}
                     </p>
-                    <span className="inline-block text-[10px] text-muted-foreground/70">
+                    <span className="inline-block text-caption text-muted-foreground/70">
                       {platform.capabilities}
                     </span>
                   </div>

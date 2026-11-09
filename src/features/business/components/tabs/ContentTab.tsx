@@ -74,8 +74,8 @@ export function ContentTab({
     <div className="flex h-full min-h-0 flex-col gap-4">
       <PageHeader
         className="shrink-0"
-        title="Story & Stats"
-        description="Real &ldquo;Our Story&rdquo; copy and stats bar shown on your landing page &mdash; leave blank to hide those sections."
+        title="Our story"
+        description="The story and highlight numbers on your website. Leave them blank to hide those sections."
         actions={panelActions}
       />
 
@@ -109,7 +109,7 @@ export function ContentTab({
 
         <div className="space-y-3 border-t border-border pt-6 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
           <div className="flex items-center justify-between">
-            <span className="text-caption font-semibold uppercase tracking-wide text-muted-foreground">
+            <span className="text-overline text-muted-foreground">
               Stats Bar (up to 4)
             </span>
             {contentEditMode && contentDraft.stats.length < 4 && (

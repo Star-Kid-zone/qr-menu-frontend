@@ -4,6 +4,7 @@ import React from "react";
 import { Button, EmptyState, PageHeader, SubTabPills } from "@/components/ui";
 import { PiPencilSimpleBold, PiPlusBold, PiSwatchesBold } from "react-icons/pi";
 import { WorkspaceSettingsForm } from "@/features/workspace";
+import type { StudioPartFocus } from "@/features/workspace/studio/resolvePart";
 import type {
   WorkspaceSetting,
   WorkspaceSettingsFormValues,
@@ -27,6 +28,7 @@ interface WebsiteTabProps {
   workspaceCurrencies: Currency[];
   setWorkspaceDraft: (val: WorkspaceSettingsFormValues | null) => void;
   onOpenAddWorkspaceModal: () => void;
+  focusedPart?: StudioPartFocus | null;
 }
 
 export function WebsiteTab({
@@ -45,12 +47,13 @@ export function WebsiteTab({
   workspaceCurrencies,
   setWorkspaceDraft,
   onOpenAddWorkspaceModal,
+  focusedPart,
 }: WebsiteTabProps) {
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
+    <div className="flex h-full min-h-0 flex-col gap-4 overflow-hidden">
       <PageHeader
         title="Website"
-        className="shrink-0 px-1"
+        className="shrink-0"
         actions={
           workspace ? (
             workspaceEditMode ? (
@@ -126,6 +129,7 @@ export function WebsiteTab({
               showPalettePresets={workspaceEditMode}
               onValuesChange={setWorkspaceDraft}
               initialActiveSubSection={workspaceActiveSubSection}
+              focusedPart={focusedPart}
               onStartEditing={(subSectionKey) => {
                 setWorkspaceSaveError(null);
                 setWorkspaceActiveSubSection(subSectionKey || null);

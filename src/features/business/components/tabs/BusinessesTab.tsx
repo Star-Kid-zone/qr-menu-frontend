@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button, EmptyState, PageHeader, SubTabPills } from "@/components/ui";
+import { Button, EmptyState, SubTabPills } from "@/components/ui";
 import { PiPencilSimpleBold, PiStorefrontBold } from "react-icons/pi";
 import {
   BusinessForm,
@@ -15,8 +15,8 @@ interface BusinessesTabProps {
   businesses: WorkspaceBusiness[];
   businessEditMode: boolean;
   setBusinessEditMode: (val: boolean) => void;
-  businessSection: "profile" | "social" | "hours";
-  setBusinessSection: (val: "profile" | "social" | "hours") => void;
+  businessSection: "profile" | "taxes" | "social" | "hours";
+  setBusinessSection: (val: "profile" | "taxes" | "social" | "hours") => void;
   businessFormLoading: boolean;
   setBusinessFormLoading: (val: boolean) => void;
   industries: Industry[];
@@ -71,31 +71,29 @@ export function BusinessesTab({
         onClick={() => setBusinessEditMode(true)}
         startIcon={<PiPencilSimpleBold className="size-4" />}
       >
-        Edit profile
+        Edit details
       </Button>
     );
   })();
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4">
-      <PageHeader
-        className="shrink-0"
-        title="Business profile"
-        description="Your restaurant's public-facing information."
-        actions={panelActions}
-      />
+    <div className="flex flex-col gap-4">
       {biz && (
-        <SubTabPills
-          options={[
-            { id: "profile", label: "Profile" },
-            { id: "social", label: "Social media" },
-            { id: "hours", label: "Hours" },
-          ]}
-          active={businessSection}
-          onChange={setBusinessSection}
-        />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <SubTabPills
+            options={[
+              { id: "profile", label: "Contact & address" },
+              { id: "taxes", label: "Taxes & charges" },
+              { id: "social", label: "Social links" },
+              { id: "hours", label: "Opening hours" },
+            ]}
+            active={businessSection}
+            onChange={setBusinessSection}
+          />
+          {panelActions}
+        </div>
       )}
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+      <div>
         {biz ? (
           <BusinessForm
             key={`business-${biz.id}-${businessEditMode}`}

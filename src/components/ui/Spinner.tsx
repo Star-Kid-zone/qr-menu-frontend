@@ -32,7 +32,7 @@ export function Spinner({
     <div className={cn('flex items-center justify-center', className)}>
       <div className="flex flex-col items-center gap-4">
         {spinner}
-        <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
+        <p className="text-xs font-black tracking-[0.2em] text-muted-foreground">
           {label}
         </p>
       </div>

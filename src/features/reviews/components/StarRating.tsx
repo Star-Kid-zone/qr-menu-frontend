@@ -12,9 +12,9 @@ export function StarRating({ rating }: StarRatingProps) {
     <div className="flex items-center gap-0.5" aria-label={`${rating} out of 5 stars`}>
       {Array.from({ length: 5 }).map((_, i) =>
         i < rating ? (
-          <PiStarFill key={i} size={13} className="text-amber-400" />
+          <PiStarFill key={i} size={14} className="text-warning" />
         ) : (
-          <PiStarBold key={i} size={13} className="text-border" />
+          <PiStarBold key={i} size={14} className="text-muted-foreground/50" />
         )
       )}
     </div>

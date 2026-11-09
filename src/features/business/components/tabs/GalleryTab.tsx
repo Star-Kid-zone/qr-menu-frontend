@@ -27,8 +27,8 @@ export function GalleryTab({
     <div className="flex h-full min-h-0 flex-col gap-4">
       <PageHeader
         className="shrink-0"
-        title="Gallery"
-        description="Manage shared visual assets."
+        title="Photos"
+        description="Photos of your restaurant and food, shown on your website."
         actions={
           <Button
             size="sm"

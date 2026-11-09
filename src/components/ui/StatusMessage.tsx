@@ -15,7 +15,7 @@ export function StatusMessage({
 }: StatusMessageProps) {
   return (
     <div className={cn('rounded-2xl border p-4', variantClasses[variant], className)}>
-      <p className="text-center text-xs font-bold uppercase tracking-wide break-words">{children}</p>
+      <p className="text-center text-xs font-bold break-words">{children}</p>
     </div>
   );
 }

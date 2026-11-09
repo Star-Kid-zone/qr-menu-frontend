@@ -2,7 +2,7 @@
 
 import { Suspense, lazy } from "react";
 import { Spinner } from "@/components/ui";
-import { landingTemplates } from "@/components/templates/core/registry";
+import { landingTemplates } from "@/components/templates/core/landingRegistry";
 import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
 
 // Mirrors the resolution logic in `src/app/(public)/TenantLandingPage.tsx` so the

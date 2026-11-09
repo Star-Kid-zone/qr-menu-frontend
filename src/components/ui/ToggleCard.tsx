@@ -26,7 +26,7 @@ export function ToggleCard({
         <div className="min-w-0">
           <p className="break-words text-sm font-black text-foreground">{label}</p>
           {description ? (
-            <p className="break-words text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <p className="break-words text-caption font-bold text-muted-foreground">
               {description}
             </p>
           ) : null}

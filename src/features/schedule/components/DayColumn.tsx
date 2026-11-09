@@ -38,7 +38,7 @@ export function DayColumn({
     >
       <div className="mb-2 flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p className="text-caption font-bold text-muted-foreground">
             {DAY_LABELS[dayIndex]}
           </p>
           <p className={cn("text-sm font-bold", isToday ? "text-primary" : "text-foreground")}>

@@ -72,6 +72,45 @@ describe('ConfirmationDialog', () => {
     expect(handleConfirm).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps the confirm button locked until the confirmation text is typed', () => {
+    const handleConfirm = vi.fn();
+    render(
+      <ConfirmationDialog
+        isOpen={true}
+        title="Suspend account?"
+        description="The restaurant's website goes offline."
+        confirmLabel="Suspend account"
+        typeToConfirm="Admin Business"
+        onClose={vi.fn()}
+        onConfirm={handleConfirm}
+      />
+    );
+
+    const confirm = screen.getByRole('button', { name: 'Suspend account' });
+    expect(confirm).toBeDisabled();
+    fireEvent.change(screen.getByLabelText(/to confirm/i), { target: { value: 'Admin Business' } });
+    expect(confirm).not.toBeDisabled();
+    fireEvent.click(confirm);
+    expect(handleConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows an inline error when the action fails', () => {
+    render(
+      <ConfirmationDialog
+        isOpen={true}
+        title="Post now?"
+        description="This posts to Instagram."
+        confirmLabel="Post now"
+        tone="default"
+        error="Instagram rejected the post."
+        onClose={vi.fn()}
+        onConfirm={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Instagram rejected the post.');
+  });
+
   it('disables cancel button and shows loading state on confirm button when loading', () => {
     render(
       <ConfirmationDialog

@@ -43,8 +43,10 @@ export function useAiStudioState({ onSaveSuccess }: UseAiStudioStateProps) {
   const [assetTitleInput, setAssetTitleInput] = useState('');
   const [savingAiAsset, setSavingAiAsset] = useState(false);
 
-  // Search parameters synchronization
-  useEffect(() => {
+  // Search parameters synchronization (adjusted during render whenever the params change)
+  const [syncedSearchParams, setSyncedSearchParams] = useState<typeof searchParams | null>(null);
+  if (syncedSearchParams !== searchParams) {
+    setSyncedSearchParams(searchParams);
     const promptParam = searchParams.get('prompt');
     const mediaTypeParam = searchParams.get('mediaType');
     if (promptParam) {
@@ -68,7 +70,7 @@ export function useAiStudioState({ onSaveSuccess }: UseAiStudioStateProps) {
         setImageRatio(ratioParam as '1:1' | '4:5' | '9:16' | '16:9');
       }
     }
-  }, [searchParams]);
+  }
 
   // Video Status Polling
   useEffect(() => {

@@ -18,7 +18,10 @@ export type UserDetailTabId =
   | "payments_reviews"
   | "staff"
   | "redirects"
-  | "analytics";
+  | "analytics"
+  // Grouped tabs: Website content (gallery, offers, reviews & FAQs) and Payments & links (payments, redirects).
+  | "content"
+  | "links";
 
 export interface BusinessFormData {
   businessName: string;

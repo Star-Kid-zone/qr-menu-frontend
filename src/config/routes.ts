@@ -10,6 +10,7 @@ export const routes = {
   admin: {
     home: "/admin/home",
     addQrCode: "/admin/addqrcode",
+    qrMenu: "/admin/qr-menu",
     listMenu: "/admin/listmenu",
     addMenu: "/admin/addmenu",
     listReview: "/admin/listreview",
@@ -17,8 +18,7 @@ export const routes = {
     listPayment: "/admin/listpayment",
     addPayment: "/admin/addpayment",
     listBusiness: "/admin/listbusiness",
-    addSetting: "/admin/addsetting",
-    listSetting: "/admin/listsetting",
+    settings: "/admin/settings",
     socialMedia: "/admin/social-media",
     staff: "/admin/staff",
     schedule: "/admin/schedule",

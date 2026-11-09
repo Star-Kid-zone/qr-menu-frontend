@@ -2,6 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 import { PiMagnifyingGlassBold } from 'react-icons/pi';
 import type { DashboardData } from '@/services/analytics.service';
 
@@ -13,16 +14,16 @@ export interface SearchIntelligenceCardProps {
 export function SearchIntelligenceCard({ data, loading }: SearchIntelligenceCardProps) {
   return (
     <Card className="rounded-xl border border-border bg-card shadow-sm">
-      <CardHeader className="border-b border-border px-5 py-4">
+      <CardHeader className="border-b border-border px-6 py-4">
         <div className="flex items-center gap-2">
           <PiMagnifyingGlassBold size={16} className="text-primary" />
           <div>
-            <CardTitle className="text-sm font-semibold text-foreground">Search Intelligence</CardTitle>
-            <p className="text-xs text-muted-foreground">What guests are searching for</p>
+            <CardTitle className="text-sm font-semibold text-foreground">What guests searched for</CardTitle>
+            <p className="text-xs text-muted-foreground">Searches on your menu page</p>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-5">
+      <CardContent className="p-6">
         {loading ? (
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}
@@ -31,35 +32,40 @@ export function SearchIntelligenceCard({ data, loading }: SearchIntelligenceCard
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {/* Top queries */}
             <div>
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Top Queries</p>
+              <p className="mb-2 text-caption font-bold text-muted-foreground">Most searched</p>
               {data?.topSearches && data.topSearches.length > 0 ? (
-                <ul className="space-y-1.5">
+                <ul className="space-y-2">
                   {data.topSearches.slice(0, 5).map((s, i) => (
-                    <li key={`${s.query}-${i}`} className="flex items-center justify-between rounded-lg bg-muted/40 px-2.5 py-1.5 text-xs">
+                    <li key={`${s.query}-${i}`} className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2 text-xs">
                       <span className="truncate font-medium text-foreground">{s.query}</span>
                       <span className="text-muted-foreground">{s.count}×</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-muted-foreground">No searches yet.</p>
+                <p className="text-xs text-muted-foreground">No searches yet. When guests search your menu, their top searches show here.</p>
               )}
             </div>
 
             {/* Zero results */}
             <div>
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">No Results Found</p>
+              <p className="mb-2 text-caption font-bold text-muted-foreground">Searches with no matching dish</p>
               {data?.zeroResultSearches && data.zeroResultSearches.length > 0 ? (
-                <ul className="space-y-1.5">
+                <ul className="space-y-2">
                   {data.zeroResultSearches.slice(0, 5).map((s, i) => (
-                    <li key={`${s.query}-${i}`} className="flex items-center justify-between rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+                    <li key={`${s.query}-${i}`} className="flex items-center justify-between rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning-foreground dark:bg-warning/40 dark:text-warning">
                       <span className="truncate font-medium">{s.query}</span>
-                      <span>{s.count}×</span>
+                      <span className="flex shrink-0 items-center gap-2">
+                        {s.count}×
+                        <Link href={`/admin/addmenu?name=${encodeURIComponent(s.query)}`} className="font-semibold underline">
+                          Add this dish
+                        </Link>
+                      </span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-muted-foreground">All customer searches matched dishes!</p>
+                <p className="text-xs text-muted-foreground">None. Every search found a dish.</p>
               )}
             </div>
           </div>

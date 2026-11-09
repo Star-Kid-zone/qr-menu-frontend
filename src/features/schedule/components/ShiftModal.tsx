@@ -1,12 +1,17 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { Modal } from "@/components/Modal";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/FormField";
 import { Input } from "@/components/ui/input";
+import { ModalFooter } from "@/components/ui/ModalFooter";
+import { Notice } from "@/components/ui/Notice";
 import { Select } from "@/components/ui/Select";
+import { routes } from "@/config/routes";
 import { type ShiftStatus } from "@/services/shift.service";
 import { type StaffMember } from "@/services/staff.service";
-import { PiXBold } from "react-icons/pi";
 import { type FormState } from "../types";
 
 interface ShiftModalProps {
@@ -15,6 +20,12 @@ interface ShiftModalProps {
   form: FormState;
   setForm: React.Dispatch<React.SetStateAction<FormState>>;
   staff: StaffMember[];
+  /** Set when the team list couldn't be loaded. */
+  staffError?: string | null;
+  staffLoading?: boolean;
+  onRetryStaff?: () => void;
+  /** Owners can add team members; managers are told to ask the owner. */
+  canAddTeamMembers?: boolean;
   onSubmit: () => void;
   saving: boolean;
 }
@@ -25,131 +36,130 @@ export function ShiftModal({
   form,
   setForm,
   staff,
+  staffError,
+  staffLoading = false,
+  onRetryStaff,
+  canAddTeamMembers = false,
   onSubmit,
   saving,
 }: ShiftModalProps) {
-  if (!isOpen) return null;
+  const noTeam = !staffLoading && !staffError && staff.length === 0;
+
+  const footer = (
+    <ModalFooter>
+      <Button type="button" variant="secondary" onClick={onClose}>
+        Cancel
+      </Button>
+      <Button type="button" onClick={onSubmit} loading={saving} disabled={Boolean(staffError) || noTeam}>
+        {form.id ? "Save changes" : "Add shift"}
+      </Button>
+    </ModalFooter>
+  );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl animate-fade-in-up">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-bold text-foreground">
-            {form.id ? "Edit Shift" : "New Shift"}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+    <Modal isOpen={isOpen} onClose={onClose} title={form.id ? "Edit shift" : "Add shift"} maxWidth="max-w-md" footer={footer}>
+      <div className="space-y-4">
+        {staffError ? (
+          <Notice
+            tone="error"
+            title="We couldn't load your team"
+            action={
+              onRetryStaff ? (
+                <Button size="sm" variant="secondary" onClick={onRetryStaff} loading={staffLoading}>
+                  Try again
+                </Button>
+              ) : undefined
+            }
           >
-            <PiXBold size={15} />
-          </button>
+            {staffError}
+          </Notice>
+        ) : noTeam ? (
+          <Notice tone="info" title="No team members yet">
+            {canAddTeamMembers ? (
+              <>
+                Shifts are assigned to team members.{" "}
+                <Link href={routes.admin.staff} className="font-medium text-primary hover:underline">
+                  Add a team member
+                </Link>{" "}
+                first.
+              </>
+            ) : (
+              "Shifts are assigned to team members. Ask the owner to add your team first."
+            )}
+          </Notice>
+        ) : null}
+
+        <FormField label="Team member" htmlFor="shift-staff" required>
+          <Select
+            id="shift-staff"
+            value={form.staffId}
+            onChange={(e) => setForm({ ...form, staffId: e.target.value })}
+            placeholder={staffLoading ? "Loading team…" : "Choose a team member"}
+            options={staff.map((s) => ({ value: s.id, label: s.name }))}
+            disabled={staffLoading || Boolean(staffError) || noTeam}
+          />
+        </FormField>
+
+        <FormField label="Date" htmlFor="shift-date" required>
+          <Input
+            id="shift-date"
+            type="date"
+            value={form.shiftDate}
+            onChange={(e) => setForm({ ...form, shiftDate: e.target.value })}
+          />
+        </FormField>
+
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Starts" htmlFor="shift-start" required>
+            <Input
+              id="shift-start"
+              type="time"
+              value={form.startTime}
+              onChange={(e) => setForm({ ...form, startTime: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Ends" htmlFor="shift-end" required>
+            <Input
+              id="shift-end"
+              type="time"
+              value={form.endTime}
+              onChange={(e) => setForm({ ...form, endTime: e.target.value })}
+            />
+          </FormField>
         </div>
 
-        <div className="space-y-3.5">
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-muted-foreground">
-              Staff Member *
-            </label>
+        <FormField label="Station" htmlFor="shift-role" hint="Optional, e.g. Kitchen or Front of house">
+          <Input
+            id="shift-role"
+            value={form.roleLabel}
+            onChange={(e) => setForm({ ...form, roleLabel: e.target.value })}
+          />
+        </FormField>
+
+        {form.id && (
+          <FormField label="Status" htmlFor="shift-status">
             <Select
-              value={form.staffId}
-              onChange={(e) => setForm({ ...form, staffId: e.target.value })}
-              placeholder="Select staff member"
-              options={staff.map((s) => ({ value: s.id, label: s.name }))}
-              className="h-10 text-xs"
+              id="shift-status"
+              value={form.status}
+              onChange={(e) => setForm({ ...form, status: e.target.value as ShiftStatus })}
+              options={[
+                { value: "scheduled", label: "Scheduled" },
+                { value: "completed", label: "Completed" },
+                { value: "missed", label: "Missed" },
+                { value: "cancelled", label: "Cancelled" },
+              ]}
             />
-          </div>
+          </FormField>
+        )}
 
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-muted-foreground">
-              Date *
-            </label>
-            <Input
-              type="date"
-              value={form.shiftDate}
-              onChange={(e) => setForm({ ...form, shiftDate: e.target.value })}
-              className="h-10 text-xs"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-muted-foreground">
-                Start Time *
-              </label>
-              <Input
-                type="time"
-                value={form.startTime}
-                onChange={(e) => setForm({ ...form, startTime: e.target.value })}
-                className="h-10 text-xs"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-muted-foreground">
-                End Time *
-              </label>
-              <Input
-                type="time"
-                value={form.endTime}
-                onChange={(e) => setForm({ ...form, endTime: e.target.value })}
-                className="h-10 text-xs"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-muted-foreground">
-              Role Label (optional)
-            </label>
-            <Input
-              value={form.roleLabel}
-              onChange={(e) => setForm({ ...form, roleLabel: e.target.value })}
-              placeholder="e.g. Kitchen, Front of House"
-              className="h-10 text-xs"
-            />
-          </div>
-
-          {form.id && (
-            <div>
-              <label className="mb-1 block text-xs font-semibold text-muted-foreground">
-                Status
-              </label>
-              <Select
-                value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value as ShiftStatus })}
-                options={[
-                  { value: "scheduled", label: "Scheduled" },
-                  { value: "completed", label: "Completed" },
-                  { value: "missed", label: "Missed" },
-                  { value: "cancelled", label: "Cancelled" },
-                ]}
-                className="h-10 text-xs"
-              />
-            </div>
-          )}
-
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-muted-foreground">
-              Notes (optional)
-            </label>
-            <Input
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              placeholder="Any handover notes"
-              className="h-10 text-xs"
-            />
-          </div>
-        </div>
-
-        <div className="mt-6 flex items-center justify-end gap-2 border-t border-border pt-4">
-          <Button type="button" variant="secondary" size="sm" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="button" size="sm" onClick={onSubmit} loading={saving}>
-            {form.id ? "Save Changes" : "Schedule Shift"}
-          </Button>
-        </div>
+        <FormField label="Notes" htmlFor="shift-notes" hint="Optional handover notes">
+          <Input
+            id="shift-notes"
+            value={form.notes}
+            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+          />
+        </FormField>
       </div>
-    </div>
+    </Modal>
   );
 }

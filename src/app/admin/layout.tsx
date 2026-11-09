@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { useProtectedSessionGuard } from "@/hooks/useProtectedSessionGuard";
-import Sidebar from "@/components/layouts/Sidebar";
-import Navbar from "@/components/layouts/Navbar";
+import { AppShell } from "@/components/layouts/AppShell";
 import { GlobalProgressBar } from "@/components/layouts/GlobalProgressBar";
-import { GlobalLoaderOverlay } from "@/components/layouts/GlobalLoaderOverlay";
 import { ImpersonationBanner } from "@/components/layouts/ImpersonationBanner";
 import { TenantAnnouncementBanner } from "@/components/layouts/TenantAnnouncementBanner";
 
@@ -15,34 +12,21 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   useProtectedSessionGuard();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-background text-foreground font-sans selection:bg-accent">
+    <>
       <GlobalProgressBar />
-      <GlobalLoaderOverlay />
-      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-
-      <div
-        className={`flex h-dvh min-w-0 flex-1 flex-col overflow-hidden transition-[margin] duration-base ease-out ${
-          isSidebarOpen ? "lg:ml-[17rem]" : "lg:ml-20"
-        }`}
+      <AppShell
+        area="admin"
+        banners={
+          <>
+            <ImpersonationBanner />
+            <TenantAnnouncementBanner />
+          </>
+        }
       >
-        <Navbar
-          isOpen={isSidebarOpen}
-          toggleSidebar={toggleSidebar}
-          role="admin"
-          identityLabel="Administrator"
-          identityInitials="AD"
-        />
-        <ImpersonationBanner />
-        <TenantAnnouncementBanner />
-        <main className="min-h-0 flex-1 overflow-hidden p-4 sm:p-6">
-          <div className="mx-auto h-full w-full max-w-[1800px]">{children}</div>
-        </main>
-      </div>
-    </div>
+        {children}
+      </AppShell>
+    </>
   );
 }

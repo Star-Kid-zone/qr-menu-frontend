@@ -7,7 +7,7 @@ import {
 } from "react";
 import { NextLinkAdapter } from "@/components/next/NextLinkAdapter";
 import { PageLoader } from "@/components/ui/PageLoader";
-import { landingTemplates } from "@/components/templates/core/registry";
+import { landingTemplates } from "@/components/templates/core/landingRegistry";
 import { useAnalytics } from "@/hooks/useAnalytics.hook";
 import { toSafeExternalUrl } from "@/utils/url";
 import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
@@ -56,13 +56,13 @@ export function TenantLandingPage({
     typeof settings.public_slug === "string"
       ? settings.public_slug.trim().toLowerCase()
       : null;
-  const paymentLink = toSafeExternalUrl((data.payment as any)?.payment_link);
-  const reviewLink = toSafeExternalUrl((data.review as any)?.review_link);
+  const paymentLink = toSafeExternalUrl(data.payment?.payment_link as string | undefined);
+  const reviewLink = toSafeExternalUrl(data.review?.review_link as string | undefined);
 
   const { track: trackEvent } = useAnalytics({ userId });
   // Landing structure components accept a loosely-typed `track` prop (plain
   // `string` action types); this narrows to the real hook's stricter union.
-  const track = (actionType: string, actionTarget?: string, metadata?: Record<string, any>) => {
+  const track = (actionType: string, actionTarget?: string, metadata?: Record<string, unknown>) => {
     trackEvent(actionType as Parameters<typeof trackEvent>[0], actionTarget, metadata);
   };
 

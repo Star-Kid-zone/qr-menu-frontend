@@ -112,7 +112,7 @@ export function BusinessForm({
   onValuesChange?: (values: BusinessSchemaValues) => void;
   industries: Industry[];
   disabled?: boolean;
-  section?: "profile" | "social" | "hours";
+  section?: "profile" | "taxes" | "social" | "hours";
 }) {
   const {
     register,
@@ -210,10 +210,10 @@ export function BusinessForm({
         className="flex h-full min-h-0 flex-col gap-4"
       >
         {section === "profile" && (
-          <Card className="space-y-4 p-4 md:p-5">
+          <Card className="space-y-4 p-4 md:p-6">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <FormField
-                label="Business Name"
+                label="Business name"
                 htmlFor="business-name"
                 error={errors.business_name?.message}
                 required
@@ -227,7 +227,7 @@ export function BusinessForm({
                 />
               </FormField>
               <FormField
-                label="Phone Number"
+                label="Phone number"
                 htmlFor="business-phone"
                 error={errors.phone?.message}
                 required
@@ -242,7 +242,7 @@ export function BusinessForm({
                 />
               </FormField>
               <FormField
-                label="Industry"
+                label="Restaurant type"
                 htmlFor="business-industry"
                 error={errors.industry_id?.message}
               >
@@ -255,7 +255,7 @@ export function BusinessForm({
                     setValueAs: (v) => (v === "" ? null : Number(v)),
                   })}
                 >
-                  <option value="">Select Industry</option>
+                  <option value="">Choose a type</option>
                   {industries.map((ind) => (
                     <option key={ind.id} value={ind.id}>
                       {ind.name}
@@ -264,7 +264,7 @@ export function BusinessForm({
                 </Select>
               </FormField>
               <FormField
-                label="Website URL"
+                label="Other website"
                 htmlFor="business-website"
                 error={errors.website_url?.message}
               >
@@ -278,7 +278,7 @@ export function BusinessForm({
                 />
               </FormField>
               <FormField
-                label="Business Address"
+                label="Address"
                 htmlFor="business-address"
                 error={errors.address?.message}
                 required
@@ -293,7 +293,7 @@ export function BusinessForm({
                 />
               </FormField>
               <FormField
-                label="PIN Code"
+                label="PIN code"
                 htmlFor="business-pincode"
                 error={errors.pincode?.message}
               >
@@ -305,9 +305,17 @@ export function BusinessForm({
                   {...register("pincode")}
                 />
               </FormField>
+            </div>
+          </Card>
+        )}
+
+        {section === "taxes" && (
+          <Card className="space-y-4 p-4 md:p-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
-                label="GSTIN (optional)"
+                label="GSTIN"
                 htmlFor="business-gstin"
+                hint="Optional. Printed on bills when set."
                 error={errors.gstin?.message}
               >
                 <Input
@@ -319,8 +327,9 @@ export function BusinessForm({
                 />
               </FormField>
               <FormField
-                label="Service Charge % (optional)"
+                label="Service charge (%)"
                 htmlFor="business-service-charge"
+                hint="Optional. Leave empty for no service charge."
                 error={errors.service_charge_percent?.message}
               >
                 <Input
@@ -329,31 +338,27 @@ export function BusinessForm({
                   step="any"
                   min="0"
                   max="100"
-                  placeholder="e.g. 5"
                   invalid={Boolean(errors.service_charge_percent)}
                   disabled={disabled}
                   {...register("service_charge_percent")}
                 />
               </FormField>
-              <FormField label="Menu Prices" htmlFor="business-tax-inclusive">
-                <div className="pt-1">
-                  <ToggleCard
-                    checked={watch("tax_inclusive")}
-                    onChange={(checked) => {
-                      if (!disabled)
-                        setValue("tax_inclusive", checked, { shouldDirty: true });
-                    }}
-                    label="Prices include GST"
-                    description="Off = GST added at checkout/receipt"
-                  />
-                </div>
+              <FormField label="Menu prices" htmlFor="business-tax-inclusive" className="md:col-span-2">
+                <ToggleCard
+                  checked={watch("tax_inclusive")}
+                  onChange={(checked) => {
+                    if (!disabled)
+                      setValue("tax_inclusive", checked, { shouldDirty: true });
+                  }}
+                  label="Prices include GST"
+                  description="When off, GST is added at checkout and on the bill."
+                />
               </FormField>
             </div>
           </Card>
         )}
-
         {section === "social" && (
-          <Card className="space-y-4 p-4 md:p-5">
+          <Card className="space-y-4 p-4 md:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-h3 text-foreground">Social Media</h2>
@@ -442,7 +447,7 @@ export function BusinessForm({
         )}
 
         {section === "hours" && (
-          <Card className="space-y-4 p-4 md:p-5">
+          <Card className="space-y-4 p-4 md:p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-h3 text-foreground">Availability</h2>
@@ -540,7 +545,7 @@ export function BusinessForm({
         )}
 
         {section === "profile" && (
-          <Card className="p-4 md:p-5">
+          <Card className="p-4 md:p-6">
             <ToggleCard
               checked={active}
               onChange={() => {
@@ -550,7 +555,7 @@ export function BusinessForm({
                     shouldValidate: true,
                   });
               }}
-              label="Operational Status"
+              label="Website visible to guests"
               description={active ? "Visible to guests" : "Hidden from guests"}
             />
           </Card>

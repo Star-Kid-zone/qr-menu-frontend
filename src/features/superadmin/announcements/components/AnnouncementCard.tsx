@@ -4,6 +4,7 @@ import { PiEyeBold, PiTrashBold } from 'react-icons/pi';
 import { Badge, Button, Card } from '@/components/ui';
 import type { BadgeTone } from '@/types/components/ui/Badge.types';
 import type { PlatformAnnouncement } from '@/services/superadmin.service';
+import { formatDate } from "@/utils/date";
 
 export interface AnnouncementCardProps {
   item: PlatformAnnouncement;
@@ -26,9 +27,9 @@ export function getToneFromType(type: string): BadgeTone {
 
 export function AnnouncementCard({ item, onToggle, onDelete }: AnnouncementCardProps) {
   return (
-    <Card className="flex flex-col justify-between gap-4 p-5 transition-all hover:border-border sm:flex-row sm:items-center">
+    <Card className="flex flex-col justify-between gap-4 p-6 transition-all hover:border-border sm:flex-row sm:items-center">
       <div className="space-y-2">
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge tone={item.isActive ? 'success' : 'neutral'}>
             {item.isActive ? 'Live' : 'Archived'}
           </Badge>
@@ -36,7 +37,7 @@ export function AnnouncementCard({ item, onToggle, onDelete }: AnnouncementCardP
             {item.badgeText || item.type.toUpperCase()}
           </Badge>
           <span className="text-caption text-muted-foreground">
-            {new Date(item.createdAt).toLocaleDateString()} by {item.createdBy || 'Superadmin'}
+            {formatDate(item.createdAt)} by {item.createdBy || 'Superadmin'}
           </span>
           {item.readCount !== undefined && (
             <span className="inline-flex items-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-0.5 text-caption font-medium text-muted-foreground">
@@ -50,7 +51,7 @@ export function AnnouncementCard({ item, onToggle, onDelete }: AnnouncementCardP
         <p className="max-w-3xl text-caption text-muted-foreground">{item.content}</p>
 
         {item.actionUrl && (
-          <div className="flex items-center gap-1.5 text-xs text-primary font-medium">
+          <div className="flex items-center gap-2 text-xs text-primary font-medium">
             <span>CTA: {item.actionText || 'Learn More'}</span>
             <span className="text-muted-foreground font-mono">({item.actionUrl})</span>
           </div>

@@ -35,7 +35,7 @@ export function UserAnalyticsTab({
           </div>
           <div>
             <h2 className="text-h3 font-bold text-foreground">
-              Tenant Telemetry & Visitor Activity
+              Visitor activity
             </h2>
             <p className="text-xs text-muted-foreground">
               Performance stats for restaurant visits, scans, searches, and clicks
@@ -65,14 +65,14 @@ export function UserAnalyticsTab({
         <div className="space-y-6">
           {/* Real-time "Today" Snapshot */}
           {tenantAnalytics.today && (
-            <div className="rounded-2xl border border-primary/30 bg-primary/5 p-5">
+            <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="relative flex size-2.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex size-2.5 rounded-full bg-emerald-500" />
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success/40 opacity-75" />
+                    <span className="relative inline-flex size-2.5 rounded-full bg-success" />
                   </span>
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
+                  <h3 className="text-sm font-bold text-foreground">
                     Today&apos;s Live Activity Snapshot
                   </h3>
                 </div>
@@ -83,7 +83,7 @@ export function UserAnalyticsTab({
 
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
                 <div className="rounded-xl border border-border bg-card p-3 text-center">
-                  <p className="text-[10px] uppercase text-muted-foreground font-semibold">
+                  <p className="text-caption uppercase text-muted-foreground font-semibold">
                     Today Visits
                   </p>
                   <p className="mt-1 font-mono text-xl font-extrabold text-foreground">
@@ -91,7 +91,7 @@ export function UserAnalyticsTab({
                   </p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-3 text-center">
-                  <p className="text-[10px] uppercase text-muted-foreground font-semibold">
+                  <p className="text-caption uppercase text-muted-foreground font-semibold">
                     Today Clicks
                   </p>
                   <p className="mt-1 font-mono text-xl font-extrabold text-foreground">
@@ -99,7 +99,7 @@ export function UserAnalyticsTab({
                   </p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-3 text-center">
-                  <p className="text-[10px] uppercase text-muted-foreground font-semibold">
+                  <p className="text-caption uppercase text-muted-foreground font-semibold">
                     Today Searches
                   </p>
                   <p className="mt-1 font-mono text-xl font-extrabold text-foreground">
@@ -107,7 +107,7 @@ export function UserAnalyticsTab({
                   </p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-3 text-center">
-                  <p className="text-[10px] uppercase text-muted-foreground font-semibold">
+                  <p className="text-caption uppercase text-muted-foreground font-semibold">
                     Unique Visitors
                   </p>
                   <p className="mt-1 font-mono text-xl font-extrabold text-primary">
@@ -115,18 +115,18 @@ export function UserAnalyticsTab({
                   </p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-3 text-center">
-                  <p className="text-[10px] uppercase text-muted-foreground font-semibold">
+                  <p className="text-caption uppercase text-muted-foreground font-semibold">
                     New Guests
                   </p>
-                  <p className="mt-1 font-mono text-xl font-extrabold text-emerald-400">
+                  <p className="mt-1 font-mono text-xl font-extrabold text-success">
                     {tenantAnalytics.today.newVisitors}
                   </p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-3 text-center">
-                  <p className="text-[10px] uppercase text-muted-foreground font-semibold">
+                  <p className="text-caption uppercase text-muted-foreground font-semibold">
                     Returning Guests
                   </p>
-                  <p className="mt-1 font-mono text-xl font-extrabold text-blue-400">
+                  <p className="mt-1 font-mono text-xl font-extrabold text-info">
                     {tenantAnalytics.today.returningVisitors}
                   </p>
                 </div>
@@ -136,32 +136,32 @@ export function UserAnalyticsTab({
 
           {/* Period Summary KPI Cards */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card className="p-5">
-              <p className="text-caption uppercase tracking-wider text-muted-foreground">
+            <Card className="p-6">
+              <p className="text-caption text-muted-foreground">
                 Total Menu Visits
               </p>
               <p className="mt-2 font-mono text-3xl font-extrabold text-foreground">
                 {tenantAnalytics.summary?.totalVisits ?? 0}
               </p>
             </Card>
-            <Card className="p-5">
-              <p className="text-caption uppercase tracking-wider text-muted-foreground">
+            <Card className="p-6">
+              <p className="text-caption text-muted-foreground">
                 Total Clicks & Actions
               </p>
               <p className="mt-2 font-mono text-3xl font-extrabold text-primary">
                 {tenantAnalytics.summary?.totalClicks ?? 0}
               </p>
             </Card>
-            <Card className="p-5">
-              <p className="text-caption uppercase tracking-wider text-muted-foreground">
+            <Card className="p-6">
+              <p className="text-caption text-muted-foreground">
                 Unique Guests
               </p>
               <p className="mt-2 font-mono text-3xl font-extrabold text-foreground">
                 {tenantAnalytics.summary?.uniqueVisitors ?? 0}
               </p>
             </Card>
-            <Card className="p-5">
-              <p className="text-caption uppercase tracking-wider text-muted-foreground">
+            <Card className="p-6">
+              <p className="text-caption text-muted-foreground">
                 Most Viewed Dish
               </p>
               <p className="mt-2 text-lg font-bold text-foreground truncate">
@@ -174,7 +174,7 @@ export function UserAnalyticsTab({
           <div className="grid gap-6 md:grid-cols-2">
             {/* Click breakdown */}
             {tenantAnalytics.clickBreakdown && (
-              <Card className="p-5">
+              <Card className="p-6">
                 <h3 className="text-base font-bold text-foreground mb-4">
                   Action Destination Breakdown
                 </h3>
@@ -183,7 +183,7 @@ export function UserAnalyticsTab({
                     ([dest, count]) => (
                       <div
                         key={dest}
-                        className="flex items-center justify-between rounded-xl border border-border bg-muted/20 px-4 py-2.5 text-xs"
+                        className="flex items-center justify-between rounded-xl border border-border bg-muted/20 px-4 py-3 text-xs"
                       >
                         <span className="font-medium capitalize text-foreground">
                           {dest.replace(/_/g, " ")}
@@ -201,7 +201,7 @@ export function UserAnalyticsTab({
             {/* Top dishes */}
             {tenantAnalytics.topMenuItems &&
               tenantAnalytics.topMenuItems.length > 0 && (
-                <Card className="p-5">
+                <Card className="p-6">
                   <h3 className="text-base font-bold text-foreground mb-4">
                     Top Trending Dishes
                   </h3>
@@ -227,12 +227,12 @@ export function UserAnalyticsTab({
                             <p className="text-xs font-bold text-foreground">
                               {dish.item}
                             </p>
-                            <p className="font-mono text-[11px] text-muted-foreground">
+                            <p className="font-mono text-caption text-muted-foreground">
                               ${Number(dish.price).toFixed(2)}
                             </p>
                           </div>
                         </div>
-                        <span className="rounded-full bg-primary/10 px-2.5 py-1 font-mono text-xs font-bold text-primary">
+                        <span className="rounded-full bg-primary/10 px-3 py-1 font-mono text-xs font-bold text-primary">
                           {dish.count} views
                         </span>
                       </div>
@@ -245,7 +245,7 @@ export function UserAnalyticsTab({
           {/* Search Queries & Zero-Result Gap Signals */}
           <div className="grid gap-6 md:grid-cols-2">
             {/* Top Searches */}
-            <Card className="p-5">
+            <Card className="p-6">
               <h3 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
                 <PiMagnifyingGlassBold className="text-primary" />
                 Guest Search Inquiries
@@ -253,13 +253,13 @@ export function UserAnalyticsTab({
               {Array.isArray(tenantAnalytics.topSearches) &&
               tenantAnalytics.topSearches.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
-                  {tenantAnalytics.topSearches.map((s: any, idx: number) => (
+                  {tenantAnalytics.topSearches.map((s, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/30 px-3 py-1 text-xs font-semibold text-foreground"
+                      className="inline-flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-1 text-xs font-semibold text-foreground"
                     >
                       <span>&quot;{s.query}&quot;</span>
-                      <span className="font-mono text-[10px] text-primary">
+                      <span className="font-mono text-caption text-primary">
                         ({s.count})
                       </span>
                     </span>
@@ -273,22 +273,22 @@ export function UserAnalyticsTab({
             </Card>
 
             {/* Zero Result Searches */}
-            <Card className="p-5">
+            <Card className="p-6">
               <h3 className="text-base font-bold text-foreground mb-3 flex items-center gap-2">
-                <PiSparkleBold className="text-amber-400" />
+                <PiSparkleBold className="text-warning-foreground" />
                 Menu Gap Inquiries (Zero Results)
               </h3>
               {Array.isArray(tenantAnalytics.zeroResultSearches) &&
               tenantAnalytics.zeroResultSearches.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {tenantAnalytics.zeroResultSearches.map(
-                    (s: any, idx: number) => (
+                    (s, idx) => (
                       <span
                         key={idx}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/20 bg-rose-950/20 px-3 py-1 text-xs font-semibold text-rose-300"
+                        className="inline-flex items-center gap-2 rounded-lg border border-destructive/20 bg-destructive/20 px-3 py-1 text-xs font-semibold text-destructive"
                       >
                         <span>&quot;{s.query}&quot;</span>
-                        <span className="font-mono text-[10px] text-rose-400">
+                        <span className="font-mono text-caption text-destructive">
                           ({s.count})
                         </span>
                       </span>
@@ -313,7 +313,7 @@ export function UserAnalyticsTab({
                       Real Visitor Sessions Log
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                      Recent guest device connections and interaction telemetry
+                      Recent visits: device, browser and what each guest did
                     </p>
                   </div>
                   <Badge tone="neutral">
@@ -323,7 +323,7 @@ export function UserAnalyticsTab({
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
-                    <thead className="border-b border-border bg-muted/20 text-muted-foreground uppercase tracking-wider font-semibold text-[10px]">
+                    <thead className="border-b border-border bg-muted/20 text-muted-foreground font-semibold text-caption">
                       <tr>
                         <th className="px-6 py-3">Device / OS</th>
                         <th className="px-6 py-3">Visitor Token</th>

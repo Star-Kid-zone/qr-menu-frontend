@@ -2,15 +2,13 @@
 
 import React, { useMemo } from "react";
 import {
-  PiClockBold,
   PiFacebookLogoFill,
-  PiImagesBold,
   PiInstagramLogoFill,
   PiLinkedinLogoFill,
   PiTiktokLogoFill,
 } from "react-icons/pi";
 import { SiX } from "react-icons/si";
-import { Button, PageHeader } from "@/components/ui";
+import { PageHeader } from "@/components/ui";
 import type { SocialAccount, SocialPlatform } from "@/services/social.service";
 import type { ActivePosterInfo, RecurrenceRule, SocialTabId } from "../types";
 import {
@@ -176,36 +174,12 @@ export function ComposeTab({
       {/* Top Header */}
       <PageHeader
         className="shrink-0"
-        title="Compose & Publish"
-        description="Design once, customize per network, and broadcast everywhere in one click."
-        actions={
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              startIcon={<PiClockBold className="size-4 text-muted-foreground" />}
-              onClick={() => setActiveTab("history")}
-              className="shadow-2xs hover:border-primary/40 transition-colors"
-            >
-              Post History
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              startIcon={<PiImagesBold className="size-4 text-muted-foreground" />}
-              onClick={() => setActiveTab("library")}
-              className="shadow-2xs hover:border-primary/40 transition-colors"
-            >
-              Poster Library
-            </Button>
-          </div>
-        }
+        title="Create a post"
+        description="Write it once, choose where it goes, then post now or later."
       />
 
       <div className="min-h-0 flex-1 overflow-y-auto pr-1">
-        <div className="space-y-5 pb-8">
+        <div className="space-y-4 pb-8">
           {/* STEP 1: MEDIA ASSET */}
           <ComposeMediaSection
             activePoster={activePoster}

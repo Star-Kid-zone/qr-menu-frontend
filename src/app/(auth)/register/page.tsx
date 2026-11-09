@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AnimatePresence, motion } from "framer-motion";
@@ -15,7 +15,10 @@ import { registerSchema, type RegisterSchemaValues } from "@/schemas/auth.schema
 import { setStoredUserRole, setStoredPermissions } from "@/utils/storage";
 import { getApiErrorMessage } from "@/utils/errors";
 import { fadeInUp } from "@/lib/motion";
-import { PiLinkBold, PiSparkleFill } from "react-icons/pi";
+import { PiLinkBold } from "react-icons/pi";
+import { getLandingRoute } from "@/config/landing";
+
+const RESEND_SECONDS = 60;
 
 function toSlug(value: string): string {
   return value
@@ -25,13 +28,29 @@ function toSlug(value: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
-  const [step, setStep] = useState<"register" | "otp">("register");
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("000000");
+  const searchParams = useSearchParams();
+  // Arriving from sign-in with ?verify=<email> means the account exists but its email is unconfirmed.
+  const verifyParam = searchParams?.get("verify") ?? "";
+  const [step, setStep] = useState<"register" | "otp">(verifyParam ? "otp" : "register");
+  const [email, setEmail] = useState(verifyParam);
+  const [otp, setOtp] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [isManualSlug, setIsManualSlug] = useState(false);
+  const [resendIn, setResendIn] = useState(0);
+
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const t = setTimeout(() => setResendIn((n) => n - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendIn]);
+
+  // Coming back from sign-in: send a fresh code right away (the API rate-limits repeats).
+  useEffect(() => {
+    if (!verifyParam) return;
+    authService.resendOtp(verifyParam).then(() => setResendIn(RESEND_SECONDS)).catch(() => undefined);
+  }, [verifyParam]);
 
   const {
     register,
@@ -44,7 +63,7 @@ export default function RegisterPage() {
     defaultValues: {
       businessName: "",
       slug: "",
-      phone: "",
+      email: "",
       password: "",
     },
   });
@@ -69,22 +88,41 @@ export default function RegisterPage() {
       await authService.register({
         businessName: data.businessName.trim(),
         slug: data.slug.trim(),
-        phone: data.phone.trim(),
+        email: data.email.trim().toLowerCase(),
         password: data.password,
         blueprintId: data.blueprintId || undefined,
       });
-      setPhone(data.phone.trim());
+      setEmail(data.email.trim().toLowerCase());
+      setResendIn(RESEND_SECONDS);
       setStep("otp");
-      toast.success("Account created! Verification code is 000000.");
     } catch (err) {
+      // Registered earlier but never confirmed: the API already sent a new code, so continue there.
+      const body = (err as { response?: { status?: number; data?: { code?: string } } })?.response;
+      if (body?.status === 409 && body.data?.code === "ACCOUNT_NOT_VERIFIED") {
+        setEmail(data.email.trim().toLowerCase());
+        setResendIn(RESEND_SECONDS);
+        setStep("otp");
+        toast.info("This email is waiting to be verified. We sent you a new code.");
+        return;
+      }
       toast.error(getApiErrorMessage(err, "Registration failed."));
+    }
+  };
+
+  const onResend = async () => {
+    try {
+      await authService.resendOtp(email);
+      setResendIn(RESEND_SECONDS);
+      toast.success("A new code is on its way.");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "We couldn't send a new code. Try again in a moment."));
     }
   };
 
   const onVerifyOtp = async () => {
     try {
       setIsVerifying(true);
-      const res = await authService.verifyOtp({ phone, otp });
+      const res = await authService.verifyOtp({ email, otp });
       const user = res?.data?.user;
 
       if (user) {
@@ -94,10 +132,10 @@ export default function RegisterPage() {
         }
       }
 
-      toast.success("Account verified! Redirecting to your workspace…");
-      router.push("/admin/home");
+
+      router.push(getLandingRoute(user?.role, null));
     } catch (err) {
-      toast.error(getApiErrorMessage(err, "OTP verification failed."));
+      toast.error(getApiErrorMessage(err, "That code didn't work. Check it and try again."));
     } finally {
       setIsVerifying(false);
     }
@@ -117,37 +155,23 @@ export default function RegisterPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-xs">
               QR
             </div>
-            <h1 className="text-h1 text-foreground">Verify your store</h1>
+            <h1 className="text-h1 text-foreground">Verify your email</h1>
           </div>
 
           <p className="mb-4 text-sm leading-6 text-muted-foreground">
-            Enter the 6-digit verification code to activate your account and start setting up your digital menu.
+            Enter the 6-digit code we emailed to <strong className="text-foreground">{email}</strong> to finish creating your account.
           </p>
 
-          <div className="mb-6 flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 p-3.5 text-xs text-foreground">
-            <div className="flex items-center gap-2">
-              <PiSparkleFill className="h-4 w-4 text-primary" />
-              <span>Verification code is: <strong className="font-mono text-sm tracking-widest text-primary">000000</strong></span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setOtp("000000")}
-              className="font-bold text-primary hover:underline"
-            >
-              Fill Code
-            </button>
-          </div>
-
-          <div className="space-y-5">
-            <FormField label="6-Digit OTP Code" htmlFor="otp">
+          <div className="space-y-4">
+            <FormField label="6-digit code" htmlFor="otp">
               <Input
                 id="otp"
                 type="text"
                 inputMode="numeric"
                 maxLength={6}
-                placeholder="000000"
+                autoComplete="one-time-code"
                 value={otp}
-                onChange={(e) => setOtp(e.target.value)}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
                 className="font-mono text-center text-lg tracking-[0.3em]"
               />
             </FormField>
@@ -159,8 +183,26 @@ export default function RegisterPage() {
               onClick={onVerifyOtp}
               disabled={otp.length !== 6}
             >
-              {isVerifying ? "Verifying…" : "Verify & Open Website"}
+              {isVerifying ? "Verifying…" : "Verify email"}
             </Button>
+
+            <div className="flex items-center justify-between text-sm">
+              <button
+                type="button"
+                onClick={onResend}
+                disabled={resendIn > 0}
+                className="font-medium text-primary hover:underline disabled:cursor-not-allowed disabled:text-muted-foreground disabled:no-underline"
+              >
+                {resendIn > 0 ? `Send a new code in ${resendIn}s` : "Send a new code"}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setStep("register"); setOtp(""); }}
+                className="font-medium text-muted-foreground hover:text-foreground"
+              >
+                Wrong email?
+              </button>
+            </div>
           </div>
 
           <p className="mt-8 text-center text-sm text-muted-foreground">
@@ -169,7 +211,7 @@ export default function RegisterPage() {
               href="/login"
               className="font-semibold text-primary transition-colors duration-150 ease-out hover:text-primary/80"
             >
-              Sign in directly
+              Sign in
             </Link>
           </p>
         </motion.div>
@@ -226,26 +268,28 @@ export default function RegisterPage() {
                 />
               </div>
               {slugValue && (
-                <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <div className="mt-2 flex items-center gap-2 text-caption text-muted-foreground">
                   <PiLinkBold className="h-3 w-3 text-primary shrink-0" />
                   <span className="truncate">Preview: <strong className="text-foreground">/{slugValue}</strong></span>
                 </div>
               )}
             </FormField>
 
-            {/* Phone Number */}
+            {/* Email */}
             <FormField
-              label="Phone Number"
-              htmlFor="phone"
-              error={errors.phone?.message}
-              hint="Used as your login username"
+              label="Email"
+              htmlFor="email"
+              error={errors.email?.message}
+              hint="You'll sign in with this. We'll email a code to confirm it."
             >
               <Input
-                id="phone"
-                type="tel"
-                placeholder="Enter your phone number"
-                invalid={!!errors.phone}
-                {...register("phone")}
+                id="email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="you@restaurant.com"
+                invalid={!!errors.email}
+                {...register("email")}
               />
             </FormField>
 
@@ -254,7 +298,7 @@ export default function RegisterPage() {
               label="Password"
               htmlFor="password"
               error={errors.password?.message}
-              hint="At least 6 characters with a letter and a number"
+              hint="At least 8 characters with a letter and a number"
             >
               <Input
                 id="password"
@@ -266,14 +310,14 @@ export default function RegisterPage() {
             </FormField>
 
             {/* Starter Menu Concept */}
-            <div className="space-y-1.5 pt-1">
+            <div className="space-y-2 pt-1">
               <label className="text-caption font-semibold text-foreground flex items-center justify-between">
                 <span>Starter Menu Pack (Optional)</span>
-                <span className="text-[11px] text-muted-foreground font-normal">Seeds your QR menu</span>
+                <span className="text-caption text-muted-foreground font-normal">Seeds your QR menu</span>
               </label>
               <select
                 {...register("blueprintId")}
-                className="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-xs text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
                 <option value="">Platform Default (Recommended)</option>
                 <option value="cafe_bakery">☕ Artisan Cafe & Bakery</option>
@@ -289,7 +333,7 @@ export default function RegisterPage() {
             </Button>
           </form>
 
-          <p className="mt-7 text-center text-sm text-muted-foreground">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link
               href="/login"
@@ -301,5 +345,13 @@ export default function RegisterPage() {
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-sm text-muted-foreground">Loading…</div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }

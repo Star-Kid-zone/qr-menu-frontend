@@ -1,12 +1,12 @@
 'use client';
 
-import {
-  PiPencilSimpleBold,
-  PiPhoneBold,
-  PiTrashBold,
-} from 'react-icons/pi';
+import { PiEnvelopeSimpleBold } from 'react-icons/pi';
 import { cn } from '@/utils/cn';
-import type { StaffCardProps } from '../types';
+import { formatDate } from '@/utils/date';
+import { Badge } from '@/components/ui/Badge';
+import type { StaffItemProps } from '../types';
+import { StaffRowMenu } from './StaffRowMenu';
+import { StaffSwitch } from './StaffSwitch';
 
 export function getInitials(name: string) {
   const parts = name.trim().split(/\s+/);
@@ -14,94 +14,85 @@ export function getInitials(name: string) {
   return name.slice(0, 2).toUpperCase() || 'ST';
 }
 
-export function StaffCard({ member, onEdit, onDelete }: StaffCardProps) {
+export const ROLE_COPY = {
+  manager: { label: 'Manager', access: 'Everything except managing team members.' },
+  staff: { label: 'Staff', access: 'Menu, shifts and checklists. Can view the website settings but not change them.' },
+} as const;
+
+export function Avatar({ name, manager, dim }: { name: string; manager: boolean; dim?: boolean }) {
+  return (
+    <div
+      aria-hidden
+      className={cn(
+        'flex size-11 shrink-0 items-center justify-center rounded-full text-body-medium',
+        manager ? 'bg-primary text-primary-foreground' : 'border border-border bg-muted text-foreground',
+        dim && 'opacity-50',
+      )}
+    >
+      {getInitials(name)}
+    </div>
+  );
+}
+
+export function StaffCard({ member, selected, busy, onSelect, ...actions }: StaffItemProps) {
   const isManager = member.role === 'manager';
+  const role = ROLE_COPY[isManager ? 'manager' : 'staff'];
 
   return (
-    <div className="group relative flex flex-col justify-between rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-      <div>
-        {/* Top Row: Avatar + Status */}
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-3">
-            <div
-              className={cn(
-                'flex size-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold shadow-xs',
-                isManager
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-foreground border border-border'
-              )}
-            >
-              {getInitials(member.name)}
-            </div>
-            <div className="min-w-0">
-              <h3 className="truncate text-sm font-bold text-foreground">{member.name}</h3>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <PiPhoneBold size={12} className="shrink-0" />
-                <span className="font-mono text-[11px]">{member.phone}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Active pill */}
-          <span
-            className={cn(
-              'rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider',
-              member.active
-                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400'
-                : 'bg-muted text-muted-foreground'
-            )}
+    <article
+      className={cn(
+        'relative flex flex-col rounded-xl border bg-card p-4 transition-colors',
+        selected ? 'border-primary bg-primary/5' : 'border-border hover:border-foreground/20',
+        busy && 'pointer-events-none opacity-60',
+      )}
+      aria-busy={busy}
+    >
+      <div className="flex items-start gap-3">
+        <label className="flex size-6 shrink-0 cursor-pointer items-center justify-center self-center">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={(e) => onSelect(member, e.target.checked)}
+            aria-label={`Select ${member.name}`}
+            className="size-4 rounded border-border accent-[hsl(var(--primary))]"
+          />
+        </label>
+        <Avatar name={member.name} manager={isManager} dim={!member.active} />
+        <div className="min-w-0 flex-1">
+          <button
+            type="button"
+            onClick={() => actions.onEdit(member)}
+            className="block max-w-full truncate text-left text-body-medium text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            {member.active ? 'Active' : 'Off'}
-          </span>
-        </div>
-
-        {/* Role & Permissions Note */}
-        <div className="mt-3.5 rounded-lg border border-border/60 bg-muted/40 p-2.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Role</span>
-            <span
-              className={cn(
-                'rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide',
-                isManager
-                  ? 'bg-primary/10 text-primary'
-                  : 'bg-muted text-foreground'
-              )}
-            >
-              {member.role}
-            </span>
-          </div>
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            {isManager
-              ? 'Full dashboard, menu & analytics access.'
-              : 'Menu & Website management only.'}
+            {member.name}
+          </button>
+          <p className="flex items-center gap-1 text-caption text-muted-foreground">
+            <PiEnvelopeSimpleBold size={12} className="shrink-0" aria-hidden />
+            <span className="truncate">{member.email}</span>
           </p>
         </div>
+        <StaffRowMenu member={member} actions={actions} />
       </div>
 
-      {/* Actions Footer */}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <Badge tone={isManager ? 'primary' : 'neutral'}>{role.label}</Badge>
+        <Badge tone={member.active ? 'success' : 'neutral'}>{member.active ? 'Active' : 'Switched off'}</Badge>
+      </div>
+      <p className="mt-2 text-caption text-muted-foreground">{role.access}</p>
+
       <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-        <span className="text-[10px] text-muted-foreground">
-          Added {new Date(member.createdAt).toLocaleDateString()}
-        </span>
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => onEdit(member)}
-            aria-label={`Edit ${member.name}`}
-            className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition hover:border-primary/40 hover:bg-primary/5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <PiPencilSimpleBold size={13} />
-          </button>
-          <button
-            type="button"
-            onClick={() => onDelete(member)}
-            aria-label={`Delete ${member.name}`}
-            className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <PiTrashBold size={13} />
-          </button>
+        <span className="text-caption text-muted-foreground">Added {formatDate(member.createdAt)}</span>
+        <div className="flex items-center gap-1">
+          <span className="text-caption text-muted-foreground" aria-hidden>
+            {member.active ? 'Can sign in' : 'Blocked'}
+          </span>
+          <StaffSwitch
+            checked={member.active}
+            onChange={() => actions.onToggleActive(member)}
+            label={`${member.active ? 'Switch off' : 'Switch on'} sign in for ${member.name}`}
+          />
         </div>
       </div>
-    </div>
+    </article>
   );
 }

@@ -70,7 +70,7 @@ export function PeakTimeTechTab({ platform }: PeakTimeTechTabProps) {
         <Card className="flex flex-col p-6">
           <div className="mb-4">
             <div className="flex items-center gap-2">
-              <PiCalendarBlankBold className="size-5 text-violet-500" />
+              <PiCalendarBlankBold className="size-5 text-primary" />
               <h2 className="text-h2 text-foreground">Day-of-Week Distribution</h2>
             </div>
             <p className="mt-1 text-caption text-muted-foreground">
@@ -127,15 +127,15 @@ export function PeakTimeTechTab({ platform }: PeakTimeTechTabProps) {
                 const totalDev = platform.devices?.device_types?.reduce((acc, curr) => acc + curr.value, 0) || 1;
                 const pct = Math.round((d.value / totalDev) * 100);
                 return (
-                  <div key={idx} className="space-y-1.5">
+                  <div key={idx} className="space-y-2">
                     <div className="flex items-center justify-between text-body">
                       <div className="flex items-center gap-2">
                         {d.name === 'Mobile' ? (
-                          <PiDeviceMobileBold className="size-4 text-cyan-500" />
+                          <PiDeviceMobileBold className="size-4 text-info" />
                         ) : d.name === 'Tablet' ? (
-                          <PiDeviceTabletBold className="size-4 text-amber-500" />
+                          <PiDeviceTabletBold className="size-4 text-warning-foreground" />
                         ) : (
-                          <PiDesktopBold className="size-4 text-violet-500" />
+                          <PiDesktopBold className="size-4 text-primary" />
                         )}
                         <span className="font-semibold text-foreground">{d.name}</span>
                       </div>
@@ -146,7 +146,7 @@ export function PeakTimeTechTab({ platform }: PeakTimeTechTabProps) {
                     <div className="h-2.5 w-full rounded-full bg-muted/50 overflow-hidden">
                       <div
                         className={`h-full rounded-full ${
-                          d.name === 'Mobile' ? 'bg-cyan-500' : d.name === 'Tablet' ? 'bg-amber-500' : 'bg-violet-500'
+                          d.name === 'Mobile' ? 'bg-info' : d.name === 'Tablet' ? 'bg-warning' : 'bg-primary'
                         }`}
                         style={{ width: `${pct}%` }}
                       />
@@ -155,7 +155,7 @@ export function PeakTimeTechTab({ platform }: PeakTimeTechTabProps) {
                 );
               })
             ) : (
-              <p className="text-caption text-muted-foreground">No device telemetry recorded yet.</p>
+              <p className="text-caption text-muted-foreground">No visits with device details yet.</p>
             )}
           </div>
         </Card>
@@ -167,7 +167,7 @@ export function PeakTimeTechTab({ platform }: PeakTimeTechTabProps) {
               <h2 className="text-h2 text-foreground">Operating Systems</h2>
               <p className="text-caption text-muted-foreground">Guest OS distribution (iOS, Android, Windows)</p>
             </div>
-            <Badge tone="primary">OS Telemetry</Badge>
+            <Badge tone="primary">Operating system</Badge>
           </div>
 
           <div className="space-y-4">
@@ -176,7 +176,7 @@ export function PeakTimeTechTab({ platform }: PeakTimeTechTabProps) {
                 const totalOS = platform.devices?.os?.reduce((acc, curr) => acc + curr.value, 0) || 1;
                 const pct = Math.round((o.value / totalOS) * 100);
                 return (
-                  <div key={idx} className="space-y-1.5">
+                  <div key={idx} className="space-y-2">
                     <div className="flex items-center justify-between text-body">
                       <span className="font-semibold text-foreground">{o.name}</span>
                       <span className="font-mono text-muted-foreground">
@@ -184,13 +184,13 @@ export function PeakTimeTechTab({ platform }: PeakTimeTechTabProps) {
                       </span>
                     </div>
                     <div className="h-2.5 w-full rounded-full bg-muted/50 overflow-hidden">
-                      <div className="h-full rounded-full bg-emerald-500" style={{ width: `${pct}%` }} />
+                      <div className="h-full rounded-full bg-success" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 );
               })
             ) : (
-              <p className="text-caption text-muted-foreground">No OS telemetry recorded yet.</p>
+              <p className="text-caption text-muted-foreground">No visits with operating system details yet.</p>
             )}
           </div>
         </Card>

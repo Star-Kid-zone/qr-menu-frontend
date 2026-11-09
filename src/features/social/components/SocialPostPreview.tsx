@@ -23,6 +23,7 @@ import {
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/utils/cn";
 import type { SocialAccount, SocialPlatform } from "@/services/social.service";
+import { formatDate } from "@/utils/date";
 
 interface SocialPostPreviewProps {
   posterUrl?: string | null;
@@ -287,13 +288,12 @@ export function SocialPostPreview({
 
               {/* Caption & Stats */}
               <div className="space-y-1 p-3 pt-2">
-                <p className="font-semibold text-foreground">148 likes</p>
                 <div className="text-body leading-relaxed text-foreground whitespace-pre-wrap break-words">
                   <span className="mr-1.5 font-bold">{username.toLowerCase().replace(/\s+/g, "_")}</span>
                   {renderFormattedCaption(effectiveCaption)}
                 </div>
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground/70">
-                  {scheduledAt ? `Scheduled for ${new Date(scheduledAt).toLocaleDateString()}` : "Just now"}
+                  {scheduledAt ? `Scheduled for ${formatDate(scheduledAt)}` : "Just now"}
                 </p>
               </div>
             </div>

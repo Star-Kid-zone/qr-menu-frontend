@@ -6,30 +6,6 @@ export interface SocialLink {
   enabled?: boolean;
 }
 
-export interface Business {
-  id: string | number;
-  business_name?: string;
-  name?: string;
-  phone?: string;
-  description?: string;
-  address?: string;
-  website_url?: string;
-  social_media?: SocialLink[];
-  social_links?: SocialLink[];
-  availability?: Array<{
-    day: string;
-    startTime: string;
-    endTime: string;
-  }>;
-  about_features?: unknown;
-  user_id?: string | number;
-  workspace_id?: string | number | null;
-  industry_id?: string | number | null;
-  active?: boolean | number;
-  created_at?: string;
-  updated_at?: string;
-}
-
 export interface Menu {
   id: string | number;
   business_id?: string | number;
@@ -56,39 +32,6 @@ export interface Menu {
   /** 0 (not spicy) to 3 (hot); undefined/null = not specified */
   spiceLevel?: number | null;
   calories?: number | null;
-  created_at?: string;
-  updated_at?: string;
-}
-
-export type MenuItem = Menu;
-
-export interface QRCode {
-  id: string | number;
-  business_id: string | number;
-  code: string;
-  data?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-export interface Payment {
-  id: string | number;
-  business_id: string | number;
-  amount: number;
-  status: 'pending' | 'completed' | 'failed';
-  payment_method?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-export interface Review {
-  id: string | number;
-  business_id: string | number;
-  user_id: string | number;
-  rating: number;
-  review_link?: string;
-  comment?: string;
-  user?: { id: string | number; name: string };
   created_at?: string;
   updated_at?: string;
 }
@@ -122,20 +65,6 @@ export interface Setting {
   currency?: Currency;
   created_at?: string;
   updated_at?: string;
-}
-
-export interface IndustryFeature {
-  id: string | number;
-  name: string;
-}
-
-export interface BusinessAboutFeatures {
-  enabled: boolean;
-  items: Array<{
-    name: string;
-    description?: string;
-    enabled?: boolean;
-  }>;
 }
 
 export interface Industry {

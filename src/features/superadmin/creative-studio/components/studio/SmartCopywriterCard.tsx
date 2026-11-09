@@ -3,11 +3,12 @@
 import React from "react";
 import { Card, Button } from "@/components/ui";
 import { PiTextTBold, PiCopyBold } from "react-icons/pi";
+import type { CopyVariant } from "../../types";
 
 export interface SmartCopywriterCardProps {
   generatedImageUrl: string | null;
   generatedVideoUrl: string | null;
-  copyVariants: any[];
+  copyVariants: CopyVariant[];
   generatingCopy: boolean;
   handleGenerateCopy: () => Promise<void>;
   copySuccessToast: (msg: string) => void;
@@ -24,9 +25,9 @@ export function SmartCopywriterCard({
   if (!generatedImageUrl && !generatedVideoUrl) return null;
 
   return (
-    <Card className="p-5 space-y-3 border-border">
+    <Card className="p-6 space-y-3 border-border">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+        <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <PiTextTBold className="h-4 w-4 text-primary" />
           Multi-Lingual Marketing Copy
         </h4>
@@ -45,15 +46,15 @@ export function SmartCopywriterCard({
           {copyVariants.map((variant, idx) => (
             <div
               key={idx}
-              className="rounded-lg border border-border bg-muted/20 p-3 text-xs space-y-1.5"
+              className="rounded-lg border border-border bg-muted/20 p-3 text-xs space-y-2"
             >
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-foreground uppercase tracking-wider text-[10px]">
+                <span className="font-semibold text-foreground text-caption">
                   {variant.language || "English"}
                 </span>
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText(variant.caption);
+                    navigator.clipboard.writeText(variant.caption ?? "");
                     copySuccessToast("Copied caption to clipboard!");
                   }}
                   className="text-muted-foreground hover:text-foreground"
@@ -63,7 +64,7 @@ export function SmartCopywriterCard({
               </div>
               <p className="text-muted-foreground">{variant.caption}</p>
               {variant.hashtags && (
-                <p className="text-primary font-mono text-[11px]">
+                <p className="text-primary font-mono text-caption">
                   {variant.hashtags.join(" ")}
                 </p>
               )}

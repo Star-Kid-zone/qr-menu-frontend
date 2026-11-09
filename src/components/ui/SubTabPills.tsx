@@ -3,6 +3,10 @@
 import { ScrollableTabRow } from "./ScrollableTabRow";
 import { cn } from "@/utils/cn";
 
+/**
+ * Secondary switch inside a section (e.g. Content: Announcement bar / Our story / …).
+ * A segmented control: 36px tall on desktop, 44px on touch screens.
+ */
 export function SubTabPills<T extends string>({
   options,
   active,
@@ -13,8 +17,8 @@ export function SubTabPills<T extends string>({
   onChange: (id: T) => void;
 }) {
   return (
-    <div className="inline-flex max-w-full items-center rounded-full border border-border bg-card p-1.5 shrink-0" role="tablist">
-      <ScrollableTabRow activeKey={active} scrollContainerClassName="gap-1">
+    <div className="inline-flex max-w-full shrink-0 items-center rounded-md border border-input bg-card p-0.5" role="tablist">
+      <ScrollableTabRow activeKey={active} scrollContainerClassName="gap-0.5">
         {options.map((opt) => {
           const selected = opt.id === active;
           return (
@@ -26,20 +30,11 @@ export function SubTabPills<T extends string>({
               data-tab-active={selected || undefined}
               onClick={() => onChange(opt.id)}
               className={cn(
-                "flex shrink-0 snap-start items-center gap-2.5 whitespace-nowrap rounded-full px-5 py-2 text-caption font-semibold transition-colors duration-200",
-                selected
-                  ? "bg-accent text-accent-foreground shadow-neu-inset-sm"
-                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                "flex h-11 shrink-0 snap-start items-center whitespace-nowrap rounded px-4 text-body-medium transition-colors sm:h-9 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary",
+                selected ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
-              <span
-                className={cn(
-                  "transition-colors",
-                  selected ? "text-accent-foreground" : "text-muted-foreground",
-                )}
-              >
-                {opt.label}
-              </span>
+              {opt.label}
             </button>
           );
         })}

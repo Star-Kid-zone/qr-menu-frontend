@@ -2,51 +2,44 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { PiMegaphoneBold, PiXBold, PiSparkleBold, PiInfoBold, PiWarningBold } from 'react-icons/pi';
+import { PiXBold } from 'react-icons/pi';
 import {
   superadminService,
   type PlatformAnnouncement,
 } from '@/services/superadmin.service';
 import { getJsonStorageItem, setJsonStorageItem } from '@/utils/storage';
+import { cn } from '@/utils/cn';
 
 const DISMISSED_KEY = 'dismissed_announcements';
 
+const BADGE_TONE: Record<string, string> = {
+  warning: 'bg-warning/15 text-warning-foreground',
+  promo: 'bg-primary/10 text-primary',
+  feature: 'bg-success/10 text-success',
+};
+
 export function TenantAnnouncementBanner() {
-  const [announcements, setAnnouncements] = useState<PlatformAnnouncement[]>([]);
-  const [dismissedIds, setDismissedIds] = useState<string[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [announcements, setAnnouncements] = useState<PlatformAnnouncement[] | null>(null);
+  // Nothing renders until announcements arrive, so reading storage here
+  // cannot cause a server/client mismatch.
+  const [dismissedIds, setDismissedIds] = useState<string[]>(() => {
+    const stored = getJsonStorageItem<string[]>(DISMISSED_KEY, []);
+    return Array.isArray(stored) ? stored : [];
+  });
 
   useEffect(() => {
-    const stored = getJsonStorageItem<string[]>(DISMISSED_KEY, []);
-    if (stored && Array.isArray(stored)) {
-      setDismissedIds(stored);
-    }
-
-    async function fetchAnnouncements() {
-      try {
-        const list = await superadminService.getActiveAnnouncements();
-        if (Array.isArray(list)) {
-          setAnnouncements(list);
-        }
-      } catch {
-        // fail silently for background banner
-      } finally {
-        setLoaded(true);
-      }
-    }
-
-    fetchAnnouncements();
+    superadminService
+      .getActiveAnnouncements()
+      .then((list) => setAnnouncements(Array.isArray(list) ? list : []))
+      .catch(() => setAnnouncements([])); // background banner: stay quiet on failure
   }, []);
 
   const handleDismiss = async (id: string) => {
-    // 1. Optimistically hide immediately from state
-    setAnnouncements((prev) => prev.filter((a) => a.id !== id));
     const updated = [...dismissedIds, id];
     setDismissedIds(updated);
     setJsonStorageItem(DISMISSED_KEY, updated);
 
-    // 2. Persist read receipt to server (cross-device sync & superadmin telemetry)
+    // Also record it on the server so it stays dismissed on other devices.
     try {
       await superadminService.dismissAnnouncement(id);
     } catch (err) {
@@ -54,68 +47,38 @@ export function TenantAnnouncementBanner() {
     }
   };
 
-  const activeAnnouncement = announcements.find((a) => !dismissedIds.includes(a.id));
-
-  if (!loaded || !activeAnnouncement) return null;
-
-  const getBadgeStyle = (type: string) => {
-    switch (type) {
-      case 'warning':
-        return 'bg-destructive/20 text-destructive dark:text-red-400 border-destructive/30';
-      case 'promo':
-        return 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/30';
-      case 'feature':
-        return 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30';
-      default:
-        return 'bg-primary/20 text-primary border-primary/30';
-    }
-  };
+  const active = announcements?.find((a) => !dismissedIds.includes(a.id));
+  if (!active) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ height: 0, opacity: 0 }}
-        animate={{ height: 'auto', opacity: 1 }}
-        exit={{ height: 0, opacity: 0 }}
-        className="relative z-40 border-b border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-background px-4 py-2"
-      >
-        <div className="mx-auto flex max-w-[1800px] flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
-          <div className="flex flex-1 items-center gap-2.5">
-            <span
-              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-bold ${getBadgeStyle(
-                activeAnnouncement.type
-              )}`}
+    <div role="status" className="border-b border-border bg-card px-4 py-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-body">
+        <span className={cn('rounded-md px-2 py-0.5 text-caption', BADGE_TONE[active.type] ?? 'bg-muted text-foreground')}>
+          {active.badgeText || 'Update'}
+        </span>
+        <p className="min-w-0 flex-1">
+          <span className="text-body-medium text-foreground">{active.title}.</span>{' '}
+          <span className="text-muted-foreground">{active.content}</span>
+        </p>
+        <div className="flex shrink-0 items-center gap-1">
+          {active.actionUrl && (
+            <Link
+              href={active.actionUrl}
+              className="rounded-md px-3 py-2 text-body-medium text-primary hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
             >
-              <PiMegaphoneBold className="size-3.5" />
-              <span>{activeAnnouncement.badgeText || 'Update'}</span>
-            </span>
-            <div className="min-w-0">
-              <span className="font-semibold text-foreground mr-1.5">{activeAnnouncement.title}:</span>
-              <span className="text-muted-foreground">{activeAnnouncement.content}</span>
-            </div>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-3">
-            {activeAnnouncement.actionUrl && (
-              <Link
-                href={activeAnnouncement.actionUrl}
-                className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
-              >
-                {activeAnnouncement.actionText || 'Explore'}
-              </Link>
-            )}
-            <button
-              type="button"
-              onClick={() => handleDismiss(activeAnnouncement.id)}
-              className="rounded-md p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-              title="Dismiss announcement"
-              aria-label="Dismiss announcement"
-            >
-              <PiXBold className="size-3.5" />
-            </button>
-          </div>
+              {active.actionText || 'Open'}
+            </Link>
+          )}
+          <button
+            type="button"
+            onClick={() => handleDismiss(active.id)}
+            aria-label="Dismiss announcement"
+            className="inline-flex size-10 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+          >
+            <PiXBold className="size-4" />
+          </button>
         </div>
-      </motion.div>
-    </AnimatePresence>
+      </div>
+    </div>
   );
 }

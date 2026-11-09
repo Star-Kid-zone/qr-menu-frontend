@@ -6,7 +6,8 @@ import { normalizeTenantSlug, tenantSlugSchema } from "@/schemas/tenant.schema";
 import type { Availability } from "@/types/components/admin/workspace/PublicSlugEditor.types";
 import { toast } from "@/components/ui";
 import { getApiErrorMessage } from "@/utils/errors";
-import { industryService, menuService } from "@/services";
+import { industryService } from "@/services/industry.service";
+import { menuService } from "@/services/menu.service";
 import { workspaceService } from "@/services/workspace.service";
 import type { BannerAnnouncementValues } from "@/types/components/admin/workspace/BannerAnnouncementForm.types";
 import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
@@ -27,10 +28,13 @@ import type {
   WorkspacePaymentConfig,
   WorkspaceReviewConfig,
   GoogleReviewRecord,
+  WorkspaceBusinessProfile,
+  WorkspaceData,
 } from "@/services/workspace.service";
-import type { Currency, Industry } from "@/types";
+import type { Currency, Industry, Menu } from "@/types";
 import { buildPublicLandingUrl, buildPublicMenuUrl } from "@/utils/tenantHost";
 import { usePermissions } from "@/hooks/usePermissions";
+import { getStoredPermissions } from "@/utils/storage";
 import type {
   ListOffersHandle,
   ListGalleryHandle,
@@ -43,12 +47,27 @@ import type { BusinessSchemaValues } from "../components/BusinessForm";
 const isWorkspaceTabId = (value: string | null): value is WorkspaceTabId =>
   TABS.some((tab) => tab.id === value);
 
+// The hub's business row keeps the API's camelCase extras next to the legacy
+// snake_case fields so the live preview can read them.
+type HubBusiness = WorkspaceBusiness &
+  Pick<WorkspaceBusinessProfile, "industryId" | "businessHours" | "whatsappNumber" | "locationUrl">;
+
+// The mapped workspace carries every form field plus the uploaded asset URLs.
+type HubWorkspaceSetting = WorkspaceSetting &
+  Partial<WorkspaceSettingsFormValues> & { logo_url?: string; banner_url?: string };
+
+type SlugCheckResult = { slug: string; status: "available" | "taken" | "error" };
+
 export function useBusinessHubState() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const requestedTab = searchParams?.get("tab") || null;
-  const { hasPermission } = usePermissions();
-  const visibleTabs = TABS.filter((tab) => hasPermission(tab.unit));
+  const { hasPermission, canViewWebsite, canEditWebsite } = usePermissions();
+  // View-only roles still see the website tabs; editing is switched off on the page.
+  const visibleTabs = TABS.filter((tab) =>
+    tab.unit === "workspace" ? canViewWebsite : hasPermission(tab.unit)
+  );
+  const canViewReviews = hasPermission("reviews");
 
   useEffect(() => {
     if (requestedTab === "overview") {
@@ -63,8 +82,8 @@ export function useBusinessHubState() {
       ? requestedTab
       : DEFAULT_TAB;
 
-  const [businesses, setBusinesses] = useState<WorkspaceBusiness[]>([]);
-  const [workspace, setWorkspace] = useState<WorkspaceSetting | null>(null);
+  const [businesses, setBusinesses] = useState<HubBusiness[]>([]);
+  const [workspace, setWorkspace] = useState<HubWorkspaceSetting | null>(null);
   const [workspaceGallery, setWorkspaceGallery] = useState<WorkspaceGalleryItem[]>([]);
   const [workspaceOffers, setWorkspaceOffers] = useState<WorkspaceOfferItem[]>([]);
   const [workspaceFaqs, setWorkspaceFaqs] = useState<WorkspaceFaq[]>([]);
@@ -86,14 +105,14 @@ export function useBusinessHubState() {
   const [contentSaveLoading, setContentSaveLoading] = useState(false);
   const [contentSaveError, setContentSaveError] = useState<string | null>(null);
   const [businessEditMode, setBusinessEditMode] = useState(false);
-  const [businessSection, setBusinessSection] = useState<"profile" | "social" | "hours">("profile");
+  const [businessSection, setBusinessSection] = useState<"profile" | "taxes" | "social" | "hours">("profile");
   const [workspaceDesignSection, setWorkspaceDesignSection] = useState<"landing" | "menu">("landing");
   const [businessFormLoading, setBusinessFormLoading] = useState(false);
   const [publicSiteEditMode, setPublicSiteEditMode] = useState(false);
   const [slugDraft, setSlugDraft] = useState("");
   const [slugSaving, setSlugSaving] = useState(false);
   const [slugError, setSlugError] = useState<string | null>(null);
-  const [slugAvailability, setSlugAvailability] = useState<Availability>("idle");
+  const [slugCheck, setSlugCheck] = useState<SlugCheckResult | null>(null);
   const listOffersRef = useRef<ListOffersHandle>(null);
   const listGalleryRef = useRef<ListGalleryHandle>(null);
   const listFaqsRef = useRef<ListFaqsHandle>(null);
@@ -107,25 +126,21 @@ export function useBusinessHubState() {
   const [workspaceSaveError, setWorkspaceSaveError] = useState<string | null>(null);
   const [bannersSaveLoading, setBannersSaveLoading] = useState(false);
   const [bannersSaveError, setBannersSaveError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
+  // The first workspace load starts on mount, so the hook starts out refreshing.
+  const [refreshing, setRefreshing] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [industries, setIndustries] = useState<Industry[]>([]);
   const [workspaceDraft, setWorkspaceDraft] = useState<WorkspaceSettingsFormValues | null>(null);
   const [businessDraft, setBusinessDraft] = useState<BusinessSchemaValues | null>(null);
   const [bannerDraft, setBannerDraft] = useState<BannerAnnouncementValues | null>(null);
 
-  const fetchIndustries = useCallback(async () => {
-    try {
-      const response = await industryService.getIndustries();
-      setIndustries(response.data || []);
-    } catch (err) {
-      console.error("Failed to fetch industries", err);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchIndustries();
-  }, [fetchIndustries]);
+    industryService
+      .getIndustries()
+      .then((response) => setIndustries(response.data || []))
+      .catch((err: unknown) => console.error("Failed to fetch industries", err));
+  }, []);
 
   const setActiveTab = useCallback(
     (tab: WorkspaceTabId) => {
@@ -136,126 +151,139 @@ export function useBusinessHubState() {
     [searchParams, router]
   );
 
+  const applyWorkspaceData = useCallback((data: WorkspaceData) => {
+    setBusinesses(
+      data.business
+        ? [
+            {
+              ...data.business,
+              business_name: data.business.name,
+              website_url: data.business.websiteUrl,
+              social_media: data.business.socialLinks,
+              industry_id:
+                data.business.industryId != null
+                  ? Number(data.business.industryId)
+                  : null,
+              active: true,
+            } as unknown as HubBusiness,
+          ]
+        : []
+    );
+
+    const mappedWorkspace: HubWorkspaceSetting = {
+      id: data.workspaceId ? parseInt(data.workspaceId) : undefined,
+      public_slug: data.publicSlug,
+      theme_colour: data.theme?.themeColour || "",
+      primary_color: data.theme?.primaryColor || "#171717",
+      secondary_color: data.theme?.secondaryColor || "#64748b",
+      accent_color: data.theme?.accentColor || "#0f172a",
+      text_primary_color: data.theme?.textPrimaryColor || "#0f172a",
+      text_secondary_color: data.theme?.textSecondaryColor || "#475569",
+      accent_text_color: data.theme?.accentTextColor || "#ffffff",
+      border_color: data.theme?.borderColor || "#e2e8f0",
+      footer_bg_color: data.theme?.footerBgColor || "#0f172a",
+      section_bg_color: data.theme?.sectionBgColor || "#f1f5f9",
+      font_family: data.theme?.fontFamily || '"Inter","Plus Jakarta Sans",system-ui,sans-serif',
+      card_style: data.theme?.cardStyle || "rounded-2xl",
+      hero_overlay:
+        data.theme?.heroOverlay ||
+        "linear-gradient(to bottom,rgba(0,0,0,0.5),rgba(0,0,0,0.3))",
+      heading_class: data.theme?.headingClass || "",
+      theme_badge: data.theme?.themeBadge || "",
+      theme_marquee: data.theme?.themeMarquee || "",
+      hero_tagline: data.theme?.heroTagline || "",
+      menu_theme: data.theme?.menuTheme || "modern",
+      landing_theme: data.theme?.landingTheme || "modern",
+      landing_structure: data.theme?.landingStructure || "",
+      loading_screen_theme: data.theme?.loadingScreenTheme || "modern",
+      menu_primary_color: data.theme?.menuPrimaryColor || "#0F766E",
+      menu_secondary_color: data.theme?.menuSecondaryColor || "#14B8A6",
+      menu_accent_color: data.theme?.menuAccentColor || "#134E4A",
+      menu_text_primary_color: data.theme?.menuTextPrimaryColor || "#0f172a",
+      menu_text_secondary_color: data.theme?.menuTextSecondaryColor || "#475569",
+      menu_accent_text_color: data.theme?.menuAccentTextColor || "#ffffff",
+      menu_border_color: data.theme?.menuBorderColor || "#e2e8f0",
+      menu_footer_bg_color: data.theme?.menuFooterBgColor || "#0f172a",
+      menu_section_bg_color: data.theme?.menuSectionBgColor || "#f1f5f9",
+      menu_font_family:
+        data.theme?.menuFontFamily || '"Inter","Plus Jakarta Sans",system-ui,sans-serif',
+      menu_card_style: data.theme?.menuCardStyle || "rounded-2xl",
+      menu_structure: data.theme?.menuStructure || "",
+      menubtn_status: data.buttons?.menubtnStatus ?? true,
+      paybtn_status: data.buttons?.paybtnStatus ?? true,
+      reviewbtn_status: data.buttons?.reviewbtnStatus ?? true,
+      special_offerstatus: data.buttons?.specialOfferStatus ?? true,
+      announcement_enabled: data.announcement?.enabled ?? false,
+      announcement_text: data.announcement?.text || "",
+      announcement_starts_at: isoToDatetimeLocal(
+        data.announcement?.startsAt as string | null | undefined
+      ),
+      announcement_ends_at: isoToDatetimeLocal(
+        data.announcement?.endsAt as string | null | undefined
+      ),
+      currency_id: null,
+      logo_url: data.theme?.logoUrl || "",
+      banner_url: data.theme?.bannerUrl || "",
+    };
+
+    setWorkspace(mappedWorkspace);
+    setWorkspaceGallery(data.gallery || []);
+    setWorkspaceOffers(data.offers || []);
+    setWorkspaceFaqs(data.faqs || []);
+    setWorkspacePayment(data.payment || null);
+    setWorkspaceReview(data.review || null);
+    const nextContentDraft = {
+      storyHeadline: data.content?.storyHeadline || "",
+      storyBody: data.content?.storyBody || "",
+      stats: data.content?.stats || [],
+    };
+    setContentDraft(nextContentDraft);
+    setSavedContentDraft(nextContentDraft);
+    setHasLoaded(true);
+  }, []);
+
+  const handleWorkspaceLoadError = useCallback((fetchError: unknown) => {
+    console.error("Error fetching workspace data:", fetchError);
+    setError(getApiErrorMessage(fetchError, "Check your connection and try again."));
+  }, []);
+
   const fetchWorkspaceData = useCallback(async () => {
     try {
       setError(null);
       setRefreshing(true);
       const response = await workspaceService.getWorkspace();
-      const data = response.data;
-
-      setBusinesses(
-        data.business
-          ? [
-              {
-                ...data.business,
-                business_name: data.business.name,
-                website_url: data.business.websiteUrl,
-                social_media: data.business.socialLinks,
-                industry_id:
-                  data.business.industryId != null
-                    ? Number(data.business.industryId)
-                    : null,
-                active: true,
-              } as any,
-            ]
-          : []
-      );
-
-      const mappedWorkspace: WorkspaceSetting = {
-        id: data.workspaceId ? parseInt(data.workspaceId) : undefined,
-        public_slug: data.publicSlug,
-        theme_colour: data.theme?.themeColour || "",
-        primary_color: data.theme?.primaryColor || "#171717",
-        secondary_color: data.theme?.secondaryColor || "#64748b",
-        accent_color: data.theme?.accentColor || "#0f172a",
-        text_primary_color: data.theme?.textPrimaryColor || "#0f172a",
-        text_secondary_color: data.theme?.textSecondaryColor || "#475569",
-        accent_text_color: data.theme?.accentTextColor || "#ffffff",
-        border_color: data.theme?.borderColor || "#e2e8f0",
-        footer_bg_color: data.theme?.footerBgColor || "#0f172a",
-        section_bg_color: data.theme?.sectionBgColor || "#f1f5f9",
-        font_family: data.theme?.fontFamily || '"Inter","Plus Jakarta Sans",system-ui,sans-serif',
-        card_style: data.theme?.cardStyle || "rounded-2xl",
-        hero_overlay:
-          data.theme?.heroOverlay ||
-          "linear-gradient(to bottom,rgba(0,0,0,0.5),rgba(0,0,0,0.3))",
-        heading_class: data.theme?.headingClass || "",
-        theme_badge: data.theme?.themeBadge || "",
-        theme_marquee: data.theme?.themeMarquee || "",
-        hero_tagline: data.theme?.heroTagline || "",
-        menu_theme: data.theme?.menuTheme || "modern",
-        landing_theme: data.theme?.landingTheme || "modern",
-        landing_structure: data.theme?.landingStructure || "",
-        loading_screen_theme: data.theme?.loadingScreenTheme || "modern",
-        menu_primary_color: data.theme?.menuPrimaryColor || "#0F766E",
-        menu_secondary_color: data.theme?.menuSecondaryColor || "#14B8A6",
-        menu_accent_color: data.theme?.menuAccentColor || "#134E4A",
-        menu_text_primary_color: data.theme?.menuTextPrimaryColor || "#0f172a",
-        menu_text_secondary_color: data.theme?.menuTextSecondaryColor || "#475569",
-        menu_accent_text_color: data.theme?.menuAccentTextColor || "#ffffff",
-        menu_border_color: data.theme?.menuBorderColor || "#e2e8f0",
-        menu_footer_bg_color: data.theme?.menuFooterBgColor || "#0f172a",
-        menu_section_bg_color: data.theme?.menuSectionBgColor || "#f1f5f9",
-        menu_font_family:
-          data.theme?.menuFontFamily || '"Inter","Plus Jakarta Sans",system-ui,sans-serif',
-        menu_card_style: data.theme?.menuCardStyle || "rounded-2xl",
-        menu_structure: data.theme?.menuStructure || "",
-        menubtn_status: data.buttons?.menubtnStatus ?? true,
-        paybtn_status: data.buttons?.paybtnStatus ?? true,
-        reviewbtn_status: data.buttons?.reviewbtnStatus ?? true,
-        special_offerstatus: data.buttons?.specialOfferStatus ?? true,
-        announcement_enabled: data.announcement?.enabled ?? false,
-        announcement_text: data.announcement?.text || "",
-        announcement_starts_at: isoToDatetimeLocal(
-          data.announcement?.startsAt as string | null | undefined
-        ),
-        announcement_ends_at: isoToDatetimeLocal(
-          data.announcement?.endsAt as string | null | undefined
-        ),
-        currency_id: null,
-        logo_url: data.theme?.logoUrl || "",
-        banner_url: data.theme?.bannerUrl || "",
-      } as any;
-
-      setWorkspace(mappedWorkspace);
-      setWorkspaceGallery((data.gallery as any) || []);
-      setWorkspaceOffers((data.offers as any) || []);
-      setWorkspaceFaqs(data.faqs || []);
-      setWorkspacePayment(data.payment || null);
-      setWorkspaceReview(data.review || null);
-      const nextContentDraft = {
-        storyHeadline: data.content?.storyHeadline || "",
-        storyBody: data.content?.storyBody || "",
-        stats: data.content?.stats || [],
-      };
-      setContentDraft(nextContentDraft);
-      setSavedContentDraft(nextContentDraft);
+      applyWorkspaceData(response.data);
     } catch (fetchError) {
-      console.error("Error fetching workspace data:", fetchError);
-      setError("We could not load your workspace right now. Please try again.");
+      handleWorkspaceLoadError(fetchError);
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [applyWorkspaceData, handleWorkspaceLoadError]);
+
+  // Initial load: `refreshing` already starts true and `error` null.
+  useEffect(() => {
+    workspaceService
+      .getWorkspace()
+      .then((response) => applyWorkspaceData(response.data))
+      .catch(handleWorkspaceLoadError)
+      .finally(() => setRefreshing(false));
+  }, [applyWorkspaceData, handleWorkspaceLoadError]);
 
   useEffect(() => {
-    void fetchWorkspaceData();
-  }, [fetchWorkspaceData]);
+    // Read stored permissions at call time: the first effect can run before
+    // the hook has picked up the real permissions after hydration.
+    const stored = getStoredPermissions();
+    if (!canViewReviews || (stored && !stored.includes("reviews"))) return;
+    workspaceService
+      .getGoogleReviews()
+      .then((response) => setWorkspaceGoogleReviews(response.data.reviews || []))
+      .catch((fetchError: unknown) => console.error("Error fetching Google reviews:", fetchError));
+  }, [canViewReviews]);
 
-  const fetchGoogleReviews = useCallback(async () => {
-    try {
-      const response = await workspaceService.getGoogleReviews();
-      setWorkspaceGoogleReviews(response.data.reviews || []);
-    } catch (fetchError) {
-      console.error("Error fetching Google reviews:", fetchError);
-    }
-  }, []);
-
-  useEffect(() => {
-    void fetchGoogleReviews();
-  }, [fetchGoogleReviews]);
-
-  useEffect(() => {
+  // Leaving a tab drops its unsaved edit state (adjusted during render when the tab changes).
+  const [resetForTab, setResetForTab] = useState(activeTab);
+  if (resetForTab !== activeTab) {
+    setResetForTab(activeTab);
     if (activeTab !== "workspace") {
       setWorkspaceEditMode(false);
       setWorkspaceSaveError(null);
@@ -276,7 +304,7 @@ export function useBusinessHubState() {
       setContentSaveError(null);
       setContentDraft(savedContentDraft);
     }
-  }, [activeTab, savedContentDraft]);
+  }
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -435,8 +463,8 @@ export function useBusinessHubState() {
       try {
         const response = await menuService.getMenus();
         if (!cancelled) {
-          const rawItems = Array.isArray(response.data) ? response.data : [];
-          const normalized = rawItems.map((item: any) => {
+          const rawItems: Menu[] = Array.isArray(response.data) ? response.data : [];
+          const normalized = rawItems.map((item) => {
             const img =
               item.image_url ||
               item.imageUrl ||
@@ -484,35 +512,56 @@ export function useBusinessHubState() {
 
   const savedSlug = workspace?.public_slug?.trim() ?? "";
 
-  useEffect(() => {
+  const normalizedSlugDraft = normalizeTenantSlug(slugDraft);
+  const parsedSlugDraft = tenantSlugSchema.safeParse(normalizedSlugDraft);
+
+  // When the slug inputs change, drop the previous availability result and
+  // sync the validation message (adjusted during render, not in an effect).
+  const [slugInputs, setSlugInputs] = useState({
+    editMode: publicSiteEditMode,
+    draft: slugDraft,
+    saved: savedSlug,
+  });
+  if (
+    slugInputs.editMode !== publicSiteEditMode ||
+    slugInputs.draft !== slugDraft ||
+    slugInputs.saved !== savedSlug
+  ) {
+    setSlugInputs({ editMode: publicSiteEditMode, draft: slugDraft, saved: savedSlug });
+    setSlugCheck(null);
     if (!publicSiteEditMode) {
-      setSlugAvailability("idle");
       setSlugError(null);
-      return;
+    } else if (normalizedSlugDraft && normalizedSlugDraft !== savedSlug) {
+      setSlugError(
+        parsedSlugDraft.success
+          ? null
+          : parsedSlugDraft.error.issues?.[0]?.message ?? "Invalid slug format"
+      );
     }
+  }
+
+  const slugAvailability: Availability =
+    !publicSiteEditMode || !normalizedSlugDraft
+      ? "idle"
+      : normalizedSlugDraft === savedSlug
+        ? "unchanged"
+        : !parsedSlugDraft.success
+          ? "invalid"
+          : slugCheck?.slug === normalizedSlugDraft
+            ? slugCheck.status
+            : "checking";
+
+  useEffect(() => {
+    if (!publicSiteEditMode) return;
     const normalized = normalizeTenantSlug(slugDraft);
-    if (!normalized) {
-      setSlugAvailability("idle");
-      return;
-    }
-    if (normalized === savedSlug) {
-      setSlugAvailability("unchanged");
-      return;
-    }
-    const parsed = tenantSlugSchema.safeParse(normalized);
-    if (!parsed.success) {
-      setSlugAvailability("invalid");
-      setSlugError(parsed.error.issues?.[0]?.message ?? "Invalid slug format");
-      return;
-    }
-    setSlugError(null);
-    setSlugAvailability("checking");
+    if (!normalized || normalized === savedSlug) return;
+    if (!tenantSlugSchema.safeParse(normalized).success) return;
     const t = window.setTimeout(async () => {
       try {
         const res = await workspaceService.checkSlugAvailability(normalized);
-        setSlugAvailability(res.data.data.available ? "available" : "taken");
+        setSlugCheck({ slug: normalized, status: res.data.available ? "available" : "taken" });
       } catch {
-        setSlugAvailability("error");
+        setSlugCheck({ slug: normalized, status: "error" });
       }
     }, 400);
     return () => window.clearTimeout(t);
@@ -531,7 +580,7 @@ export function useBusinessHubState() {
       case "unchanged":
         return <span className="text-muted-foreground">Same as current slug</span>;
       case "error":
-        return <span className="text-destructive">Could not verify; you can still try Save</span>;
+        return <span className="text-destructive">Couldn&apos;t check this address right now. You can still save it.</span>;
       default:
         return null;
     }
@@ -564,12 +613,17 @@ export function useBusinessHubState() {
       ...(bannersEditMode && bannerDraft ? bannerDraft : {}),
       id: workspace?.id ?? null,
       public_slug: workspace?.public_slug ?? "",
-      logo_url: (workspace as any)?.logo_url ?? "",
-      banner_url: (workspace as any)?.banner_url ?? "",
+      logo_url: workspace?.logo_url ?? "",
+      banner_url: workspace?.banner_url ?? "",
       story_headline: contentDraft.storyHeadline,
       story_body: contentDraft.storyBody,
       stats: contentDraft.stats,
     };
+
+    // Read optional camelCase extras without assuming which shape is active.
+    const businessFields: Record<string, unknown> | null = effectiveBusiness
+      ? { ...effectiveBusiness }
+      : null;
 
     return {
       user_id: workspace?.id ?? 0,
@@ -578,14 +632,14 @@ export function useBusinessHubState() {
         ? {
             business_name: effectiveBusiness.business_name,
             industry_id:
-              (effectiveBusiness as any).industryId ??
+              businessFields?.industryId ??
               effectiveBusiness.industry_id ??
               null,
             phone: effectiveBusiness.phone,
             address: effectiveBusiness.address,
-            business_hours: (effectiveBusiness as any).businessHours ?? null,
-            whatsapp_number: (effectiveBusiness as any).whatsappNumber ?? null,
-            location_url: (effectiveBusiness as any).locationUrl ?? null,
+            business_hours: businessFields?.businessHours ?? null,
+            whatsapp_number: businessFields?.whatsappNumber ?? null,
+            location_url: businessFields?.locationUrl ?? null,
             website_url: effectiveBusiness.website_url,
             social_media: effectiveBusiness.social_media,
             availability: effectiveBusiness.availability,
@@ -608,7 +662,7 @@ export function useBusinessHubState() {
       googleReviews: workspaceGoogleReviews.filter(
         (r) => r.isFeatured
       ) as RawPublicSiteData["googleReviews"],
-      currency: (workspace as any)?.currency ?? null,
+      currency: workspace?.currency ?? null,
     };
   }, [
     workspace,
@@ -640,7 +694,7 @@ export function useBusinessHubState() {
       setPublicSiteEditMode(false);
       setSlugDraft("");
       await fetchWorkspaceData();
-    } catch (err: any) {
+    } catch (err) {
       setSlugError(
         getApiErrorMessage(err, "Failed to update slug. Please try another.")
       );
@@ -653,6 +707,11 @@ export function useBusinessHubState() {
     activeTab,
     setActiveTab,
     visibleTabs,
+    canEdit: canEditWebsite,
+    loadError: error,
+    // First load still running: show a loading state, never the "create" empty state.
+    isInitialLoading: !hasLoaded && !error,
+    isRefreshing: refreshing,
     businesses,
     workspace,
     workspaceGallery,

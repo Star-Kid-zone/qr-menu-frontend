@@ -404,7 +404,7 @@ export function MenuTemplateRenderer({
               whileHover={r ? {} : { scale: 1.01 }}
               whileTap={r ? {} : { scale: 0.98 }}
             >
-              Settle Bill Securely
+              Pay bill
             </motion.button>
           </div>
         )}
@@ -465,11 +465,4 @@ export function MenuTemplateRenderer({
         </Modal>
       </div>
     );
-}
-
-/** Legacy factory API — binds a fixed theme and returns a component taking only `{ payload, routeSlug }`. */
-export function makeMenuTemplate(theme: MenuTheme) {
-  return function MenuTemplate({ payload, routeSlug }: { payload: PublicMenuPayload; routeSlug: string | null }) {
-    return <MenuTemplateRenderer theme={theme} payload={payload} routeSlug={routeSlug} />;
-  };
 }

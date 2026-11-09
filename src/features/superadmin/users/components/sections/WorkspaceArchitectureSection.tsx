@@ -39,10 +39,10 @@ export function WorkspaceArchitectureSection({
 }: WorkspaceArchitectureSectionProps) {
   return (
     <Card className="overflow-hidden">
-      <div className="flex items-center gap-2.5 border-b border-border bg-muted/30 px-6 py-4">
+      <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-6 py-4">
         <PiSquaresFourBold className="size-5 text-primary" />
         <h2 className="text-h3 font-bold text-foreground">
-          Workspace Architecture &amp; Theme Palette
+          Website look and features
         </h2>
       </div>
       <div className="p-6">
@@ -53,9 +53,9 @@ export function WorkspaceArchitectureSection({
         ) : (
           <div className="space-y-6">
             {workspaces.map((ws) => (
-              <div key={ws.id} className="space-y-5">
+              <div key={ws.id} className="space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
-                  <div className="flex flex-wrap items-center gap-2.5">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="font-mono text-base font-bold text-foreground">
                       Workspace #{String(ws.id)}
                     </span>
@@ -63,12 +63,12 @@ export function WorkspaceArchitectureSection({
                       Subdomain: {ws.public_slug || 'unconfigured'}
                     </span>
                     {Boolean(ws.landingTheme) && (
-                      <span className="rounded-md border border-border bg-card px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
-                        Landing: {String(ws.landingTheme)}
+                      <span className="rounded-md border border-border bg-card px-3 py-0.5 text-xs font-semibold text-muted-foreground">
+                        Website theme: {String(ws.landingTheme)}
                       </span>
                     )}
                     {Boolean(ws.menuTheme) && (
-                      <span className="rounded-md border border-border bg-card px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
+                      <span className="rounded-md border border-border bg-card px-3 py-0.5 text-xs font-semibold text-muted-foreground">
                         Menu: {String(ws.menuTheme)}
                       </span>
                     )}
@@ -80,7 +80,7 @@ export function WorkspaceArchitectureSection({
                         href={buildPublicLandingUrl(ws.public_slug)}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                        className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-primary"
                       >
                         Landing Site <PiArrowSquareOutBold size={13} />
                       </a>
@@ -88,7 +88,7 @@ export function WorkspaceArchitectureSection({
                         href={buildPublicMenuUrl(ws.public_slug)}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/20"
+                        className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-semibold text-primary transition-colors hover:bg-primary/20"
                       >
                         Digital Menu <PiArrowSquareOutBold size={13} />
                       </a>
@@ -106,7 +106,7 @@ export function WorkspaceArchitectureSection({
                       }}
                     />
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase text-muted-foreground">
+                      <p className="text-caption font-bold uppercase text-muted-foreground">
                         Primary Brand
                       </p>
                       <p className="font-mono text-xs font-bold text-foreground truncate">
@@ -123,7 +123,7 @@ export function WorkspaceArchitectureSection({
                       }}
                     />
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase text-muted-foreground">
+                      <p className="text-caption font-bold uppercase text-muted-foreground">
                         Secondary Brand
                       </p>
                       <p className="font-mono text-xs font-bold text-foreground truncate">
@@ -140,7 +140,7 @@ export function WorkspaceArchitectureSection({
                       }}
                     />
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase text-muted-foreground">
+                      <p className="text-caption font-bold uppercase text-muted-foreground">
                         Accent Brand
                       </p>
                       <p className="font-mono text-xs font-bold text-foreground truncate">
@@ -157,7 +157,7 @@ export function WorkspaceArchitectureSection({
                       }}
                     />
                     <div className="min-w-0">
-                      <p className="text-[10px] font-bold uppercase text-muted-foreground">
+                      <p className="text-caption font-bold uppercase text-muted-foreground">
                         Menu Accent
                       </p>
                       <p className="font-mono text-xs font-bold text-foreground truncate">
@@ -171,10 +171,10 @@ export function WorkspaceArchitectureSection({
                 <div className="rounded-xl border border-border bg-card p-4 space-y-3">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-wider text-foreground">
-                        Feature Flags &amp; Navigation Modules
+                      <p className="text-xs font-bold text-foreground">
+                        What guests can use
                       </p>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-caption text-muted-foreground">
                         Control which customer-facing features and actions are active on the visitor landing page
                       </p>
                     </div>
@@ -209,11 +209,11 @@ export function WorkspaceArchitectureSection({
                       </div>
 
                       {Boolean(ws.announcementText) && (
-                        <div className="rounded-xl border border-amber-500/20 bg-amber-950/20 p-3">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
+                        <div className="rounded-xl border border-warning/20 bg-warning/20 p-3">
+                          <p className="text-caption font-bold text-warning-foreground">
                             Customer Announcement Banner {ws.announcementEnabled ? '(Active)' : '(Disabled)'}
                           </p>
-                          <p className="mt-1 text-xs font-medium text-amber-200">
+                          <p className="mt-1 text-xs font-medium text-warning-foreground">
                             &quot;{String(ws.announcementText)}&quot;
                           </p>
                         </div>

@@ -51,7 +51,18 @@ const GLOBAL_SCALE = CONTAINER_WIDTH / (largestDevice.width + BEZEL_BORDER * 2);
  * browsing context with its own viewport, so resizing it actually flips the
  * template's responsive classes the same way a real phone would.
  */
-function LandingFrame({ width, height, children }: { width: number; height: number; children: ReactNode }) {
+function LandingFrame({
+  width,
+  height,
+  children,
+  onPick,
+}: {
+  width: number;
+  height: number;
+  children: ReactNode;
+  /** When set, taps inside the page are captured (links and buttons don't fire) and reported instead. */
+  onPick?: (target: Element) => void;
+}) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [frameDoc, setFrameDoc] = useState<Document | null>(null);
 
@@ -86,6 +97,29 @@ function LandingFrame({ width, height, children }: { width: number; height: numb
     return () => iframe.removeEventListener("load", handleLoad);
   }, []);
 
+  const onPickRef = useRef(onPick);
+  useEffect(() => {
+    onPickRef.current = onPick;
+  });
+  const picking = Boolean(onPick);
+
+  useEffect(() => {
+    if (!frameDoc || !picking) return;
+    const style = frameDoc.createElement("style");
+    style.textContent = "*{cursor:crosshair !important}";
+    frameDoc.head.appendChild(style);
+    const handleClick = (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.target instanceof frameDoc.defaultView!.Element) onPickRef.current?.(e.target);
+    };
+    frameDoc.addEventListener("click", handleClick, true);
+    return () => {
+      frameDoc.removeEventListener("click", handleClick, true);
+      style.remove();
+    };
+  }, [frameDoc, picking]);
+
   return (
     <>
       <iframe
@@ -111,6 +145,10 @@ interface PhonePreviewProps {
   renderLanding: () => ReactNode;
   /** Renders the menu page live from in-memory (possibly unsaved) draft data — no reload needed, it just re-renders. */
   renderMenu: () => ReactNode;
+  /** Makes the landing preview tappable: reports the tapped element so the editor can open the matching settings. */
+  onLandingPick?: (target: Element) => void;
+  /** Makes the menu preview tappable: reports the tapped element so the editor can open the matching settings. */
+  onMenuPick?: (target: Element) => void;
 }
 
 /**
@@ -126,6 +164,8 @@ export function PhonePreview({
   defaultView = "landing",
   renderLanding,
   renderMenu,
+  onLandingPick,
+  onMenuPick,
 }: PhonePreviewProps) {
   const [view, setView] = useState<PreviewView>(defaultView);
   const [device, setDevice] = useState<DevicePreset>(DEVICES[1]);
@@ -133,9 +173,11 @@ export function PhonePreview({
   // Sync the active view whenever the parent changes the defaultView prop
   // (e.g. switching between the Landing / Menu sub-tabs in workspace settings).
   // The user can still manually toggle within the preview at any time.
-  useEffect(() => {
+  const [syncedDefaultView, setSyncedDefaultView] = useState(defaultView);
+  if (syncedDefaultView !== defaultView) {
+    setSyncedDefaultView(defaultView);
     setView(defaultView);
-  }, [defaultView]);
+  }
 
   const hasSlug = Boolean(landingUrl && menuUrl);
   const activeUrl = view === "landing" ? landingUrl : menuUrl;
@@ -234,11 +276,11 @@ export function PhonePreview({
               style={{ width: device.width, height: device.height }}
             >
               {view === "landing" ? (
-                <LandingFrame width={device.width} height={device.height}>
+                <LandingFrame width={device.width} height={device.height} onPick={onLandingPick}>
                   {renderLanding()}
                 </LandingFrame>
               ) : (
-                <LandingFrame width={device.width} height={device.height}>
+                <LandingFrame width={device.width} height={device.height} onPick={onMenuPick}>
                   {renderMenu()}
                 </LandingFrame>
               )}

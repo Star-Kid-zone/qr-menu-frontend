@@ -23,8 +23,8 @@ export function ReviewsTab({
     <div className="flex h-full min-h-0 flex-col gap-4">
       <PageHeader
         className="shrink-0"
-        title="Google Reviews"
-        description="Pick which real Google reviews appear on your landing page."
+        title="Reviews on your website"
+        description="Choose which Google reviews appear on your website."
       />
 
       <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-border bg-card p-4 md:p-6">

@@ -1,8 +1,16 @@
 "use client";
 
-import React, { Suspense } from "react";
-import { PiDeviceMobileBold, PiXBold } from "react-icons/pi";
-import { ScrollableTabRow } from "@/components/ui";
+import React, { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { PiDeviceMobileBold, PiWarningCircle } from "react-icons/pi";
+import { Modal } from "@/components/Modal";
+import { SubTabPills } from "@/components/ui";
+import { MOVED_TABS, WEBSITE_SECTIONS } from "../constants";
+import type { WorkspaceTabId } from "../types";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Notice } from "@/components/ui/Notice";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AddSettingModal,
   PhonePreview,
@@ -10,10 +18,12 @@ import {
   MenuPreviewRenderer,
 } from "@/features/workspace";
 import { cn } from "@/utils/cn";
+import { resolveMenuPart } from "@/features/workspace/menuParts";
+import { resolveLandingPart } from "@/features/workspace/landingParts";
+import type { StudioPartFocus } from "@/features/workspace/studio/resolvePart";
 import { useBusinessHubState } from "../hooks/useBusinessHubState";
 import { WebsiteTab } from "./tabs/WebsiteTab";
 import { BusinessesTab } from "./tabs/BusinessesTab";
-import { PublicSiteTab } from "./tabs/PublicSiteTab";
 import { BannersTab } from "./tabs/BannersTab";
 import { OffersTab } from "./tabs/OffersTab";
 import { GalleryTab } from "./tabs/GalleryTab";
@@ -92,7 +102,68 @@ function BusinessHubPageContent() {
     handleContentSave,
     handleUpdateBusiness,
     copyToClipboard,
+    canEdit,
+    loadError,
+    isInitialLoading,
+    isRefreshing,
   } = useBusinessHubState();
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Tapping the preview while editing opens the settings for that part of the page.
+  const [focusedPart, setFocusedPart] = useState<StudioPartFocus | null>(null);
+  const pickEnabled = activeTab === "workspace" && workspaceEditMode;
+  const pickPart = (resolve: (t: Element, v: Record<string, unknown>) => string) => (target: Element) =>
+    setFocusedPart((prev) => ({
+      part: resolve(target, previewData.settings as Record<string, unknown>),
+      nonce: (prev?.nonce ?? 0) + 1,
+    }));
+  const handleMenuPick = pickEnabled && workspaceDesignSection === "menu" ? pickPart(resolveMenuPart) : undefined;
+  const handleLandingPick = pickEnabled && workspaceDesignSection === "landing" ? pickPart(resolveLandingPart) : undefined;
+
+  // Panels that moved off this page keep their old links working.
+  const requestedTab = searchParams?.get("tab") as WorkspaceTabId | null;
+  const movedTo = requestedTab ? MOVED_TABS[requestedTab] : undefined;
+  useEffect(() => {
+    if (movedTo) router.replace(movedTo);
+  }, [movedTo, router]);
+
+  const visibleSections = WEBSITE_SECTIONS.map((section) => ({
+    ...section,
+    tabs: section.tabs.filter((id) => visibleTabs.some((t) => t.id === id)),
+  })).filter((section) => section.tabs.length > 0);
+  const activeSection = visibleSections.find((s) => s.tabs.includes(activeTab)) ?? visibleSections[0];
+
+  // A failed load must never fall through to the first-run "create" state,
+  // which would invite the owner to create a second website.
+  if (loadError && !workspace) {
+    return (
+      <EmptyState
+        icon={<PiWarningCircle className="size-7" />}
+        title="We couldn't load your website settings"
+        description={loadError}
+        action={
+          <Button onClick={() => void fetchWorkspaceData()} loading={isRefreshing}>
+            Try again
+          </Button>
+        }
+      />
+    );
+  }
+
+  if (isInitialLoading) {
+    return (
+      <div className="flex h-full w-full gap-4" aria-busy="true" aria-label="Loading website settings">
+        <div className="flex min-w-0 flex-1 flex-col gap-4">
+          <Skeleton className="h-12 w-full rounded-xl" />
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-64 w-full rounded-xl" />
+        </div>
+        <Skeleton className="hidden h-[560px] w-[320px] shrink-0 rounded-xl lg:block" />
+      </div>
+    );
+  }
 
   const renderPanel = () => {
     switch (activeTab) {
@@ -114,6 +185,7 @@ function BusinessHubPageContent() {
             workspaceCurrencies={workspaceCurrencies}
             setWorkspaceDraft={setWorkspaceDraft}
             onOpenAddWorkspaceModal={() => setAddWorkspaceModalOpen(true)}
+            focusedPart={focusedPart}
           />
         );
       case "businesses":
@@ -129,24 +201,6 @@ function BusinessHubPageContent() {
             industries={industries}
             setBusinessDraft={setBusinessDraft}
             onUpdateBusiness={handleUpdateBusiness}
-          />
-        );
-      case "public-site":
-        return (
-          <PublicSiteTab
-            workspace={workspace}
-            publicSiteEditMode={publicSiteEditMode}
-            setPublicSiteEditMode={setPublicSiteEditMode}
-            slugDraft={slugDraft}
-            setSlugDraft={setSlugDraft}
-            slugSaving={slugSaving}
-            setSlugSaving={setSlugSaving}
-            setSlugError={setSlugError}
-            canSaveSlug={canSaveSlug}
-            slugAvailabilityLabel={slugAvailabilityLabel}
-            onRefreshData={fetchWorkspaceData}
-            onOpenAddWorkspaceModal={() => setAddWorkspaceModalOpen(true)}
-            copyToClipboard={copyToClipboard}
           />
         );
       case "banners":
@@ -218,51 +272,74 @@ function BusinessHubPageContent() {
   return (
     <div className="flex h-full w-full gap-4">
       <div className="flex h-full min-w-0 flex-1 flex-col gap-4">
-        <div className="shrink-0">
-          <div className="w-full rounded-xl border border-border bg-card p-1.5 shadow-sm">
-            <ScrollableTabRow
-              activeKey={activeTab}
-              role="tablist"
-              aria-label="Website sections"
-              scrollContainerClassName="gap-1"
-            >
-              {visibleTabs.map((tab) => {
-                const selected = tab.id === activeTab;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={selected}
-                    data-tab-active={selected || undefined}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={cn(
-                      "flex shrink-0 snap-start items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer",
-                      selected
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-                    )}
-                  >
-                    <span className="shrink-0">{tab.icon}</span>
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
-            </ScrollableTabRow>
+        <nav aria-label="Website sections" className="shrink-0 space-y-3">
+          <div role="tablist" className="flex gap-1 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-b border-border">
+            {visibleSections.map((section) => {
+              const selected = section.id === activeSection?.id;
+              return (
+                <button
+                  key={section.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  onClick={() => setActiveTab(section.tabs[0])}
+                  className={cn(
+                    "-mb-px shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-body-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                    selected
+                      ? "border-primary text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {section.label}
+                </button>
+              );
+            })}
           </div>
-        </div>
+          {activeSection && activeSection.tabs.length > 1 ? (
+            <SubTabPills
+              options={activeSection.tabs
+                .map((id) => visibleTabs.find((t) => t.id === id))
+                .filter((t): t is NonNullable<typeof t> => Boolean(t))
+                .map((t) => ({ id: t.id, label: t.label }))}
+              active={activeTab}
+              onChange={(id) => setActiveTab(id as WorkspaceTabId)}
+            />
+          ) : null}
+        </nav>
+        {!canEdit && (
+          <Notice tone="info" className="shrink-0">
+            You can view these settings. Only the owner or a manager can change them.
+          </Notice>
+        )}
+        {loadError && (
+          <Notice
+            tone="error"
+            className="shrink-0"
+            action={
+              <Button size="sm" variant="secondary" onClick={() => void fetchWorkspaceData()} loading={isRefreshing}>
+                Try again
+              </Button>
+            }
+          >
+            Couldn&apos;t refresh your website settings. You&apos;re seeing the last version that loaded.
+          </Notice>
+        )}
 
-        <div className="min-h-0 flex-1 overflow-hidden">{renderPanel()}</div>
+        <div className="min-h-0 flex-1 overflow-hidden" data-readonly={canEdit ? undefined : ""}>
+          {renderPanel()}
+        </div>
       </div>
 
-      {/* Desktop Preview Column */}
-      <aside className="hidden w-[320px] shrink-0 lg:block">
+      {/* Desktop Preview Column (the QR section has its own preview) */}
+      <aside className={cn("hidden w-[320px] shrink-0", "lg:block")}>
         <PhonePreview
           landingUrl={previewLandingUrl}
           menuUrl={previewMenuUrl}
           defaultView={previewDefaultView}
           renderLanding={() => <LandingPreviewRenderer data={previewData} />}
           renderMenu={() => <MenuPreviewRenderer data={previewData} />}
+          onLandingPick={handleLandingPick}
+          onMenuPick={handleMenuPick}
         />
       </aside>
 
@@ -271,44 +348,29 @@ function BusinessHubPageContent() {
         type="button"
         onClick={() => setMobilePreviewOpen(true)}
         aria-label="Open live mobile preview"
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95 lg:hidden cursor-pointer"
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary px-4 py-3 text-xs font-bold text-primary-foreground shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95 lg:hidden cursor-pointer"
       >
         <PiDeviceMobileBold size={17} />
         <span>Preview</span>
       </button>
 
-      {/* Mobile Live Preview Modal Sheet */}
-      {mobilePreviewOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-xs lg:hidden">
-          <div className="flex max-h-[92vh] w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
-            <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
-              <div className="flex items-center gap-2">
-                <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-xs">
-                  <PiDeviceMobileBold size={14} />
-                </div>
-                <p className="text-xs font-bold text-foreground">Live Mobile Preview</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setMobilePreviewOpen(false)}
-                aria-label="Close preview"
-                className="flex size-7 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition hover:bg-muted hover:text-foreground cursor-pointer"
-              >
-                <PiXBold size={14} />
-              </button>
-            </div>
-            <div className="min-h-0 flex-1 overflow-y-auto p-3">
-              <PhonePreview
-                landingUrl={previewLandingUrl}
-                menuUrl={previewMenuUrl}
-                defaultView={previewDefaultView}
-                renderLanding={() => <LandingPreviewRenderer data={previewData} />}
-                renderMenu={() => <MenuPreviewRenderer data={previewData} />}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Mobile live preview */}
+      <Modal
+        isOpen={mobilePreviewOpen}
+        onClose={() => setMobilePreviewOpen(false)}
+        title="Preview"
+        maxWidth="max-w-sm"
+      >
+        <PhonePreview
+          landingUrl={previewLandingUrl}
+          menuUrl={previewMenuUrl}
+          defaultView={previewDefaultView}
+          renderLanding={() => <LandingPreviewRenderer data={previewData} />}
+          renderMenu={() => <MenuPreviewRenderer data={previewData} />}
+          onLandingPick={handleLandingPick}
+          onMenuPick={handleMenuPick}
+        />
+      </Modal>
 
 
       {addWorkspaceModalOpen ? (

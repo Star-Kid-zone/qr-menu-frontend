@@ -37,8 +37,8 @@ export function BannersTab({
     <div className="flex h-full min-h-0 flex-col gap-4">
       <PageHeader
         className="shrink-0"
-        title="Banners"
-        description="Manage global workspace announcements."
+        title="Announcement bar"
+        description="A short message across the top of your website, such as holiday opening hours."
         actions={
           workspace ? (
             bannersEditMode ? (

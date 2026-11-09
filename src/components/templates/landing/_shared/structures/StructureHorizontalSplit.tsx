@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { LandingTemplateProps } from "@/types/components/templates/rawPublicSiteData.types";
-import { getRichContent } from "../defaults";
+import { getRichContent, getLandingThemeSlug } from "../defaults";
 import { buildTheme } from "../buildTheme";
 import { FadeIn, StaggerGroup, StaggerItem } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
@@ -15,7 +15,7 @@ import { ReviewCard } from "./sections";
  * contact/FAQ on the right). Every section from the content model appears
  * — nothing is trimmed to "just a few" the way an early draft might. */
 export default function StructureHorizontalSplit(p: LandingTemplateProps) {
-  const c = getRichContent(p.data, (p.data.settings as any)?.landing_theme ?? "swiss");
+  const c = getRichContent(p.data, getLandingThemeSlug(p.data));
   const t = buildTheme(c);
   const sectionBg = t.sectionBg ?? t.surface;
   const hasContact = c.address || c.phone || c.email || c.whatsapp || c.social.length > 0;
@@ -50,7 +50,7 @@ export default function StructureHorizontalSplit(p: LandingTemplateProps) {
               )}
               {c.cta.payBtn && c.cta.paymentLink && (
                 <button onClick={p.onPay} style={{ borderColor: t.accent, color: t.accent }} className="rounded-full border-2 px-7 py-3 text-sm font-bold uppercase tracking-widest">
-                  Pay Now
+                  Pay bill
                 </button>
               )}
               {c.cta.reviewBtn && c.cta.reviewLink && (
@@ -63,11 +63,6 @@ export default function StructureHorizontalSplit(p: LandingTemplateProps) {
         </div>
       </section>
 
-      <div className="flex flex-wrap justify-center gap-2 px-5 py-3 sm:px-10">
-        {[c.cta.menuBtn && c.terms.catalogLabel, c.cta.payBtn && "Pay Online", c.cta.reviewBtn && "Reviews", c.offers.length > 0 && "Offers"]
-          .filter(Boolean)
-          .map((b) => <span key={b as string} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider">{b}</span>)}
-      </div>
 
       {c.stats.length > 0 && (
         <div style={{ background: t.accent, color: t.accentText }} className="grid grid-cols-2 divide-x divide-white/20 py-6 sm:grid-cols-4">
@@ -100,7 +95,7 @@ export default function StructureHorizontalSplit(p: LandingTemplateProps) {
                 {c.signatureDishes.map((dish, i) => (
                   <StaggerItem key={`sig-${dish.name}-${i}`}>
                     <div style={{ background: sectionBg, borderColor: t.border }} className="overflow-hidden rounded-xl border p-4">
-                      <div className="mb-3 h-28 overflow-hidden rounded-lg"><ImagePlaceholder aspect="wide" className="text-current" /></div>
+                      <div className="relative mb-3 h-28 overflow-hidden rounded-lg">{dish.image ? <Image src={dish.image} alt={dish.name} fill sizes="200px" className="object-cover" /> : <ImagePlaceholder aspect="wide" className="text-current" />}</div>
                       {dish.price && <span style={{ background: t.accent, color: t.accentText }} className="mb-1 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold">{dish.price}</span>}
                       <h3 style={{ color: t.textPrimary }} className="text-sm font-bold">{dish.name}</h3>
                       {dish.description && <p style={{ color: t.textSecondary }} className="mt-1 text-xs leading-relaxed line-clamp-2">{dish.description}</p>}
@@ -132,7 +127,7 @@ export default function StructureHorizontalSplit(p: LandingTemplateProps) {
             <div className="mb-10">
               <p style={{ color: t.accent }} className="mb-4 text-[10px] font-bold uppercase tracking-[0.3em]">Offers</p>
               <div className="grid gap-4 sm:grid-cols-2">
-                {c.offers.map((o: any, i: number) => (
+                {c.offers.map((o, i: number) => (
                   <div key={i} style={{ background: sectionBg, borderColor: t.border }} className="rounded-xl border p-4">
                     {o.title && <p style={{ color: t.textPrimary }} className="font-bold">{o.title}</p>}
                     {o.description && <p style={{ color: t.textSecondary }} className="mt-1 text-sm">{o.description}</p>}

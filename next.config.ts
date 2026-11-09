@@ -1,7 +1,60 @@
 import type { NextConfig } from "next";
 import path from "path";
 
+// ---------------------------------------------------------------------------
+// Security headers
+// ---------------------------------------------------------------------------
+const isProd = process.env.NODE_ENV === "production";
+
+/** Origin of the backend API, so the CSP lets the browser call it directly. */
+function apiOrigin(): string | null {
+  try {
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+    return base && /^https?:\/\//.test(base) ? new URL(base).origin : null;
+  } catch {
+    return null;
+  }
+}
+
+const connectSrc = ["'self'", apiOrigin(), ...(isProd ? [] : ["http://localhost:*", "http://127.0.0.1:*", "ws://localhost:*"])]
+  .filter(Boolean)
+  .join(" ");
+
+// Report-only on purpose: the browser logs violations to the console without
+// blocking anything. Review those, tighten, then rename this header to
+// `Content-Security-Policy` to enforce. `'unsafe-inline'` for scripts is needed
+// until nonces are wired in (Next injects inline bootstrap scripts).
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isProd ? "" : " 'unsafe-eval'"}`,
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "img-src 'self' data: blob: https: http://localhost:* http://127.0.0.1:*",
+  "media-src 'self' blob: https:",
+  `connect-src ${connectSrc}`,
+  "frame-src 'self'",
+  "frame-ancestors 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+
+const securityHeaders = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  // Camera stays available to this origin (QR/photo capture); everything else off.
+  { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=(), payment=()" },
+  { key: "Content-Security-Policy-Report-Only", value: contentSecurityPolicy },
+  // HSTS only over HTTPS in production; no includeSubDomains/preload so a
+  // non-HTTPS tenant or internal subdomain can't be locked out.
+  ...(isProd ? [{ key: "Strict-Transport-Security", value: "max-age=15552000" }] : []),
+];
+
 const nextConfig: NextConfig = {
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders }];
+  },
   // Multiple lockfiles exist above this directory (a parent package-lock.json
   // plus this project's own pnpm-lock.yaml), which makes Next.js/Turbopack
   // misinfer the workspace root. Pin it explicitly to avoid that.

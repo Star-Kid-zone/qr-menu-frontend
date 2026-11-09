@@ -17,6 +17,7 @@ import {
   type WorkspaceData,
 } from "@/services/workspace.service";
 import { getApiErrorMessage } from "@/utils/errors";
+import { QrDesignPanel } from "./QrDesignPanel";
 import { PermissionGuard } from "@/components/auth/PermissionGuard";
 import {
   defaultQrConfig,
@@ -29,7 +30,7 @@ import { QrResolutionCard } from "./QrResolutionCard";
 import { QrAestheticsCard } from "./QrAestheticsCard";
 import { QrPreviewCard } from "./QrPreviewCard";
 
-function QrGeneratorPageContent() {
+function QrGeneratorPageContent({ embedded = false }: { embedded?: boolean }) {
   const router = useRouter();
   const ref = useRef<ReactQRCodeRef | null>(null);
 
@@ -45,6 +46,7 @@ function QrGeneratorPageContent() {
   const [logo, setLogo] = useState<string | null>(defaultQrConfig.logo);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const showControls = !embedded;
 
   const applyConfig = useCallback(
     (config?: Partial<WorkspaceQrCodeConfig> | null, publicSlug?: string | null) => {
@@ -107,9 +109,9 @@ function QrGeneratorPageContent() {
     setSaving(true);
     try {
       await workspaceService.updateWorkspace({ qrCode: getQrConfig() });
-      toast.success("QR code settings saved successfully");
+      toast.success("QR design saved");
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to save QR code settings"));
+      toast.error(getApiErrorMessage(error, "Couldn't save the QR design. Try again."));
     } finally {
       setSaving(false);
     }
@@ -155,35 +157,59 @@ function QrGeneratorPageContent() {
   const printSizeCm = (size / 118.11).toFixed(1);
   const printSizeInches = (size / 300).toFixed(1);
 
-  return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden">
-      {/* Header */}
-      <div className="shrink-0">
-        <PageHeader
-          title="QR Code Generator"
-          description="Customize, preview, and export your restaurant's QR code."
-          onBack={() => router.push("/admin/home")}
-          backLabel="Back"
-          actions={
-            <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => handleDownload("svg")}
-                disabled={loading}
-                leftIcon={<PiDownloadSimpleBold size={13} />}
-              >
-                SVG
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => handleDownload("png")}
-                disabled={loading}
-                leftIcon={<PiDownloadSimpleBold size={13} />}
-              >
-                PNG ({size}px)
-              </Button>
+  const controls = (
+    <>
+      <QrDestinationCard
+        qrValue={qrValue}
+        setQrValue={setQrValue}
+        landingUrl={landingUrl}
+        menuUrl={menuUrl}
+      />
+      <QrResolutionCard
+        size={size}
+        setSize={setSize}
+        margin={margin}
+        setMargin={setMargin}
+        printSizeCm={printSizeCm}
+        printSizeInches={printSizeInches}
+      />
+      <QrAestheticsCard
+        moduleStyle={moduleStyle}
+        setModuleStyle={setModuleStyle}
+        moduleColor={moduleColor}
+        setModuleColor={setModuleColor}
+        finderStyle={finderStyle}
+        setFinderStyle={setFinderStyle}
+        finderColor={finderColor}
+        setFinderColor={setFinderColor}
+        bgColor={bgColor}
+        setBgColor={setBgColor}
+        onRandomizeColors={handleRandomizeColors}
+      />
+    </>
+  );
+
+  const actions = (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => handleDownload("svg")}
+              disabled={loading}
+              leftIcon={<PiDownloadSimpleBold size={13} />}
+            >
+              SVG
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => handleDownload("png")}
+              disabled={loading}
+              leftIcon={<PiDownloadSimpleBold size={13} />}
+            >
+              PNG ({size}px)
+            </Button>
+            {showControls ? (
               <Button
                 size="sm"
                 onClick={handleSave}
@@ -191,32 +217,55 @@ function QrGeneratorPageContent() {
                 disabled={loading}
                 leftIcon={<PiFloppyDiskBold size={14} />}
               >
-                Save Changes
+                Save design
               </Button>
-            </div>
-          }
-        />
-      </div>
+            ) : null}
+          </div>
+  );
 
-      {/* Body: Two-column, no global scroll */}
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden lg:grid-cols-12 px-1 pb-3">
-        {/* LEFT COLUMN: scrollable controls */}
-        <div className="min-h-0 overflow-y-auto lg:col-span-7 xl:col-span-8 space-y-3 pr-1">
-          <QrDestinationCard
+  if (embedded) {
+    return (
+      <section className="grid gap-8 rounded-lg border border-border bg-card p-6 lg:grid-cols-[16rem_1fr]">
+        <div className="sticky top-0 z-10 -mx-6 -mt-6 flex items-center gap-4 rounded-t-lg border-b border-border bg-card p-4 lg:top-6 lg:m-0 lg:flex-col lg:self-start lg:rounded-none lg:border-0 lg:p-0">
+          <QrPreviewCard
+            ref={ref}
             qrValue={qrValue}
-            setQrValue={setQrValue}
-            landingUrl={landingUrl}
-            menuUrl={menuUrl}
-          />
-          <QrResolutionCard
             size={size}
-            setSize={setSize}
             margin={margin}
-            setMargin={setMargin}
+            bgColor={bgColor}
+            moduleStyle={moduleStyle}
+            moduleColor={moduleColor}
+            finderStyle={finderStyle}
+            finderColor={finderColor}
+            logo={logo}
+            setLogo={setLogo}
             printSizeCm={printSizeCm}
             printSizeInches={printSizeInches}
+            onLogoUpload={handleLogoUpload}
+            compact
           />
-          <QrAestheticsCard
+          <div className="flex min-w-0 flex-1 flex-col gap-2 lg:w-full lg:flex-none">
+            <Button
+              onClick={() => handleDownload("png")}
+              disabled={loading}
+              leftIcon={<PiDownloadSimpleBold size={16} />}
+            >
+              Download PNG
+            </Button>
+            <Button variant="secondary" onClick={() => handleDownload("svg")} disabled={loading}>
+              Download SVG
+            </Button>
+          </div>
+        </div>
+
+        <div className="min-w-0 space-y-6">
+          <div>
+            <h2 className="text-h2 text-foreground">Your QR code</h2>
+            <p className="mt-1 text-body text-muted-foreground">
+              Print it and place it on your tables. Change how it looks below, then save.
+            </p>
+          </div>
+          <QrDesignPanel
             moduleStyle={moduleStyle}
             setModuleStyle={setModuleStyle}
             moduleColor={moduleColor}
@@ -227,9 +276,64 @@ function QrGeneratorPageContent() {
             setFinderColor={setFinderColor}
             bgColor={bgColor}
             setBgColor={setBgColor}
-            onRandomizeColors={handleRandomizeColors}
+            size={size}
+            setSize={setSize}
+            logo={logo}
+            setLogo={setLogo}
+            onLogoUpload={handleLogoUpload}
+            landingUrl={landingUrl}
+            menuUrl={menuUrl}
+            qrValue={qrValue}
+            setQrValue={setQrValue}
           />
+          <div className="flex flex-wrap items-center gap-3 border-t border-border pt-5">
+            <Button onClick={() => void handleSave()} loading={saving} disabled={loading} leftIcon={<PiFloppyDiskBold size={16} />}>
+              Save design
+            </Button>
+            <Button
+              variant="ghost"
+              disabled={loading}
+              onClick={() => applyConfig(undefined, workspace?.publicSlug)}
+            >
+              Reset
+            </Button>
+          </div>
         </div>
+      </section>
+    );
+  }
+
+  return (
+    <div className={embedded ? "flex flex-col gap-4" : "flex h-full min-h-0 flex-col gap-4 overflow-hidden"}>
+      {embedded ? (
+        // Inside the QR menu page: a section under the web address.
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-h2 text-foreground">Your QR code</h2>
+            <p className="mt-1 text-body text-muted-foreground">
+              Download it and print it for your tables. Guests scan it to open your menu.
+            </p>
+          </div>
+          {actions}
+        </div>
+      ) : (
+        <PageHeader
+          title="QR codes"
+          description="Design and download the codes for your tables."
+          onBack={() => router.push("/admin/home")}
+          backLabel="Home"
+          actions={actions}
+        />
+      )}
+
+      {/* Body: two columns. Standalone: no page scroll; embedded: natural height. */}
+      <div className={embedded ? "grid grid-cols-1 gap-4 lg:grid-cols-12" : "grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden lg:grid-cols-12 pb-4"}>
+        {/* LEFT COLUMN: controls */}
+        {showControls ? (
+          <div className="min-h-0 overflow-y-auto lg:col-span-7 xl:col-span-8 space-y-3 pr-1">
+            {controls}
+          </div>
+        ) : null}
 
         {/* RIGHT COLUMN: Live Preview + Logo Upload */}
         <QrPreviewCard
@@ -247,16 +351,18 @@ function QrGeneratorPageContent() {
           printSizeCm={printSizeCm}
           printSizeInches={printSizeInches}
           onLogoUpload={handleLogoUpload}
+          compact={embedded}
         />
       </div>
+
     </div>
   );
 }
 
-export function QrGeneratorPage() {
+export function QrGeneratorPage({ embedded = false }: { embedded?: boolean }) {
   return (
     <PermissionGuard requiredUnit="qr-assets">
-      <QrGeneratorPageContent />
+      <QrGeneratorPageContent embedded={embedded} />
     </PermissionGuard>
   );
 }

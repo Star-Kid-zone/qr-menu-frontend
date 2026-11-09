@@ -39,13 +39,13 @@ export function ShiftCard({ shift, canManage, onEdit, onDelete }: ShiftCardProps
           </div>
         )}
       </div>
-      <p className="text-[11px] text-muted-foreground">
+      <p className="text-caption text-muted-foreground">
         {formatTime(shift.startTime)} – {formatTime(shift.endTime)}
       </p>
-      {shift.roleLabel && <p className="text-[10px] text-muted-foreground">{shift.roleLabel}</p>}
+      {shift.roleLabel && <p className="text-caption text-muted-foreground">{shift.roleLabel}</p>}
       <span
         className={cn(
-          "mt-1 inline-block rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide",
+          "mt-1 inline-block rounded px-2 py-0.5 text-caption font-bold",
           STATUS_STYLES[shift.status]
         )}
       >

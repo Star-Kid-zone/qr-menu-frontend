@@ -1,36 +1,85 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ReactQRCode } from "@lglab/react-qr-code";
 import { toast } from "@/components/ui/toast";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Notice } from "@/components/ui/Notice";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PageContainer } from "@/components/ui/PageContainer";
 import {
   workspaceService,
   type GooglePlaceResult,
 } from "@/services/workspace.service";
+import { googleService } from "@/services/google.service";
 import { getApiErrorMessage } from "@/utils/errors";
 import { PermissionGuard } from "@/components/auth/PermissionGuard";
+import { cn } from "@/utils/cn";
 import {
   PiArrowRightBold,
   PiCheckBold,
   PiCheckCircleFill,
   PiCopyBold,
-  PiGoogleLogoBold,
   PiMagnifyingGlassBold,
   PiMapPinBold,
 } from "react-icons/pi";
 
+type Step = "find" | "confirm" | "import" | "done";
+
+const STEPS: { id: Step; label: string }[] = [
+  { id: "find", label: "Find" },
+  { id: "confirm", label: "Confirm" },
+  { id: "import", label: "Import" },
+];
+
+function stepIndex(step: Step) {
+  return step === "done" ? STEPS.length : STEPS.findIndex((s) => s.id === step);
+}
+
+function Stepper({ step }: { step: Step }) {
+  const current = stepIndex(step);
+  return (
+    <ol className="flex items-center gap-2" aria-label="Progress">
+      {STEPS.map((s, i) => {
+        const complete = i < current;
+        const active = i === current;
+        return (
+          <li key={s.id} className="flex items-center gap-2" aria-current={active ? "step" : undefined}>
+            <span
+              className={cn(
+                "flex size-6 items-center justify-center rounded-full text-caption font-bold",
+                complete || active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              )}
+            >
+              {complete ? <PiCheckBold size={12} aria-hidden /> : i + 1}
+            </span>
+            <span className={cn("text-body", active ? "font-medium text-foreground" : "text-muted-foreground")}>
+              {s.label}
+            </span>
+            {i < STEPS.length - 1 ? <span aria-hidden className="mx-1 h-px w-6 bg-border" /> : null}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
 function AddReviewPageContent() {
   const router = useRouter();
+  const [step, setStep] = useState<Step>("find");
   const [reviewLink, setReviewLink] = useState("");
   const [placeQuery, setPlaceQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [placeResults, setPlaceResults] = useState<GooglePlaceResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<GooglePlaceResult | null>(null);
-  const [discoverySaving, setDiscoverySaving] = useState(false);
+  const [importStage, setImportStage] = useState<"saving" | "importing">("saving");
+  const [importedCount, setImportedCount] = useState<number | null>(null);
+  const [importFailed, setImportFailed] = useState(false);
+  const [googleConnected, setGoogleConnected] = useState<boolean | null>(null);
   const [copied, setCopied] = useState(false);
   const searchRequestRef = useRef(0);
 
@@ -53,18 +102,22 @@ function AddReviewPageContent() {
     };
   }, []);
 
-  useEffect(() => {
-    const trimmed = placeQuery.trim();
-    if (trimmed.length < 2) {
-      searchRequestRef.current += 1;
+  // Search status follows the typed query; the effect below only runs the debounced request.
+  const handlePlaceQueryChange = (value: string) => {
+    setPlaceQuery(value);
+    if (value.trim().length < 2) {
       setPlaceResults([]);
       setHasSearched(false);
       setSearching(false);
-      return;
+    } else {
+      setSearching(true);
     }
+  };
 
+  useEffect(() => {
+    const trimmed = placeQuery.trim();
     const requestId = ++searchRequestRef.current;
-    setSearching(true);
+    if (trimmed.length < 2) return;
 
     const timer = setTimeout(async () => {
       try {
@@ -86,37 +139,49 @@ function AddReviewPageContent() {
   }, [placeQuery]);
 
   const handleSelectPlace = (place: GooglePlaceResult) => {
-    setSelectedPlace((current) => (current?.placeId === place.placeId ? null : place));
+    setSelectedPlace(place);
+    setStep("confirm");
   };
 
-  const handleSynchronizeDiscovery = async () => {
-    if (!selectedPlace) return;
+  const importReviews = async () => {
+    setImportStage("importing");
+    setImportFailed(false);
     try {
-      setDiscoverySaving(true);
+      const res = await workspaceService.syncGoogleReviews();
+      setImportedCount(res.data.reviews.length);
+    } catch (error) {
+      setImportFailed(true);
+      toast.error(getApiErrorMessage(error, "Link saved, but importing reviews failed."));
+    }
+  };
+
+  const handleLinkAndImport = async () => {
+    if (!selectedPlace) return;
+    setStep("import");
+    setImportStage("saving");
+    try {
       await workspaceService.updateWorkspace({
         review: { googleReviewLink: selectedPlace.reviewLink },
       });
       setReviewLink(selectedPlace.reviewLink);
-      toast.success("Review link saved");
-
-      try {
-        await workspaceService.syncGoogleReviews();
-        toast.success("Google reviews synced");
-      } catch (syncError) {
-        toast.error(
-          getApiErrorMessage(
-            syncError,
-            "Link saved, but review sync failed — try Sync Now on the Reviews page."
-          )
-        );
-      }
-
-      router.push("/admin/listreview");
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Failed to save review link"));
-    } finally {
-      setDiscoverySaving(false);
+      setStep("confirm");
+      return;
     }
+    await importReviews();
+    setStep("done");
+    // Best effort: only used to suggest the next step.
+    googleService
+      .getStatus()
+      .then((status) => setGoogleConnected(status.isConnected))
+      .catch(() => setGoogleConnected(null));
+  };
+
+  const handleRetryImport = async () => {
+    setStep("import");
+    await importReviews();
+    setStep("done");
   };
 
   const handleCopyReviewLink = async () => {
@@ -130,214 +195,226 @@ function AddReviewPageContent() {
     }
   };
 
+  const linkRow = (
+    <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/40 p-3">
+      <p className="min-w-0 flex-1 truncate text-xs text-foreground">{reviewLink}</p>
+      <button
+        type="button"
+        onClick={handleCopyReviewLink}
+        title="Copy review link"
+        aria-label="Copy review link"
+        className="inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded border border-border bg-card text-foreground transition hover:bg-muted focus-visible:outline-2 focus-visible:outline-primary"
+      >
+        {copied ? <PiCheckBold size={12} /> : <PiCopyBold size={12} />}
+      </button>
+    </div>
+  );
+
   return (
-    <div className="flex h-full flex-col gap-3 sm:gap-4">
+    <PageContainer>
       <PageHeader
-        title="Add Review Link"
+        title="Find your business on Google"
         onBack={() => router.push("/admin/listreview")}
         backLabel="Back to reviews"
       />
+      {step === "done" ? null : (
+        <div className="flex justify-center">
+          <Stepper step={step} />
+        </div>
+      )}
 
-      <div className="min-h-0 flex-1 overflow-y-auto pr-0.5 pb-6">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
-          {/* Left — Search panel */}
-          <div className="flex flex-col gap-4 lg:col-span-3">
-            {/* Heading card */}
-            <div className="rounded-xl border border-border bg-card p-5">
-              <div className="mb-3 flex items-center gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-                  <PiGoogleLogoBold size={16} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
-                    Google Map Intelligence
-                  </p>
-                  <p className="text-sm font-bold text-foreground">Place Discovery</p>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Search Google&apos;s database to find your business and automatically generate your
-                review link. Type your restaurant or business name to get started.
+      {step === "find" ? (
+        <div className="mx-auto w-full max-w-2xl space-y-4">
+          <div className="text-center">
+            <h2 className="text-lg font-bold text-foreground">Which business are your guests reviewing?</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Search Google Maps. We&apos;ll import your reviews and make a QR code guests can scan to leave one.
+            </p>
+          </div>
+
+          <div className="relative">
+            <label htmlFor="place-search" className="sr-only">
+              Search your business
+            </label>
+            <PiMagnifyingGlassBold
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+              size={18}
+            />
+            <Input
+              id="place-search"
+              value={placeQuery}
+              onChange={(e) => handlePlaceQueryChange(e.target.value)}
+              placeholder="Business name and city, e.g. The Spice Garden, Chennai"
+              className="h-12 pl-11 pr-28 text-base"
+              autoComplete="off"
+              autoFocus
+            />
+            {searching ? (
+              <span className="absolute right-4 top-1/2 flex -translate-y-1/2 items-center gap-2 text-xs text-muted-foreground">
+                <span className="size-3 animate-spin rounded-full border border-muted-foreground border-t-transparent" />
+                Searching
+              </span>
+            ) : null}
+          </div>
+
+          <div aria-live="polite">
+            {hasSearched && !searching && placeResults.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                No places found. Try a more specific name or add your city.
               </p>
-            </div>
+            ) : placeResults.length > 0 ? (
+              <ul className="max-h-[46vh] space-y-2 overflow-y-auto pr-0.5">
+                {placeResults.map((place) => (
+                  <li key={place.placeId}>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectPlace(place)}
+                      className="flex w-full items-center gap-3 rounded-xl border border-border bg-card p-3 text-left transition-colors hover:border-primary/50 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                        <PiMapPinBold size={16} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-foreground">{place.name}</p>
+                        {place.address ? (
+                          <p className="truncate text-xs text-muted-foreground">{place.address}</p>
+                        ) : null}
+                      </div>
+                      <PiArrowRightBold size={14} className="shrink-0 text-muted-foreground" aria-hidden />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
 
-            {/* Search input */}
-            <div className="rounded-xl border border-border bg-card p-4">
-              <p className="mb-2 text-xs font-semibold text-foreground">Search your business</p>
-              <div className="relative">
-                <PiMagnifyingGlassBold
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  size={16}
-                />
-                <Input
-                  value={placeQuery}
-                  onChange={(e) => setPlaceQuery(e.target.value)}
-                  placeholder="e.g. The Spice Garden, Chennai"
-                  className="h-10 pl-9 pr-20"
-                  autoComplete="off"
-                />
-                {searching ? (
-                  <span className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5 text-xs text-muted-foreground">
-                    <span className="size-3 animate-spin rounded-full border border-muted-foreground border-t-transparent" />
-                    Searching
-                  </span>
+          {reviewLink ? (
+            <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3">
+              <PiCheckCircleFill size={16} className="shrink-0 text-success" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-foreground">A business is already linked</p>
+                <p className="truncate text-caption text-muted-foreground">{reviewLink}</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopyReviewLink}
+                title="Copy review link"
+                aria-label="Copy review link"
+                className="inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded border border-border bg-card text-foreground transition hover:bg-muted focus-visible:outline-2 focus-visible:outline-primary"
+              >
+                {copied ? <PiCheckBold size={12} /> : <PiCopyBold size={12} />}
+              </button>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {step === "confirm" && selectedPlace ? (
+        <div className="mx-auto w-full max-w-xl space-y-4">
+          <div className="rounded-xl border border-border bg-card p-6">
+            <p className="mb-3 text-overline text-muted-foreground">Is this your business?</p>
+            <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <PiMapPinBold size={16} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-foreground">{selectedPlace.name}</p>
+                {selectedPlace.address ? (
+                  <p className="mt-0.5 text-xs text-muted-foreground">{selectedPlace.address}</p>
                 ) : null}
               </div>
             </div>
-
-            {/* Results */}
-            <div className="min-h-0 flex-1 overflow-y-auto rounded-xl border border-border bg-card">
-              {!hasSearched && !searching ? (
-                <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
-                  <div className="flex size-12 items-center justify-center rounded-xl border border-border bg-muted text-muted-foreground">
-                    <PiMapPinBold size={22} />
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">
-                    Search for your business
-                  </p>
-                  <p className="max-w-xs text-xs text-muted-foreground">
-                    Results appear here — pick your listing, then click Synchronize below.
-                  </p>
-                </div>
-              ) : hasSearched && !searching && placeResults.length === 0 ? (
-                <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
-                  <div className="flex size-12 items-center justify-center rounded-xl border border-border bg-muted text-muted-foreground">
-                    <PiMapPinBold size={22} />
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">No places found</p>
-                  <p className="text-xs text-muted-foreground">
-                    Try a more specific name or add your city.
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-px p-2">
-                  {placeResults.map((place) => {
-                    const isSelected = selectedPlace?.placeId === place.placeId;
-                    return (
-                      <button
-                        key={place.placeId}
-                        type="button"
-                        onClick={() => handleSelectPlace(place)}
-                        className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                          isSelected
-                            ? "border-primary bg-primary/5"
-                            : "border-transparent hover:border-border hover:bg-muted/50"
-                        }`}
-                      >
-                        <div
-                          className={`flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
-                            isSelected
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          <PiMapPinBold size={14} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-foreground">
-                            {place.name}
-                          </p>
-                          {place.address ? (
-                            <p className="truncate text-xs text-muted-foreground">
-                              {place.address}
-                            </p>
-                          ) : null}
-                        </div>
-                        {isSelected && (
-                          <PiCheckCircleFill size={16} className="mt-0.5 shrink-0 text-primary" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right — Confirm + current link panel */}
-          <div className="flex flex-col gap-4 lg:col-span-2">
-            {/* Selected place confirmation */}
-            <div className="rounded-xl border border-border bg-card p-5">
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                Selected Business
-              </p>
-              {selectedPlace ? (
-                <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-3">
-                  <p className="truncate text-sm font-bold text-foreground">
-                    {selectedPlace.name}
-                  </p>
-                  <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
-                    {selectedPlace.reviewLink}
-                  </p>
-                </div>
-              ) : (
-                <div className="mb-4 rounded-lg border border-dashed border-border p-3 text-center">
-                  <p className="text-xs text-muted-foreground">No business selected yet</p>
-                </div>
-              )}
-              <Button
-                className="w-full"
-                onClick={handleSynchronizeDiscovery}
-                loading={discoverySaving}
-                disabled={!selectedPlace}
-                rightIcon={!discoverySaving ? <PiArrowRightBold size={14} /> : undefined}
-              >
-                Synchronize Review
-              </Button>
-            </div>
-
-            {/* Current review link (if set) */}
-            {reviewLink ? (
-              <div className="rounded-xl border border-border bg-card p-5">
-                <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                  Current Review Link
-                </p>
-                <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-800 dark:bg-emerald-950/40">
-                  <PiCheckBold
-                    size={13}
-                    className="shrink-0 text-emerald-600 dark:text-emerald-400"
-                  />
-                  <p className="min-w-0 flex-1 truncate text-xs text-emerald-700 dark:text-emerald-300">
-                    {reviewLink}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleCopyReviewLink}
-                    title="Copy review link"
-                    aria-label="Copy review link"
-                    className="inline-flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded border border-emerald-200 bg-white text-emerald-600 transition hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-900 dark:text-emerald-400"
-                  >
-                    {copied ? <PiCheckBold size={11} /> : <PiCopyBold size={11} />}
-                  </button>
-                </div>
+            {reviewLink && reviewLink !== selectedPlace.reviewLink ? (
+              <div className="mt-4">
+                <Notice tone="warning" title="This replaces your current business">
+                  Reviews shown on this page will switch to the business above.
+                </Notice>
               </div>
             ) : null}
-
-            {/* How it works */}
-            <div className="flex-1 rounded-xl border border-border bg-card p-5">
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                How it works
-              </p>
-              <div className="space-y-3">
-                {[
-                  "Search your business name to find it on Google Maps",
-                  "Select the correct listing from the results",
-                  "Click Synchronize to save and activate your review link",
-                  "Reviews sync automatically from your Google listing",
-                ].map((step, i) => (
-                  <div key={i} className="flex items-start gap-2.5">
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
-                      {i + 1}
-                    </span>
-                    <p className="text-xs text-muted-foreground">{step}</p>
-                  </div>
-                ))}
-              </div>
+            <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Button type="button" variant="secondary" onClick={() => setStep("find")}>
+                Choose a different one
+              </Button>
+              <Button
+                type="button"
+                onClick={() => void handleLinkAndImport()}
+                rightIcon={<PiArrowRightBold size={14} />}
+              >
+                Link &amp; import reviews
+              </Button>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      ) : null}
+
+      {step === "import" ? (
+        <div className="mx-auto w-full max-w-xl rounded-xl border border-border bg-card p-8 text-center" role="status">
+          <span className="mx-auto block size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <p className="mt-4 text-sm font-semibold text-foreground">
+            {importStage === "saving" ? "Saving your review link…" : "Importing your Google reviews…"}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">This usually takes a few seconds.</p>
+        </div>
+      ) : null}
+
+      {step === "done" ? (
+        <div className="mx-auto w-full max-w-xl space-y-4">
+          <div className="rounded-xl border border-border bg-card p-6 text-center">
+            <PiCheckCircleFill size={36} className="mx-auto text-success" aria-hidden />
+            <h2 className="mt-3 text-lg font-bold text-foreground">
+              {selectedPlace?.name ?? "Your business"} is linked
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {importFailed
+                ? "Your link is saved, but we couldn't import reviews yet."
+                : importedCount === 0
+                  ? "No reviews to import yet. New ones will appear after your next sync."
+                  : `Imported ${importedCount} review${importedCount === 1 ? "" : "s"}.`}
+            </p>
+            {importFailed ? (
+              <Button type="button" variant="secondary" size="sm" className="mt-3" onClick={() => void handleRetryImport()}>
+                Try importing again
+              </Button>
+            ) : null}
+          </div>
+
+          {reviewLink ? (
+            <div className="rounded-xl border border-border bg-card p-6">
+              <p className="mb-1 text-sm font-semibold text-foreground">Ask guests for a review</p>
+              <p className="mb-4 text-xs text-muted-foreground">
+                Print this QR code on tables or receipts. Scanning it opens your Google review form.
+              </p>
+              <div className="flex flex-col items-center gap-4 sm:flex-row">
+                <div className="size-36 shrink-0 overflow-hidden rounded-lg border border-border bg-white p-1 [&>svg]:block [&>svg]:size-full">
+                  <ReactQRCode value={reviewLink} size={144} level="M" marginSize={1} />
+                </div>
+                <div className="w-full min-w-0 flex-1">{linkRow}</div>
+              </div>
+            </div>
+          ) : null}
+
+          {googleConnected === false ? (
+            <Notice
+              tone="info"
+              title="Connect Google to reply from here"
+              action={
+                <Link href="/admin/settings?tab=accounts" className={buttonVariants({ variant: "secondary", size: "sm" })}>
+                  Connect Google
+                </Link>
+              }
+            >
+              You can already read your reviews. Replying needs your Google Business account.
+            </Notice>
+          ) : null}
+
+          <div className="flex justify-end">
+            <Link href="/admin/listreview" className={buttonVariants({ variant: "primary" })}>
+              View reviews
+            </Link>
+          </div>
+        </div>
+      ) : null}
+    </PageContainer>
   );
 }
 

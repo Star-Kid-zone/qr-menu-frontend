@@ -52,7 +52,7 @@ export function TodayTab() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
       {runs.map(({ template, run }) => {
         const total = run.itemStatus.length;
         const done = run.itemStatus.filter((s) => s.completed).length;
@@ -62,18 +62,18 @@ export function TodayTab() {
             <div className="mb-3 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-foreground">{template.name}</h3>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{template.type}</p>
+                <p className="text-caption text-muted-foreground">{template.type}</p>
               </div>
               <span
                 className={cn(
-                  'rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-wider',
-                  allDone ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400' : 'bg-muted text-muted-foreground',
+                  'rounded-md px-2 py-1 text-caption font-bold',
+                  allDone ? 'bg-success/10 text-success dark:bg-success dark:text-success' : 'bg-muted text-muted-foreground',
                 )}
               >
                 {done}/{total}
               </span>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {run.itemStatus
                 .slice()
                 .sort((a, b) => {
@@ -92,14 +92,14 @@ export function TodayTab() {
                       disabled={pending === key}
                       onClick={() => handleToggle({ template, run }, status.itemId, !status.completed)}
                       className={cn(
-                        'flex w-full items-center gap-2.5 rounded-lg border p-2 text-left transition-all disabled:opacity-60',
-                        status.completed ? 'border-emerald-200 bg-emerald-50/60 dark:border-emerald-900 dark:bg-emerald-950/30' : 'border-border bg-muted/30 hover:bg-muted/60',
+                        'flex w-full items-center gap-2 rounded-lg border p-2 text-left transition-all disabled:opacity-60',
+                        status.completed ? 'border-success/15 bg-success/60 dark:border-success dark:bg-success/30' : 'border-border bg-muted/30 hover:bg-muted/60',
                       )}
                     >
                       <span
                         className={cn(
                           'flex size-5 shrink-0 items-center justify-center rounded-md border',
-                          status.completed ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-border bg-card',
+                          status.completed ? 'border-success bg-success text-white' : 'border-border bg-card',
                         )}
                       >
                         {status.completed && <PiCheckBold size={12} />}

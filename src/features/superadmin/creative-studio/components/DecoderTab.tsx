@@ -14,6 +14,18 @@ import {
 import { cn } from "@/utils/cn";
 import { SAMPLE_DECODER_CONTEXTS } from "../constants";
 
+/** One layout layer in a decoded poster spec, as returned by the decode endpoint. */
+interface DecodedLayer {
+  id?: string | number;
+  role?: string;
+  fontFamily?: string;
+  fontSize?: number;
+  text?: string;
+  fill?: string;
+  x?: number;
+  y?: number;
+}
+
 interface DecoderTabProps {
   decoderInputMode: "upload" | "url";
   setDecoderInputMode: (mode: "upload" | "url") => void;
@@ -30,8 +42,8 @@ interface DecoderTabProps {
   setDecoderContext: (context: string) => void;
   decoding: boolean;
   handleDecode: () => Promise<void>;
-  decodedSpec: any;
-  setDecodedSpec: (spec: any) => void;
+  decodedSpec: Record<string, unknown> | null;
+  setDecodedSpec: (spec: Record<string, unknown> | null) => void;
   refinementPrompt: string;
   setRefinementPrompt: (prompt: string) => void;
   refining: boolean;
@@ -65,34 +77,37 @@ export function DecoderTab({
   savingTemplate,
   handleSaveDecodedToVault,
 }: DecoderTabProps) {
+  const specCanvas = decodedSpec?.canvas as { width?: number; height?: number } | undefined;
+  const specLayers = decodedSpec?.layers as DecodedLayer[] | undefined;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       {/* Left Column: Image Input & Config */}
-      <div className="lg:col-span-5 space-y-5">
-        <Card className="p-5 space-y-4 border-border">
+      <div className="lg:col-span-5 space-y-4">
+        <Card className="p-6 space-y-4 border-border">
           <div>
             <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
-              <PiEyeBold className="h-5 w-5 text-amber-500" />
-              Poster Vision Reverse-Engineer
+              <PiEyeBold className="h-5 w-5 text-warning-foreground" />
+              Copy a flyer&apos;s layout
             </h3>
             <p className="text-caption text-muted-foreground mt-1">
-              Upload competitor or promotional flyers. Vision AI extracts typography, colors, headline,
-              and layout layers into an editable, reusable layout blueprint.
+              Upload a flyer you like. AI reads its fonts, colours, headline and layout so you can reuse
+              them as a poster layout.
             </p>
           </div>
 
           {/* Source Image: File Upload or Image URL */}
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-xs font-semibold text-foreground">
                 Poster / Flyer Image
               </label>
-              <div className="flex rounded-lg border border-border p-0.5 bg-muted/40 text-[11px]">
+              <div className="flex rounded-lg border border-border p-0.5 bg-muted/40 text-caption">
                 <button
                   type="button"
                   onClick={() => setDecoderInputMode("upload")}
                   className={cn(
-                    "px-2.5 py-0.5 rounded font-medium transition-all",
+                    "px-3 py-0.5 rounded font-medium transition-all",
                     decoderInputMode === "upload"
                       ? "bg-primary text-primary-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
@@ -104,7 +119,7 @@ export function DecoderTab({
                   type="button"
                   onClick={() => setDecoderInputMode("url")}
                   className={cn(
-                    "px-2.5 py-0.5 rounded font-medium transition-all",
+                    "px-3 py-0.5 rounded font-medium transition-all",
                     decoderInputMode === "url"
                       ? "bg-primary text-primary-foreground shadow-xs"
                       : "text-muted-foreground hover:text-foreground"
@@ -139,7 +154,7 @@ export function DecoderTab({
                     }}
                     className="group flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border/80 bg-muted/10 p-6 text-center cursor-pointer transition-all hover:border-primary/60 hover:bg-primary/5 active:scale-[0.99]"
                   >
-                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500 ring-4 ring-amber-500/5 transition-transform group-hover:scale-110">
+                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-warning/10 text-warning-foreground ring-4 ring-warning/5 transition-transform group-hover:scale-110">
                       {uploadingDecoderFile ? (
                         <PiSpinnerBold className="h-6 w-6 animate-spin" />
                       ) : (
@@ -175,7 +190,7 @@ export function DecoderTab({
                           {decoderFile?.name || "Selected Poster Image"}
                         </p>
                         {decoderFile && (
-                          <p className="text-[10px] text-muted-foreground">
+                          <p className="text-caption text-muted-foreground">
                             {(decoderFile.size / 1024 / 1024).toFixed(2)} MB
                           </p>
                         )}
@@ -233,7 +248,7 @@ export function DecoderTab({
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-foreground block mb-1.5">
+            <label className="text-xs font-semibold text-foreground block mb-2">
               AI Vision Model
             </label>
             <select
@@ -252,20 +267,20 @@ export function DecoderTab({
               <label className="text-xs font-semibold text-foreground block">
                 Context / Special Instructions
               </label>
-              <span className="text-[11px] text-muted-foreground">Click a sample to fill</span>
+              <span className="text-caption text-muted-foreground">Click a sample to fill</span>
             </div>
 
             {/* Sample Context Chips */}
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {SAMPLE_DECODER_CONTEXTS.map((sample, idx) => (
                 <button
                   key={idx}
                   type="button"
                   onClick={() => setDecoderContext(sample.text)}
                   className={cn(
-                    "rounded-full px-2.5 py-1 text-[11px] transition-all border",
+                    "rounded-full px-3 py-1 text-caption transition-all border",
                     decoderContext === sample.text
-                      ? "border-amber-500 bg-amber-500/15 text-amber-600 dark:text-amber-400 font-semibold shadow-xs"
+                      ? "border-warning bg-warning/15 text-warning-foreground dark:text-warning font-semibold shadow-xs"
                       : "border-border bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -292,12 +307,12 @@ export function DecoderTab({
             {decoding ? (
               <>
                 <PiSpinnerBold className="h-4 w-4 animate-spin mr-2" />
-                Reverse-Engineering Blueprint...
+                Reading the flyer…
               </>
             ) : (
               <>
                 <PiEyeBold className="h-4 w-4 mr-2" />
-                Decode Poster Blueprint
+                Copy layout
               </>
             )}
           </Button>
@@ -305,9 +320,9 @@ export function DecoderTab({
 
         {/* Refinement Panel */}
         {decodedSpec && (
-          <Card className="p-5 space-y-3 border-amber-500/20 bg-amber-500/5">
-            <h4 className="text-sm font-semibold text-amber-600 dark:text-amber-400">
-              Refine Layout Blueprint
+          <Card className="p-6 space-y-3 border-warning/20 bg-warning/5">
+            <h4 className="text-sm font-semibold text-warning-foreground dark:text-warning">
+              Adjust the layout
             </h4>
             <p className="text-caption text-muted-foreground">
               Give instructions to adjust colors, translate text to Tamil/Hindi, or modify discount tags.
@@ -317,7 +332,7 @@ export function DecoderTab({
               placeholder="e.g. Change primary color to luxury royal crimson and translate headline to Tamil..."
               value={refinementPrompt}
               onChange={(e) => setRefinementPrompt(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-warning"
             />
             <Button
               variant="outline"
@@ -326,24 +341,24 @@ export function DecoderTab({
               disabled={refining || !refinementPrompt.trim()}
               className="w-full"
             >
-              {refining ? "Refining..." : "Apply AI Refinement"}
+              {refining ? "Adjusting…" : "Apply changes"}
             </Button>
           </Card>
         )}
       </div>
 
       {/* Right Column: Decoded Blueprint, Render & Save */}
-      <div className="lg:col-span-7 space-y-5">
+      <div className="lg:col-span-7 space-y-4">
         {decodedSpec ? (
-          <Card className="p-5 space-y-5 border-border">
+          <Card className="p-6 space-y-4 border-border">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div>
                 <h3 className="font-semibold text-base text-foreground">
-                  Extracted Blueprint Layers
+                  Layout found
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Canvas: {decodedSpec.canvas?.width}x{decodedSpec.canvas?.height}px •{" "}
-                  {decodedSpec.layers?.length || 0} layout layers identified
+                  Canvas: {specCanvas?.width}x{specCanvas?.height}px •{" "}
+                  {specLayers?.length || 0} layout layers identified
                 </p>
               </div>
 
@@ -354,29 +369,29 @@ export function DecoderTab({
                   onClick={handleSaveDecodedToVault}
                   disabled={savingTemplate}
                 >
-                  {savingTemplate ? "Saving..." : "Save to Vault & Templates"}
+                  {savingTemplate ? "Saving…" : "Save"}
                 </Button>
               </div>
             </div>
 
             {/* Layer Breakdown */}
             <div className="space-y-3">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Layer Hierarchy
+              <h4 className="text-xs font-semibold text-muted-foreground">
+                Layers
               </h4>
               <div className="divide-y divide-border rounded-lg border border-border bg-muted/20">
-                {decodedSpec.layers?.map((layer: any, idx: number) => (
+                {specLayers?.map((layer, idx) => (
                   <div key={layer.id || idx} className="p-3 flex items-start justify-between gap-3 text-xs">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-foreground capitalize">
                           {layer.role || "Layer"}
                         </span>
-                        <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                        <span className="rounded bg-muted px-2 py-0.5 text-caption text-muted-foreground">
                           {layer.fontFamily || "Default Font"} ({layer.fontSize || 24}px)
                         </span>
                       </div>
-                      <p className="text-muted-foreground font-mono text-[11px] line-clamp-1">
+                      <p className="text-muted-foreground font-mono text-caption line-clamp-1">
                         &ldquo;{layer.text || "Graphic/Badge"}&rdquo;
                       </p>
                     </div>
@@ -389,7 +404,7 @@ export function DecoderTab({
                           title={`Fill: ${layer.fill}`}
                         />
                       )}
-                      <span className="text-muted-foreground font-mono text-[10px]">
+                      <span className="text-muted-foreground font-mono text-caption">
                         ({layer.x}, {layer.y})
                       </span>
                     </div>
@@ -401,9 +416,9 @@ export function DecoderTab({
             {/* Raw JSON Spec Drawer */}
             <details className="rounded-lg border border-border bg-muted/30 p-3 text-xs">
               <summary className="cursor-pointer font-medium text-muted-foreground hover:text-foreground">
-                Inspect Raw PosterSpec JSON
+                Show technical details
               </summary>
-              <pre className="mt-2 max-h-60 overflow-y-auto rounded bg-zinc-950 p-3 text-[11px] text-zinc-300 font-mono">
+              <pre className="mt-2 max-h-60 overflow-y-auto rounded bg-zinc-950 p-3 text-caption text-muted-foreground font-mono">
                 {JSON.stringify(decodedSpec, null, 2)}
               </pre>
             </details>
@@ -411,10 +426,9 @@ export function DecoderTab({
         ) : (
           <Card className="flex flex-col items-center justify-center p-16 text-center border-dashed border-border">
             <PiEyeBold className="h-12 w-12 text-muted-foreground/50 mb-3" />
-            <h4 className="text-base font-semibold text-foreground">No Poster Decoded Yet</h4>
+            <h4 className="text-base font-semibold text-foreground">No flyer copied yet</h4>
             <p className="text-caption text-muted-foreground max-w-sm mt-1">
-              Upload a poster file or enter an image URL on the left and click &ldquo;Decode Poster Blueprint&rdquo;
-              to extract the design hierarchy.
+              Upload a flyer or paste an image link, then click &ldquo;Copy layout&rdquo;.
             </p>
           </Card>
         )}

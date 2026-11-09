@@ -65,7 +65,7 @@ export type SocialPost = {
     externalPostId?: string | null;
     publishedAt?: string | null;
     lastErrorMessage?: string | null;
-    platformOptionsJson?: Record<string, any> | null;
+    platformOptionsJson?: Record<string, unknown> | null;
   }>;
 };
 

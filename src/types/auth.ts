@@ -6,7 +6,7 @@ export interface User {
   id: number;
   user_id: string;
   name?: string;
-  email?: string;
+  email?: string | null;
   role: UserRole;
   active: boolean;
   created_at?: string;
@@ -23,7 +23,7 @@ export interface AuthResponse {
 
 export interface LoginFormValues {
   userId?: string;
-  phone?: string;
+  email?: string;
   password?: string;
   remember?: boolean;
 }
@@ -32,8 +32,8 @@ export interface RegisterFormValues {
   name?: string;
   businessName?: string;
   slug?: string;
-  phone: string;
-  email?: string;
+  email: string;
+  phone?: string;
   password?: string;
   confirmPassword?: string;
   role?: string;

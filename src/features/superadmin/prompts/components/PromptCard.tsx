@@ -30,20 +30,20 @@ export function PromptCard({
   const hasRefs = p.referenceImages && p.referenceImages.length > 0;
 
   return (
-    <Card className="group relative flex flex-col justify-between overflow-hidden border border-border bg-card hover:border-primary/50 transition-all hover:shadow-md rounded-2xl p-5 space-y-4">
+    <Card className="group relative flex flex-col justify-between overflow-hidden border border-border bg-card hover:border-primary/50 transition-all hover:shadow-md rounded-2xl p-6 space-y-4">
       {/* 1. Header: Badges & Favorite */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <Badge tone="primary" className="text-[11px] font-semibold">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge tone="primary" className="text-caption font-semibold">
             {p.category}
           </Badge>
           <Badge
             tone={p.mediaType === 'video' ? 'warning' : 'neutral'}
-            className="text-[10px] uppercase font-bold"
+            className="text-caption uppercase font-bold"
           >
             {p.mediaType === 'video' ? '🎬 Reel' : p.mediaType === 'poster' ? '📄 Poster' : '📷 Photo'}
           </Badge>
-          <span className="rounded bg-muted px-2 py-0.5 font-mono text-[10px] text-muted-foreground border border-border/60">
+          <span className="rounded bg-muted px-2 py-0.5 font-mono text-caption text-muted-foreground border border-border/60">
             {p.aspectRatio}
           </span>
         </div>
@@ -51,10 +51,10 @@ export function PromptCard({
         <button
           onClick={(e) => onToggleFavorite(p.id, e)}
           className={cn(
-            'rounded-lg p-1.5 transition-colors',
+            'rounded-lg p-2 transition-colors',
             p.isFavorite
-              ? 'text-amber-500 hover:text-amber-600'
-              : 'text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10'
+              ? 'text-warning-foreground hover:text-warning-foreground'
+              : 'text-muted-foreground hover:text-warning-foreground hover:bg-warning/10'
           )}
           title={p.isFavorite ? 'Starred' : 'Star this prompt'}
         >
@@ -71,29 +71,29 @@ export function PromptCard({
         <h3 className="font-bold text-foreground text-base tracking-tight" title={p.title}>
           {p.title}
         </h3>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
-          <PiLightbulbFilamentBold className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+          <PiLightbulbFilamentBold className="h-3.5 w-3.5 text-warning-foreground shrink-0" />
           <span className="font-medium text-foreground/80">{p.recommendedModel}</span>
           {p.stylePreset && <span>• {p.stylePreset}</span>}
         </div>
       </div>
 
       {/* 3. THE PROMPT BOX (HERO OF THE CARD) */}
-      <div className="relative rounded-xl border border-border bg-muted/30 p-3.5 group/box hover:bg-muted/40 transition-colors">
-        <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/40 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+      <div className="relative rounded-xl border border-border bg-muted/30 p-4 group/box hover:bg-muted/40 transition-colors">
+        <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/40 text-caption font-medium text-muted-foreground">
           <span className="flex items-center gap-1">
             <PiNotebookBold className="h-3 w-3 text-primary" />
             AI Prompt
           </span>
           <button
             onClick={() => onCopy(p)}
-            className="flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline transition-all"
+            className="flex items-center gap-1 text-caption font-semibold text-primary hover:underline transition-all"
             title="Copy full prompt"
           >
             {copiedId === p.id ? (
               <>
-                <PiCheckBold className="h-3.5 w-3.5 text-emerald-500" />
-                <span className="text-emerald-500">Copied!</span>
+                <PiCheckBold className="h-3.5 w-3.5 text-success" />
+                <span className="text-success">Copied!</span>
               </>
             ) : (
               <>
@@ -110,7 +110,7 @@ export function PromptCard({
 
       {/* 4. Optional Visual Reference Thumbnail & Camera Notes */}
       {(hasRefs || p.cameraNotes) && (
-        <div className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/20 border border-border/60">
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/20 border border-border/60">
           {hasRefs && (
             <div
               onClick={() => onPreviewRef(p.referenceImages[0])}
@@ -127,7 +127,7 @@ export function PromptCard({
               </div>
             </div>
           )}
-          <div className="flex-1 min-w-0 text-[11px]">
+          <div className="flex-1 min-w-0 text-caption">
             {p.cameraNotes ? (
               <div className="flex items-start gap-1 text-muted-foreground">
                 <PiCameraBold className="h-3 w-3 text-primary shrink-0 mt-0.5" />
@@ -135,7 +135,7 @@ export function PromptCard({
               </div>
             ) : (
               <div className="flex items-center gap-1 font-medium text-foreground">
-                <PiCameraBold className="h-3 w-3 text-amber-500" />
+                <PiCameraBold className="h-3 w-3 text-warning-foreground" />
                 <span>Plating Benchmark Attached</span>
               </div>
             )}
@@ -145,17 +145,17 @@ export function PromptCard({
 
       {/* 5. Tags */}
       {p.tags && p.tags.length > 0 && (
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           {p.tags.slice(0, 4).map((tag, idx) => (
             <span
               key={idx}
-              className="rounded-md bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+              className="rounded-md bg-muted/60 px-2 py-0.5 text-caption font-medium text-muted-foreground"
             >
               #{tag}
             </span>
           ))}
           {p.tags.length > 4 && (
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-caption text-muted-foreground">
               +{p.tags.length - 4}
             </span>
           )}
@@ -168,7 +168,7 @@ export function PromptCard({
           variant="primary"
           size="sm"
           onClick={() => onUseInStudio(p)}
-          className="flex-1 flex items-center justify-center gap-1.5 font-semibold text-xs"
+          className="flex-1 flex items-center justify-center gap-2 font-semibold text-xs"
         >
           <PiSparkleBold className="h-3.5 w-3.5" />
           <span>Use in Studio</span>
@@ -178,7 +178,7 @@ export function PromptCard({
           variant="outline"
           size="sm"
           onClick={(e) => onEdit(p, e)}
-          className="px-2.5 text-xs"
+          className="px-3 text-xs"
           title="Edit Prompt"
         >
           <PiPencilSimpleBold className="h-3.5 w-3.5" />
@@ -188,7 +188,7 @@ export function PromptCard({
           variant="ghost"
           size="sm"
           onClick={(e) => onDelete(p.id, e)}
-          className="px-2.5 text-xs text-destructive hover:bg-destructive/10"
+          className="px-3 text-xs text-destructive hover:bg-destructive/10"
           title="Delete Prompt"
         >
           <PiTrashBold className="h-3.5 w-3.5" />

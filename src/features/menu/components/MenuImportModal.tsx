@@ -102,7 +102,7 @@ export function MenuImportModal({ isOpen, onClose, onImported }: MenuImportModal
         {preview && (
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3 text-xs">
-              <span className="rounded-md bg-emerald-50 px-2 py-1 font-bold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+              <span className="rounded-md bg-success/10 px-2 py-1 font-bold text-success dark:bg-success dark:text-success">
                 {preview.valid.length} ready to import
               </span>
               {preview.errors.length > 0 && (
@@ -115,7 +115,7 @@ export function MenuImportModal({ isOpen, onClose, onImported }: MenuImportModal
             {preview.errors.length > 0 && (
               <div className="max-h-32 overflow-y-auto rounded-lg border border-destructive/30 bg-destructive/5 p-3">
                 {preview.errors.map((e, idx) => (
-                  <div key={idx} className="flex items-start gap-1.5 py-0.5 text-[11px] text-destructive">
+                  <div key={idx} className="flex items-start gap-2 py-0.5 text-caption text-destructive">
                     <PiWarningCircleBold size={12} className="mt-0.5 shrink-0" />
                     <span>Row {e.row}: {e.message}</span>
                   </div>
@@ -125,20 +125,20 @@ export function MenuImportModal({ isOpen, onClose, onImported }: MenuImportModal
 
             {preview.valid.length > 0 && (
               <div className="max-h-56 overflow-y-auto rounded-lg border border-border">
-                <table className="w-full text-left text-[11px]">
+                <table className="w-full text-left text-caption">
                   <thead className="sticky top-0 bg-muted/60">
                     <tr>
-                      <th className="px-3 py-2 font-bold uppercase tracking-wider text-muted-foreground">Item</th>
-                      <th className="px-3 py-2 font-bold uppercase tracking-wider text-muted-foreground">Category</th>
-                      <th className="px-3 py-2 font-bold uppercase tracking-wider text-muted-foreground">Price</th>
+                      <th className="px-3 py-2 font-bold text-muted-foreground">Item</th>
+                      <th className="px-3 py-2 font-bold text-muted-foreground">Category</th>
+                      <th className="px-3 py-2 font-bold text-muted-foreground">Price</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {preview.valid.map((row, idx) => (
                       <tr key={idx}>
-                        <td className="px-3 py-1.5 font-semibold text-foreground">{row.item}</td>
-                        <td className="px-3 py-1.5 text-muted-foreground">{row.category}</td>
-                        <td className="px-3 py-1.5 tabular-figures text-foreground">{row.price}</td>
+                        <td className="px-3 py-2 font-semibold text-foreground">{row.item}</td>
+                        <td className="px-3 py-2 text-muted-foreground">{row.category}</td>
+                        <td className="px-3 py-2 tabular-figures text-foreground">{row.price}</td>
                       </tr>
                     ))}
                   </tbody>

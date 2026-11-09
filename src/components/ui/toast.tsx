@@ -161,7 +161,7 @@ function ToastCard({ id, variant, title, message, duration }: ToastItem) {
       {/* Subtle status tint layer */}
       <div className={cn("absolute inset-0 pointer-events-none opacity-40", config.accentClass)} />
 
-      <div className="relative z-10 flex items-start gap-3.5">
+      <div className="relative z-10 flex items-start gap-3">
         <div
           className={cn(
             "flex size-8 shrink-0 items-center justify-center rounded-xl",
@@ -173,7 +173,7 @@ function ToastCard({ id, variant, title, message, duration }: ToastItem) {
 
         <div className="flex-1 min-w-0 pt-0.5">
           {displayTitle ? (
-            <h4 className="text-xs font-bold uppercase tracking-wider text-card-foreground/75 mb-1">
+            <h4 className="text-xs font-bold text-card-foreground/75 mb-1">
               {displayTitle}
             </h4>
           ) : null}
@@ -215,7 +215,7 @@ export function Toaster() {
   if (!mounted) return null;
 
   return createPortal(
-    <div className="pointer-events-none fixed inset-x-4 top-4 z-[300] flex flex-col items-center gap-2.5 sm:inset-x-auto sm:right-5 sm:top-5 sm:items-end">
+    <div className="pointer-events-none fixed inset-x-4 top-4 z-[300] flex flex-col items-center gap-2 sm:inset-x-auto sm:right-5 sm:top-5 sm:items-end">
       <AnimatePresence initial={false}>
         {items.map((item) => (
           <ToastCard key={item.id} {...item} />

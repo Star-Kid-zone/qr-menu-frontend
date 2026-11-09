@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { AxiosHeaders } from 'axios';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { workspaceService, type WorkspaceListItem } from '@/services/workspace.service';
 import * as storage from '@/utils/storage';
@@ -30,7 +31,7 @@ describe('WorkspaceSwitcher', () => {
       status: 200,
       statusText: 'OK',
       headers: {},
-      config: {} as any,
+      config: { headers: new AxiosHeaders() },
     });
 
     const { container } = render(<WorkspaceSwitcher />);
@@ -57,7 +58,7 @@ describe('WorkspaceSwitcher', () => {
       status: 200,
       statusText: 'OK',
       headers: {},
-      config: {} as any,
+      config: { headers: new AxiosHeaders() },
     });
 
     render(<WorkspaceSwitcher />);
@@ -94,7 +95,7 @@ describe('WorkspaceSwitcher', () => {
       status: 200,
       statusText: 'OK',
       headers: {},
-      config: {} as any,
+      config: { headers: new AxiosHeaders() },
     });
     vi.mocked(storage.getActiveWorkspaceId).mockReturnValue('ws-1');
 

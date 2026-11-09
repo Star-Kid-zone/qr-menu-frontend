@@ -45,10 +45,10 @@ export function BlueprintOffersFaqsSection({
       <div className="rounded-xl border border-border bg-muted/10 p-4 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <h3 className="text-xs font-bold text-muted-foreground">
               Special Offers
             </h3>
-            <p className="text-[11px] text-muted-foreground">Preloaded promotional deals.</p>
+            <p className="text-caption text-muted-foreground">Preloaded promotional deals.</p>
           </div>
           <Button onClick={addOffer} variant="secondary" size="sm" leftIcon={<PiPlusBold size={12} />}>
             Add Offer
@@ -64,7 +64,7 @@ export function BlueprintOffersFaqsSection({
                   value={offer.title}
                   onChange={(e) => updateOffer(idx, { title: e.target.value })}
                   placeholder="Offer title"
-                  className="flex-1 rounded border border-border px-2.5 py-1 text-xs font-bold text-foreground"
+                  className="flex-1 rounded border border-border px-3 py-1 text-xs font-bold text-foreground"
                 />
                 <input
                   type="text"
@@ -76,7 +76,7 @@ export function BlueprintOffersFaqsSection({
                 <button
                   type="button"
                   onClick={() => removeOffer(idx)}
-                  className="text-muted-foreground hover:text-rose-500"
+                  className="text-muted-foreground hover:text-destructive"
                 >
                   <PiTrashBold size={14} />
                 </button>
@@ -86,7 +86,7 @@ export function BlueprintOffersFaqsSection({
                 value={offer.description}
                 onChange={(e) => updateOffer(idx, { description: e.target.value })}
                 placeholder="Offer details and terms..."
-                className="rounded border border-border px-2.5 py-1 text-xs text-muted-foreground"
+                className="rounded border border-border px-3 py-1 text-xs text-muted-foreground"
               />
             </div>
           ))}
@@ -96,7 +96,7 @@ export function BlueprintOffersFaqsSection({
       {/* Photo Gallery */}
       <div className="rounded-xl border border-border bg-muted/10 p-4 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <h3 className="text-xs font-bold text-muted-foreground">
             Gallery Photos
           </h3>
           <Button onClick={addGalleryImage} variant="secondary" size="sm" leftIcon={<PiPlusBold size={12} />}>
@@ -120,7 +120,7 @@ export function BlueprintOffersFaqsSection({
               <button
                 type="button"
                 onClick={() => removeGalleryImage(idx)}
-                className="text-muted-foreground hover:text-rose-500"
+                className="text-muted-foreground hover:text-destructive"
               >
                 <PiTrashBold size={14} />
               </button>
@@ -132,7 +132,7 @@ export function BlueprintOffersFaqsSection({
       {/* Guest FAQs */}
       <div className="rounded-xl border border-border bg-muted/10 p-4 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <h3 className="text-xs font-bold text-muted-foreground">
             Guest FAQs
           </h3>
           <Button onClick={addFaq} variant="secondary" size="sm" leftIcon={<PiPlusBold size={12} />}>
@@ -149,12 +149,12 @@ export function BlueprintOffersFaqsSection({
                   value={faq.question}
                   onChange={(e) => updateFaq(idx, { question: e.target.value })}
                   placeholder="Question..."
-                  className="flex-1 rounded border border-border px-2.5 py-1 text-xs font-bold text-foreground"
+                  className="flex-1 rounded border border-border px-3 py-1 text-xs font-bold text-foreground"
                 />
                 <button
                   type="button"
                   onClick={() => removeFaq(idx)}
-                  className="text-muted-foreground hover:text-rose-500"
+                  className="text-muted-foreground hover:text-destructive"
                 >
                   <PiTrashBold size={14} />
                 </button>
@@ -164,7 +164,7 @@ export function BlueprintOffersFaqsSection({
                 value={faq.answer}
                 onChange={(e) => updateFaq(idx, { answer: e.target.value })}
                 placeholder="Answer..."
-                className="w-full rounded border border-border px-2.5 py-1 text-xs text-foreground"
+                className="w-full rounded border border-border px-3 py-1 text-xs text-foreground"
               />
             </div>
           ))}

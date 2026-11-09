@@ -1,3 +1,4 @@
+import type { StudioPartFocus } from "@/features/workspace/studio/resolvePart";
 import type { Currency } from "@/types";
 import type { WorkspaceSettingsFormValues } from "@/types/workspace.types";
 
@@ -20,4 +21,6 @@ export interface WorkspaceSettingsFormProps {
   onStartEditing?: (subSection?: string) => void;
   /** Optional initially active/expanded subsection when entering edit mode */
   initialActiveSubSection?: string | null;
+  /** A part of the page the owner tapped in the live preview. */
+  focusedPart?: StudioPartFocus | null;
 }

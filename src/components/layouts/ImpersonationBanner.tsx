@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PiShieldWarningBold, PiSignOutBold, PiArrowLeftBold } from 'react-icons/pi';
+import { PiShieldWarningBold, PiSignOutBold } from 'react-icons/pi';
 import {
-  getImpersonationSession,
+  getRawStorageItem,
+  storageKeys,
   clearImpersonationSession,
   setStoredUserRole,
   type ImpersonationSession,
@@ -14,18 +15,29 @@ import { authService } from '@/services/auth.service';
 import { routes } from '@/config/routes';
 import { toast } from '@/components/ui';
 
+function subscribe(onChange: () => void) {
+  window.addEventListener('storage', onChange);
+  return () => window.removeEventListener('storage', onChange);
+}
+// Raw string = stable snapshot; the server never has a session.
+const getSnapshot = () => getRawStorageItem(storageKeys.impersonation);
+const getServerSnapshot = () => null;
+
+function parseSession(raw: string | null): ImpersonationSession | null {
+  if (!raw) return null;
+  try {
+    const value = JSON.parse(raw) as ImpersonationSession;
+    return value?.isImpersonating ? value : null;
+  } catch {
+    return null;
+  }
+}
+
 export function ImpersonationBanner() {
   const router = useRouter();
-  const [session, setSession] = useState<ImpersonationSession | null>(null);
+  const raw = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const session = useMemo(() => parseSession(raw), [raw]);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    // Check if an impersonation session is active
-    const cur = getImpersonationSession();
-    if (cur?.isImpersonating) {
-      setSession(cur);
-    }
-  }, []);
 
   if (!session) return null;
 
@@ -54,21 +66,14 @@ export function ImpersonationBanner() {
         initial={{ height: 0, opacity: 0 }}
         animate={{ height: 'auto', opacity: 1 }}
         exit={{ height: 0, opacity: 0 }}
-        className="relative z-50 shrink-0 border-b border-amber-500/30 bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-amber-500/10 px-4 py-2.5 backdrop-blur-md"
+        className="relative z-50 shrink-0 border-b border-warning/40 bg-warning/15 px-4 py-2"
       >
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
-          <div className="flex items-center gap-2.5 text-foreground">
-            <span className="flex h-6 items-center gap-1.5 rounded-full bg-amber-500/20 px-2.5 font-semibold text-amber-700 dark:text-amber-400">
-              <PiShieldWarningBold className="size-4 animate-pulse text-amber-600 dark:text-amber-400" />
-              SUPPORT MODE
-            </span>
-            <span className="hidden text-muted-foreground sm:inline">|</span>
-            <p className="font-medium text-foreground">
-              Acting as tenant:{' '}
-              <strong className="text-amber-800 dark:text-amber-300 font-semibold">
-                {session.targetUserName}
-              </strong>{' '}
-              <span className="text-muted-foreground font-mono">(User #{session.targetUserId})</span>
+          <div className="flex items-center gap-2 text-foreground">
+            <PiShieldWarningBold className="size-4 shrink-0 text-warning-foreground dark:text-warning" aria-hidden />
+            <p className="text-body text-foreground">
+              Support mode. You are signed in as <strong className="font-semibold">{session.targetUserName}</strong>{' '}
+              <span className="text-muted-foreground">(account {session.targetUserId})</span>. Changes you make are real.
             </p>
           </div>
 
@@ -77,10 +82,10 @@ export function ImpersonationBanner() {
               type="button"
               disabled={loading}
               onClick={handleExit}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-1.5 font-medium text-white shadow-sm transition hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500/40 disabled:opacity-50"
+              className="inline-flex h-10 items-center gap-2 rounded-md border border-warning/50 bg-card px-3 text-body-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary disabled:opacity-50"
             >
               <PiSignOutBold className="size-3.5" />
-              <span>{loading ? 'Restoring...' : 'Exit to Superadmin'}</span>
+              <span>{loading ? 'Returning…' : 'Back to platform admin'}</span>
             </button>
           </div>
         </div>

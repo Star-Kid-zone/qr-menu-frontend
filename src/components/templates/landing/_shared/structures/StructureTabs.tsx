@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import type { LandingTemplateProps } from "@/types/components/templates/rawPublicSiteData.types";
-import { getRichContent } from "../defaults";
+import { getRichContent, getLandingThemeSlug } from "../defaults";
 import { buildTheme } from "../buildTheme";
 import { FadeIn } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
@@ -18,7 +18,7 @@ type TabId = "menu" | "about" | "gallery" | "reviews" | "visit";
  * its own tab or a clearly labelled sub-block — nothing is dropped, it's
  * just organized behind navigation instead of one continuous scroll. */
 export default function StructureTabs(p: LandingTemplateProps) {
-  const c = getRichContent(p.data, (p.data.settings as any)?.landing_theme ?? "swiss");
+  const c = getRichContent(p.data, getLandingThemeSlug(p.data));
   const t = buildTheme(c);
   const sectionBg = t.sectionBg ?? t.surface;
   const hasContact = c.address || c.phone || c.email || c.whatsapp || c.social.length > 0;
@@ -61,7 +61,7 @@ export default function StructureTabs(p: LandingTemplateProps) {
             )}
             {c.cta.payBtn && c.cta.paymentLink && (
               <button onClick={p.onPay} style={{ borderColor: t.accent, color: t.accent }} className="rounded-full border-2 px-6 py-2.5 text-sm font-bold uppercase tracking-wider">
-                Pay Now
+                Pay bill
               </button>
             )}
             {c.cta.reviewBtn && c.cta.reviewLink && (
@@ -73,14 +73,9 @@ export default function StructureTabs(p: LandingTemplateProps) {
         </FadeIn>
       </section>
 
-      <div className="flex flex-wrap justify-center gap-2 px-5 py-3 sm:px-10">
-        {[c.cta.menuBtn && c.terms.catalogLabel, c.cta.payBtn && "Pay Online", c.cta.reviewBtn && "Reviews", c.offers.length > 0 && "Offers"]
-          .filter(Boolean)
-          .map((b) => <span key={b as string} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider">{b}</span>)}
-      </div>
 
       {/* ── Tab bar ── */}
-      <div style={{ borderColor: t.border, background: t.bg }} className="sticky top-0 z-10 flex justify-center gap-1 overflow-x-auto border-b px-5 py-2 sm:px-10">
+      <div style={{ borderColor: t.border, background: t.bg }} className="sticky top-0 z-10 flex justify-start sm:justify-center gap-1 overflow-x-auto border-b px-5 py-2 sm:px-10">
         {tabs.map((tb) => (
           <button
             key={tb.id}
@@ -103,7 +98,7 @@ export default function StructureTabs(p: LandingTemplateProps) {
                 <div className="grid gap-5 sm:grid-cols-2">
                   {c.signatureDishes.map((dish, i) => (
                     <div key={`sig-${dish.name}-${i}`} style={{ background: sectionBg, borderColor: t.border }} className="flex gap-4 overflow-hidden rounded-xl border p-4">
-                      <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg"><ImagePlaceholder aspect="square" className="text-current" /></div>
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">{dish.image ? <Image src={dish.image} alt={dish.name} fill sizes="200px" className="object-cover" /> : <ImagePlaceholder aspect="square" className="text-current" />}</div>
                       <div className="min-w-0">
                         {dish.price && <span style={{ background: t.accent, color: t.accentText }} className="mb-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold">{dish.price}</span>}
                         <h3 style={{ color: t.textPrimary }} className="text-sm font-bold">{dish.name}</h3>
@@ -134,7 +129,7 @@ export default function StructureTabs(p: LandingTemplateProps) {
               <div>
                 <h3 style={{ color: t.accent }} className="mb-4 text-[10px] font-bold uppercase tracking-widest">Current Offers</h3>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {c.offers.map((o: any, i: number) => (
+                  {c.offers.map((o, i: number) => (
                     <div key={i} style={{ background: sectionBg, borderColor: t.border }} className="rounded-xl border p-4">
                       {o.title && <p style={{ color: t.textPrimary }} className="font-bold">{o.title}</p>}
                       {o.description && <p style={{ color: t.textSecondary }} className="mt-1 text-sm">{o.description}</p>}

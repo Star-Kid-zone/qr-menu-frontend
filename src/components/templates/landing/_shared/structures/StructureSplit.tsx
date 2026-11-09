@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { LandingTemplateProps } from "@/types/components/templates/rawPublicSiteData.types";
-import { getRichContent } from "../defaults";
+import { getRichContent, getLandingThemeSlug } from "../defaults";
 import { buildTheme } from "../buildTheme";
 import { getThemeImages } from "../themeImages";
 import { FadeIn, StaggerGroup, StaggerItem, Marquee } from "../animations";
@@ -11,7 +11,7 @@ import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/temp
 import { ReviewCard } from "./sections";
 
 export default function StructureSplit(p: LandingTemplateProps) {
-  const c = getRichContent(p.data, (p.data.settings as any)?.landing_theme ?? "swiss");
+  const c = getRichContent(p.data, getLandingThemeSlug(p.data));
   const t = buildTheme(c);
   const img = getThemeImages(t.slug);
 
@@ -89,7 +89,7 @@ export default function StructureSplit(p: LandingTemplateProps) {
                     style={{ borderColor: `${t.accentText}60`, color: t.accentText }}
                     className="rounded-full border px-6 py-3 text-sm font-bold uppercase tracking-widest transition hover:bg-white/10"
                   >
-                    Pay Now
+                    Pay bill
                   </button>
                 )}
                 {c.cta.reviewBtn && c.cta.reviewLink && (
@@ -104,13 +104,6 @@ export default function StructureSplit(p: LandingTemplateProps) {
               </div>
             </FadeIn>
 
-            {c.offers.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-1.5">
-                {[c.offers.length > 0 && "Offers"]
-                  .filter(Boolean)
-                  .map((b) => <span key={b as string} style={{ borderColor: `${t.accentText}30`, color: `${t.accentText}cc` }} className="rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider">{b}</span>)}
-              </div>
-            )}
 
             {/* Divider */}
             <div style={{ borderColor: `${t.accentText}20` }} className="my-6 border-t" />
@@ -332,7 +325,7 @@ export default function StructureSplit(p: LandingTemplateProps) {
               <h2 style={{ color: t.textPrimary }} className="mb-8 text-2xl font-bold">Something Special</h2>
             </FadeIn>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {c.offers.map((o: any, i: number) => (
+              {c.offers.map((o, i: number) => (
                 <div key={i} style={{ background: t.bg, borderColor: t.border }} className="overflow-hidden rounded-xl border p-5">
                   {o.title && <h3 style={{ color: t.textPrimary }} className="font-bold">{o.title}</h3>}
                   {o.description && <p style={{ color: t.textSecondary }} className="mt-2 text-sm">{o.description}</p>}
@@ -385,7 +378,7 @@ export default function StructureSplit(p: LandingTemplateProps) {
               <div>
                 <FadeIn>
                   <p style={{ color: t.accent }} className="mb-3 text-[10px] font-bold uppercase tracking-[0.4em]">Opening Hours</p>
-                  <h2 style={{ color: t.textPrimary }} className="mb-5 text-xl font-bold">When We're Open</h2>
+                  <h2 style={{ color: t.textPrimary }} className="mb-5 text-xl font-bold">When We&apos;re Open</h2>
                   <div className="space-y-2">
                     {c.hours.map((h) => (
                       <div key={h.day} className="flex justify-between border-b pb-2 text-sm" style={{ borderColor: t.border }}>

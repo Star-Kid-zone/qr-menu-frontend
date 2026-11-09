@@ -17,6 +17,7 @@ import {
   PiEyeSlashBold,
   PiPencilSimpleBold,
 } from "react-icons/pi";
+import type { MenuBlueprint } from "@/services/superadmin.service";
 import type { UserDetailResponse, TenantMenuItem } from "../types";
 import { UserMenuEditModal, UserBlueprintSeedModal } from "./modals";
 
@@ -40,7 +41,7 @@ export interface UserMenusTabProps {
   blueprintModalOpen: boolean;
   setBlueprintModalOpen: (val: boolean) => void;
   handleOpenBlueprintModal: () => Promise<void>;
-  availableBlueprints: any[];
+  availableBlueprints: MenuBlueprint[];
   selectedBpId: string;
   setSelectedBpId: (val: string) => void;
   bpMode: "append" | "replace";
@@ -75,7 +76,7 @@ export function UserMenusTab({
   handleApplyBlueprint,
 }: UserMenusTabProps) {
   return (
-    <div className="space-y-5 pb-8">
+    <div className="space-y-4 pb-8">
       {/* Search, Filters & Blueprint Action */}
       <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-3">
@@ -161,18 +162,18 @@ export function UserMenusTab({
                     <PiStorefrontBold className="size-10 opacity-40" />
                   </div>
                 )}
-                <div className="absolute right-2.5 top-2.5 flex items-center gap-1.5">
+                <div className="absolute right-2.5 top-2.5 flex items-center gap-2">
                   <span
                     className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                       item.type === "Veg"
-                        ? "border border-emerald-500/30 bg-emerald-950/80 text-emerald-400"
-                        : "border border-rose-500/30 bg-rose-950/80 text-rose-400"
+                        ? "border border-success/30 bg-success/80 text-success"
+                        : "border border-destructive/30 bg-destructive/80 text-destructive"
                     }`}
                   >
                     {item.type}
                   </span>
                   {item.popular && (
-                    <span className="flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-950/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-400">
+                    <span className="flex items-center gap-1 rounded-full border border-warning/30 bg-warning/80 px-2 py-0.5 text-caption font-bold text-warning-foreground">
                       <PiStarBold size={10} /> Popular
                     </span>
                   )}
@@ -209,7 +210,7 @@ export function UserMenusTab({
                     }
                     className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ${
                       item.availability
-                        ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+                        ? "bg-success/10 text-success hover:bg-success/20"
                         : "bg-muted text-muted-foreground hover:text-foreground"
                     }`}
                   >

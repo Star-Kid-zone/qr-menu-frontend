@@ -31,7 +31,7 @@ export function OffersTab({
       <PageHeader
         className="shrink-0"
         title="Offers"
-        description="Manage workspace-wide promotions."
+        description="Deals shown on your website and menu."
         actions={
           <Button
             size="sm"

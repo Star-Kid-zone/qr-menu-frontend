@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { LandingTemplateProps } from "@/types/components/templates/rawPublicSiteData.types";
-import { getRichContent } from "../defaults";
+import { getRichContent, getLandingThemeSlug } from "../defaults";
 import { buildTheme } from "../buildTheme";
 import { FadeIn } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
@@ -15,7 +15,7 @@ import { ReviewCard } from "./sections";
  * section from the content model still gets its own compact block; nothing
  * is skipped, it's just small. */
 export default function StructureCompact(p: LandingTemplateProps) {
-  const c = getRichContent(p.data, (p.data.settings as any)?.landing_theme ?? "swiss");
+  const c = getRichContent(p.data, getLandingThemeSlug(p.data));
   const t = buildTheme(c);
   const sectionBg = t.sectionBg ?? t.surface;
   const hasContact = c.address || c.phone || c.email || c.whatsapp;
@@ -43,13 +43,6 @@ export default function StructureCompact(p: LandingTemplateProps) {
           </div>
         </FadeIn>
 
-        {c.offers.length > 0 && (
-          <div className="mt-4 flex flex-wrap justify-center gap-1.5">
-            {[c.offers.length > 0 && "Offers"]
-              .filter(Boolean)
-              .map((b) => <span key={b as string} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider">{b}</span>)}
-          </div>
-        )}
 
         {/* ── Stacked link/CTA rows ── */}
         <div className="mt-6 space-y-3">
@@ -60,7 +53,7 @@ export default function StructureCompact(p: LandingTemplateProps) {
           )}
           {c.cta.payBtn && c.cta.paymentLink && (
             <button onClick={p.onPay} style={{ borderColor: t.accent, color: t.accent }} className="block w-full rounded-xl border-2 py-3 text-center text-sm font-bold uppercase tracking-wider">
-              Pay Now
+              Pay bill
             </button>
           )}
           {c.cta.reviewBtn && c.cta.reviewLink && (
@@ -136,7 +129,7 @@ export default function StructureCompact(p: LandingTemplateProps) {
           <div className="mt-6">
             <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-widest">Offers</p>
             <div className="space-y-2">
-              {c.offers.map((o: any, i: number) => (
+              {c.offers.map((o, i: number) => (
                 <div key={i} className="rounded-lg px-3 py-2" style={{ background: sectionBg }}>
                   {o.title && <p style={{ color: t.textPrimary }} className="text-sm font-bold">{o.title}</p>}
                   {(o.offer_value || o.badge_text) && <span style={{ color: t.accent }} className="text-xs font-bold">{o.badge_text || `${o.offer_value} OFF`}</span>}

@@ -22,6 +22,7 @@ export type RawPublicSiteData = {
     badge_text?: string | null;
     offer_value?: string | null;
     offer_type?: string | null;
+    image_url?: string | null;
   }>;
   menuItems: Menu[];
   faqs?: Array<{ id?: number | string; question?: string; answer?: string }>;

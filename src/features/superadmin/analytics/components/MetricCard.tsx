@@ -14,14 +14,14 @@ export function MetricCard({
   highlightTone = 'cyan',
 }: MetricCardProps) {
   return (
-    <Card className="flex h-full flex-col justify-between p-5 transition-colors hover:border-primary/30">
+    <Card className="flex h-full flex-col justify-between p-6 transition-colors hover:border-primary/30">
       <div>
         <div className="mb-3 flex items-center justify-between">
           <div
             className={`flex size-9 items-center justify-center rounded-lg ${
               highlight
                 ? highlightTone === 'emerald'
-                  ? 'bg-emerald-500/15 text-emerald-500'
+                  ? 'bg-success/15 text-success'
                   : 'bg-primary/15 text-primary'
                 : 'bg-muted text-muted-foreground'
             }`}
@@ -30,7 +30,7 @@ export function MetricCard({
           </div>
           {badge && <Badge tone={badgeTone}>{badge}</Badge>}
         </div>
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{title}</p>
+        <p className="text-caption font-bold text-muted-foreground">{title}</p>
       </div>
 
       <div className="mt-3">

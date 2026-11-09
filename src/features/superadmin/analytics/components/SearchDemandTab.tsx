@@ -8,14 +8,14 @@ export function SearchDemandTab({ platform }: SearchDemandTabProps) {
   return (
     <div className="space-y-6">
       {/* Opportunity Banner */}
-      <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-5">
+      <div className="rounded-2xl border border-warning/30 bg-gradient-to-r from-warning/10 via-warning/5 to-transparent p-6">
         <div className="flex items-start gap-4">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-500">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-warning/20 text-warning-foreground">
             <PiSparkleBold className="size-6" />
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <h3 className="text-h2 font-bold text-foreground">Menu Demand Gap Intelligence</h3>
+              <h3 className="text-h2 font-bold text-foreground">Searches with no matching dish</h3>
               <Badge tone="warning">High Commercial Value</Badge>
             </div>
             <p className="text-body text-muted-foreground">
@@ -46,7 +46,7 @@ export function SearchDemandTab({ platform }: SearchDemandTabProps) {
                   <div key={idx} className="space-y-1">
                     <div className="flex items-center justify-between text-body">
                       <div className="flex items-center gap-2">
-                        <span className="flex size-5 items-center justify-center rounded bg-muted text-[10px] font-bold text-muted-foreground">
+                        <span className="flex size-5 items-center justify-center rounded bg-muted text-caption font-bold text-muted-foreground">
                           #{idx + 1}
                         </span>
                         <span className="font-semibold text-foreground capitalize">“{s.query}”</span>
@@ -54,7 +54,7 @@ export function SearchDemandTab({ platform }: SearchDemandTabProps) {
                       <span className="font-mono font-bold text-foreground">{s.count.toLocaleString()} searches</span>
                     </div>
                     <div className="h-2 w-full rounded-full bg-muted/40 overflow-hidden">
-                      <div className="h-full rounded-full bg-cyan-500" style={{ width: `${pct}%` }} />
+                      <div className="h-full rounded-full bg-info" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 );
@@ -86,27 +86,27 @@ export function SearchDemandTab({ platform }: SearchDemandTabProps) {
               {platform.zero_result_searches.map((s, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between rounded-xl border border-amber-500/20 bg-amber-500/5 p-3"
+                  className="flex items-center justify-between rounded-xl border border-warning/20 bg-warning/5 p-3"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="flex size-7 items-center justify-center rounded-lg bg-amber-500/15 text-amber-500 font-bold text-caption">
+                    <span className="flex size-7 items-center justify-center rounded-lg bg-warning/15 text-warning-foreground font-bold text-caption">
                       {idx + 1}
                     </span>
                     <div>
                       <p className="font-semibold text-foreground capitalize">“{s.query}”</p>
-                      <p className="text-[10px] text-muted-foreground">0 matches in catalog</p>
+                      <p className="text-caption text-muted-foreground">0 matches in catalog</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <span className="font-mono font-bold text-foreground">{s.count.toLocaleString()}</span>
-                    <span className="block text-[10px] text-amber-500 font-semibold">Missed orders</span>
+                    <span className="block text-caption text-warning-foreground font-semibold">Missed orders</span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
             <div className="flex flex-1 min-h-[220px] flex-col items-center justify-center text-center p-6 border border-dashed border-border rounded-xl">
-              <PiSparkleBold className="size-8 text-emerald-500 mb-2" />
+              <PiSparkleBold className="size-8 text-success mb-2" />
               <p className="text-body font-semibold text-foreground">No menu gaps detected</p>
               <p className="text-caption text-muted-foreground max-w-sm mt-1">
                 Guests are finding matching items for all searches in the selected period!

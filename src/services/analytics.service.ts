@@ -55,6 +55,10 @@ export interface DashboardData {
   topSearches: Array<{ query: string; count: number }>;
   /** How guests arrived — 'direct' when no UTM param or cross-site referrer was captured. */
   acquisition: Array<{ source: string; count: number }>;
+  /** Totals for the period just before the selected one. Null for "all time". */
+  previous?: { visits: number; visitors: number; clicks: number; searches: number } | null;
+  /** Visits per hour of day (0-23), server-local time. */
+  visitsByHour?: Array<{ hour: number; count: number }>;
 }
 
 export interface VisitorRow {

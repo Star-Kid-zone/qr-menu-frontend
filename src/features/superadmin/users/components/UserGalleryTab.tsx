@@ -2,14 +2,13 @@
 
 import React from "react";
 import Image from "next/image";
-import { AnimatePresence, motion } from "framer-motion";
+import { Modal } from "@/components/Modal";
 import { Card, EmptyState } from "@/components/ui";
 import {
   PiImagesBold,
   PiEyeBold,
   PiCopyBold,
   PiArrowSquareOutBold,
-  PiXBold,
 } from "react-icons/pi";
 import type { UserDetailResponse } from "../types";
 
@@ -75,7 +74,7 @@ export function UserGalleryTab({
                 </div>
               </div>
               <div className="flex items-center justify-between p-3 bg-card border-t border-border">
-                <span className="font-mono text-[11px] text-muted-foreground">
+                <span className="font-mono text-caption text-muted-foreground">
                   Photo #{img.id}
                 </span>
                 <div className="flex items-center gap-2">
@@ -103,37 +102,23 @@ export function UserGalleryTab({
         </div>
       )}
 
-      {/* Fullscreen Lightbox Modal */}
-      <AnimatePresence>
+      <Modal
+        isOpen={Boolean(previewImage)}
+        onClose={() => setPreviewImage(null)}
+        title="Photo preview"
+        maxWidth="max-w-5xl"
+      >
         {previewImage && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
-            onClick={() => setPreviewImage(null)}
-          >
-            <motion.div
-              className="relative max-h-[90vh] max-w-[90vw] overflow-hidden rounded-2xl border border-white/20 bg-card shadow-2xl"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                type="button"
-                onClick={() => setPreviewImage(null)}
-                className="absolute right-4 top-4 z-10 rounded-full bg-black/60 p-2 text-white hover:bg-black"
-              >
-                <PiXBold size={18} />
-              </button>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={previewImage}
-                alt="Full preview"
-                className="max-h-[85vh] max-w-[85vw] object-contain"
-              />
-            </motion.div>
+          <div className="flex justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={previewImage}
+              alt="Gallery photo, full size"
+              className="max-h-[70vh] w-auto rounded-md object-contain"
+            />
           </div>
         )}
-      </AnimatePresence>
+      </Modal>
     </div>
   );
 }

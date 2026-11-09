@@ -35,6 +35,10 @@ export function TenantRedirectsPanel({ userId }: { userId: number }) {
   const [submitting, setSubmitting] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<TenantRedirect | null>(null);
 
+  const handleLoadError = useCallback((err: unknown) => {
+    setError(getApiErrorMessage(err, "Failed to load redirects."));
+  }, []);
+
   const fetchRedirects = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -42,15 +46,28 @@ export function TenantRedirectsPanel({ userId }: { userId: number }) {
       const rows = await superadminService.listTenantRedirects(userId);
       setRedirects(rows);
     } catch (err) {
-      setError(getApiErrorMessage(err, "Failed to load redirects."));
+      handleLoadError(err);
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, handleLoadError]);
+
+  // Another tenant shows the loading state again (adjusted during render);
+  // the effect below then fetches it. `loading` starts true for the first tenant.
+  const [loadedUserId, setLoadedUserId] = useState(userId);
+  if (!Object.is(loadedUserId, userId)) {
+    setLoadedUserId(userId);
+    setLoading(true);
+    setError(null);
+  }
 
   useEffect(() => {
-    fetchRedirects();
-  }, [fetchRedirects]);
+    superadminService
+      .listTenantRedirects(userId)
+      .then(setRedirects)
+      .catch(handleLoadError)
+      .finally(() => setLoading(false));
+  }, [userId, handleLoadError]);
 
   const resetForm = () => {
     setSourcePath("");
@@ -148,7 +165,7 @@ export function TenantRedirectsPanel({ userId }: { userId: number }) {
       {!loading && !error && redirects && redirects.length > 0 && (
         <div className="overflow-hidden rounded-2xl border border-border bg-card">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-border bg-muted/40 font-semibold uppercase tracking-wider text-muted-foreground">
+            <thead className="border-b border-border bg-muted/40 font-semibold text-muted-foreground">
               <tr>
                 <th className="px-4 py-3">Source Path</th>
                 <th className="px-4 py-3">Target</th>
@@ -164,13 +181,13 @@ export function TenantRedirectsPanel({ userId }: { userId: number }) {
                     {r.sourcePath}
                   </td>
                   <td className="px-4 py-3 font-mono text-muted-foreground">
-                    <span className="inline-flex items-center gap-1.5">
+                    <span className="inline-flex items-center gap-2">
                       <PiArrowRightBold className="size-3 text-primary" />
                       {r.target}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="rounded bg-muted px-2 py-0.5 font-mono text-[11px] font-semibold text-foreground">
+                    <span className="rounded bg-muted px-2 py-0.5 font-mono text-caption font-semibold text-foreground">
                       {r.statusCode}
                     </span>
                   </td>
@@ -232,7 +249,7 @@ export function TenantRedirectsPanel({ userId }: { userId: number }) {
           </p>
 
           <div>
-            <label className="text-caption uppercase tracking-wider text-muted-foreground">
+            <label className="text-caption text-muted-foreground">
               Source Path
             </label>
             <Input
@@ -241,14 +258,14 @@ export function TenantRedirectsPanel({ userId }: { userId: number }) {
               placeholder="/summer-specials or /old-menu"
               className="mt-1 font-mono text-xs"
             />
-            <p className="mt-1 text-[11px] text-muted-foreground">
+            <p className="mt-1 text-caption text-muted-foreground">
               Relative to the tenant domain, must begin with &quot;/&quot;.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-caption uppercase tracking-wider text-muted-foreground">
+              <label className="text-caption text-muted-foreground">
                 Target Type
               </label>
               <Select
@@ -261,7 +278,7 @@ export function TenantRedirectsPanel({ userId }: { userId: number }) {
               </Select>
             </div>
             <div>
-              <label className="text-caption uppercase tracking-wider text-muted-foreground">
+              <label className="text-caption text-muted-foreground">
                 Status Code
               </label>
               <Select
@@ -276,7 +293,7 @@ export function TenantRedirectsPanel({ userId }: { userId: number }) {
           </div>
 
           <div>
-            <label className="text-caption uppercase tracking-wider text-muted-foreground">
+            <label className="text-caption text-muted-foreground">
               Target Destination
             </label>
             <Input

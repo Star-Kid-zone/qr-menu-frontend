@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   PiImagesBold,
@@ -50,19 +50,21 @@ export function CreativeStudioPage() {
     },
   });
 
-  // Load Prompt / Tab from Query Parameters
-  useEffect(() => {
+  // Load Prompt / Tab from Query Parameters (adjusted during render whenever the params change)
+  const [syncedSearchParams, setSyncedSearchParams] = useState<typeof searchParams | null>(null);
+  if (syncedSearchParams !== searchParams) {
+    setSyncedSearchParams(searchParams);
     const tabParam = searchParams.get('tab') as StudioTab | null;
     if (tabParam && ['vault', 'decoder', 'aistudio', 'automation'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
-  }, [searchParams]);
+  }
 
   return (
-    <div className="flex h-full flex-col gap-6 overflow-y-auto pb-10">
+    <div className="flex h-full flex-col gap-4 sm:gap-4 overflow-y-auto pb-6">
       <PageHeader
-        title="Creative Studio & Asset Distribution"
-        description="Decode competitor flyers with Vision AI, synthesize hyperrealistic food photos & video reels, and dispatch marketing assets directly to tenant ad inboxes."
+        title="Creative studio"
+        description="Make marketing images and videos, then send them to restaurants."
       />
 
       {/* Navigation Tabs */}
@@ -72,40 +74,40 @@ export function CreativeStudioPage() {
             variant={activeTab === 'vault' ? 'primary' : 'ghost'}
             size="sm"
             onClick={() => setActiveTab('vault')}
-            className="flex items-center gap-1.5"
+            className="flex items-center gap-2"
           >
             <PiImagesBold className="h-4 w-4" />
-            <span>Vault &amp; Asset Distribution</span>
+            <span>Saved assets</span>
           </Button>
 
           <Button
             variant={activeTab === 'decoder' ? 'primary' : 'ghost'}
             size="sm"
             onClick={() => setActiveTab('decoder')}
-            className="flex items-center gap-1.5"
+            className="flex items-center gap-2"
           >
-            <PiEyeBold className="h-4 w-4 text-amber-500" />
-            <span>Reverse-Engineer Flyer (Decoder)</span>
+            <PiEyeBold className="h-4 w-4 text-warning-foreground" />
+            <span>Copy a flyer&apos;s layout</span>
           </Button>
 
           <Button
             variant={activeTab === 'aistudio' ? 'primary' : 'ghost'}
             size="sm"
             onClick={() => setActiveTab('aistudio')}
-            className="flex items-center gap-1.5"
+            className="flex items-center gap-2"
           >
-            <PiSparkleBold className="h-4 w-4 text-purple-500" />
-            <span>AI Photo &amp; Video Reel Studio</span>
+            <PiSparkleBold className="h-4 w-4 text-primary" />
+            <span>Generate photos and reels</span>
           </Button>
 
           <Button
             variant={activeTab === 'automation' ? 'primary' : 'ghost'}
             size="sm"
             onClick={() => setActiveTab('automation')}
-            className="flex items-center gap-1.5"
+            className="flex items-center gap-2"
           >
-            <PiBrowsersBold className="h-4 w-4 text-cyan-500" />
-            <span>Browser Automation (CDP)</span>
+            <PiBrowsersBold className="h-4 w-4 text-info" />
+            <span>Generate with your ChatGPT or Ideogram login</span>
           </Button>
         </div>
 
@@ -242,6 +244,7 @@ export function CreativeStudioPage() {
           scriptLog={automation.scriptLog}
         />
       )}
+      {vault.confirmDialog}
     </div>
   );
 }

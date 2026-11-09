@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useAnalytics } from '@/hooks/useAnalytics.hook';
 import { NextLinkAdapter } from '@/components/next/NextLinkAdapter';
 import { publicLandingPath, publicMenuPath } from '@/components/templates/core/paths';
@@ -9,12 +9,14 @@ import type { MappedPublicUserDetails } from '@/types/components/templates/mapPu
 import type { PublicMenuPayload } from '@/types/public-site';
 import type { Menu } from '@/types';
 
+// The hostname never changes for the lifetime of the page, so there is nothing to subscribe to.
+const subscribeNoop = () => () => {};
+const getIsSubdomainSnapshot = () => Boolean(getTenantSlugFromHost(window.location.hostname));
+// Server render (and hydration) always assume a path-based URL; the client snapshot takes over after hydration.
+const getIsSubdomainServerSnapshot = () => false;
+
 function useIsSubdomain(): boolean {
-  const [isSubdomain, setIsSubdomain] = useState(false);
-  useEffect(() => {
-    setIsSubdomain(Boolean(getTenantSlugFromHost(window.location.hostname)));
-  }, []);
-  return isSubdomain;
+  return useSyncExternalStore(subscribeNoop, getIsSubdomainSnapshot, getIsSubdomainServerSnapshot);
 }
 
 function safeString(v: unknown, fallback = ''): string {
@@ -72,7 +74,7 @@ export function useLandingTemplateData(mapped: MappedPublicUserDetails, routeSlu
 
   const paymentLink = safeString(mapped.paymentLink, '');
   const reviewLink = safeString(mapped.reviewLink, '');
-  const websiteUrl = safeString((mapped.business as any).website_url, '');
+  const websiteUrl = safeString(mapped.business.website_url, '');
   const websiteHref =
     websiteUrl && /^https?:\/\//i.test(websiteUrl) ? websiteUrl : websiteUrl ? `https://${websiteUrl}` : '';
 
@@ -80,9 +82,9 @@ export function useLandingTemplateData(mapped: MappedPublicUserDetails, routeSlu
   const finalMenuBtn = mapped.menubtnStatus || hasMenuHref;
 
   return {
-    businessName: safeString((mapped.business as any).business_name, 'Venue'),
-    phone: safeString((mapped.business as any).phone, ''),
-    address: safeString((mapped.business as any).address, ''),
+    businessName: safeString(mapped.business.business_name, 'Venue'),
+    phone: safeString(mapped.business.phone, ''),
+    address: safeString(mapped.business.address, ''),
     websiteUrl,
     websiteHref,
     social: mapped.social,
@@ -229,9 +231,9 @@ export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: strin
   const settings = mapped.settings;
 
   return {
-    businessName: ((mapped.business as any).business_name as string) || 'Venue',
-    phone: ((mapped.business as any).phone as string) || '',
-    address: ((mapped.business as any).address as string) || '',
+    businessName: (mapped.business.business_name as string) || 'Venue',
+    phone: (mapped.business.phone as string) || '',
+    address: (mapped.business.address as string) || '',
     announcement: mapped.announcementEnabled && mapped.announcementText.trim() ? mapped.announcementText : null,
     social: mapped.social,
     socialLinks: mapped.social,

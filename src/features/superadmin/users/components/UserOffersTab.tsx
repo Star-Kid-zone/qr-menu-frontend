@@ -53,7 +53,7 @@ export function UserOffersTab({ detail }: UserOffersTabProps) {
                   />
                 </div>
               )}
-              <div className="flex flex-1 flex-col justify-between p-5">
+              <div className="flex flex-1 flex-col justify-between p-6">
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <span className="rounded-full bg-primary/10 px-3 py-1 font-mono text-xs font-bold text-primary">
@@ -66,12 +66,12 @@ export function UserOffersTab({ detail }: UserOffersTabProps) {
                   <h3 className="mt-3 text-base font-bold text-foreground">
                     {offer.title}
                   </h3>
-                  <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
+                  <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
                     {offer.description}
                   </p>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-[11px] font-mono text-muted-foreground">
+                <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-caption font-mono text-muted-foreground">
                   <span>Offer #{offer.id}</span>
                   <span>Workspace #{offer.workspaceId}</span>
                 </div>

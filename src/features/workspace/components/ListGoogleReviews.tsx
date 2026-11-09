@@ -33,7 +33,7 @@ function StarRating({ rating }: { rating: number }) {
     <div className="flex items-center gap-0.5" aria-label={`${rating} out of 5 stars`}>
       {Array.from({ length: 5 }).map((_, i) =>
         i < rating ? (
-          <PiStarFill key={i} size={13} className="text-amber-400" />
+          <PiStarFill key={i} size={13} className="text-warning-foreground" />
         ) : (
           <PiStarBold key={i} size={13} className="text-border" />
         )
@@ -57,17 +57,22 @@ export const ListGoogleReviews = forwardRef<ListGoogleReviewsHandle, ListGoogleR
     },
   }));
 
-  useEffect(() => {
+  // Follow the parent's reviews when it passes them; without them, fall back
+  // to loading here (adjusted during render, then fetched by the effect below).
+  const [syncedReviews, setSyncedReviews] = useState(initialReviews);
+  if (syncedReviews !== initialReviews) {
+    setSyncedReviews(initialReviews);
     if (initialReviews) {
       setItems(initialReviews);
       setLoading(false);
+    } else {
+      setLoading(true);
     }
-  }, [initialReviews]);
+  }
 
   useEffect(() => {
     if (initialReviews) return;
     let cancelled = false;
-    setLoading(true);
     workspaceService
       .getGoogleReviews()
       .then((res) => {
@@ -144,7 +149,7 @@ export const ListGoogleReviews = forwardRef<ListGoogleReviewsHandle, ListGoogleR
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="truncate text-body font-semibold text-foreground">{r.authorName}</p>
-                <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-0.5 text-caption font-semibold ${r.isFeatured ? 'border-success/20 bg-success/15 text-success' : 'border-border bg-muted text-muted-foreground'}`}>
+                <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-3 py-0.5 text-caption font-semibold ${r.isFeatured ? 'border-success/20 bg-success/15 text-success' : 'border-border bg-muted text-muted-foreground'}`}>
                   {r.isFeatured ? 'Shown on landing page' : 'Hidden'}
                 </span>
               </div>
@@ -165,7 +170,7 @@ export const ListGoogleReviews = forwardRef<ListGoogleReviewsHandle, ListGoogleR
             <button
               onClick={() => handleToggle(r)}
               disabled={toggling === r.id}
-              className="shrink-0 rounded-lg border border-border bg-secondary p-2.5 text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-50"
+              className="shrink-0 rounded-lg border border-border bg-secondary p-3 text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-50"
               title={r.isFeatured ? 'Hide from landing page' : 'Show on landing page'}
             >
               {r.isFeatured ? <PiEyeBold className="text-lg" /> : <PiEyeSlashBold className="text-lg" />}

@@ -3,11 +3,11 @@ import 'server-only';
 import { cache } from 'react';
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
-import type { Metadata } from 'next';
-import { APP_NAME, SERVER_API_BASE_URL } from '@/config/app.constants';
+import { SERVER_API_BASE_URL } from '@/config/app.constants';
 import { mapPublicUserDetailsFromApi } from '@/components/templates/core/mapPublicUserDetails';
 import { MappedPublicUserDetails } from '@/types/components/templates/mapPublicUserDetails.types';
 import type { RawPublicSiteData } from '@/types/components/templates/rawPublicSiteData.types';
+import type { Menu } from '@/types';
 import { normalizeMenuItems } from '@/utils/public-site.utils';
 import type { PublicMenuPayload } from '@/types/public-site';
 import { getTenantSlugFromHost } from '@/utils/tenantHost';
@@ -47,19 +47,67 @@ async function fetchJson(path: string, init?: RequestInit & { revalidate?: numbe
   return json as Promise<{ data?: unknown }>;
 }
 
+/**
+ * Raw `GET /public/portal/:slug` payload (camelCase). Only the fields the
+ * mapper below reads are typed; `portalInfo` is passed through into the
+ * untyped `settings` / `business` bags, so its scalar fields stay `unknown`.
+ */
+type PortalMenuItem = {
+  id: string | number;
+  item: string;
+  description?: string | null;
+  price?: string | number | null;
+  type?: string | null;
+  popular?: boolean;
+  imageUrl?: string | null;
+  images?: unknown;
+  videos?: unknown;
+  dietaryTags?: unknown;
+  allergens?: unknown;
+  spiceLevel?: unknown;
+  calories?: unknown;
+};
+
+type PortalResponse = {
+  portalInfo: Record<string, unknown> & {
+    payment?: { type?: string; link?: string; qrImage?: string } | null;
+  };
+  menu?: Record<string, PortalMenuItem[]> | null;
+  gallery?: Array<{ id?: string | number; imageUrl?: string | null }> | null;
+  offers?: Array<{
+    id?: string | number;
+    title?: string;
+    description?: string | null;
+    discount?: string | null;
+    imageUrl?: string | null;
+  }> | null;
+  faqs?: Array<{ id?: string | number; question?: string; answer?: string }> | null;
+  googleReviews?: Array<{
+    id: string | number;
+    authorName: string;
+    authorPhotoUrl?: string | null;
+    rating: number;
+    text?: string | null;
+    relativePublishDescription?: string | null;
+    publishTime?: string | null;
+  }> | null;
+};
+
 export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<RawPublicSiteData> => {
   const normalizedSlug = slug.trim().toLowerCase();
   const portalResponse = await fetchJson(`/public/portal/${encodeURIComponent(slug.trim())}`, {
     tags: [`portal:${normalizedSlug}`],
   });
   if (!portalResponse) throw new Error('Empty response');
-  const portal = portalResponse as any;
+  const portal = portalResponse as PortalResponse;
 
   // Flatten the grouped menu for the legacy templates
-  const menuItems: any[] = [];
-  if (portal.menu) {
-    Object.keys(portal.menu).forEach(category => {
-      portal.menu[category].forEach((item: any) => {
+  // `image_url` is `null` (not absent) when the item has no photo.
+  const menuItems: Array<Omit<Menu, 'image_url'> & { image_url: string | null }> = [];
+  const portalMenu = portal.menu;
+  if (portalMenu) {
+    Object.keys(portalMenu).forEach(category => {
+      portalMenu[category].forEach((item) => {
         menuItems.push({
           id: Number(item.id),               // API returns string id — cast to number
           item: item.item,
@@ -154,11 +202,11 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
       review_link: portal.portalInfo.reviewLink,
     },
     currency: portal.portalInfo.currency || null,
-    gallery: (portal.gallery || []).map((g: any) => ({
+    gallery: (portal.gallery || []).map((g) => ({
       id: g.id,
       image_url: g.imageUrl,
     })),
-    offers: (portal.offers || []).map((o: any) => ({
+    offers: (portal.offers || []).map((o) => ({
       id: o.id,
       title: o.title,
       description: o.description,
@@ -166,12 +214,12 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
       image_url: o.imageUrl,
     })),
     menuItems: menuItems,
-    faqs: (portal.faqs || []).map((f: any) => ({
+    faqs: (portal.faqs || []).map((f) => ({
       id: f.id,
       question: f.question,
       answer: f.answer,
     })),
-    googleReviews: (portal.googleReviews || []).map((r: any) => ({
+    googleReviews: (portal.googleReviews || []).map((r) => ({
       id: r.id,
       authorName: r.authorName,
       authorPhotoUrl: r.authorPhotoUrl ?? null,
@@ -245,19 +293,6 @@ export async function resolveMenuFromRequestHost() {
   } catch {
     return null;
   }
-}
-
-export function buildPublicMetadata({
-  title,
-  description,
-}: {
-  title: string;
-  description?: string | null;
-}): Metadata {
-  return {
-    title: `${title} | ${APP_NAME}`,
-    description: description || `${title} on ${APP_NAME}`,
-  };
 }
 
 /**

@@ -13,16 +13,16 @@ export interface MenuCatalogCardProps {
 export function MenuCatalogCard({ menuStats, loading }: MenuCatalogCardProps) {
   return (
     <Card className="rounded-xl border border-border bg-card shadow-sm">
-      <CardHeader className="border-b border-border px-5 py-4">
+      <CardHeader className="border-b border-border px-6 py-4">
         <div className="flex items-center gap-2">
           <PiForkKnifeBold size={16} className="text-primary" />
           <div>
-            <CardTitle className="text-sm font-semibold text-foreground">Menu Catalog Distribution</CardTitle>
-            <p className="text-xs text-muted-foreground">Active inventory by dish category</p>
+            <CardTitle className="text-sm font-semibold text-foreground">Dishes by category</CardTitle>
+            <p className="text-xs text-muted-foreground">How many dishes are in each category</p>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-5">
+      <CardContent className="p-6">
         {loading ? (
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-6 w-full" />)}
@@ -30,17 +30,17 @@ export function MenuCatalogCard({ menuStats, loading }: MenuCatalogCardProps) {
         ) : menuStats ? (
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-2">
-              <div className="rounded-lg bg-muted/40 p-2.5 text-center">
+              <div className="rounded-lg bg-muted/40 p-3 text-center">
                 <p className="text-lg font-bold text-foreground">{menuStats.total}</p>
-                <p className="text-[10px] font-semibold uppercase text-muted-foreground">Total</p>
+                <p className="text-caption text-muted-foreground">Dishes</p>
               </div>
-              <div className="rounded-lg bg-emerald-50 p-2.5 text-center dark:bg-emerald-950/40">
-                <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">{menuStats.available}</p>
-                <p className="text-[10px] font-semibold uppercase text-emerald-600 dark:text-emerald-500">Available</p>
+              <div className="rounded-lg bg-success/10 p-3 text-center dark:bg-success/40">
+                <p className="text-lg font-bold text-success dark:text-success">{menuStats.available}</p>
+                <p className="text-caption text-muted-foreground">On menu</p>
               </div>
-              <div className="rounded-lg bg-amber-50 p-2.5 text-center dark:bg-amber-950/40">
-                <p className="text-lg font-bold text-amber-700 dark:text-amber-400">{menuStats.popular}</p>
-                <p className="text-[10px] font-semibold uppercase text-amber-600 dark:text-amber-500">Popular</p>
+              <div className="rounded-lg bg-warning/10 p-3 text-center dark:bg-warning/40">
+                <p className="text-lg font-bold text-warning-foreground dark:text-warning">{menuStats.popular}</p>
+                <p className="text-caption text-muted-foreground">Marked popular</p>
               </div>
             </div>
 
@@ -62,7 +62,9 @@ export function MenuCatalogCard({ menuStats, loading }: MenuCatalogCardProps) {
             </div>
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground">No menu items configured.</p>
+          <p className="text-xs text-muted-foreground">
+            No dishes yet. <a href="/admin/addmenu" className="font-medium text-primary hover:underline">Add your first dish</a>
+          </p>
         )}
       </CardContent>
     </Card>

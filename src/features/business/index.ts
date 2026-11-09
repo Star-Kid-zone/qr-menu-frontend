@@ -3,7 +3,6 @@ export * from "./constants";
 export * from "./components/BusinessForm";
 export * from "./components/tabs/WebsiteTab";
 export * from "./components/tabs/BusinessesTab";
-export * from "./components/tabs/PublicSiteTab";
 export * from "./components/tabs/BannersTab";
 export * from "./components/tabs/OffersTab";
 export * from "./components/tabs/GalleryTab";

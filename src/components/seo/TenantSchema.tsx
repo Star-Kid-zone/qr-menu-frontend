@@ -1,6 +1,7 @@
 import React from 'react';
 import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
 import { getTenantPublicUrl } from "@/config/app.constants";
+import { readBusinessSeo } from "@/utils/public-seo";
 
 /** Converts a raw `HH:mm`/`H:mm AM|PM`-ish time string into schema.org's `HH:MM` 24h format. Returns null if unparsable. */
 function toSchemaTime(raw: unknown): string | null {
@@ -39,51 +40,38 @@ function buildOpeningHours(availability: unknown): string[] {
   return rows;
 }
 
-/** Derives a `$`/`$$`/`$$$` priceRange from real menu item prices — omitted when there isn't enough data to back it. */
-function buildPriceRange(menuItems: unknown): string | null {
-  if (!Array.isArray(menuItems)) return null;
-  const prices = (menuItems as Array<Record<string, unknown>>)
-    .map((m) => Number(m?.price))
-    .filter((n) => Number.isFinite(n) && n > 0);
-  if (prices.length === 0) return null;
-  const max = Math.max(...prices);
-  if (max < 15) return '$';
-  if (max < 35) return '$$';
-  if (max < 75) return '$$$';
-  return '$$$$';
-}
-
 export function TenantSchema({ data }: { data: RawPublicSiteData }) {
   if (!data || !data.business) return null;
 
   const b = data.business;
-  const logoUrl = (b.logo_url as string | undefined) || '';
+  const seo = readBusinessSeo(b, data.settings);
   const rawSlug = data.settings?.public_slug;
   const url = getTenantPublicUrl(typeof rawSlug === 'string' ? rawSlug : undefined);
 
   const openingHours = buildOpeningHours(b.availability);
-  const priceRange = buildPriceRange(data.menuItems);
+
+  const telephone = (b.phone as string | undefined)?.trim();
+  const streetAddress = (b.address as string | undefined)?.trim();
 
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Restaurant",
-    "name": (b.business_name as string | undefined) || 'Restaurant',
-    "image": [logoUrl],
+    "name": seo.name,
     "url": url,
-    "telephone": (b.phone as string | undefined) || '',
-    // Only `streetAddress` is populated — the underlying business record has
-    // no separate city/region/postalCode/country fields to draw from; adding
-    // those here would mean fabricating data that doesn't exist.
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": (b.address as string | undefined) || '',
-    },
-    "description": (b.description as string | undefined) || (b.tagline as string | undefined) || '',
     "menu": `${url}/menu`,
   };
 
+  // Empty values are flagged by Google's structured-data validators, so every
+  // optional field is only emitted when the tenant actually filled it in.
+  if (seo.logoUrl) schema.image = [seo.logoUrl];
+  if (telephone) schema.telephone = telephone;
+  if (seo.description) schema.description = seo.description;
+  // Only `streetAddress` is populated — the underlying business record has
+  // no separate city/region/postalCode/country fields to draw from; adding
+  // those here would mean fabricating data that doesn't exist.
+  if (streetAddress) schema.address = { "@type": "PostalAddress", streetAddress };
+
   if (openingHours.length > 0) schema.openingHours = openingHours;
-  if (priceRange) schema.priceRange = priceRange;
 
   // JSON.stringify does not escape `<`, so a tenant-controlled field containing
   // `</script><script>...` would otherwise break out of this tag and execute.

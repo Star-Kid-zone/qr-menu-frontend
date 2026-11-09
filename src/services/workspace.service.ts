@@ -1,5 +1,5 @@
 import api from './api.service';
-import type { SocialLink } from '@/types';
+import type { Currency, SocialLink } from '@/types';
 
 export interface WorkspaceTheme {
   themeColour: string;
@@ -67,7 +67,7 @@ export interface WorkspaceBusinessProfile {
   // Canonical shape: array of { platform, url } (matches backend seed data,
   // the public-site template mapper, and admin/listbusiness's editor).
   socialLinks?: SocialLink[] | null;
-  availability?: any;
+  availability?: Array<{ day: string; startTime: string; endTime: string }> | null;
   gstin?: string | null;
   taxInclusive?: boolean;
   serviceChargePercent?: number | string | null;
@@ -202,10 +202,10 @@ export const workspaceService = {
   updateFaq: (id: string, data: Record<string, unknown>) => api.put<{ message: string, faq: WorkspaceFaq }>(`/workspace/faqs/${id}`, data),
   toggleFaq: (id: string) => api.patch<{ message: string, faq: WorkspaceFaq }>(`/workspace/faqs/${id}/toggle`),
   removeFaq: (id: string) => api.delete<{ message: string }>(`/workspace/faqs/${id}`),
-  getCurrencies: () => api.get<any[]>('/workspace/currencies'),
+  getCurrencies: () => api.get<Currency[]>('/workspace/currencies'),
   uploadPaymentQr: (data: FormData) => api.post<{ message: string, url: string }>('/workspace/payment-qr', data),
   checkSlugAvailability: (slug: string) =>
-    api.get<{ data: { available: boolean } }>('/workspace/slug-availability', { params: { slug } }),
+    api.get<{ available: boolean }>('/workspace/slug-availability', { params: { slug } }),
   updateSlug: (slug: string) =>
     api.put<{ message: string, workspace: WorkspaceData }>('/workspace', { publicSlug: slug }),
   searchPlaces: (query: string) =>

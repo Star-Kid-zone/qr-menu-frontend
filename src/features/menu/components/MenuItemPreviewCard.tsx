@@ -2,6 +2,7 @@
 
 import { PiSparkleFill } from "react-icons/pi";
 import { MenuItemGallery } from "@/components/templates/core/MenuItemGallery";
+import { DietaryBadges } from "@/components/templates/menu/_shared/structures/DietaryBadges";
 import { cn } from "@/utils/cn";
 import type { Menu } from "@/types";
 
@@ -18,6 +19,11 @@ interface Props {
   type?: string;
   popular?: boolean;
   available?: boolean;
+  dietaryTags?: string[];
+  allergens?: string[];
+  spiceLevel?: number | null;
+  calories?: string;
+  currencySymbol?: string;
 }
 
 /**
@@ -38,6 +44,11 @@ export function MenuItemPreviewCard({
   type,
   popular = false,
   available = true,
+  dietaryTags = [],
+  allergens = [],
+  spiceLevel = null,
+  calories = "",
+  currencySymbol = "$",
 }: Props) {
   const priceNum = Number(price);
   const priceLabel = Number.isFinite(priceNum) && String(price).trim() !== "" ? priceNum.toFixed(2) : "0.00";
@@ -57,6 +68,10 @@ export function MenuItemPreviewCard({
     imageUrl: cleanImages[0],
     images: cleanImages.slice(1),
     videos: cleanVideos,
+    dietaryTags,
+    allergens,
+    spiceLevel,
+    calories: calories.trim() !== "" && Number.isFinite(Number(calories)) ? Number(calories) : null,
   };
 
   return (
@@ -65,9 +80,9 @@ export function MenuItemPreviewCard({
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
         <MenuItemGallery item={galleryItem} primary="#171717" secondary="#64748b" className="h-full w-full" />
 
-        <div className="pointer-events-none absolute left-2.5 top-2.5 flex flex-wrap items-center gap-1.5">
+        <div className="pointer-events-none absolute left-2.5 top-2.5 flex flex-wrap items-center gap-2">
           {popular && (
-            <span className="flex items-center gap-1 rounded-md bg-amber-400 px-2 py-0.5 text-[10px] font-bold text-amber-950 shadow-xs backdrop-blur-xs">
+            <span className="flex items-center gap-1 rounded-md bg-warning/40 px-2 py-0.5 text-caption font-bold text-warning-foreground shadow-xs backdrop-blur-xs">
               <PiSparkleFill size={10} />
               Popular
             </span>
@@ -77,8 +92,8 @@ export function MenuItemPreviewCard({
         <div className="pointer-events-none absolute right-2.5 top-2.5">
           <span
             className={cn(
-              "rounded-md px-2 py-0.5 text-[10px] font-bold shadow-xs backdrop-blur-xs",
-              available ? "bg-emerald-500 text-white" : "bg-black/60 text-white/90",
+              "rounded-md px-2 py-0.5 text-caption font-bold shadow-xs backdrop-blur-xs",
+              available ? "bg-success text-white" : "bg-black/60 text-white/90",
             )}
           >
             {available ? "Available" : "Unavailable"}
@@ -87,13 +102,13 @@ export function MenuItemPreviewCard({
       </div>
 
       {/* Content */}
-      <div className="flex flex-col p-3.5">
+      <div className="flex flex-col p-4">
         <div className="mb-1 flex items-center justify-between gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-primary truncate">
+          <span className="text-caption font-bold text-primary truncate">
             {category || "Category"}
           </span>
           {type && (
-            <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground truncate">
+            <span className="rounded bg-muted px-2 py-0.5 text-caption font-medium text-muted-foreground truncate">
               {type}
             </span>
           )}
@@ -104,10 +119,12 @@ export function MenuItemPreviewCard({
         </h3>
 
         {description ? (
-          <p className="mt-0.5 line-clamp-2 text-[11px] text-muted-foreground">{description}</p>
+          <p className="mt-0.5 line-clamp-2 text-caption text-muted-foreground">{description}</p>
         ) : null}
 
-        <p className="mt-2 text-base font-bold tabular-figures text-foreground">${priceLabel}</p>
+        <DietaryBadges item={galleryItem} detailed className="mt-2" />
+
+        <p className="mt-2 text-base font-bold tabular-figures text-foreground">{currencySymbol}{priceLabel}</p>
       </div>
     </div>
   );

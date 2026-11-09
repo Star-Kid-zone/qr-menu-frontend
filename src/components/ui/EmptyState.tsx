@@ -10,7 +10,7 @@ export function EmptyState({ icon, title, description, action, className }: Empt
       )}
     >
       {icon ? (
-        <div className="mb-5 flex size-16 items-center justify-center rounded-2xl border border-border bg-muted/60 text-muted-foreground shadow-xs">
+        <div className="mb-4 flex size-16 items-center justify-center rounded-2xl border border-border bg-muted/60 text-muted-foreground shadow-xs">
           {icon}
         </div>
       ) : null}

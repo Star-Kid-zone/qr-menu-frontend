@@ -10,6 +10,7 @@ import {
 import { Badge, Button, Card, EmptyState, PageHeader } from "@/components/ui";
 import { cn } from "@/utils";
 import type { HistoryFilter, SocialPost } from "../types";
+import { formatDate } from "@/utils/date";
 
 interface HistoryTabProps {
   posts: SocialPost[];
@@ -41,7 +42,7 @@ export function HistoryTab({
     <div className="flex h-full min-h-0 flex-col gap-4">
       <PageHeader
         className="shrink-0"
-        title="Publishing History"
+        title="Planned and sent posts"
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -131,7 +132,7 @@ export function HistoryTab({
                         <p className="font-bold text-foreground text-sm truncate">
                           {post.title || "Untitled Social Post"}
                         </p>
-                        <Badge tone={badgeTone} className="text-[8px]">
+                        <Badge tone={badgeTone} className="text-caption">
                           {post.lifecycleStatus}
                         </Badge>
                       </div>
@@ -139,15 +140,15 @@ export function HistoryTab({
                         <p className="text-xs text-muted-foreground">
                           Scheduled for:{" "}
                           <span className="font-semibold text-foreground">
-                            {new Date(post.scheduledAtUtc).toLocaleString()}
+                            {formatDate(post.scheduledAtUtc, { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" })}
                           </span>
                         </p>
                       )}
                       {post.destinations && post.destinations.length > 0 && (
                         <div className="flex items-center gap-2 pt-1">
-                          <span className="text-[11px] text-muted-foreground">Channels:</span>
+                          <span className="text-caption text-muted-foreground">Channels:</span>
                           {post.destinations.map((d) => (
-                            <Badge key={d.id} tone="neutral" className="text-[8px]">
+                            <Badge key={d.id} tone="neutral" className="text-caption">
                               {d.status}
                             </Badge>
                           ))}

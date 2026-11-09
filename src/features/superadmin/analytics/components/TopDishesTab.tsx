@@ -41,14 +41,14 @@ export function TopDishesTab({ platform }: TopDishesTabProps) {
                         <PiForkKnifeBold className="size-10 opacity-30" />
                       </div>
                     )}
-                    <div className="absolute top-2 left-2 flex items-center gap-1.5 rounded-full bg-background/90 px-2 py-0.5 backdrop-blur-md">
-                      <span className="text-[10px] font-bold text-primary">#{idx + 1}</span>
+                    <div className="absolute top-2 left-2 flex items-center gap-2 rounded-full bg-background/90 px-2 py-0.5 backdrop-blur-md">
+                      <span className="text-caption font-bold text-primary">#{idx + 1}</span>
                     </div>
                     {dish.type && (
                       <div className="absolute top-2 right-2">
                         <Badge
                           tone={dish.type.toLowerCase().includes('non') ? 'danger' : 'success'}
-                          className="text-[9px]"
+                          className="text-caption"
                         >
                           {dish.type}
                         </Badge>
@@ -66,11 +66,11 @@ export function TopDishesTab({ platform }: TopDishesTabProps) {
 
                 <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Price</span>
+                    <span className="text-caption uppercase font-bold text-muted-foreground">Price</span>
                     <p className="font-mono font-bold text-foreground">₹{dish.price}</p>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Interactions</span>
+                    <span className="text-caption uppercase font-bold text-muted-foreground">Interactions</span>
                     <p className="font-mono font-bold text-primary">{dish.count.toLocaleString()}</p>
                   </div>
                 </div>

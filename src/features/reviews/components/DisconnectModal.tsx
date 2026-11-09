@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
+import { Modal } from "@/components/Modal";
 import { Button } from "@/components/ui/button";
-import { PiWarningCircleBold } from "react-icons/pi";
+import { ModalFooter } from "@/components/ui/ModalFooter";
 
 interface DisconnectModalProps {
   isOpen: boolean;
@@ -17,40 +18,28 @@ export function DisconnectModal({
   disconnecting,
   onDisconnect,
 }: DisconnectModalProps) {
-  if (!isOpen) return null;
+  const footer = (
+    <ModalFooter>
+      <Button type="button" variant="secondary" onClick={onClose} disabled={disconnecting}>
+        Cancel
+      </Button>
+      <Button type="button" variant="destructive" loading={disconnecting} onClick={onDisconnect}>
+        Disconnect
+      </Button>
+    </ModalFooter>
+  );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-5 shadow-2xl animate-fade-in-up">
-        <div className="flex items-center gap-3 text-red-500">
-          <PiWarningCircleBold size={24} />
-          <h3 className="text-sm font-bold text-foreground">Disconnect Google Account?</h3>
-        </div>
-        <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-          Disconnecting will pause automatic review syncing and AI auto-replies until you
-          reconnect.
-        </p>
-        <div className="mt-5 flex justify-end gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onClose}
-            disabled={disconnecting}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="danger"
-            size="sm"
-            loading={disconnecting}
-            onClick={onDisconnect}
-          >
-            Confirm Disconnect
-          </Button>
-        </div>
-      </div>
-    </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Disconnect Google account?"
+      maxWidth="max-w-sm"
+      footer={footer}
+    >
+      <p className="text-body text-muted-foreground">
+        Disconnecting will pause automatic review syncing and AI auto-replies until you reconnect.
+      </p>
+    </Modal>
   );
 }

@@ -8,11 +8,14 @@ import {
 import { industryService } from '@/services/industry.service';
 import { toast } from '@/components/ui';
 import { getApiErrorMessage } from '@/utils/errors';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import type { IndustryItem } from '../types';
 
 export function useCreativeVaultState() {
+  const { confirm, confirmDialog } = useConfirmDialog();
   const [assets, setAssets] = useState<PlatformMarketingAsset[]>([]);
-  const [loadingAssets, setLoadingAssets] = useState(false);
+  // The vault loads on mount, so it starts out loading.
+  const [loadingAssets, setLoadingAssets] = useState(true);
   const [industries, setIndustries] = useState<IndustryItem[]>([]);
 
   // Vault Filters
@@ -29,18 +32,28 @@ export function useCreativeVaultState() {
   const [publishing, setPublishing] = useState(false);
 
   // Load Assets from Backend
+  const applyAssets = useCallback(
+    (res: Awaited<ReturnType<typeof superadminService.listMarketingAssets>>) => {
+      setAssets(Array.isArray(res.data) ? res.data : []);
+    },
+    []
+  );
+
+  const handleAssetsError = useCallback((err: unknown) => {
+    console.error(err);
+    toast.error('Failed to load marketing assets from Vault');
+  }, []);
+
   const loadAssets = useCallback(async () => {
     try {
       setLoadingAssets(true);
-      const res = await superadminService.listMarketingAssets();
-      setAssets(Array.isArray(res.data) ? res.data : []);
+      applyAssets(await superadminService.listMarketingAssets());
     } catch (err: unknown) {
-      console.error(err);
-      toast.error('Failed to load marketing assets from Vault');
+      handleAssetsError(err);
     } finally {
       setLoadingAssets(false);
     }
-  }, []);
+  }, [applyAssets, handleAssetsError]);
 
   // Load Industries & Initial Assets
   useEffect(() => {
@@ -55,8 +68,13 @@ export function useCreativeVaultState() {
         setIndustries(list);
       })
       .catch(() => {});
-    loadAssets();
-  }, [loadAssets]);
+    // Initial assets load; loadAssets handles later reloads.
+    superadminService
+      .listMarketingAssets()
+      .then(applyAssets)
+      .catch(handleAssetsError)
+      .finally(() => setLoadingAssets(false));
+  }, [applyAssets, handleAssetsError]);
 
   // Filtered Assets
   const filteredAssets = useMemo(() => {
@@ -126,7 +144,12 @@ export function useCreativeVaultState() {
 
   // Handle Delete Asset
   const handleDeleteAsset = async (id: string | number) => {
-    if (!confirm('Are you sure you want to remove this asset from the Vault?')) return;
+    const confirmed = await confirm({
+      title: 'Remove asset?',
+      description: 'Are you sure you want to remove this asset from the Vault?',
+      confirmLabel: 'Remove asset',
+    });
+    if (!confirmed) return;
     try {
       await superadminService.deleteMarketingAsset(String(id));
       toast.success('Asset removed from Vault');
@@ -165,5 +188,6 @@ export function useCreativeVaultState() {
     publishing,
     handlePublishAsset,
     handleDeleteAsset,
+    confirmDialog,
   };
 }

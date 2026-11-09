@@ -56,7 +56,7 @@ export function UserFeedbackTab({
         <div className="space-y-4">
           <div className="rounded-xl border border-border bg-muted/20 p-4 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              <p className="text-caption font-bold text-muted-foreground">
                 Connected Google Place ID
               </p>
               <p className="font-mono text-sm font-bold text-foreground mt-0.5">
@@ -68,7 +68,7 @@ export function UserFeedbackTab({
                 href={primaryWorkspace.reviewLink}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:text-primary"
+                className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:text-primary"
               >
                 Open Google Review Link <PiArrowSquareOutBold size={13} />
               </a>
@@ -84,7 +84,7 @@ export function UserFeedbackTab({
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {detail.googleReviews.map((rev) => (
-                <Card key={rev.id} className="p-5 flex flex-col justify-between">
+                <Card key={rev.id} className="p-6 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center gap-3">
                       <div className="relative size-10 shrink-0 overflow-hidden rounded-full bg-muted">
@@ -107,19 +107,19 @@ export function UserFeedbackTab({
                           {rev.authorName}
                         </p>
                         <div className="flex items-center gap-2">
-                          <div className="flex items-center text-amber-400">
+                          <div className="flex items-center text-warning-foreground">
                             {Array.from({ length: 5 }).map((_, idx) => (
                               <PiStarFill
                                 key={idx}
                                 className={`size-3 ${
                                   idx < rev.rating
-                                    ? "text-amber-400"
+                                    ? "text-warning-foreground"
                                     : "text-muted-foreground/30"
                                 }`}
                               />
                             ))}
                           </div>
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-caption text-muted-foreground">
                             {rev.relativePublishDescription || "Verified Review"}
                           </span>
                         </div>
@@ -148,10 +148,10 @@ export function UserFeedbackTab({
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {detail.faqs.map((faq) => (
-                <Card key={faq.id} className="p-5">
+                <Card key={faq.id} className="p-6">
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-caption font-bold text-primary">
                         Q
                       </span>
                       {faq.question}
@@ -160,7 +160,7 @@ export function UserFeedbackTab({
                       {faq.isVisible ? "Visible" : "Hidden"}
                     </Badge>
                   </div>
-                  <p className="mt-3 text-xs text-muted-foreground pl-7 leading-relaxed">
+                  <p className="mt-3 text-xs text-muted-foreground pl-8 leading-relaxed">
                     {faq.answer}
                   </p>
                 </Card>

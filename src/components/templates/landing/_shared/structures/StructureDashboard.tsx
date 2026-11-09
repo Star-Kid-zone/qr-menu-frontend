@@ -2,12 +2,28 @@
 
 import Image from "next/image";
 import type { LandingTemplateProps } from "@/types/components/templates/rawPublicSiteData.types";
-import { getRichContent } from "../defaults";
+import { getRichContent, getLandingThemeSlug } from "../defaults";
 import { buildTheme } from "../buildTheme";
 import { FadeIn } from "../animations";
 import { ImagePlaceholder } from "@/components/templates/core/ImagePlaceholder";
 import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/templates/core/socialPlatforms";
 import { StarRating, ReviewAvatar } from "./sections";
+
+type TileProps = {
+  className?: string;
+  children: React.ReactNode;
+  surface: string;
+  border: string;
+  cardStyle: string;
+};
+
+function Tile({ className = "", children, surface, border, cardStyle }: TileProps) {
+  return (
+    <div style={{ background: surface, borderColor: border }} className={`overflow-hidden border p-5 ${cardStyle} ${className}`}>
+      {children}
+    </div>
+  );
+}
 
 /** Bento/dashboard grid: variable-sized tiles for every section in the
  * content model (story, stats, dishes, popular items, offers,
@@ -16,16 +32,10 @@ import { StarRating, ReviewAvatar } from "./sections";
  * is the tile arrangement itself, not a linear reading order, but nothing
  * from the data model is left out. */
 export default function StructureDashboard(p: LandingTemplateProps) {
-  const c = getRichContent(p.data, (p.data.settings as any)?.landing_theme ?? "swiss");
+  const c = getRichContent(p.data, getLandingThemeSlug(p.data));
   const t = buildTheme(c);
   const cardStyle = t.cardStyle ?? "rounded-2xl";
   const hasContact = c.address || c.phone || c.email || c.whatsapp || c.social.length > 0;
-
-  const Tile = ({ className = "", children }: { className?: string; children: React.ReactNode }) => (
-    <div style={{ background: t.surface, borderColor: t.border }} className={`overflow-hidden border p-5 ${cardStyle} ${className}`}>
-      {children}
-    </div>
-  );
 
   return (
     <div style={{ fontFamily: t.fontFamily, backgroundColor: t.bg, color: t.textSecondary }} className="min-h-screen">
@@ -53,7 +63,7 @@ export default function StructureDashboard(p: LandingTemplateProps) {
               )}
               {c.cta.payBtn && c.cta.paymentLink && (
                 <button onClick={p.onPay} className="rounded-full border-2 border-white/60 px-6 py-2.5 text-sm font-bold uppercase tracking-wider">
-                  Pay Now
+                  Pay bill
                 </button>
               )}
               {c.cta.reviewBtn && c.cta.reviewLink && (
@@ -67,25 +77,20 @@ export default function StructureDashboard(p: LandingTemplateProps) {
       </section>
 
       <div className="mx-auto max-w-6xl px-5 py-3 sm:px-10">
-        <div className="flex flex-wrap justify-center gap-2">
-          {[c.cta.menuBtn && c.terms.catalogLabel, c.cta.payBtn && "Pay Online", c.cta.reviewBtn && "Reviews", c.offers.length > 0 && "Offers"]
-            .filter(Boolean)
-            .map((b) => <span key={b as string} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider">{b}</span>)}
-        </div>
       </div>
 
       {/* ── Bento grid ── */}
       <section className="mx-auto max-w-6xl px-5 py-10 sm:px-10">
         <div className="grid auto-rows-[minmax(140px,auto)] grid-cols-2 gap-4 sm:grid-cols-4">
           {c.stats.slice(0, 4).map((s) => (
-            <Tile key={s.label}>
+            <Tile surface={t.surface} border={t.border} cardStyle={cardStyle} key={s.label}>
               <p style={{ color: t.accent }} className="text-2xl font-bold">{s.value}</p>
               <p style={{ color: t.textSecondary }} className="mt-1 text-[10px] uppercase tracking-wider">{s.label}</p>
             </Tile>
           ))}
 
           {c.story && (
-            <Tile className="col-span-2 row-span-2">
+            <Tile surface={t.surface} border={t.border} cardStyle={cardStyle} className="col-span-2 row-span-2">
               <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-widest">Our Story</p>
               {c.story.headline && <h3 style={{ color: t.textPrimary }} className="font-bold">{c.story.headline}</h3>}
               {c.story.body && <p style={{ color: t.textSecondary }} className="mt-2 text-sm leading-relaxed line-clamp-6">{c.story.body}</p>}
@@ -93,21 +98,21 @@ export default function StructureDashboard(p: LandingTemplateProps) {
           )}
 
           {c.gallery.slice(0, 2).map((g, i) => (
-            <Tile key={i} className="relative col-span-2 row-span-2 p-0">
+            <Tile surface={t.surface} border={t.border} cardStyle={cardStyle} key={i} className="relative col-span-2 row-span-2 p-0">
               <Image src={g.image_url as string} alt="Gallery" fill className="object-cover" />
             </Tile>
           ))}
 
           {c.signatureDishes.slice(0, 3).map((dish, i) => (
-            <Tile key={`sig-${dish.name}-${i}`} className="col-span-2 sm:col-span-1">
-              <div className="mb-3 h-24 overflow-hidden rounded-lg"><ImagePlaceholder aspect="wide" className="text-current" /></div>
+            <Tile surface={t.surface} border={t.border} cardStyle={cardStyle} key={`sig-${dish.name}-${i}`} className="col-span-2 sm:col-span-1">
+              <div className="relative mb-3 h-24 overflow-hidden rounded-lg">{dish.image ? <Image src={dish.image} alt={dish.name} fill sizes="200px" className="object-cover" /> : <ImagePlaceholder aspect="wide" className="text-current" />}</div>
               {dish.price && <span style={{ background: t.accent, color: t.accentText }} className="mb-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold">{dish.price}</span>}
               <p style={{ color: t.textPrimary }} className="text-sm font-bold">{dish.name}</p>
             </Tile>
           ))}
 
           {c.popularItems.slice(0, 3).map((item, i) => (
-            <Tile key={`pop-${item.name}-${i}`} className="col-span-2 sm:col-span-1 p-0">
+            <Tile surface={t.surface} border={t.border} cardStyle={cardStyle} key={`pop-${item.name}-${i}`} className="col-span-2 sm:col-span-1 p-0">
               <div className="relative h-20 overflow-hidden">{item.image ? <Image src={item.image} alt={item.name} fill className="object-cover" /> : <ImagePlaceholder aspect="wide" className="text-current" />}</div>
               <div className="p-3">
                 <p style={{ color: t.textPrimary }} className="truncate text-xs font-bold">{item.name}</p>
@@ -116,8 +121,8 @@ export default function StructureDashboard(p: LandingTemplateProps) {
             </Tile>
           ))}
 
-          {c.offers.slice(0, 2).map((o: any, i: number) => (
-            <Tile key={`offer-${i}`} className="col-span-2">
+          {c.offers.slice(0, 2).map((o, i: number) => (
+            <Tile surface={t.surface} border={t.border} cardStyle={cardStyle} key={`offer-${i}`} className="col-span-2">
               {o.title && <p style={{ color: t.textPrimary }} className="text-sm font-bold">{o.title}</p>}
               {o.description && <p style={{ color: t.textSecondary }} className="mt-1 text-xs">{o.description}</p>}
               {(o.offer_value || o.badge_text) && <span style={{ background: t.accent, color: t.accentText }} className="mt-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold">{o.badge_text || `${o.offer_value} OFF`}</span>}
@@ -125,7 +130,7 @@ export default function StructureDashboard(p: LandingTemplateProps) {
           ))}
 
           {c.hours.length > 0 && (
-            <Tile className="col-span-2">
+            <Tile surface={t.surface} border={t.border} cardStyle={cardStyle} className="col-span-2">
               <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-widest">Hours</p>
               <div className="space-y-1">
                 {c.hours.map((h) => (
@@ -139,7 +144,7 @@ export default function StructureDashboard(p: LandingTemplateProps) {
           )}
 
           {hasContact && (
-            <Tile className="col-span-2">
+            <Tile surface={t.surface} border={t.border} cardStyle={cardStyle} className="col-span-2">
               <p style={{ color: t.accent }} className="mb-2 text-[10px] font-bold uppercase tracking-widest">Find Us</p>
               <div className="space-y-1 text-xs">
                 {c.address && <p style={{ color: t.textSecondary }}>{c.address}</p>}
@@ -157,7 +162,7 @@ export default function StructureDashboard(p: LandingTemplateProps) {
           )}
 
           {c.googleReviews.slice(0, 2).map((r) => (
-            <Tile key={r.id} className="col-span-2 sm:col-span-1">
+            <Tile surface={t.surface} border={t.border} cardStyle={cardStyle} key={r.id} className="col-span-2 sm:col-span-1">
               <div className="mb-2 flex items-center gap-2">
                 <ReviewAvatar review={r} t={t} size={32} />
                 <div className="min-w-0">
@@ -170,7 +175,7 @@ export default function StructureDashboard(p: LandingTemplateProps) {
           ))}
 
           {c.faqs.slice(0, 4).map((f, i) => (
-            <Tile key={i} className="col-span-2 sm:col-span-1">
+            <Tile surface={t.surface} border={t.border} cardStyle={cardStyle} key={i} className="col-span-2 sm:col-span-1">
               <p style={{ color: t.textPrimary }} className="text-sm font-bold">{f.q}</p>
               <p style={{ color: t.textSecondary }} className="mt-1 text-xs leading-relaxed line-clamp-3">{f.a}</p>
             </Tile>

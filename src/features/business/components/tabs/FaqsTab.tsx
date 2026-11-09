@@ -27,8 +27,8 @@ export function FaqsTab({
     <div className="flex h-full min-h-0 flex-col gap-4">
       <PageHeader
         className="shrink-0"
-        title="FAQs"
-        description="Real questions guests actually ask. Nothing shows there until you add one."
+        title="Questions guests ask"
+        description="Answers shown on your website. Nothing appears until you add one."
         actions={
           <Button
             size="sm"

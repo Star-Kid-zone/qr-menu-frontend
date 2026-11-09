@@ -25,3 +25,11 @@ export interface WorkspaceTabConfig {
 }
 
 export const DEFAULT_TAB: WorkspaceTabId = "workspace";
+
+export type WebsiteSectionId = "look" | "content" | "offers";
+
+export interface WebsiteSectionConfig {
+  id: WebsiteSectionId;
+  label: string;
+  tabs: WorkspaceTabId[];
+}

@@ -17,6 +17,7 @@ import {
   SmartCopywriterCard,
   StudioOutputCard,
 } from "./studio";
+import type { CopyVariant } from "../types";
 
 export interface AIStudioTabProps {
   aiMode: "image" | "video";
@@ -47,7 +48,7 @@ export interface AIStudioTabProps {
   videoStatus: string | null;
   savingToLibrary: boolean;
   handleSaveToPromptLibrary: () => Promise<void>;
-  copyVariants: any[];
+  copyVariants: CopyVariant[];
   generatingCopy: boolean;
   handleGenerateCopy: () => Promise<void>;
   assetTitleInput: string;
@@ -98,14 +99,14 @@ export function AIStudioTab({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       {/* Controls Column */}
-      <div className="lg:col-span-5 space-y-5">
-        <Card className="p-5 space-y-4 border-border">
+      <div className="lg:col-span-5 space-y-4">
+        <Card className="p-6 space-y-4 border-border">
           {/* Header with Mode Toggle & Prompt Library Quick Access */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
             <div className="flex items-center gap-2">
-              <PiSparkleBold className="h-5 w-5 text-purple-500" />
+              <PiSparkleBold className="h-5 w-5 text-primary" />
               <h3 className="text-base font-semibold text-foreground">
-                AI Synthesis Studio
+                Generate an image or video
               </h3>
             </div>
 
@@ -121,7 +122,7 @@ export function AIStudioTab({
                       : "text-muted-foreground"
                   )}
                 >
-                  Food Photo
+                  Food photo
                 </button>
                 <button
                   type="button"
@@ -133,7 +134,7 @@ export function AIStudioTab({
                       : "text-muted-foreground"
                   )}
                 >
-                  Video Reel
+                  Video reel
                 </button>
               </div>
 
@@ -141,11 +142,11 @@ export function AIStudioTab({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 text-xs flex items-center gap-1.5 border-purple-500/30 text-purple-600 dark:text-purple-400 hover:bg-purple-500/10"
-                  title="Open Prompt Library to browse or pick saved prompts"
+                  className="h-8 text-xs flex items-center gap-2 border-primary/30 text-primary dark:text-primary hover:bg-primary/10"
+                  title="Open saved prompts"
                 >
                   <PiNotebookBold className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Prompt Library</span>
+                  <span className="hidden sm:inline">Saved prompts</span>
                 </Button>
               </Link>
             </div>
@@ -153,7 +154,7 @@ export function AIStudioTab({
 
           {/* Quick Save to Library Banner */}
           {(imagePrompt.trim() || videoPrompt.trim()) && (
-            <div className="flex items-center justify-between bg-purple-500/10 border border-purple-500/20 rounded-xl px-3 py-2 text-xs">
+            <div className="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-xl px-3 py-2 text-xs">
               <span className="text-foreground/90 font-medium truncate mr-2">
                 Liked this prompt? Save it to your library with reference images.
               </span>
@@ -162,14 +163,14 @@ export function AIStudioTab({
                 size="sm"
                 onClick={handleSaveToPromptLibrary}
                 disabled={savingToLibrary}
-                className="h-7 text-xs flex items-center gap-1 text-purple-600 dark:text-purple-400 hover:bg-purple-500/15 shrink-0"
+                className="h-7 text-xs flex items-center gap-1 text-primary dark:text-primary hover:bg-primary/15 shrink-0"
               >
                 {savingToLibrary ? (
                   <PiSpinnerBold className="h-3 w-3 animate-spin" />
                 ) : (
                   <PiPlusBold className="h-3 w-3" />
                 )}
-                <span>Save to Library</span>
+                <span>Save prompt</span>
               </Button>
             </div>
           )}
@@ -221,7 +222,7 @@ export function AIStudioTab({
       </div>
 
       {/* Output & Vault Save Column */}
-      <div className="lg:col-span-7 space-y-5">
+      <div className="lg:col-span-7 space-y-4">
         <StudioOutputCard
           generatedImageUrl={generatedImageUrl}
           generatedVideoUrl={generatedVideoUrl}

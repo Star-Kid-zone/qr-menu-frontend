@@ -199,6 +199,40 @@ export interface WorkspaceSettingSource extends Omit<
 > {
   id?: number;
   currency_id?: number | string | null;
+  // Extended colours
+  text_primary_color?: string | null;
+  text_secondary_color?: string | null;
+  accent_text_color?: string | null;
+  border_color?: string | null;
+  footer_bg_color?: string | null;
+  section_bg_color?: string | null;
+  // Typography & style (Landing)
+  font_family?: string | null;
+  card_style?: string | null;
+  hero_overlay?: string | null;
+  heading_class?: string | null;
+  // Text customisation
+  theme_badge?: string | null;
+  theme_marquee?: string | null;
+  hero_tagline?: string | null;
+  // Menu design (separate from landing)
+  menu_primary_color?: string | null;
+  menu_secondary_color?: string | null;
+  menu_accent_color?: string | null;
+  menu_text_primary_color?: string | null;
+  menu_text_secondary_color?: string | null;
+  menu_accent_text_color?: string | null;
+  menu_border_color?: string | null;
+  menu_footer_bg_color?: string | null;
+  menu_section_bg_color?: string | null;
+  menu_font_family?: string | null;
+  menu_card_style?: string | null;
+  // Layout
+  landing_structure?: string | null;
+  menu_structure?: string | null;
+  // Announcement schedule (ISO strings)
+  announcement_starts_at?: string | null;
+  announcement_ends_at?: string | null;
 }
 
 export type WorkspaceSetting = WorkspaceSettingSource;

@@ -9,5 +9,4 @@ export * from './tenantHost';
 export * from './thumbprint.utils';
 export * from './url';
 export * from './workspace.utils';
-export * from './api.utils';
 export * from './public-site.utils';

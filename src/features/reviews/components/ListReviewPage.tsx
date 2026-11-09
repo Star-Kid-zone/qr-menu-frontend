@@ -2,9 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { ActionMenu } from "@/components/ui/ActionMenu";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog";
 import {
   workspaceService,
   type WorkspaceData,
@@ -21,23 +24,85 @@ import { PermissionGuard } from "@/components/auth/PermissionGuard";
 import { cn } from "@/utils/cn";
 import {
   PiArrowsClockwiseBold,
+  PiGlobeBold,
+  PiRobotBold,
+  PiGoogleLogoBold,
   PiPencilSimpleBold,
   PiPlusBold,
   PiSparkleBold,
   PiStarBold,
 } from "react-icons/pi";
-import { GoogleAutoReplyPanel } from "./GoogleAutoReplyPanel";
+import { AutoReplySettingsModal } from "./GoogleAutoReplyPanel";
 import { ReviewStatsBar } from "./ReviewStatsBar";
 import { ReviewCard } from "./ReviewCard";
+import { ReviewShowcaseModal } from "./ReviewShowcase";
 import { ReplyModal } from "./ReplyModal";
+import { ReplyQueueModal } from "./ReplyQueueModal";
+import { ReviewFilterBar } from "./ReviewFilterBar";
+import {
+  applyReviewView,
+  isUnreplied,
+  matchesFilter,
+  pickBestToFeature,
+  sortReviews,
+  summarizeReviews,
+  type ReviewFilter,
+  type ReviewSort,
+} from "../reviewFilters";
 import { DisconnectModal } from "./DisconnectModal";
 
 function ListReviewPageContent() {
+  const router = useRouter();
+  const [showcaseOpen, setShowcaseOpen] = useState(false);
   const [workspace, setWorkspace] = useState<WorkspaceData | null>(null);
   const [googleReviews, setGoogleReviews] = useState<GoogleReviewRecord[]>([]);
   const [googlePlaceId, setGooglePlaceId] = useState<string | null>(null);
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [confirmAutoReply, setConfirmAutoReply] = useState(false);
+  const [filter, setFilter] = useState<ReviewFilter>("needs_reply");
+  const [ratingFilter, setRatingFilter] = useState<number | null>(null);
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<ReviewSort>("urgent");
+  // Snapshot taken when the queue opens, so posting replies doesn't reshuffle it mid-session.
+  const [queueReviews, setQueueReviews] = useState<GoogleReviewRecord[] | null>(null);
+  const [togglingFeaturedId, setTogglingFeaturedId] = useState<string | null>(null);
+
+  // "Show on my website" (moved here from the Website page).
+  const handleToggleFeatured = async (review: GoogleReviewRecord) => {
+    try {
+      setTogglingFeaturedId(review.id);
+      const res = await workspaceService.toggleGoogleReviewFeatured(review.id);
+      const updated = res.data.review;
+      setGoogleReviews((prev) => prev.map((r) => (r.id === review.id ? { ...r, isFeatured: updated?.isFeatured ?? !r.isFeatured } : r)));
+      toast.success(updated?.isFeatured ?? !review.isFeatured ? "Shown on your website" : "Hidden from your website");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Couldn't change that. Try again."));
+    } finally {
+      setTogglingFeaturedId(null);
+    }
+  };
+  const [featuringBest, setFeaturingBest] = useState(false);
+
+  const handleFeatureBest = async () => {
+    const picks = pickBestToFeature(googleReviews);
+    if (picks.length === 0) return;
+    setFeaturingBest(true);
+    let added = 0;
+    for (const review of picks) {
+      try {
+        const res = await workspaceService.toggleGoogleReviewFeatured(review.id);
+        const isFeatured = res.data.review?.isFeatured ?? true;
+        setGoogleReviews((prev) => prev.map((r) => (r.id === review.id ? { ...r, isFeatured } : r)));
+        if (isFeatured) added += 1;
+      } catch (error) {
+        toast.error(getApiErrorMessage(error, "Couldn't feature every review. Try again."));
+        break;
+      }
+    }
+    setFeaturingBest(false);
+    if (added > 0) toast.success(`Added ${added} review${added === 1 ? "" : "s"} to your website`);
+  };
   const [loading, setLoading] = useState(true);
 
   // Google Business OAuth + auto-reply state
@@ -69,24 +134,33 @@ function ListReviewPageContent() {
     setCustomPrompt(s.autoReplyCustomPrompt || "");
   };
 
+  const requestPageData = () =>
+    Promise.allSettled([
+      workspaceService.getWorkspace(),
+      workspaceService.getGoogleReviews(),
+      googleService.getStatus(),
+    ]);
+
+  const applyPageData = ([
+    workspaceRes,
+    googleReviewsRes,
+    googleStatusRes,
+  ]: Awaited<ReturnType<typeof requestPageData>>) => {
+    if (workspaceRes.status === "fulfilled") setWorkspace(workspaceRes.value.data);
+    if (googleReviewsRes.status === "fulfilled") {
+      setGoogleReviews(googleReviewsRes.value.data.reviews);
+      setGooglePlaceId(googleReviewsRes.value.data.googlePlaceId);
+      setLastSyncAt(googleReviewsRes.value.data.lastSyncAt);
+    }
+    if (googleStatusRes.status === "fulfilled") {
+      setGoogleStatus(googleStatusRes.value);
+      syncFormFromStatus(googleStatusRes.value);
+    }
+  };
+
   const fetchPageData = async () => {
     try {
-      const [workspaceRes, googleReviewsRes, googleStatusRes] = await Promise.allSettled([
-        workspaceService.getWorkspace(),
-        workspaceService.getGoogleReviews(),
-        googleService.getStatus(),
-      ]);
-
-      if (workspaceRes.status === "fulfilled") setWorkspace(workspaceRes.value.data);
-      if (googleReviewsRes.status === "fulfilled") {
-        setGoogleReviews(googleReviewsRes.value.data.reviews);
-        setGooglePlaceId(googleReviewsRes.value.data.googlePlaceId);
-        setLastSyncAt(googleReviewsRes.value.data.lastSyncAt);
-      }
-      if (googleStatusRes.status === "fulfilled") {
-        setGoogleStatus(googleStatusRes.value);
-        syncFormFromStatus(googleStatusRes.value);
-      }
+      applyPageData(await requestPageData());
     } catch (error) {
       console.error(error);
     } finally {
@@ -95,7 +169,11 @@ function ListReviewPageContent() {
   };
 
   useEffect(() => {
-    void fetchPageData();
+    // Initial load (`loading` starts true); fetchPageData handles later refreshes.
+    requestPageData()
+      .then(applyPageData)
+      .catch((error: unknown) => console.error(error))
+      .finally(() => setLoading(false));
 
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -175,20 +253,21 @@ function ListReviewPageContent() {
   };
 
   const handleRunAutoReplyBatch = async () => {
+    setConfirmAutoReply(false);
     try {
       setRunningAutoReply(true);
       const res = await googleService.runAutoReply();
       if (res.repliedCount > 0) {
         toast.success(
-          `Replied to ${res.repliedCount} review${res.repliedCount !== 1 ? "s" : ""} with AI!`
+          `Posted replies to ${res.repliedCount} review${res.repliedCount !== 1 ? "s" : ""}`
         );
         const refresh = await workspaceService.getGoogleReviews();
         setGoogleReviews(refresh.data.reviews);
       } else {
-        toast.info("No unreplied reviews matching your criteria.");
+        toast.info("No reviews matched your auto-reply settings, so nothing was posted.");
       }
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Auto-reply batch run failed"));
+      toast.error(getApiErrorMessage(error, "Couldn't post the replies. Try again."));
     } finally {
       setRunningAutoReply(false);
     }
@@ -211,7 +290,7 @@ function ListReviewPageContent() {
       if (!selectedReview || selectedReview.id !== review.id) setSelectedReview(review);
       const res = await googleService.generateAiReply(review.id, { tone });
       setReplyText(res.reply);
-      toast.success("AI draft ready!");
+
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Failed to generate AI reply"));
     } finally {
@@ -227,7 +306,7 @@ function ListReviewPageContent() {
     try {
       setSubmittingReply(true);
       const res = await googleService.replyToReview(selectedReview.id, replyText.trim());
-      toast.success("Reply submitted!");
+      toast.success("Reply posted on Google");
       setGoogleReviews((prev) =>
         prev.map((r) => (r.id === selectedReview.id ? res.review : r))
       );
@@ -243,32 +322,30 @@ function ListReviewPageContent() {
   const hasReviewLink = reviewLink.length > 0;
   const isConnected = !!googleStatus?.isConnected;
   const totalReviews = googleReviews.length;
-  const avgRating =
-    totalReviews > 0
-      ? googleReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
-      : 0;
-  const repliedCount = googleReviews.filter((r) => !!r.replyText).length;
-  const pendingCount = totalReviews - repliedCount;
+  const summary = summarizeReviews(googleReviews);
+  const pendingCount = totalReviews - summary.replied;
+  const visibleReviews = applyReviewView(googleReviews, { filter, rating: ratingFilter, query, sort });
+  const filterCounts: Record<ReviewFilter, number> = {
+    all: totalReviews,
+    needs_reply: pendingCount,
+    low: googleReviews.filter((r) => matchesFilter(r, "low")).length,
+    featured: googleReviews.filter((r) => r.isFeatured).length,
+  };
+  const clearFilters = () => {
+    setFilter("all");
+    setRatingFilter(null);
+    setQuery("");
+  };
+  const openQueue = () => setQueueReviews(sortReviews(googleReviews.filter(isUnreplied), "urgent"));
 
   return (
     <div className="flex h-full flex-col gap-3 sm:gap-4">
       {/* ── Header ── */}
       <PageHeader
-        title="Reviews & AI Auto-Reply"
-        description="Sync Google reviews and automate responses with Gemini AI."
+        title="Reviews"
+        description="What guests say about you on Google, and your replies."
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            {isConnected && pendingCount > 0 && (
-              <Button
-                onClick={handleRunAutoReplyBatch}
-                loading={runningAutoReply}
-                variant="outline"
-                size="sm"
-                startIcon={<PiSparkleBold size={14} className="text-primary" />}
-              >
-                Auto-Reply ({pendingCount} pending)
-              </Button>
-            )}
             {googlePlaceId && (
               <Button
                 onClick={handleSync}
@@ -277,26 +354,68 @@ function ListReviewPageContent() {
                 size="sm"
                 startIcon={<PiArrowsClockwiseBold size={14} />}
               >
-                Sync Now
+                Sync
               </Button>
             )}
-            <Link
-              href="/admin/addreview"
-              className="inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90"
-            >
-              {hasReviewLink ? <PiPencilSimpleBold size={13} /> : <PiPlusBold size={13} />}
-              {hasReviewLink ? "Edit Google Link" : "Add Google Link"}
-            </Link>
+            {!hasReviewLink ? (
+              <Link
+                href="/admin/addreview"
+                className={buttonVariants({ variant: "primary", size: "sm", className: "gap-2" })}
+              >
+                <PiPlusBold size={13} />
+                Find your business on Google
+              </Link>
+            ) : !isConnected ? (
+              <Button
+                size="sm"
+                loading={connecting}
+                onClick={() => void handleConnect()}
+                startIcon={<PiGoogleLogoBold size={14} />}
+              >
+                Connect Google
+              </Button>
+            ) : pendingCount > 0 ? (
+              <Button size="sm" onClick={openQueue} startIcon={<PiSparkleBold size={14} />}>
+                Draft {pendingCount} {pendingCount === 1 ? "reply" : "replies"}
+              </Button>
+            ) : null}
+            {hasReviewLink ? (
+              <ActionMenu
+                items={[
+                  {
+                    label: `Website reviews (${googleReviews.filter((r) => r.isFeatured).length})`,
+                    description: "Choose what guests see on your site",
+                    icon: <PiGlobeBold size={14} />,
+                    onSelect: () => setShowcaseOpen(true),
+                  },
+                  {
+                    label: "Automatic replies",
+                    description: !isConnected
+                      ? "Connect Google first"
+                      : googleStatus?.autoReplyEnabled
+                        ? "On"
+                        : "Off",
+                    icon: <PiRobotBold size={14} />,
+                    onSelect: () => setShowSettingsPanel(true),
+                  },
+                  {
+                    label: "Change Google business",
+                    icon: <PiPencilSimpleBold size={14} />,
+                    onSelect: () => router.push("/admin/addreview"),
+                  },
+                ]}
+              />
+            ) : null}
           </div>
         }
       />
 
       {/* ── Google Business Connection + AI Engine Panel ── */}
-      <GoogleAutoReplyPanel
+      <AutoReplySettingsModal
+        isOpen={showSettingsPanel}
+        onClose={() => setShowSettingsPanel(false)}
         googleStatus={googleStatus}
         isConnected={isConnected}
-        showSettingsPanel={showSettingsPanel}
-        setShowSettingsPanel={setShowSettingsPanel}
         connecting={connecting}
         onConnect={handleConnect}
         onOpenDisconnectModal={() => setShowDisconnectModal(true)}
@@ -309,18 +428,32 @@ function ListReviewPageContent() {
         customPrompt={customPrompt}
         setCustomPrompt={setCustomPrompt}
         runningAutoReply={runningAutoReply}
-        onRunAutoReplyBatch={handleRunAutoReplyBatch}
+        onRunAutoReplyBatch={() => setConfirmAutoReply(true)}
         savingSettings={savingSettings}
         onSaveSettings={handleSaveSettings}
       />
 
       {/* ── Stats Bar ── */}
       <ReviewStatsBar
-        totalReviews={totalReviews}
-        avgRating={avgRating}
-        repliedCount={repliedCount}
+        summary={summary}
         lastSyncAt={lastSyncAt}
+        selectedRating={ratingFilter}
+        onSelectRating={setRatingFilter}
       />
+
+      {!loading && totalReviews > 0 ? (
+        <ReviewFilterBar
+          filter={filter}
+          onFilterChange={setFilter}
+          counts={filterCounts}
+          query={query}
+          onQueryChange={setQuery}
+          sort={sort}
+          onSortChange={setSort}
+          rating={ratingFilter}
+          onClearRating={() => setRatingFilter(null)}
+        />
+      ) : null}
 
       {/* ── Body: Review Cards ── */}
       <div
@@ -344,7 +477,7 @@ function ListReviewPageContent() {
               action={
                 <Link
                   href="/admin/addreview"
-                  className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
+                  className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
                 >
                   <PiPlusBold size={13} />
                   Link Google Business
@@ -360,19 +493,49 @@ function ListReviewPageContent() {
               description="Click Sync Now above to pull your latest Google reviews."
             />
           </div>
+        ) : visibleReviews.length === 0 ? (
+          <div className="rounded-xl border border-border bg-card p-4 md:p-6">
+            <EmptyState
+              icon={<PiStarBold size={32} />}
+              title={filter === "needs_reply" && !query && ratingFilter === null ? "You're all caught up" : "No reviews match"}
+              description={
+                filter === "needs_reply" && !query && ratingFilter === null
+                  ? "Every review has a reply."
+                  : "Try a different filter or search."
+              }
+              action={
+                <Button type="button" variant="secondary" size="sm" onClick={clearFilters}>
+                  Show all reviews
+                </Button>
+              }
+            />
+          </div>
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {googleReviews.map((review) => (
+            {visibleReviews.map((review) => (
               <ReviewCard
                 key={review.id}
                 review={review}
                 onOpenReplyModal={handleOpenReplyModal}
-                onGenerateAiReply={handleGenerateAiReply}
+                canReply={isConnected}
+                onToggleFeatured={(r) => void handleToggleFeatured(r)}
+                togglingFeatured={togglingFeaturedId === review.id}
               />
             ))}
           </div>
         )}
       </div>
+
+      <ReviewShowcaseModal
+        isOpen={showcaseOpen}
+        onClose={() => setShowcaseOpen(false)}
+        featured={googleReviews.filter((r) => r.isFeatured)}
+        suggestionCount={pickBestToFeature(googleReviews).length}
+        busyId={togglingFeaturedId}
+        featuringBest={featuringBest}
+        onRemove={(r) => void handleToggleFeatured(r)}
+        onFeatureBest={() => void handleFeatureBest()}
+      />
 
       {/* ── Reply Modal ── */}
       <ReplyModal
@@ -386,6 +549,29 @@ function ListReviewPageContent() {
         setDraftTone={setDraftTone}
         submittingReply={submittingReply}
         onSubmitReply={handleSubmitReply}
+      />
+
+      {queueReviews ? (
+        <ReplyQueueModal
+          reviews={queueReviews}
+          initialTone={draftTone}
+          onClose={() => setQueueReviews(null)}
+          onPosted={(updated) =>
+            setGoogleReviews((prev) => prev.map((r) => (r.id === updated.id ? updated : r)))
+          }
+        />
+      ) : null}
+
+      <ConfirmationDialog
+        isOpen={confirmAutoReply}
+        onClose={() => setConfirmAutoReply(false)}
+        onConfirm={() => void handleRunAutoReplyBatch()}
+        loading={runningAutoReply}
+        tone="default"
+        title={`Post replies to ${pendingCount} review${pendingCount !== 1 ? "s" : ""}?`}
+        description="A reply is written for each review that matches your auto-reply settings and posted publicly on Google straight away. You won't see them before they go live."
+        confirmLabel="Post replies"
+        cancelLabel="Not now"
       />
 
       {/* ── Disconnect Confirm Modal ── */}

@@ -44,7 +44,7 @@ export default function MenuStructureMagazine({ payload, routeSlug }: { payload:
         ) : (
           p.grouped.map(([cat, items], idx) => {
             const flip = idx % 2 === 1;
-            const heroItem = items.find((it: any) => it.image_url || it.imageUrl || it.image || (it.images && it.images.length > 0)) ?? items[0];
+            const heroItem = items.find((it) => it.image_url || it.imageUrl || it.image || (it.images && it.images.length > 0)) ?? items[0];
             return (
               <section key={cat} className="mb-16">
                 <div className={`flex flex-col items-start gap-8 ${flip ? "sm:flex-row-reverse" : "sm:flex-row"}`}>

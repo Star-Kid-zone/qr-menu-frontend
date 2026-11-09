@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useMenuListState } from './useMenuListState';
 import { menuService } from '@/services/menu.service';
@@ -42,9 +42,9 @@ const MOCK_ITEMS = [
 describe('useMenuListState Hook', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (menuService.getMenus as any).mockResolvedValue({ data: MOCK_ITEMS });
-    (workspaceService.getWorkspace as any).mockResolvedValue({ data: { business: { industryId: 1 } } });
-    (industryService.getIndustries as any).mockResolvedValue({ data: [{ id: 1, name: 'Restaurant' }] });
+    (menuService.getMenus as Mock).mockResolvedValue({ data: MOCK_ITEMS });
+    (workspaceService.getWorkspace as Mock).mockResolvedValue({ data: { business: { industryId: 1 } } });
+    (industryService.getIndustries as Mock).mockResolvedValue({ data: [{ id: 1, name: 'Restaurant' }] });
   });
 
   it('initializes with default search, viewMode, and category', async () => {

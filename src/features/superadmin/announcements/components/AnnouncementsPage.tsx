@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { useEffect, useState, useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { PiMegaphoneBold, PiPlusBold } from 'react-icons/pi';
@@ -7,13 +8,15 @@ import {
   superadminService,
   type PlatformAnnouncement,
 } from '@/services/superadmin.service';
-import { Badge, Button, EmptyState, toast } from '@/components/ui';
+import { Button, EmptyState, toast } from '@/components/ui';
 import { fadeIn, staggerContainer } from '@/lib/motion';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { AnnouncementCard } from './AnnouncementCard';
 import { CreateAnnouncementModal, type AnnouncementFormData } from './CreateAnnouncementModal';
 
 export function AnnouncementsPage() {
   const reduceMotion = useReducedMotion();
+  const { confirm, confirmDialog } = useConfirmDialog();
   const [announcements, setAnnouncements] = useState<PlatformAnnouncement[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -30,21 +33,16 @@ export function AnnouncementsPage() {
     isActive: true,
   });
 
-  const loadAnnouncements = async () => {
-    try {
-      setLoading(true);
-      const list = await superadminService.getAnnouncements();
-      setAnnouncements(Array.isArray(list) ? list : []);
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to load announcements');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Load once on mount (`loading` starts true).
   useEffect(() => {
-    loadAnnouncements();
+    superadminService
+      .getAnnouncements()
+      .then((list) => setAnnouncements(Array.isArray(list) ? list : []))
+      .catch((err: unknown) => {
+        console.error(err);
+        toast.error('Failed to load announcements');
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -92,7 +90,12 @@ export function AnnouncementsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this broadcast?')) return;
+    const confirmed = await confirm({
+      title: 'Delete broadcast?',
+      description: 'Are you sure you want to delete this broadcast?',
+      confirmLabel: 'Delete broadcast',
+    });
+    if (!confirmed) return;
     try {
       await superadminService.deleteAnnouncement(id);
       setAnnouncements((prev) => (Array.isArray(prev) ? prev : []).filter((a) => a.id !== id));
@@ -108,36 +111,20 @@ export function AnnouncementsPage() {
 
   return (
     <motion.div
-      className="flex h-full flex-col gap-6 overflow-y-auto pb-10"
+      className="flex h-full flex-col gap-4 sm:gap-4 overflow-y-auto pb-6"
       initial={reduceMotion ? false : 'hidden'}
       animate="visible"
       variants={fadeIn}
     >
-      {/* Header */}
-      <div className="flex shrink-0 flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2">
-            <Badge tone="primary">Communication Hub</Badge>
-            <span className="text-caption uppercase tracking-wide text-muted-foreground">Broadcast Dispatcher</span>
-          </div>
-          <h1 className="text-display text-foreground">Platform Broadcasts</h1>
-          <p className="text-body max-w-2xl text-muted-foreground">
-            Send high-visibility notifications, maintenance alerts, and product feature releases directly to tenant admin dashboards.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm shadow-sm">
-            <PiMegaphoneBold className="size-4 text-primary" />
-            <span className="font-semibold text-foreground">{activeCount}</span>
-            <span className="text-muted-foreground">Live Broadcasts</span>
-          </div>
+      <PageHeader
+        title="Announcements"
+        description={`Banners shown at the top of every restaurant's dashboard. ${activeCount} live now.`}
+        actions={
           <Button onClick={() => setIsCreateOpen(true)} leftIcon={<PiPlusBold size={16} />}>
-            New Broadcast
+            New announcement
           </Button>
-        </div>
-      </div>
-
+        }
+      />
       {/* Announcements List */}
       {loading ? (
         <div className="space-y-4">
@@ -183,6 +170,7 @@ export function AnnouncementsPage() {
         onClose={() => setIsCreateOpen(false)}
         onSubmit={handleCreate}
       />
+      {confirmDialog}
     </motion.div>
   );
 }

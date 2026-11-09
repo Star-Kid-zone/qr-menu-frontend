@@ -6,32 +6,29 @@ import {
   ButtonSize,
 } from "@/types/components/ui/Button.types";
 
+// Four real styles: primary (one per screen), secondary, ghost, destructive.
+// `outline`, `subtle` and `danger` are kept as aliases so older call sites
+// keep working while they are migrated.
+const secondary = "border border-input bg-card text-foreground hover:bg-muted";
 const variantClasses: Record<ButtonVariant, string> = {
-  primary:
-    "bg-primary text-primary-foreground shadow-sm hover:-translate-y-px hover:bg-primary/90 hover:shadow-md active:translate-y-0 active:scale-[0.98] transition-all",
-  secondary:
-    "border border-border bg-card text-foreground shadow-sm hover:bg-muted hover:text-foreground hover:-translate-y-px active:translate-y-0 active:scale-100 transition-all",
-  outline:
-    "border border-primary/30 bg-transparent text-primary hover:border-primary/70 hover:bg-primary/5 active:scale-[0.98] transition-all",
-  ghost:
-    "text-muted-foreground hover:bg-muted hover:text-foreground active:scale-[0.98] transition-all",
-  danger:
-    "border border-destructive/20 bg-destructive/8 text-destructive hover:bg-destructive/15 active:scale-[0.98] transition-all",
-  destructive:
-    "bg-destructive text-destructive-foreground shadow-sm hover:-translate-y-px hover:opacity-90 active:translate-y-0 active:scale-[0.98] transition-all",
-  subtle:
-    "border border-border bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground active:scale-100 transition-all",
+  primary: "bg-primary text-primary-foreground hover:bg-primary/90",
+  secondary,
+  outline: secondary,
+  subtle: secondary,
+  ghost: "text-muted-foreground hover:bg-muted hover:text-foreground",
+  danger: "border border-input bg-card text-destructive hover:bg-destructive/10",
+  destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: "h-8 rounded-lg px-3 text-xs",
-  md: "h-9 rounded-lg px-4 text-sm",
-  lg: "h-10 rounded-lg px-5 text-sm",
-  icon: "size-9 rounded-lg p-0",
+  sm: "h-8 px-3 text-sm",
+  md: "h-10 px-4 text-sm",
+  lg: "h-11 px-6 text-body-medium",
+  icon: "size-10 p-0",
 };
 
 const buttonBaseClasses =
-  "inline-flex cursor-pointer items-center justify-center gap-2 font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-md font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
 
 /**
  * Returns the Button primitive's visual classes for non-<button> elements
@@ -98,7 +95,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {!loading && resolvedLeftIcon}
         {children && (
-          <span className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap">
+          <span className="inline-flex items-center justify-center gap-2 whitespace-nowrap">
             {children}
           </span>
         )}

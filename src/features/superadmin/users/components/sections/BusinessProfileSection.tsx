@@ -44,7 +44,7 @@ export function BusinessProfileSection({
   return (
     <Card className="overflow-hidden">
       <div className="flex items-center justify-between border-b border-border bg-muted/30 px-6 py-4">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <PiBriefcaseBold className="size-5 text-primary" />
           <h2 className="text-h3 font-bold text-foreground">
             Business Profile &amp; Settings
@@ -114,7 +114,7 @@ export function BusinessProfileSection({
               </FormField>
             </div>
 
-            <FormField label="Physical Address">
+            <FormField label="Address">
               <Input
                 value={businessForm.address}
                 onChange={(e) =>
@@ -175,8 +175,8 @@ export function BusinessProfileSection({
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-4">
                 <div className="rounded-xl border border-border bg-muted/20 p-4">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Entity Name
+                  <p className="text-caption font-bold text-muted-foreground">
+                    Business name
                   </p>
                   <p className="mt-1 text-lg font-bold text-foreground">
                     {primaryBusiness?.businessName || 'No business name set'}
@@ -184,16 +184,16 @@ export function BusinessProfileSection({
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-xl border border-border bg-muted/20 p-3.5">
-                    <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <div className="rounded-xl border border-border bg-muted/20 p-4">
+                    <p className="flex items-center gap-1 text-caption font-bold text-muted-foreground">
                       <PiPhoneBold size={12} /> Phone
                     </p>
                     <p className="mt-1 font-mono text-sm text-foreground">
                       {primaryBusiness?.phone || '—'}
                     </p>
                   </div>
-                  <div className="rounded-xl border border-border bg-muted/20 p-3.5">
-                    <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <div className="rounded-xl border border-border bg-muted/20 p-4">
+                    <p className="flex items-center gap-1 text-caption font-bold text-muted-foreground">
                       <PiWhatsappLogoBold size={12} /> WhatsApp
                     </p>
                     <p className="mt-1 font-mono text-sm text-foreground">
@@ -202,8 +202,8 @@ export function BusinessProfileSection({
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-border bg-muted/20 p-3.5">
-                  <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <div className="rounded-xl border border-border bg-muted/20 p-4">
+                  <p className="flex items-center gap-1 text-caption font-bold text-muted-foreground">
                     <PiClockBold size={12} /> Hours
                   </p>
                   <p className="mt-1 text-sm text-foreground">
@@ -213,9 +213,9 @@ export function BusinessProfileSection({
               </div>
 
               <div className="space-y-4">
-                <div className="rounded-xl border border-border bg-muted/20 p-3.5">
-                  <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                    <PiMapPinBold size={12} /> Physical Address
+                <div className="rounded-xl border border-border bg-muted/20 p-4">
+                  <p className="flex items-center gap-1 text-caption font-bold text-muted-foreground">
+                    <PiMapPinBold size={12} /> Address
                   </p>
                   <p className="mt-1 text-sm text-foreground">
                     {primaryBusiness?.address || 'No address on record'}
@@ -225,15 +225,15 @@ export function BusinessProfileSection({
                       href={primaryBusiness.locationUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                      className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-primary hover:underline"
                     >
                       Open in Google Maps <PiArrowSquareOutBold size={12} />
                     </a>
                   )}
                 </div>
 
-                <div className="rounded-xl border border-border bg-muted/20 p-3.5">
-                  <p className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <div className="rounded-xl border border-border bg-muted/20 p-4">
+                  <p className="flex items-center gap-1 text-caption font-bold text-muted-foreground">
                     <PiGlobeBold size={12} /> Website URL
                   </p>
                   {primaryBusiness?.websiteUrl ? (
@@ -241,7 +241,7 @@ export function BusinessProfileSection({
                       href={primaryBusiness.websiteUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-1 inline-flex items-center gap-1.5 font-mono text-sm text-primary hover:underline"
+                      className="mt-1 inline-flex items-center gap-2 font-mono text-sm text-primary hover:underline"
                     >
                       {primaryBusiness.websiteUrl}{' '}
                       <PiArrowSquareOutBold size={12} />
@@ -254,8 +254,8 @@ export function BusinessProfileSection({
                 </div>
 
                 {/* Social Media Channels */}
-                <div className="rounded-xl border border-border bg-muted/20 p-3.5">
-                  <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <div className="rounded-xl border border-border bg-muted/20 p-4">
+                  <p className="flex items-center gap-2 text-caption font-bold text-muted-foreground">
                     <PiShareNetworkBold size={12} /> Social Media Channels
                   </p>
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -267,7 +267,7 @@ export function BusinessProfileSection({
                           href={s.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                          className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-primary"
                         >
                           <span className="text-primary">
                             {getSocialPlatformIcon(s.platform)}
@@ -292,11 +292,11 @@ export function BusinessProfileSection({
             {/* Day-by-Day Availability Schedule */}
             {Array.isArray(primaryBusiness?.availability) &&
               primaryBusiness.availability.length > 0 && (
-                <div className="mt-4 rounded-xl border border-border bg-muted/10 p-3.5">
-                  <div className="mb-2 flex items-center gap-1.5">
+                <div className="mt-4 rounded-xl border border-border bg-muted/10 p-4">
+                  <div className="mb-2 flex items-center gap-2">
                     <PiClockBold className="size-3.5 text-primary" />
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                      Weekly Operating Schedule Breakdown
+                    <p className="text-caption font-bold text-muted-foreground">
+                      Opening hours by day
                     </p>
                   </div>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 md:grid-cols-7">
@@ -305,10 +305,10 @@ export function BusinessProfileSection({
                         key={idx}
                         className="rounded-lg border border-border bg-card p-2 text-center"
                       >
-                        <p className="text-[11px] font-bold text-foreground">
+                        <p className="text-caption font-bold text-foreground">
                           {slot.day}
                         </p>
-                        <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+                        <p className="mt-0.5 font-mono text-caption text-muted-foreground">
                           {slot.startTime} - {slot.endTime}
                         </p>
                       </div>

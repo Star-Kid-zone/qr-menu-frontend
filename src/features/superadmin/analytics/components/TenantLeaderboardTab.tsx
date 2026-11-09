@@ -22,7 +22,7 @@ export function TenantLeaderboardTab({
       return (
         t.name.toLowerCase().includes(q) ||
         (t.business_name && t.business_name.toLowerCase().includes(q)) ||
-        t.phone.includes(q) ||
+        (t.email ?? '').toLowerCase().includes(q) ||
         (t.public_slug && t.public_slug.toLowerCase().includes(q))
       );
     });
@@ -43,7 +43,7 @@ export function TenantLeaderboardTab({
       <div className="border-b border-border bg-muted/30 px-6 py-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-h2 text-foreground">Tenant Performance Leaderboard</h2>
-          <p className="mt-0.5 text-caption uppercase tracking-wide text-muted-foreground">
+          <p className="mt-0.5 text-caption text-muted-foreground">
             Ranked activity, unique visitors, and conversion metrics per restaurant workspace
           </p>
         </div>
@@ -56,18 +56,18 @@ export function TenantLeaderboardTab({
               placeholder="Filter restaurant or owner…"
               value={tenantSearch}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background py-1.5 pl-9 pr-3 text-caption text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-caption text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
             />
           </div>
 
           <Select
             value={tenantSort}
-            onChange={(e) => onSortChange(e.target.value as any)}
+            onChange={(e) => onSortChange(e.target.value as TenantLeaderboardTabProps["tenantSort"])}
             className="w-44"
           >
             <option value="events">Sort: Total Events</option>
             <option value="visitors">Sort: Unique Visitors</option>
-            <option value="conversion">Sort: Conversion Rate</option>
+            <option value="conversion">Sort: Most taps per visitor</option>
           </Select>
         </div>
       </div>
@@ -76,12 +76,12 @@ export function TenantLeaderboardTab({
         <table className="w-full min-w-[700px] border-collapse text-left text-body">
           <thead className="border-b border-border bg-muted/20">
             <tr>
-              <th className="px-6 py-3.5 text-caption uppercase tracking-wide text-muted-foreground">Restaurant / Owner</th>
-              <th className="px-6 py-3.5 text-right text-caption uppercase tracking-wide text-muted-foreground">Unique Visitors</th>
-              <th className="px-6 py-3.5 text-right text-caption uppercase tracking-wide text-muted-foreground">Gross Events</th>
-              <th className="px-6 py-3.5 text-right text-caption uppercase tracking-wide text-muted-foreground">Conversions</th>
-              <th className="px-6 py-3.5 text-right text-caption uppercase tracking-wide text-muted-foreground">Conv. Rate</th>
-              <th className="px-6 py-3.5 text-right text-caption uppercase tracking-wide text-muted-foreground">Action</th>
+              <th className="px-6 py-4 text-caption text-muted-foreground">Restaurant / Owner</th>
+              <th className="px-6 py-4 text-right text-caption text-muted-foreground">Unique Visitors</th>
+              <th className="px-6 py-4 text-right text-caption text-muted-foreground">Gross Events</th>
+              <th className="px-6 py-4 text-right text-caption text-muted-foreground">Conversions</th>
+              <th className="px-6 py-4 text-right text-caption text-muted-foreground">Conv. Rate</th>
+              <th className="px-6 py-4 text-right text-caption text-muted-foreground">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -89,7 +89,7 @@ export function TenantLeaderboardTab({
               <tr key={t.user_id} className="group transition-colors hover:bg-muted/30">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-[11px] font-bold text-foreground">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-caption font-bold text-foreground">
                       {idx + 1}
                     </span>
                     <div className="flex flex-col">
@@ -102,11 +102,11 @@ export function TenantLeaderboardTab({
                       <div className="flex items-center gap-2 text-caption text-muted-foreground">
                         <span>{t.name}</span>
                         <span>·</span>
-                        <span className="font-mono">{t.phone}</span>
+                        <span className="font-mono">{t.email ?? "—"}</span>
                         {t.public_slug && (
                           <>
                             <span>·</span>
-                            <span className="rounded bg-muted/60 px-1.5 py-0.2 font-mono text-[10px] text-foreground">
+                            <span className="rounded bg-muted/60 px-2 py-0.2 font-mono text-caption text-foreground">
                               /{t.public_slug}
                             </span>
                           </>
@@ -127,14 +127,14 @@ export function TenantLeaderboardTab({
                     <span className="tabular-figures font-mono font-bold text-foreground">
                       {t.total_events.toLocaleString()}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-caption text-muted-foreground">
                       {t.visits || 0} visits · {t.clicks || 0} clicks
                     </span>
                   </div>
                 </td>
 
                 <td className="px-6 py-4 text-right">
-                  <span className="tabular-figures font-mono font-semibold text-emerald-500">
+                  <span className="tabular-figures font-mono font-semibold text-success">
                     {(t.conversions || 0).toLocaleString()}
                   </span>
                 </td>
@@ -142,7 +142,7 @@ export function TenantLeaderboardTab({
                 <td className="px-6 py-4 text-right">
                   <Badge
                     tone={(t.conversion_rate || 0) > 15 ? 'success' : (t.conversion_rate || 0) > 5 ? 'warning' : 'neutral'}
-                    className="font-mono text-[10px]"
+                    className="font-mono text-caption"
                   >
                     {t.conversion_rate || 0}%
                   </Badge>

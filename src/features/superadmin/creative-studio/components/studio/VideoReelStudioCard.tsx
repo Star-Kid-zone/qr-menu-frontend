@@ -45,7 +45,7 @@ export function VideoReelStudioCard({
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-xs font-semibold text-foreground block mb-1.5">
+        <label className="text-xs font-semibold text-foreground block mb-2">
           Video Motion Prompt
         </label>
         <textarea
@@ -60,15 +60,15 @@ export function VideoReelStudioCard({
       {/* Visual Reference Image for Video Reel */}
       <div className="space-y-2 rounded-xl border border-border/80 bg-muted/10 p-3">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-            <PiCameraBold className="h-3.5 w-3.5 text-amber-500" />
+          <label className="text-xs font-semibold text-foreground flex items-center gap-2">
+            <PiCameraBold className="h-3.5 w-3.5 text-warning-foreground" />
             <span>Starting Frame / Reference Image (Optional)</span>
           </label>
           {studioRefImage && (
             <button
               type="button"
               onClick={() => setStudioRefImage("")}
-              className="text-[11px] text-destructive hover:underline"
+              className="text-caption text-destructive hover:underline"
             >
               Remove
             </button>
@@ -84,7 +84,7 @@ export function VideoReelStudioCard({
               <p className="text-xs font-medium text-foreground truncate">
                 Starting Frame Image Attached
               </p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-caption text-muted-foreground">
                 Video will animate directly from this reference image
               </p>
             </div>
@@ -111,7 +111,7 @@ export function VideoReelStudioCard({
               size="sm"
               onClick={() => studioRefInputRef.current?.click()}
               disabled={uploadingStudioRef}
-              className="h-8 text-xs flex items-center gap-1.5 shrink-0"
+              className="h-8 text-xs flex items-center gap-2 shrink-0"
             >
               {uploadingStudioRef ? (
                 <PiSpinnerBold className="h-3.5 w-3.5 animate-spin" />
@@ -125,7 +125,7 @@ export function VideoReelStudioCard({
               placeholder="Or paste reference image URL (https://...)"
               value={studioRefImage}
               onChange={(e) => setStudioRefImage(e.target.value)}
-              className="flex-1 rounded-lg border border-border bg-background px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-primary"
+              className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
         )}
@@ -133,12 +133,12 @@ export function VideoReelStudioCard({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs font-semibold text-foreground block mb-1.5">
+          <label className="text-xs font-semibold text-foreground block mb-2">
             Format / Aspect Ratio
           </label>
           <select
             value={videoRatio}
-            onChange={(e: any) => setVideoRatio(e.target.value)}
+            onChange={(e) => setVideoRatio(e.target.value as VideoReelStudioCardProps["videoRatio"])}
             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="9:16">9:16 (Instagram Reel / Shorts)</option>
@@ -147,7 +147,7 @@ export function VideoReelStudioCard({
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-foreground block mb-1.5">
+          <label className="text-xs font-semibold text-foreground block mb-2">
             Duration
           </label>
           <select

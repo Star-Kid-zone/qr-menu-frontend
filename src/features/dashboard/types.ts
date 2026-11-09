@@ -6,4 +6,6 @@ export interface StatCardItem {
   subtext: string;
   icon: React.ReactNode;
   color: string;
+  /** Change vs the previous period. Absent when there is nothing to compare. */
+  delta?: { pct: number; label: string } | null;
 }

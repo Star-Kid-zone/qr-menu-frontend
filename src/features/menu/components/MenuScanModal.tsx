@@ -15,20 +15,21 @@ import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  PiScanBold,
   PiUploadSimpleBold,
   PiSpinnerGapBold,
-  PiCheckCircleFill,
-  PiWarningCircleBold,
   PiTrashBold,
-  PiMagicWandBold,
   PiXBold,
-  PiArrowLeftBold,
 } from "react-icons/pi";
+import { Modal } from "@/components/Modal";
+import { FormField } from "@/components/ui/FormField";
+import { ModalFooter } from "@/components/ui/ModalFooter";
+import { Notice } from "@/components/ui/Notice";
 import { Select } from "@/components/ui/Select";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
+import { routes } from "@/config/routes";
 import { menuService } from "@/services/menu.service";
 import { menuScanService, type ScannedItem } from "@/services/menuScan.service";
 import { getApiErrorMessage } from "@/utils/errors";
@@ -219,57 +220,71 @@ export function MenuScanModal({
 
   // ─────────────────────────────────────────────────────────────────────────
 
-  if (!isOpen) return null;
+  const stepDescription =
+    step === "upload"
+      ? "Upload a photo of your menu and we'll pull out the items for you."
+      : step === "review"
+        ? `${rows.length} item${rows.length !== 1 ? "s" : ""} found. Check them, then import.`
+        : step === "importing"
+          ? "Saving items to your menu…"
+          : "Import complete.";
+
+  const footer =
+    step === "upload" ? (
+      <ModalFooter>
+        <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()}>
+          {selectedFile ? "Change photo" : "Choose photo"}
+        </Button>
+        <Button
+          type="button"
+          disabled={!selectedFile || scanning}
+          loading={scanning}
+          onClick={handleScan}
+        >
+          {scanning ? "Scanning…" : "Scan with AI"}
+        </Button>
+      </ModalFooter>
+    ) : step === "review" ? (
+      <ModalFooter>
+        <Button type="button" variant="secondary" onClick={() => setStep("upload")}>
+          Back
+        </Button>
+        <Button
+          type="button"
+          disabled={selectedCount === 0 || !industryId || !bulkCategory || !bulkType}
+          onClick={handleImport}
+        >
+          Import {selectedCount} item{selectedCount !== 1 ? "s" : ""}
+        </Button>
+      </ModalFooter>
+    ) : step === "done" ? (
+      <ModalFooter>
+        <Button type="button" onClick={handleClose}>
+          Done
+        </Button>
+      </ModalFooter>
+    ) : undefined;
 
   return (
-    /* Backdrop */
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) handleClose();
-      }}
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Scan a menu with AI"
+      maxWidth="max-w-2xl"
+      footer={footer}
     >
-      <div
-        className="relative mx-4 flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
-        style={{ maxHeight: "90vh" }}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10">
-              <PiMagicWandBold size={16} className="text-primary" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-foreground">
-                AI Menu Scanner
-              </h2>
-              <p className="text-[11px] text-muted-foreground">
-                {step === "upload" && "Upload a menu photo to extract items automatically"}
-                {step === "review" && `${rows.length} items found — review and import`}
-                {step === "importing" && "Saving items to your menu…"}
-                {step === "done" && "Import complete"}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <PiXBold size={14} />
-          </button>
-        </div>
+      <div className="space-y-4">
+        <p className="text-body text-muted-foreground" aria-live="polite">
+          {stepDescription}
+        </p>
 
         {/* Step 1 — Upload */}
         {step === "upload" && (
-          <div className="flex flex-col gap-4 overflow-y-auto p-6">
-            {/* Drop zone */}
+          <>
             <div
               className={cn(
-                "relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 transition-colors",
-                dragOver
-                  ? "border-primary bg-primary/5"
-                  : "border-border bg-muted/30 hover:border-primary/40 hover:bg-primary/3"
+                "relative flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-6 transition-colors",
+                dragOver ? "border-primary bg-primary/5" : "border-border bg-muted/30"
               )}
               onDragOver={(e) => {
                 e.preventDefault();
@@ -284,7 +299,7 @@ export function MenuScanModal({
               }}
             >
               {previewUrl ? (
-                <div className="relative h-56 w-full overflow-hidden rounded-lg">
+                <div className="relative h-56 w-full overflow-hidden rounded-md">
                   <Image
                     src={previewUrl}
                     alt="Menu preview"
@@ -299,28 +314,29 @@ export function MenuScanModal({
                       if (previewUrl) URL.revokeObjectURL(previewUrl);
                       setPreviewUrl(null);
                     }}
-                    className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-destructive/90 text-white"
+                    aria-label="Remove photo"
+                    className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full border border-border bg-card text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   >
-                    <PiXBold size={11} />
+                    <PiXBold className="size-4" aria-hidden />
                   </button>
                 </div>
               ) : (
                 <>
-                  <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10">
-                    <PiUploadSimpleBold size={26} className="text-primary" />
-                  </div>
+                  <PiUploadSimpleBold className="size-8 text-muted-foreground" aria-hidden />
                   <div className="text-center">
-                    <p className="text-sm font-semibold text-foreground">
-                      Drop your menu photo here
-                    </p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      or click below to browse · JPEG, PNG, WEBP, HEIC · max 10MB
+                    <p className="text-body-medium text-foreground">Drop your menu photo here</p>
+                    <p className="mt-1 text-caption text-muted-foreground">
+                      Or choose a photo below. JPEG, PNG, WEBP or HEIC, up to 10 MB.
                     </p>
                   </div>
                 </>
               )}
 
+              <label htmlFor="menu-scan-file" className="sr-only">
+                Menu photo
+              </label>
               <input
+                id="menu-scan-file"
                 ref={fileInputRef}
                 type="file"
                 className="sr-only"
@@ -332,79 +348,32 @@ export function MenuScanModal({
               />
             </div>
 
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="flex-1"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {selectedFile ? "Change Photo" : "Browse Photo"}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                className="flex-1 gap-2"
-                disabled={!selectedFile || scanning}
-                loading={scanning}
-                onClick={handleScan}
-              >
-                {!scanning && <PiScanBold size={15} />}
-                {scanning ? "Scanning…" : "Scan with AI"}
-              </Button>
-            </div>
-
-            {/* Tips */}
-            <div className="rounded-xl border border-border bg-muted/40 p-4">
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                Tips for best results
-              </p>
-              <ul className="space-y-1.5">
-                {[
-                  "Use a clear, well-lit photo — avoid shadows and glare",
-                  "Include the full menu page in the frame",
-                  "Works best with printed/physical menus",
-                  "You can review and edit every item before importing",
-                ].map((tip, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-2 text-[11px] text-muted-foreground"
-                  >
-                    <span className="mt-0.5 flex size-3.5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[8px] font-bold text-primary">
-                      {i + 1}
-                    </span>
-                    {tip}
-                  </li>
-                ))}
+            <div className="rounded-md border border-border bg-muted/40 p-4">
+              <p className="mb-2 text-body-medium text-foreground">Tips for best results</p>
+              <ul className="list-disc space-y-1 pl-6 text-caption text-muted-foreground">
+                <li>Use a clear, well-lit photo without shadows or glare.</li>
+                <li>Include the full menu page in the frame.</li>
+                <li>Works best with printed menus.</li>
+                <li>You can review and edit every item before importing.</li>
               </ul>
             </div>
-          </div>
+          </>
         )}
 
         {/* Step 2 — Review */}
         {step === "review" && (
-          <div className="flex flex-col overflow-hidden">
-            {/* No industry set — everything below is unusable until it is */}
+          <>
             {!industryId && (
-              <div className="mx-6 mt-4 flex items-start gap-2 rounded-lg border border-amber-300/60 bg-amber-50 p-3 text-[11px] text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300">
-                <PiWarningCircleBold size={15} className="mt-0.5 shrink-0" />
-                <span>
-                  No industry set yet.{" "}
-                  <Link href="/admin/listmenu" className="font-semibold underline underline-offset-2">
-                    Set it on the Menu Items page
-                  </Link>{" "}
-                  to enable categories &amp; types.
-                </span>
-              </div>
+              <Notice tone="warning" title="No industry set yet">
+                <Link href={routes.admin.listMenu} className="font-medium underline underline-offset-2">
+                  Set it on the Menu Items page
+                </Link>{" "}
+                to enable categories and types.
+              </Notice>
             )}
 
-            {/* Bulk selectors */}
-            <div className="flex flex-wrap items-end gap-3 border-b border-border px-6 py-4">
-              <div className="min-w-[9rem] flex-1">
-                <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                  Category <span className="text-destructive">*</span>
-                </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField label="Category" htmlFor="scan-category" required>
                 <Select
                   id="scan-category"
                   value={bulkCategory}
@@ -418,11 +387,8 @@ export function MenuScanModal({
                     </option>
                   ))}
                 </Select>
-              </div>
-              <div className="min-w-[9rem] flex-1">
-                <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                  Type <span className="text-destructive">*</span>
-                </label>
+              </FormField>
+              <FormField label="Type" htmlFor="scan-type" required>
                 <Select
                   id="scan-type"
                   value={bulkType}
@@ -436,120 +402,99 @@ export function MenuScanModal({
                     </option>
                   ))}
                 </Select>
-              </div>
-              <p className="shrink-0 pb-1 text-xs text-muted-foreground">
-                {selectedCount}/{rows.length} selected
-              </p>
+              </FormField>
             </div>
 
-            {/* Item rows */}
-            <div className="flex-1 overflow-y-auto px-6 py-3" style={{ maxHeight: "42vh" }}>
-              <div className="flex flex-col gap-2">
-                {rows.map((row) => (
-                  <div
+            <p className="text-caption text-muted-foreground">
+              {selectedCount} of {rows.length} selected
+            </p>
+
+            <ul className="flex flex-col gap-2">
+              {rows.map((row, index) => {
+                const label = row.item || `item ${index + 1}`;
+                return (
+                  <li
                     key={row.id}
                     className={cn(
-                      "rounded-xl border p-3 transition-all",
-                      row.selected
-                        ? "border-primary/20 bg-primary/3"
-                        : "border-border bg-muted/30 opacity-50"
+                      "rounded-md border p-3 transition-colors",
+                      row.selected ? "border-primary/30 bg-primary/5" : "border-border bg-muted/30"
                     )}
                   >
                     <div className="mb-2 flex items-center gap-2">
-                      {/* Checkbox */}
-                      <button
-                        type="button"
-                        onClick={() => toggleRow(row.id)}
-                        className="shrink-0"
-                        aria-label={row.selected ? "Deselect item" : "Select item"}
-                      >
-                        <PiCheckCircleFill
-                          size={18}
-                          className={row.selected ? "text-primary" : "text-muted-foreground/40"}
-                        />
-                      </button>
-
-                      {/* Name + Price inline */}
+                      <input
+                        id={`${row.id}-selected`}
+                        type="checkbox"
+                        checked={row.selected}
+                        onChange={() => toggleRow(row.id)}
+                        aria-label={`Include ${label}`}
+                        className="size-4 shrink-0 accent-primary"
+                      />
+                      <label htmlFor={`${row.id}-item`} className="sr-only">
+                        Item name
+                      </label>
                       <Input
+                        id={`${row.id}-item`}
                         value={row.item}
                         onChange={(e) => updateRow(row.id, "item", e.target.value)}
                         placeholder="Item name"
-                        className="flex-1 h-7 text-xs font-semibold"
+                        className="flex-1"
                         disabled={!row.selected}
                       />
-                      <div className="w-24">
-                        <Input
-                          value={row.price}
-                          onChange={(e) => updateRow(row.id, "price", e.target.value)}
-                          placeholder="0.00"
-                          className="h-7 text-xs text-right font-mono"
-                          disabled={!row.selected}
-                        />
-                      </div>
+                      <label htmlFor={`${row.id}-price`} className="sr-only">
+                        Price for {label}
+                      </label>
+                      <Input
+                        id={`${row.id}-price`}
+                        value={row.price}
+                        onChange={(e) => updateRow(row.id, "price", e.target.value)}
+                        placeholder="0.00"
+                        inputMode="decimal"
+                        className="w-24 shrink-0 text-right tabular-nums"
+                        fullWidth={false}
+                        disabled={!row.selected}
+                      />
                       <button
                         type="button"
                         onClick={() => deleteRow(row.id)}
-                        className="flex size-6 shrink-0 items-center justify-center rounded-lg text-destructive/60 hover:bg-destructive/10 hover:text-destructive"
+                        aria-label={`Remove ${label}`}
+                        className="flex size-10 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                       >
-                        <PiTrashBold size={12} />
+                        <PiTrashBold className="size-4" aria-hidden />
                       </button>
                     </div>
 
-                    {/* Description */}
-                    <textarea
+                    <label htmlFor={`${row.id}-description`} className="sr-only">
+                      Description for {label}
+                    </label>
+                    <Textarea
+                      id={`${row.id}-description`}
                       value={row.description}
                       onChange={(e) => updateRow(row.id, "description", e.target.value)}
                       placeholder="Description"
                       rows={2}
                       disabled={!row.selected}
-                      className="w-full resize-none rounded-lg border border-border bg-background px-2.5 py-1.5 text-[11px] text-muted-foreground outline-none focus:border-primary focus:ring-0 disabled:opacity-50"
+                      className="min-h-0 resize-none"
                     />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Footer actions */}
-            <div className="flex items-center justify-between border-t border-border px-6 py-4">
-              <button
-                type="button"
-                onClick={() => setStep("upload")}
-                className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
-              >
-                <PiArrowLeftBold size={12} />
-                Back
-              </button>
-              <Button
-                type="button"
-                size="sm"
-                disabled={selectedCount === 0 || !industryId || !bulkCategory || !bulkType}
-                onClick={handleImport}
-              >
-                Import {selectedCount} Item{selectedCount !== 1 ? "s" : ""}
-              </Button>
-            </div>
-          </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
         )}
 
         {/* Step 3 — Importing */}
         {step === "importing" && (
-          <div className="flex flex-col items-center justify-center gap-6 p-10">
-            <div className="flex size-16 items-center justify-center rounded-2xl bg-primary/10">
-              <PiSpinnerGapBold
-                size={32}
-                className="animate-spin text-primary"
-              />
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-semibold text-foreground">
-                Saving items to your menu…
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {progress}% complete
-              </p>
-            </div>
-            {/* Progress bar */}
-            <div className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-muted">
+          <div className="flex flex-col items-center justify-center gap-4 py-8">
+            <PiSpinnerGapBold className="size-8 animate-spin text-primary" aria-hidden />
+            <p className="text-body text-muted-foreground">{progress}% complete</p>
+            <div
+              role="progressbar"
+              aria-label="Import progress"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progress}
+              className="h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-muted"
+            >
               <div
                 className="h-full rounded-full bg-primary transition-all duration-300"
                 style={{ width: `${progress}%` }}
@@ -560,38 +505,16 @@ export function MenuScanModal({
 
         {/* Step 4 — Done */}
         {step === "done" && result && (
-          <div className="flex flex-col items-center justify-center gap-6 p-10">
-            <div
-              className={cn(
-                "flex size-16 items-center justify-center rounded-2xl",
-                result.failed === 0 ? "bg-emerald-100 dark:bg-emerald-950" : "bg-amber-100 dark:bg-amber-950"
-              )}
-            >
-              {result.failed === 0 ? (
-                <PiCheckCircleFill size={32} className="text-emerald-600 dark:text-emerald-400" />
-              ) : (
-                <PiWarningCircleBold size={32} className="text-amber-600 dark:text-amber-400" />
-              )}
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-bold text-foreground">
-                {result.saved} item{result.saved !== 1 ? "s" : ""} imported successfully
-              </p>
-              {result.failed > 0 && (
-                <p className="mt-0.5 text-xs text-destructive">
-                  {result.failed} item{result.failed !== 1 ? "s" : ""} failed to save
-                </p>
-              )}
-              <p className="mt-1 text-xs text-muted-foreground">
-                Your menu has been updated.
-              </p>
-            </div>
-            <Button type="button" size="sm" onClick={handleClose}>
-              Done
-            </Button>
-          </div>
+          <Notice
+            tone={result.failed === 0 ? "success" : "warning"}
+            title={`${result.saved} item${result.saved !== 1 ? "s" : ""} imported`}
+          >
+            {result.failed > 0
+              ? `${result.failed} item${result.failed !== 1 ? "s" : ""} couldn't be saved. Your menu has been updated with the rest.`
+              : "Your menu has been updated."}
+          </Notice>
         )}
       </div>
-    </div>
+    </Modal>
   );
 }

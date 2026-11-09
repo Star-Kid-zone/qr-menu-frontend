@@ -1,5 +1,6 @@
-import { QrGeneratorPage } from "@/features/qr-codes";
+import { redirect } from "next/navigation";
 
-export default function AddQrCodeRoute() {
-  return <QrGeneratorPage />;
+// Moved to the QR menu page. Kept so existing links and bookmarks still work.
+export default function MovedRoute() {
+  redirect("/admin/qr-menu");
 }

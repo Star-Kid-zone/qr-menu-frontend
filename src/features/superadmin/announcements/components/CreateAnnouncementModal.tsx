@@ -1,8 +1,12 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { PiMegaphoneBold, PiXBold, PiEyeBold } from 'react-icons/pi';
+import { useId } from 'react';
+import { PiMegaphoneBold } from 'react-icons/pi';
+import { Modal } from '@/components/Modal';
 import { Button, FormField, Input, Textarea } from '@/components/ui';
+import { ModalFooter } from '@/components/ui/ModalFooter';
+import { Notice } from '@/components/ui/Notice';
+import { Select } from '@/components/ui/Select';
 
 export interface AnnouncementFormData {
   title: string;
@@ -23,6 +27,13 @@ export interface CreateAnnouncementModalProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
+const TYPE_OPTIONS: { value: AnnouncementFormData['type']; label: string }[] = [
+  { value: 'feature', label: 'New feature' },
+  { value: 'info', label: 'General info' },
+  { value: 'warning', label: 'Maintenance or warning' },
+  { value: 'promo', label: 'Promotion or festival' },
+];
+
 export function CreateAnnouncementModal({
   isOpen,
   form,
@@ -31,170 +42,128 @@ export function CreateAnnouncementModal({
   onClose,
   onSubmit,
 }: CreateAnnouncementModalProps) {
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm"
-            onClick={onClose}
-          />
+  const formId = useId();
+  const fieldId = (name: string) => `${formId}-${name}`;
 
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            className="relative flex w-full max-w-2xl max-h-[92vh] flex-col rounded-2xl border border-border bg-card p-4 sm:p-5 shadow-2xl overflow-hidden"
+  const footer = (
+    <ModalFooter>
+      <Button type="button" variant="secondary" onClick={onClose}>
+        Cancel
+      </Button>
+      <Button type="submit" form={formId} loading={submitting}>
+        Publish announcement
+      </Button>
+    </ModalFooter>
+  );
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="New announcement" maxWidth="max-w-2xl" footer={footer}>
+      <form id={formId} onSubmit={onSubmit} className="space-y-4">
+        <Notice tone="warning">
+          This announcement appears on every restaurant dashboard as soon as it is published.
+        </Notice>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField label="Type" htmlFor={fieldId('type')}>
+            <Select
+              id={fieldId('type')}
+              value={form.type}
+              onChange={(e) => setForm({ ...form, type: e.target.value as AnnouncementFormData['type'] })}
+              options={TYPE_OPTIONS}
+            />
+          </FormField>
+
+          <FormField label="Badge label" htmlFor={fieldId('badge')}>
+            <Input
+              id={fieldId('badge')}
+              value={form.badgeText}
+              onChange={(e) => setForm({ ...form, badgeText: e.target.value })}
+              placeholder="e.g. New feature, Maintenance, Holiday"
+            />
+          </FormField>
+        </div>
+
+        <FormField label="Headline" htmlFor={fieldId('title')} required>
+          <Input
+            id={fieldId('title')}
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            placeholder="e.g. Mother's Day poster templates are live"
+            required
+          />
+        </FormField>
+
+        <FormField label="Message" htmlFor={fieldId('content')} required>
+          <Textarea
+            id={fieldId('content')}
+            value={form.content}
+            onChange={(e) => setForm({ ...form, content: e.target.value })}
+            placeholder="A clear, short message for restaurant owners"
+            rows={3}
+            className="min-h-0 resize-none"
+            required
+          />
+        </FormField>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField label="Link" htmlFor={fieldId('url')} hint="Optional, e.g. /admin/social-media">
+            <Input
+              id={fieldId('url')}
+              value={form.actionUrl}
+              onChange={(e) => setForm({ ...form, actionUrl: e.target.value })}
+            />
+          </FormField>
+
+          <FormField label="Button label" htmlFor={fieldId('action')} hint="Optional, e.g. View posters">
+            <Input
+              id={fieldId('action')}
+              value={form.actionText}
+              onChange={(e) => setForm({ ...form, actionText: e.target.value })}
+            />
+          </FormField>
+        </div>
+
+        <section aria-label="Preview" className="rounded-lg border border-border bg-muted/30 p-3">
+          <p className="mb-2 text-caption text-muted-foreground">Preview of the banner at the top of each dashboard</p>
+
+          <div
+            className={`flex items-center justify-between gap-3 rounded-md border px-3 py-2 ${
+              form.type === 'warning'
+                ? 'border-destructive/30 bg-destructive/5'
+                : form.type === 'feature'
+                  ? 'border-success/30 bg-success/5'
+                  : 'border-primary/20 bg-primary/5'
+            }`}
           >
-            {/* Pinned Header */}
-            <div className="flex shrink-0 items-start justify-between border-b border-border pb-3">
-              <div>
-                <h3 className="text-base sm:text-lg font-bold text-foreground">Compose Platform Broadcast</h3>
-                <p className="text-xs text-muted-foreground">
-                  This banner will appear across all tenant dashboards immediately upon activation.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="rounded-lg p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <span
+                className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-caption font-medium ${
+                  form.type === 'warning'
+                    ? 'border-destructive/30 bg-destructive/10 text-destructive'
+                    : form.type === 'feature'
+                      ? 'border-success/30 bg-success/10 text-success'
+                      : 'border-primary/30 bg-primary/10 text-primary'
+                }`}
               >
-                <PiXBold className="size-4.5" />
-              </button>
+                <PiMegaphoneBold className="size-3" aria-hidden />
+                <span>{form.badgeText || 'Update'}</span>
+              </span>
+              <div className="min-w-0 truncate text-caption">
+                <span className="mr-1 font-semibold text-foreground">{form.title || 'Announcement title'}:</span>
+                <span className="text-muted-foreground">
+                  {form.content || 'Your message will show here for all restaurant owners.'}
+                </span>
+              </div>
             </div>
 
-            {/* Form Body */}
-            <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col justify-between py-2.5 sm:py-3 space-y-2.5 overflow-y-auto">
-              <div className="grid gap-2.5 sm:grid-cols-2">
-                <FormField label="Broadcast Type" className="space-y-1">
-                  <select
-                    value={form.type}
-                    onChange={(e) => setForm({ ...form, type: e.target.value as any })}
-                    className="h-9 w-full rounded-md border border-border bg-card px-3 text-xs sm:text-sm font-medium text-foreground focus:border-primary focus:outline-none"
-                  >
-                    <option value="feature" className="bg-card text-foreground py-1">New Feature (Emerald)</option>
-                    <option value="info" className="bg-card text-foreground py-1">General Info (Slate)</option>
-                    <option value="warning" className="bg-card text-foreground py-1">Maintenance / Warning (Amber/Red)</option>
-                    <option value="promo" className="bg-card text-foreground py-1">Promotion / Festival (Purple/Orange)</option>
-                  </select>
-                </FormField>
-
-                <FormField label="Badge Pill Label" className="space-y-1">
-                  <Input
-                    value={form.badgeText}
-                    onChange={(e) => setForm({ ...form, badgeText: e.target.value })}
-                    placeholder="e.g. New Feature, Maintenance, Holiday"
-                    className="h-9 text-xs sm:text-sm"
-                  />
-                </FormField>
-              </div>
-
-              <FormField label="Headline / Title" className="space-y-1">
-                <Input
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder="e.g. Mother's Day Poster Templates Are Live!"
-                  className="h-9 text-xs sm:text-sm"
-                  required
-                />
-              </FormField>
-
-              <FormField label="Message Body" className="space-y-1">
-                <Textarea
-                  value={form.content}
-                  onChange={(e) => setForm({ ...form, content: e.target.value })}
-                  placeholder="Provide a clear, concise message for restaurant owners..."
-                  className="min-h-[54px] h-[54px] resize-none py-1.5 px-3 text-xs sm:text-sm"
-                  required
-                />
-              </FormField>
-
-              <div className="grid gap-2.5 sm:grid-cols-2">
-                <FormField label="Action URL (Optional)" className="space-y-1">
-                  <Input
-                    value={form.actionUrl}
-                    onChange={(e) => setForm({ ...form, actionUrl: e.target.value })}
-                    placeholder="e.g. /admin/social-media"
-                    className="h-9 text-xs sm:text-sm font-mono"
-                  />
-                </FormField>
-
-                <FormField label="Button Label (Optional)" className="space-y-1">
-                  <Input
-                    value={form.actionText}
-                    onChange={(e) => setForm({ ...form, actionText: e.target.value })}
-                    placeholder="e.g. View Posters, Update Menu"
-                    className="h-9 text-xs sm:text-sm"
-                  />
-                </FormField>
-              </div>
-
-              {/* Live Preview Card */}
-              <div className="rounded-xl border border-border/70 bg-muted/20 p-2.5">
-                <div className="mb-1.5 flex items-center justify-between text-[11px] font-medium text-muted-foreground">
-                  <span className="flex items-center gap-1.5 font-semibold uppercase tracking-wider text-[10px]">
-                    <PiEyeBold className="size-3 text-primary" />
-                    Tenant Live Preview
-                  </span>
-                  <span className="text-[10px] text-muted-foreground/70">Top banner in /admin</span>
-                </div>
-
-                <div className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-xs transition-colors ${
-                  form.type === 'warning'
-                    ? 'border-destructive/30 bg-destructive/5'
-                    : form.type === 'promo'
-                    ? 'border-purple-500/30 bg-purple-500/5'
-                    : form.type === 'feature'
-                    ? 'border-emerald-500/30 bg-emerald-500/5'
-                    : 'border-primary/20 bg-primary/5'
-                }`}>
-                  <div className="flex min-w-0 flex-1 items-center gap-2">
-                    <span className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${
-                      form.type === 'warning'
-                        ? 'border-destructive/30 bg-destructive/20 text-destructive'
-                        : form.type === 'promo'
-                        ? 'border-purple-500/30 bg-purple-500/20 text-purple-700 dark:text-purple-300'
-                        : form.type === 'feature'
-                        ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
-                        : 'border-primary/30 bg-primary/20 text-primary'
-                    }`}>
-                      <PiMegaphoneBold className="size-2.5" />
-                      <span>{form.badgeText || 'Update'}</span>
-                    </span>
-                    <div className="min-w-0 truncate text-xs">
-                      <span className="font-semibold text-foreground mr-1">
-                        {form.title || 'Announcement Title'}:
-                      </span>
-                      <span className="text-muted-foreground">
-                        {form.content || 'Your message content will be displayed here for all restaurant owners.'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {form.actionText && (
-                    <span className="shrink-0 rounded-md bg-primary px-2.5 py-1 text-[11px] font-semibold text-primary-foreground shadow-xs">
-                      {form.actionText}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Pinned Footer Actions */}
-              <div className="flex shrink-0 items-center justify-end gap-2.5 border-t border-border pt-3">
-                <Button variant="secondary" size="sm" onClick={onClose}>
-                  Cancel
-                </Button>
-                <Button type="submit" size="sm" loading={submitting}>
-                  Publish Broadcast
-                </Button>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+            {form.actionText && (
+              <span className="shrink-0 rounded-md bg-primary px-3 py-1 text-caption font-medium text-primary-foreground">
+                {form.actionText}
+              </span>
+            )}
+          </div>
+        </section>
+      </form>
+    </Modal>
   );
 }

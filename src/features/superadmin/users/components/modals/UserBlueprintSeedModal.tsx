@@ -1,16 +1,18 @@
 "use client";
 
 import React from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { Modal } from "@/components/Modal";
 import { Button } from "@/components/ui";
-import { PiXBold, PiCheckBold } from "react-icons/pi";
+import { ModalFooter } from "@/components/ui/ModalFooter";
+import { Notice } from "@/components/ui/Notice";
+import type { MenuBlueprint } from "@/services/superadmin.service";
 
 export interface UserBlueprintSeedModalProps {
   blueprintModalOpen: boolean;
   setBlueprintModalOpen: (open: boolean) => void;
   userName: string;
   userId: number;
-  availableBlueprints: any[];
+  availableBlueprints: MenuBlueprint[];
   selectedBpId: string;
   setSelectedBpId: (id: string) => void;
   bpMode: "append" | "replace";
@@ -18,6 +20,15 @@ export interface UserBlueprintSeedModalProps {
   applyingBp: boolean;
   handleApplyBlueprint: () => Promise<void>;
 }
+
+const optionClass = (selected: boolean, destructive = false) =>
+  `flex w-full cursor-pointer items-start gap-3 rounded-lg border p-3 text-left transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary ${
+    selected
+      ? destructive
+        ? "border-destructive bg-destructive/5"
+        : "border-primary bg-primary/5"
+      : "border-border bg-card hover:bg-muted"
+  }`;
 
 export function UserBlueprintSeedModal({
   blueprintModalOpen,
@@ -32,123 +43,96 @@ export function UserBlueprintSeedModal({
   applyingBp,
   handleApplyBlueprint,
 }: UserBlueprintSeedModalProps) {
+  const close = () => setBlueprintModalOpen(false);
+
+  const footer = (
+    <ModalFooter>
+      <Button type="button" variant="secondary" onClick={close}>
+        Cancel
+      </Button>
+      <Button
+        type="button"
+        onClick={handleApplyBlueprint}
+        loading={applyingBp}
+        variant={bpMode === "replace" ? "destructive" : "primary"}
+      >
+        {bpMode === "replace" ? "Delete current menu and apply" : "Add to current menu"}
+      </Button>
+    </ModalFooter>
+  );
+
   return (
-    <AnimatePresence>
-      {blueprintModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <motion.div
-            className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-          >
-            <div className="flex items-center justify-between border-b border-border pb-4">
-              <div>
-                <h3 className="text-lg font-bold text-foreground">
-                  Apply Starter Blueprint
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Pre-populate menu items for {userName} (#{userId})
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setBlueprintModalOpen(false)}
-                className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-              >
-                <PiXBold size={16} />
-              </button>
-            </div>
+    <Modal isOpen={blueprintModalOpen} onClose={close} title="Apply a starter menu" maxWidth="max-w-lg" footer={footer}>
+      <div className="space-y-6">
+        <p className="text-body text-muted-foreground">
+          Add dishes from a starter menu to {userName} (#{userId}).
+        </p>
 
-            <div className="space-y-4 py-4">
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Choose Preset Menu Pack
-                </label>
-                <div className="mt-2 space-y-2 max-h-56 overflow-y-auto">
-                  {availableBlueprints.map((bp) => (
-                    <button
-                      key={bp.id}
-                      type="button"
-                      onClick={() => setSelectedBpId(bp.id)}
-                      className={`flex w-full items-center justify-between rounded-xl border p-3 text-left transition ${
-                        selectedBpId === bp.id
-                          ? "border-primary bg-primary/10 text-primary font-semibold"
-                          : "border-border bg-muted/20 text-foreground hover:bg-muted/40"
-                      }`}
-                    >
-                      <div>
-                        <p className="text-sm font-bold">{bp.name}</p>
-                        <p className="text-xs text-muted-foreground">{bp.tagline}</p>
-                        <p className="mt-1 text-[11px] font-mono text-muted-foreground">
-                          {bp.items.length} items • {bp.categoryNames.join(", ")}
-                        </p>
-                      </div>
-                      {selectedBpId === bp.id && (
-                        <PiCheckBold className="size-4 shrink-0" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
+        <fieldset className="space-y-2">
+          <legend className="mb-2 text-body-medium text-foreground">Starter menu</legend>
+          <div className="max-h-56 space-y-2 overflow-y-auto p-0.5">
+            {availableBlueprints.map((bp) => (
+              <label key={bp.id} className={optionClass(selectedBpId === bp.id)}>
+                <input
+                  type="radio"
+                  name="seed-blueprint"
+                  value={bp.id}
+                  checked={selectedBpId === bp.id}
+                  onChange={() => setSelectedBpId(bp.id)}
+                  className="mt-1 size-4 shrink-0 accent-primary"
+                />
+                <span className="min-w-0">
+                  <span className="block text-body-medium text-foreground">{bp.name}</span>
+                  {bp.tagline && <span className="block text-caption text-muted-foreground">{bp.tagline}</span>}
+                  <span className="mt-1 block text-caption text-muted-foreground">
+                    {bp.items.length} dishes · {bp.categoryNames.join(", ")}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
 
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Seeding Strategy
-                </label>
-                <div className="mt-2 grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setBpMode("append")}
-                    className={`rounded-xl border p-2.5 text-left transition ${
-                      bpMode === "append"
-                        ? "border-primary bg-primary/10 text-primary font-semibold"
-                        : "border-border bg-muted/20 text-foreground hover:bg-muted/40"
-                    }`}
-                  >
-                    <p className="text-xs font-bold">Append</p>
-                    <p className="text-[10px] text-muted-foreground">
-                      Keep existing items
-                    </p>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setBpMode("replace")}
-                    className={`rounded-xl border p-2.5 text-left transition ${
-                      bpMode === "replace"
-                        ? "border-destructive bg-destructive/10 text-destructive font-semibold"
-                        : "border-border bg-muted/20 text-foreground hover:bg-muted/40"
-                    }`}
-                  >
-                    <p className="text-xs font-bold">Replace</p>
-                    <p className="text-[10px] text-muted-foreground">
-                      Wipe current menu
-                    </p>
-                  </button>
-                </div>
-              </div>
-            </div>
+        <fieldset className="space-y-2">
+          <legend className="mb-2 text-body-medium text-foreground">What happens to the current menu</legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className={optionClass(bpMode === "append")}>
+              <input
+                type="radio"
+                name="seed-mode"
+                value="append"
+                checked={bpMode === "append"}
+                onChange={() => setBpMode("append")}
+                className="mt-1 size-4 shrink-0 accent-primary"
+              />
+              <span>
+                <span className="block text-body-medium text-foreground">Keep it</span>
+                <span className="block text-caption text-muted-foreground">New dishes are added alongside existing ones.</span>
+              </span>
+            </label>
+            <label className={optionClass(bpMode === "replace", true)}>
+              <input
+                type="radio"
+                name="seed-mode"
+                value="replace"
+                checked={bpMode === "replace"}
+                onChange={() => setBpMode("replace")}
+                className="mt-1 size-4 shrink-0 accent-destructive"
+              />
+              <span>
+                <span className="block text-body-medium text-foreground">Replace it</span>
+                <span className="block text-caption text-muted-foreground">Deletes every dish on the current menu first.</span>
+              </span>
+            </label>
+          </div>
+        </fieldset>
 
-            <div className="flex items-center justify-end gap-3 border-t border-border pt-4">
-              <Button
-                variant="secondary"
-                onClick={() => setBlueprintModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleApplyBlueprint}
-                loading={applyingBp}
-                variant={bpMode === "replace" ? "destructive" : "primary"}
-              >
-                {bpMode === "replace"
-                  ? "Replace & Seed Menu"
-                  : "Append Blueprint"}
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+        {bpMode === "replace" && (
+          <Notice tone="error" title="The current menu will be deleted">
+            All of {userName}&apos;s existing dishes are permanently removed before the starter menu is added. This can&apos;t be undone.
+          </Notice>
+        )}
+      </div>
+    </Modal>
   );
 }

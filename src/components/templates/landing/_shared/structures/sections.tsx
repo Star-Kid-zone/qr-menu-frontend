@@ -54,23 +54,9 @@ export function DecorativeMarquee({ c, t }: Pick<Ctx, "c" | "t">) {
   );
 }
 
-export function FeatureBadges({ c, t }: Ctx) {
-  const badges = [
-    c.cta.menuBtn && c.terms.catalogLabel,
-    c.cta.payBtn && "Pay Online",
-    c.cta.reviewBtn && "Reviews",
-    c.offers.length > 0 && "Offers",
-  ].filter(Boolean) as string[];
-  if (badges.length === 0) return null;
-  return (
-    <div className="flex flex-wrap items-center justify-center gap-2 px-5 py-4 sm:px-10">
-      {badges.map((b) => (
-        <span key={b} style={{ borderColor: t.border, color: t.textPrimary }} className="rounded-full border px-3.5 py-1 text-[11px] font-bold uppercase tracking-wider">
-          {b}
-        </span>
-      ))}
-    </div>
-  );
+/** Removed: these were non-clickable labels that looked like a second navigation row. */
+export function FeatureBadges(_props: Ctx) {
+  return null;
 }
 
 export function PopularMenuSection({ c, t, p }: Ctx) {
@@ -122,7 +108,7 @@ export function OffersSection({ c, t }: Pick<Ctx, "c" | "t">) {
           <h2 style={{ color: t.textPrimary }} className="mb-8 text-center text-2xl font-bold">Something Special</h2>
         </FadeIn>
         <StaggerGroup className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {c.offers.map((o: any, i: number) => (
+          {c.offers.map((o, i: number) => (
             <StaggerItem key={i}>
               <div style={{ background: t.bg, borderColor: t.border }} className="overflow-hidden rounded-xl border">
                 {o.image_url ? (
@@ -251,7 +237,7 @@ export function ContactSection({ c, t, p }: Ctx) {
         {c.hours.length > 0 && (
           <FadeIn>
             <p style={{ color: t.accent }} className="mb-3 text-xs font-bold uppercase tracking-[0.4em]">Opening Hours</p>
-            <h2 style={{ color: t.textPrimary }} className="mb-6 text-2xl font-bold">When We're Open</h2>
+            <h2 style={{ color: t.textPrimary }} className="mb-6 text-2xl font-bold">When We&apos;re Open</h2>
             <div className="space-y-2">
               {c.hours.map((h) => (
                 <div key={h.day} className="flex justify-between border-b pb-2 text-sm" style={{ borderColor: t.border }}>
@@ -311,7 +297,7 @@ export function ContactSection({ c, t, p }: Ctx) {
               </div>
               <div className="mt-8 flex flex-wrap gap-3">
                 {c.cta.payBtn && c.cta.paymentLink && (
-                  <button onClick={p.onPay} style={{ background: t.accent, color: t.accentText }} className="rounded-full px-7 py-2.5 text-sm font-bold uppercase tracking-wider">Pay Online</button>
+                  <button onClick={p.onPay} style={{ background: t.accent, color: t.accentText }} className="rounded-full px-7 py-2.5 text-sm font-bold uppercase tracking-wider">Pay bill</button>
                 )}
                 {c.cta.reviewBtn && c.cta.reviewLink && (
                   <button onClick={p.onReview} style={{ borderColor: t.accent, color: t.accent }} className="rounded-full border-2 px-7 py-2.5 text-sm font-bold uppercase tracking-wider">Write a Review</button>

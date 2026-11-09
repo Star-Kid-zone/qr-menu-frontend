@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeader } from '@/components/ui/PageHeader';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -9,13 +10,12 @@ import {
   PiBuildingBold,
   PiChartLineUpBold,
   PiUserListBold,
-  PiArrowClockwiseBold,
 } from 'react-icons/pi';
 import {
   superadminService,
   type PlatformOverview,
 } from '@/services/superadmin.service';
-import { Badge, Button } from '@/components/ui';
+import { Button, buttonVariants } from '@/components/ui';
 import { routes } from '@/config/routes';
 import { fadeIn, fadeInUp, staggerContainer } from '@/lib/motion';
 import { getApiErrorMessage } from '@/utils/errors';
@@ -28,6 +28,10 @@ export function SuperadminDashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const reduceMotion = useReducedMotion();
 
+  const handleLoadError = useCallback((err: unknown) => {
+    setError(getApiErrorMessage(err, 'Failed to load platform overview'));
+  }, []);
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -35,15 +39,20 @@ export function SuperadminDashboardPage() {
       const res = await superadminService.getOverview();
       setData(res);
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Failed to load platform overview'));
+      handleLoadError(err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [handleLoadError]);
 
+  // Initial load (`loading` starts true, `error` null); fetchData handles "Try again".
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    superadminService
+      .getOverview()
+      .then(setData)
+      .catch(handleLoadError)
+      .finally(() => setLoading(false));
+  }, [handleLoadError]);
 
   if (loading) return null;
   if (error || !data) {
@@ -64,36 +73,20 @@ export function SuperadminDashboardPage() {
       animate="visible"
       variants={fadeIn}
     >
-      <div className="flex shrink-0 flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Badge tone="success">Platform Live</Badge>
-            <span className="text-caption uppercase tracking-wide text-muted-foreground">Pulse Monitor</span>
-          </div>
-          <h1 className="text-display text-foreground">
-            Infrastructure Overview
-          </h1>
-          <p className="text-body max-w-2xl text-muted-foreground">
-            Real-time telemetry across all tenant workspaces, user accounts, and global traffic patterns.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Button
-            variant="secondary"
-            size="icon"
-            onClick={fetchData}
-            aria-label="Refresh platform data"
-            title="Refresh data"
-          >
-            <PiArrowClockwiseBold className="size-4" />
-          </Button>
-          <Link href={routes.superadmin.analytics}>
-            <Button>Deep analytics</Button>
-          </Link>
-        </div>
-      </div>
-
+      <PageHeader
+        title="Platform overview"
+        description="How many restaurants, websites and guest visits the platform has."
+        actions={
+          <>
+            <Button variant="secondary" onClick={fetchData}>
+              Refresh
+            </Button>
+            <Link href={routes.superadmin.analytics} className={buttonVariants({ variant: "primary" })}>
+              Open analytics
+            </Link>
+          </>
+        }
+      />
       <motion.div
         className="grid shrink-0 gap-4 sm:grid-cols-2 lg:grid-cols-4"
         initial={reduceMotion ? false : 'hidden'}
@@ -117,9 +110,9 @@ export function SuperadminDashboardPage() {
           <PlatformMetric
             title="Websites"
             value={data.workspaces.total}
-            sub="Global deployments"
+            sub="Restaurant websites"
             details={[
-              { label: 'Public slugs', value: data.workspaces.with_public_slug },
+              { label: 'With a web address', value: data.workspaces.with_public_slug },
             ]}
             icon={<PiGlobeBold className="size-5" />}
           />
@@ -128,7 +121,7 @@ export function SuperadminDashboardPage() {
           <PlatformMetric
             title="Businesses"
             value={data.businesses.total}
-            sub="Registered entities"
+            sub="Restaurant businesses"
             details={[
               { label: 'Active', value: data.businesses.active },
             ]}
@@ -137,7 +130,7 @@ export function SuperadminDashboardPage() {
         </motion.div>
         <motion.div variants={fadeInUp}>
           <PlatformMetric
-            title="Gross Traffic"
+            title="Guest visits"
             value={data.analytics_in_period.total_events}
             sub="Activity in period"
             details={[
@@ -151,13 +144,13 @@ export function SuperadminDashboardPage() {
       <div className="min-h-0 flex-1 overflow-auto">
         <div className="grid gap-4 md:grid-cols-2">
           <QuickActionCard
-            title="Account Directory"
+            title="Restaurants"
             description="Drill into specific user profiles, manage tenant workspaces, and verify account security status."
             href={routes.superadmin.users}
             icon={<PiUserListBold className="size-5" />}
           />
           <QuickActionCard
-            title="Global Analytics"
+            title="Analytics"
             description="Visualize cross-tenant performance, identify top-performing accounts, and monitor system-wide conversion trends."
             href={routes.superadmin.analytics}
             icon={<PiChartLineUpBold className="size-5" />}

@@ -1,13 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useId, useState } from "react";
 import { type GoogleReviewRecord } from "@/services/workspace.service";
+import { Modal } from "@/components/Modal";
 import { Button } from "@/components/ui/button";
-import {
-  PiChatCircleTextBold,
-  PiSparkleBold,
-  PiXBold,
-} from "react-icons/pi";
+import { ModalFooter } from "@/components/ui/ModalFooter";
+import { Notice } from "@/components/ui/Notice";
 import { StarRating } from "./StarRating";
 import { AUTO_REPLY_TONE_OPTIONS } from "../types";
 
@@ -36,111 +34,104 @@ export function ReplyModal({
   submittingReply,
   onSubmitReply,
 }: ReplyModalProps) {
+  const replyId = useId();
+  const toneId = useId();
+  // Replies are public on Google, so sending takes a second, explicit click.
+  const [confirming, setConfirming] = useState(false);
+
+  // A different review starts back at the editing step (adjusted during render).
+  const reviewId = selectedReview?.id;
+  const [confirmingFor, setConfirmingFor] = useState(reviewId);
+  if (confirmingFor !== reviewId) {
+    setConfirmingFor(reviewId);
+    setConfirming(false);
+  }
+
   if (!selectedReview) return null;
 
+  const footer = confirming ? (
+    <ModalFooter>
+      <Button type="button" variant="secondary" onClick={() => setConfirming(false)} disabled={submittingReply}>
+        Back
+      </Button>
+      <Button type="button" variant="primary" loading={submittingReply} onClick={onSubmitReply}>
+        Post reply
+      </Button>
+    </ModalFooter>
+  ) : (
+    <ModalFooter>
+      <Button type="button" variant="secondary" onClick={onClose}>
+        Cancel
+      </Button>
+      <Button type="button" variant="primary" onClick={() => setConfirming(true)} disabled={!replyText.trim()}>
+        Send reply
+      </Button>
+    </ModalFooter>
+  );
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
-        <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-3.5">
-          <div className="flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <PiChatCircleTextBold size={16} />
-            </div>
-            <h3 className="text-sm font-bold text-foreground">
-              Reply to {selectedReview.authorName}
-            </h3>
+    <Modal isOpen onClose={onClose} title={`Reply to ${selectedReview.authorName}`} maxWidth="max-w-lg" footer={footer}>
+      <div className="space-y-4">
+        <figure className="rounded-lg bg-muted/50 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <figcaption className="text-body-medium text-foreground">{selectedReview.authorName}</figcaption>
+            <StarRating rating={selectedReview.rating} />
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex size-7 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted"
-          >
-            <PiXBold size={14} />
-          </button>
-        </div>
+          {selectedReview.text && (
+            <blockquote className="mt-2 text-body text-muted-foreground">{selectedReview.text}</blockquote>
+          )}
+        </figure>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-5 space-y-4">
-          {/* Review summary */}
-          <div className="rounded-xl border border-border/70 bg-muted/30 p-3 text-xs">
-            <div className="flex items-center justify-between mb-1">
-              <span className="font-bold text-foreground">{selectedReview.authorName}</span>
-              <StarRating rating={selectedReview.rating} />
-            </div>
-            {selectedReview.text && (
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                &ldquo;{selectedReview.text}&rdquo;
-              </p>
-            )}
-          </div>
-
-          {/* AI Generate */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-                <PiSparkleBold size={14} className="text-primary" />
-                Generate with Gemini AI
-              </label>
-              <select
-                value={draftTone}
-                onChange={(e) => setDraftTone(e.target.value)}
-                className="rounded-md border border-border bg-background px-2 py-1 text-[11px] font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+        {confirming ? (
+          <Notice tone="info" title="This reply will be public on Google">
+            Anyone who reads this review will see it. You can edit or delete it later from your Google Business profile.
+          </Notice>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="min-w-0 flex-1 space-y-2">
+                <label htmlFor={toneId} className="block text-body-medium text-foreground">
+                  Tone for a suggested reply
+                </label>
+                <select
+                  id={toneId}
+                  value={draftTone}
+                  onChange={(e) => setDraftTone(e.target.value)}
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-body text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                >
+                  {AUTO_REPLY_TONE_OPTIONS.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                loading={generatingAi}
+                onClick={() => onGenerateAiReply(selectedReview, draftTone)}
               >
-                {AUTO_REPLY_TONE_OPTIONS.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
+                {replyText ? "Suggest another" : "Suggest a reply"}
+              </Button>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              loading={generatingAi}
-              onClick={() => onGenerateAiReply(selectedReview, draftTone)}
-              className="w-full text-xs font-semibold border-primary/30 text-primary hover:bg-primary/10"
-            >
-              {replyText ? "Regenerate Draft" : "Generate AI Draft"}
-            </Button>
-          </div>
 
-          {/* Textarea */}
-          <div>
-            <label className="block text-xs font-semibold text-foreground mb-1.5">
-              Your Reply
-            </label>
-            <textarea
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              rows={4}
-              placeholder="Write your response to this customer..."
-              className="w-full rounded-lg border border-border bg-background p-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-        </div>
-
-        <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border px-5 py-3.5 bg-muted/20">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onClose}
-            disabled={submittingReply}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            loading={submittingReply}
-            onClick={onSubmitReply}
-            disabled={!replyText.trim()}
-          >
-            Send Reply
-          </Button>
-        </div>
+            <div className="space-y-2">
+              <label htmlFor={replyId} className="block text-body-medium text-foreground">
+                Your reply
+              </label>
+              <textarea
+                id={replyId}
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                rows={5}
+                className="w-full rounded-md border border-input bg-background p-3 text-body text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              />
+              <p className="text-caption text-muted-foreground">Edit the suggestion as much as you like before sending.</p>
+            </div>
+          </>
+        )}
       </div>
-    </div>
+    </Modal>
   );
 }

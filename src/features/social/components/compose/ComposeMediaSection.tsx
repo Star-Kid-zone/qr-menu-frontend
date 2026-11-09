@@ -35,9 +35,9 @@ export function ComposeMediaSection({
   platforms,
 }: ComposeMediaSectionProps) {
   return (
-    <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-card via-card to-card/95 p-5 shadow-xs transition-all hover:border-primary/30">
+    <div className="rounded-2xl border border-border/80 bg-gradient-to-b from-card via-card to-card/95 p-6 shadow-xs transition-all hover:border-primary/30">
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/40">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <div className="flex size-7 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground font-black text-xs shadow-md shadow-primary/25 shrink-0">
             01
           </div>
@@ -45,13 +45,13 @@ export function ComposeMediaSection({
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
               <span>Media Asset</span>
               {activePoster && (
-                <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold">
-                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="flex items-center gap-1 rounded-full bg-success/10 text-success border border-success/20 px-2 py-0.5 text-caption font-bold">
+                  <span className="size-1.5 rounded-full bg-success animate-pulse" />
                   Selected
                 </span>
               )}
             </h3>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-caption text-muted-foreground">
               Photo, promotional banner, or 9:16 vertical video reel
             </p>
           </div>
@@ -59,7 +59,7 @@ export function ComposeMediaSection({
 
         <div className="flex items-center gap-2">
           <label className="cursor-pointer">
-            <span className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-primary/30 bg-primary/10 px-3 text-xs font-semibold text-primary shadow-xs transition hover:bg-primary hover:text-primary-foreground active:scale-95">
+            <span className="inline-flex h-8 items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-3 text-xs font-semibold text-primary shadow-xs transition hover:bg-primary hover:text-primary-foreground active:scale-95">
               {uploading ? (
                 <Spinner size="sm" />
               ) : (
@@ -92,7 +92,7 @@ export function ComposeMediaSection({
         {activePoster ? (
           <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-br from-card/90 via-muted/20 to-card p-4 shadow-sm group">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5 min-w-0">
+              <div className="flex items-center gap-3 min-w-0">
                 {/* Thumbnail */}
                 <div className="relative size-20 sm:size-24 shrink-0 overflow-hidden rounded-2xl border border-border bg-neutral-950 shadow-md group-hover:scale-[1.02] transition-transform duration-300">
                   {activePoster.isVideo ? (
@@ -123,22 +123,22 @@ export function ComposeMediaSection({
                 </div>
 
                 {/* Metadata */}
-                <div className="min-w-0 space-y-1.5">
+                <div className="min-w-0 space-y-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-bold text-foreground text-sm truncate max-w-sm">
                       {activePoster.title}
                     </p>
                     {activePoster.isVideo ? (
-                      <span className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-red-500/20 text-pink-400 border border-pink-500/30 px-2.5 py-0.5 text-[9px] font-black tracking-wide shadow-xs">
+                      <span className="flex items-center gap-2 rounded-full bg-gradient-to-r from-primary/20 via-pink-500/20 to-destructive/20 text-pink-400 border border-pink-500/30 px-3 py-0.5 text-caption font-black tracking-wide shadow-xs">
                         <PiVideoFill size={11} className="text-pink-400 animate-pulse" />
                         9:16 REEL / VIDEO
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 text-[9px] font-bold">
+                      <span className="flex items-center gap-1 rounded-full bg-success/10 text-success border border-success/20 px-3 py-0.5 text-caption font-bold">
                         <PiCheckCircleBold size={11} /> PHOTO READY
                       </span>
                     )}
-                    <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground border border-border">
+                    <span className="rounded-md bg-muted px-2 py-0.5 text-caption font-semibold text-muted-foreground border border-border">
                       {activePoster.type}
                     </span>
                   </div>
@@ -154,14 +154,14 @@ export function ComposeMediaSection({
                   )}
 
                   {/* Quick Platform Readiness Chips */}
-                  <div className="flex items-center gap-1.5 pt-1 flex-wrap">
-                    <span className="text-[10px] font-semibold text-muted-foreground mr-1">
+                  <div className="flex items-center gap-2 pt-1 flex-wrap">
+                    <span className="text-caption font-semibold text-muted-foreground mr-1">
                       Ready for:
                     </span>
                     {platforms.map((p) => (
                       <span
                         key={p.id}
-                        className="inline-flex items-center gap-1 rounded-md bg-background px-2 py-0.5 text-[10px] font-semibold border border-border/80 text-foreground/80 shadow-2xs"
+                        className="inline-flex items-center gap-1 rounded-md bg-background px-2 py-0.5 text-caption font-semibold border border-border/80 text-foreground/80 shadow-2xs"
                       >
                         <span
                           className="size-1.5 rounded-full"
@@ -192,7 +192,7 @@ export function ComposeMediaSection({
                     setWeeklyPosterId("");
                     setPlatformAssetId("");
                   }}
-                  className="flex size-8 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30 transition-colors"
+                  className="flex size-8 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-colors"
                   title="Remove media"
                 >
                   <PiTrashBold className="size-4" />

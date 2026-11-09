@@ -50,6 +50,14 @@ export const menuService = {
   /** 1-tap sold-out toggle — flips availability; the backend auto-schedules revival at end of business day when marking sold out. */
   toggleAvailability: (id: string | number) => api.patch(`/menu/${id}/toggle-availability`),
 
+  /** One request, scoped to the caller's own dishes. Note: `availability` here does not set the sold-out revival schedule, so use toggleAvailability for that. */
+  bulkUpdate: (itemIds: (string | number)[], update: { category?: string; popular?: boolean }) =>
+    api.patch<{ count: number }>('/menu/bulk', { itemIds, update }),
+
+  /** Deletes many dishes (and their media) in one request, scoped to the caller's own dishes. Max 200 ids per call. */
+  bulkDelete: (itemIds: (string | number)[]) =>
+    api.delete<{ count: number }>('/menu/bulk', { data: { itemIds } }),
+
   bulkPriceAdjust: (payload: { itemIds?: (string | number)[]; category?: string; percent?: number; delta?: number; roundTo?: number }) =>
     api.patch<{ message: string; count: number }>('/menu/bulk-price-adjust', payload),
 

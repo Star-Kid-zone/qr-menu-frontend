@@ -21,9 +21,9 @@ export function PlatformMetric({
   highlight = false,
 }: PlatformMetricProps) {
   return (
-    <Card className="p-5">
+    <Card className="p-6">
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-caption uppercase tracking-wide text-muted-foreground">{title}</p>
+        <p className="text-caption text-muted-foreground">{title}</p>
         <div
           className={`flex size-9 items-center justify-center rounded-lg ${
             highlight ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'

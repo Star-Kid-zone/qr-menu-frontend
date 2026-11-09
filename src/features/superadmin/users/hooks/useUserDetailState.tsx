@@ -15,6 +15,8 @@ import { toast } from '@/components/ui';
 import { setStoredUserRole, setImpersonationSession } from '@/utils/storage';
 import type { UserDetailTabId, BusinessFormData, PaymentFormData, WorkspaceFormData } from '../types';
 
+const INVALID_USER_ERROR = 'Invalid user identification token.';
+
 interface UseUserDetailStateProps {
   userId: number;
 }
@@ -29,7 +31,9 @@ export function useUserDetailState({ userId }: UseUserDetailStateProps) {
   const [feedbackSubTab, setFeedbackSubTab] = useState<'google' | 'faqs'>('google');
   const [loading, setLoading] = useState(true);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() =>
+    Number.isFinite(userId) ? null : INVALID_USER_ERROR
+  );
 
   const [impersonating, setImpersonating] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(false);
@@ -86,57 +90,69 @@ export function useUserDetailState({ userId }: UseUserDetailStateProps) {
   });
   const [workspaceSaving, setWorkspaceSaving] = useState(false);
 
+  const applyDetail = useCallback((res: UserDetailResponse) => {
+    setDetail(res);
+
+    // Seed business edit form
+    const primaryBiz = res.businesses?.[0];
+    if (primaryBiz) {
+      setBusinessForm({
+        businessName: primaryBiz.businessName || '',
+        phone: primaryBiz.phone || '',
+        whatsappNumber: primaryBiz.whatsappNumber || '',
+        address: primaryBiz.address || '',
+        websiteUrl: primaryBiz.websiteUrl || '',
+        locationUrl: primaryBiz.locationUrl || '',
+        businessHours: primaryBiz.businessHours || '',
+      });
+    }
+
+    // Seed payment & review form and workspace features
+    const primaryWs = res.workspaces?.[0];
+    if (primaryWs) {
+      setPaymentForm({
+        paymentType: primaryWs.paymentType || 'url',
+        paymentLink: primaryWs.paymentLink || '',
+        reviewLink: primaryWs.reviewLink || '',
+      });
+      setWorkspaceForm({
+        specialOfferStatus: Boolean(primaryWs.specialOfferStatus),
+        menubtnStatus: Boolean(primaryWs.menubtnStatus),
+        paybtnStatus: Boolean(primaryWs.paybtnStatus),
+        reviewbtnStatus: Boolean(primaryWs.reviewbtnStatus),
+        socialApprovalRequired: Boolean(primaryWs.socialApprovalRequired),
+        announcementEnabled: Boolean(primaryWs.announcementEnabled),
+        announcementText: primaryWs.announcementText || '',
+      });
+    }
+  }, []);
+
+  const handleDetailError = useCallback((e: unknown) => {
+    console.error(e);
+    setError('Account not found or access restricted.');
+    setDetail(null);
+  }, []);
+
   const loadDetail = useCallback(async () => {
     if (!Number.isFinite(userId)) {
-      setError('Invalid user identification token.');
+      setError(INVALID_USER_ERROR);
       return;
     }
     try {
       setLoading(true);
       setError(null);
-      const res = await superadminService.getUser(userId);
-      setDetail(res);
-
-      // Seed business edit form
-      const primaryBiz = res.businesses?.[0];
-      if (primaryBiz) {
-        setBusinessForm({
-          businessName: primaryBiz.businessName || '',
-          phone: primaryBiz.phone || '',
-          whatsappNumber: primaryBiz.whatsappNumber || '',
-          address: primaryBiz.address || '',
-          websiteUrl: primaryBiz.websiteUrl || '',
-          locationUrl: primaryBiz.locationUrl || '',
-          businessHours: primaryBiz.businessHours || '',
-        });
-      }
-
-      // Seed payment & review form and workspace features
-      const primaryWs = res.workspaces?.[0];
-      if (primaryWs) {
-        setPaymentForm({
-          paymentType: primaryWs.paymentType || 'url',
-          paymentLink: primaryWs.paymentLink || '',
-          reviewLink: primaryWs.reviewLink || '',
-        });
-        setWorkspaceForm({
-          specialOfferStatus: Boolean(primaryWs.specialOfferStatus),
-          menubtnStatus: Boolean(primaryWs.menubtnStatus),
-          paybtnStatus: Boolean(primaryWs.paybtnStatus),
-          reviewbtnStatus: Boolean(primaryWs.reviewbtnStatus),
-          socialApprovalRequired: Boolean(primaryWs.socialApprovalRequired),
-          announcementEnabled: Boolean(primaryWs.announcementEnabled),
-          announcementText: primaryWs.announcementText || '',
-        });
-      }
+      applyDetail(await superadminService.getUser(userId));
     } catch (e) {
-      console.error(e);
-      setError('Account not found or access restricted.');
-      setDetail(null);
+      handleDetailError(e);
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, applyDetail, handleDetailError]);
+
+  const handleAnalyticsError = useCallback((e: unknown) => {
+    console.error(e);
+    setTenantAnalytics(null);
+  }, []);
 
   const loadAnalytics = useCallback(async () => {
     if (!Number.isFinite(userId)) return;
@@ -145,22 +161,56 @@ export function useUserDetailState({ userId }: UseUserDetailStateProps) {
       const res = await superadminService.getTenantAnalytics(userId, range);
       setTenantAnalytics(res);
     } catch (e) {
-      console.error(e);
-      setTenantAnalytics(null);
+      handleAnalyticsError(e);
     } finally {
       setLoadingAnalytics(false);
     }
-  }, [userId, range]);
+  }, [userId, range, handleAnalyticsError]);
 
-  useEffect(() => {
-    loadDetail();
-  }, [loadDetail]);
-
-  useEffect(() => {
-    if (activeTab === 'analytics' && detail) {
-      loadAnalytics();
+  // Another user resets the loading/error state (adjusted during render);
+  // the effect below then fetches. The initial state already covers the first user.
+  const [loadedUserId, setLoadedUserId] = useState(userId);
+  if (!Object.is(loadedUserId, userId)) {
+    setLoadedUserId(userId);
+    if (!Number.isFinite(userId)) {
+      setError(INVALID_USER_ERROR);
+    } else {
+      setLoading(true);
+      setError(null);
     }
-  }, [activeTab, detail, loadAnalytics]);
+  }
+
+  useEffect(() => {
+    if (!Number.isFinite(userId)) return;
+    superadminService
+      .getUser(userId)
+      .then(applyDetail)
+      .catch(handleDetailError)
+      .finally(() => setLoading(false));
+  }, [userId, applyDetail, handleDetailError]);
+
+  // Analytics reload whenever the tab, user, range or detail changes while the
+  // analytics tab is open; the loading flag is raised during render.
+  const shouldLoadAnalytics = activeTab === 'analytics' && !!detail && Number.isFinite(userId);
+  const [analyticsInputs, setAnalyticsInputs] = useState({ activeTab, detail, userId, range });
+  if (
+    analyticsInputs.activeTab !== activeTab ||
+    analyticsInputs.detail !== detail ||
+    !Object.is(analyticsInputs.userId, userId) ||
+    analyticsInputs.range !== range
+  ) {
+    setAnalyticsInputs({ activeTab, detail, userId, range });
+    if (shouldLoadAnalytics) setLoadingAnalytics(true);
+  }
+
+  useEffect(() => {
+    if (!shouldLoadAnalytics) return;
+    superadminService
+      .getTenantAnalytics(userId, range)
+      .then(setTenantAnalytics)
+      .catch(handleAnalyticsError)
+      .finally(() => setLoadingAnalytics(false));
+  }, [shouldLoadAnalytics, activeTab, detail, userId, range, handleAnalyticsError]);
 
   // Freeze / Unfreeze user account
   const handleToggleStatus = async () => {
@@ -181,11 +231,11 @@ export function useUserDetailState({ userId }: UseUserDetailStateProps) {
           : prev
       );
       toast.success(
-        `Account has been ${newActiveState ? 'activated' : 'frozen'} successfully.`
+        newActiveState ? 'Account reactivated' : 'Account suspended'
       );
     } catch (e) {
       console.error(e);
-      toast.error('Failed to change account status.');
+      toast.error("Couldn't change the account status. Try again.");
     } finally {
       setStatusUpdating(false);
     }

@@ -9,6 +9,7 @@ import {
   PromptCategorySummary,
 } from "@/services/superadmin.service";
 import { routes } from "@/config/routes";
+import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import type { PromptFormData } from "../types";
 
 const INITIAL_FORM: PromptFormData = {
@@ -26,8 +27,83 @@ const INITIAL_FORM: PromptFormData = {
   isFavorite: false,
 };
 
+interface PromptLibrary {
+  prompts: PlatformPrompt[];
+  categories: PromptCategorySummary[];
+}
+
+interface PromptFilters {
+  selectedCategory: string;
+  selectedMediaType: string;
+  favoritesOnly: boolean;
+  searchQuery: string;
+}
+
+// The prompts endpoint has answered with a bare array, `{ data }` or `{ prompts }`; accept each.
+function readPromptList(res: unknown): PlatformPrompt[] {
+  if (Array.isArray(res)) return res;
+  if (res && typeof res === "object") {
+    const { data, prompts } = res as { data?: unknown; prompts?: unknown };
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(prompts)) return prompts;
+  }
+  return [];
+}
+
+function readCategories(res: unknown): PromptCategorySummary[] {
+  const categories =
+    res && typeof res === "object" ? (res as { categories?: unknown }).categories : undefined;
+  return Array.isArray(categories) ? categories : [];
+}
+
+async function fetchPromptLibrary({
+  selectedCategory,
+  selectedMediaType,
+  favoritesOnly,
+  searchQuery,
+}: PromptFilters): Promise<PromptLibrary> {
+  const res = await superadminService.listPrompts({
+    category: selectedCategory !== "all" ? selectedCategory : undefined,
+    mediaType: selectedMediaType !== "all" ? selectedMediaType : undefined,
+    isFavorite: favoritesOnly ? true : undefined,
+    search: searchQuery.trim() || undefined,
+  });
+
+  const list = readPromptList(res);
+
+  let cats = readCategories(res);
+  if (cats.length === 0 && list.length > 0) {
+    const catMap = new Map<string, number>();
+    list.forEach((p) => {
+      if (p.category) {
+        catMap.set(p.category, (catMap.get(p.category) || 0) + 1);
+      }
+    });
+    cats = Array.from(catMap.entries()).map(([category, count]) => ({ category, count }));
+  }
+
+  // If library is completely empty, auto-seed with curated defaults
+  if (
+    list.length === 0 &&
+    !searchQuery.trim() &&
+    selectedCategory === "all" &&
+    selectedMediaType === "all" &&
+    !favoritesOnly
+  ) {
+    const seededList = readPromptList(await superadminService.seedDefaultPrompts());
+
+    if (seededList.length > 0) {
+      const reloaded = await superadminService.listPrompts();
+      return { prompts: seededList, categories: readCategories(reloaded) };
+    }
+  }
+
+  return { prompts: list, categories: cats };
+}
+
 export function usePromptsState() {
   const router = useRouter();
+  const { confirm, confirmDialog } = useConfirmDialog();
   const [prompts, setPrompts] = useState<PlatformPrompt[]>([]);
   const [categories, setCategories] = useState<PromptCategorySummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,76 +127,53 @@ export function usePromptsState() {
   const [modalForm, setModalForm] = useState<PromptFormData>(INITIAL_FORM);
   const [uploadingRefImage, setUploadingRefImage] = useState(false);
 
+  const applyLibrary = useCallback((library: PromptLibrary) => {
+    setPrompts(library.prompts);
+    setCategories(library.categories);
+  }, []);
+
+  const handleLoadError = useCallback((err: unknown) => {
+    console.error(err);
+    toast.error("Failed to load prompts");
+  }, []);
+
   // Load prompts
   const loadPrompts = useCallback(async () => {
     try {
       setLoading(true);
-      const res: any = await superadminService.listPrompts({
-        category: selectedCategory !== "all" ? selectedCategory : undefined,
-        mediaType: selectedMediaType !== "all" ? selectedMediaType : undefined,
-        isFavorite: favoritesOnly ? true : undefined,
-        search: searchQuery.trim() || undefined,
-      });
-
-      const list: PlatformPrompt[] = Array.isArray(res)
-        ? res
-        : Array.isArray(res?.data)
-        ? res.data
-        : Array.isArray(res?.prompts)
-        ? res.prompts
-        : [];
-
-      let cats: PromptCategorySummary[] = Array.isArray(res?.categories) ? res.categories : [];
-      if (cats.length === 0 && list.length > 0) {
-        const catMap = new Map<string, number>();
-        list.forEach((p) => {
-          if (p.category) {
-            catMap.set(p.category, (catMap.get(p.category) || 0) + 1);
-          }
-        });
-        cats = Array.from(catMap.entries()).map(([category, count]) => ({ category, count }));
-      }
-
-      // If library is completely empty, auto-seed with curated defaults
-      if (
-        list.length === 0 &&
-        !searchQuery.trim() &&
-        selectedCategory === "all" &&
-        selectedMediaType === "all" &&
-        !favoritesOnly
-      ) {
-        const seeded: any = await superadminService.seedDefaultPrompts();
-        const seededList = Array.isArray(seeded)
-          ? seeded
-          : Array.isArray(seeded?.data)
-          ? seeded.data
-          : Array.isArray(seeded?.prompts)
-          ? seeded.prompts
-          : [];
-
-        if (seededList.length > 0) {
-          setPrompts(seededList);
-          const reloaded: any = await superadminService.listPrompts();
-          const reloadedCats = Array.isArray(reloaded?.categories) ? reloaded.categories : [];
-          setCategories(reloadedCats);
-          setLoading(false);
-          return;
-        }
-      }
-
-      setPrompts(list);
-      setCategories(cats);
+      applyLibrary(
+        await fetchPromptLibrary({ selectedCategory, selectedMediaType, favoritesOnly, searchQuery })
+      );
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to load prompts");
+      handleLoadError(err);
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory, selectedMediaType, favoritesOnly, searchQuery]);
+  }, [selectedCategory, selectedMediaType, favoritesOnly, searchQuery, applyLibrary, handleLoadError]);
+
+  // Changing a filter shows the loading state again (adjusted during render);
+  // the effect below then reloads. `loading` starts true for the first load.
+  const [loadedFilters, setLoadedFilters] = useState({
+    selectedCategory,
+    selectedMediaType,
+    favoritesOnly,
+  });
+  if (
+    loadedFilters.selectedCategory !== selectedCategory ||
+    loadedFilters.selectedMediaType !== selectedMediaType ||
+    loadedFilters.favoritesOnly !== favoritesOnly
+  ) {
+    setLoadedFilters({ selectedCategory, selectedMediaType, favoritesOnly });
+    setLoading(true);
+  }
 
   useEffect(() => {
-    loadPrompts();
-  }, [selectedCategory, selectedMediaType, favoritesOnly]);
+    fetchPromptLibrary({ selectedCategory, selectedMediaType, favoritesOnly, searchQuery })
+      .then(applyLibrary)
+      .catch(handleLoadError)
+      .finally(() => setLoading(false));
+    // searchQuery is read but not a trigger: the debounced effect below reloads on typing.
+  }, [selectedCategory, selectedMediaType, favoritesOnly, applyLibrary, handleLoadError]);
 
   // Debounced search
   useEffect(() => {
@@ -188,7 +241,12 @@ export function usePromptsState() {
   // Delete Prompt
   const handleDeletePrompt = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this prompt from the library?")) return;
+    const confirmed = await confirm({
+      title: "Delete prompt?",
+      description: "Are you sure you want to delete this prompt from the library?",
+      confirmLabel: "Delete prompt",
+    });
+    if (!confirmed) return;
     try {
       await superadminService.deletePrompt(id);
       setPrompts((prev) => prev.filter((p) => p.id !== id));
@@ -285,15 +343,17 @@ export function usePromptsState() {
 
   // Seed / Reset Defaults
   const handleResetDefaults = async () => {
-    if (
-      !confirm(
-        "This will load the official curated restaurant culinary prompts and reference images into your library. Proceed?"
-      )
-    )
-      return;
+    const confirmed = await confirm({
+      title: "Load default prompts?",
+      description:
+        "This will load the official curated restaurant culinary prompts and reference images into your library. Proceed?",
+      confirmLabel: "Load prompts",
+      tone: "default",
+    });
+    if (!confirmed) return;
     try {
       setActionLoading(true);
-      const res: any = await superadminService.seedDefaultPrompts(true);
+      const res = await superadminService.seedDefaultPrompts(true);
       toast.success(res?.message || "Curated default prompts loaded!");
       loadPrompts();
     } catch {
@@ -335,5 +395,6 @@ export function usePromptsState() {
     handleUploadRefImage,
     handleSavePrompt,
     handleResetDefaults,
+    confirmDialog,
   };
 }

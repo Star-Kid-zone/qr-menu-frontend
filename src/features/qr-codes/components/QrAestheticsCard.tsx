@@ -38,14 +38,14 @@ export function QrAestheticsCard({
   onRandomizeColors,
 }: QrAestheticsCardProps) {
   return (
-    <div className="rounded-xl border border-border bg-card p-3.5 shadow-sm sm:p-4">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-4">
       <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
             <PiPaletteBold size={14} />
           </div>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Aesthetics</p>
+            <p className="text-caption font-bold text-primary">Aesthetics</p>
             <p className="text-sm font-bold text-foreground">Patterns &amp; Colors</p>
           </div>
         </div>
@@ -54,7 +54,7 @@ export function QrAestheticsCard({
         <button
           type="button"
           onClick={onRandomizeColors}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-semibold text-foreground shadow-2xs transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary active:scale-95 cursor-pointer"
+          className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1 text-xs font-semibold text-foreground shadow-2xs transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary active:scale-95 cursor-pointer"
           title="Randomly select colors for background, data pattern, and corner eyes"
         >
           <PiShuffleBold size={13} className="text-primary" />
@@ -69,10 +69,10 @@ export function QrAestheticsCard({
           <div className="flex items-center justify-between">
             <div>
               <span className="text-xs font-semibold text-foreground">Data Pattern</span>
-              <p className="text-[10px] text-muted-foreground">Module shape</p>
+              <p className="text-caption text-muted-foreground">Module shape</p>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-muted-foreground font-medium">Color</span>
+            <div className="flex items-center gap-2">
+              <span className="text-caption text-muted-foreground font-medium">Color</span>
               <input
                 type="color"
                 value={moduleColor}
@@ -80,7 +80,7 @@ export function QrAestheticsCard({
                 className="h-6 w-8 cursor-pointer rounded border border-border p-0"
                 title="Data module color"
               />
-              <span className="font-mono text-[10px] text-muted-foreground w-12 hidden sm:inline">
+              <span className="font-mono text-caption text-muted-foreground w-12 hidden sm:inline">
                 {moduleColor}
               </span>
             </div>
@@ -92,7 +92,7 @@ export function QrAestheticsCard({
                 type="button"
                 onClick={() => setModuleStyle(style.value)}
                 className={cn(
-                  "rounded-md border py-1.5 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98]",
+                  "rounded-md border py-2 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98]",
                   moduleStyle === style.value
                     ? "border-primary bg-primary text-primary-foreground shadow-sm"
                     : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:bg-muted"
@@ -109,10 +109,10 @@ export function QrAestheticsCard({
           <div className="flex items-center justify-between">
             <div>
               <span className="text-xs font-semibold text-foreground">Corner Eye Pattern</span>
-              <p className="text-[10px] text-muted-foreground">Positioning markers</p>
+              <p className="text-caption text-muted-foreground">Positioning markers</p>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-muted-foreground font-medium">Color</span>
+            <div className="flex items-center gap-2">
+              <span className="text-caption text-muted-foreground font-medium">Color</span>
               <input
                 type="color"
                 value={finderColor}
@@ -120,7 +120,7 @@ export function QrAestheticsCard({
                 className="h-6 w-8 cursor-pointer rounded border border-border p-0"
                 title="Corner eye color"
               />
-              <span className="font-mono text-[10px] text-muted-foreground w-12 hidden sm:inline">
+              <span className="font-mono text-caption text-muted-foreground w-12 hidden sm:inline">
                 {finderColor}
               </span>
             </div>
@@ -132,7 +132,7 @@ export function QrAestheticsCard({
                 type="button"
                 onClick={() => setFinderStyle(style.value)}
                 className={cn(
-                  "rounded-md border py-1.5 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98]",
+                  "rounded-md border py-2 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98]",
                   finderStyle === style.value
                     ? "border-primary bg-primary text-primary-foreground shadow-sm"
                     : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:bg-muted"
@@ -149,7 +149,7 @@ export function QrAestheticsCard({
       <div className="mt-3 flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2">
         <div>
           <p className="text-xs font-semibold text-foreground">Background Color</p>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-caption text-muted-foreground">
             Light backgrounds (#ffffff) provide the highest contrast and scan reliability.
           </p>
         </div>

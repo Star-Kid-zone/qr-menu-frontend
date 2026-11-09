@@ -7,15 +7,19 @@ import {
   Spinner,
   EmptyState,
 } from "@/components/ui";
+import { Modal } from "@/components/Modal";
+import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog";
+import { FormField } from "@/components/ui/FormField";
+import { Input } from "@/components/ui/input";
+import { ModalFooter } from "@/components/ui/ModalFooter";
+import { SearchInput } from "@/components/ui/SearchInput";
+import { Select } from "@/components/ui/Select";
 import {
   PiImagesBold,
   PiCheckCircleBold,
   PiEyeBold,
   PiPaperPlaneTiltBold,
   PiTrashBold,
-  PiMagnifyingGlassBold,
-  PiXBold,
-  PiSpinnerBold,
 } from "react-icons/pi";
 import { cn } from "@/utils/cn";
 import type { PlatformMarketingAsset, IndustryItem } from "../types";
@@ -52,6 +56,18 @@ interface VaultTabProps {
   industries: IndustryItem[];
 }
 
+const TYPE_LABELS: Record<string, string> = {
+  image: "Image",
+  video: "Reel",
+  poster_spec: "Poster layout",
+};
+
+const TARGET_OPTIONS: { value: "all" | "industry" | "selected_tenants"; label: string }[] = [
+  { value: "all", label: "All restaurants" },
+  { value: "industry", label: "By industry" },
+  { value: "selected_tenants", label: "Specific restaurants" },
+];
+
 export function VaultTab({
   vaultStats,
   typeFilter,
@@ -77,133 +93,114 @@ export function VaultTab({
   handleDeleteAsset,
   industries,
 }: VaultTabProps) {
+  const [pendingDelete, setPendingDelete] = React.useState<PlatformMarketingAsset | null>(null);
+  const [deleting, setDeleting] = React.useState(false);
+  const filterButton = (active: boolean) => (active ? "secondary" : "ghost");
+
   return (
     <div className="space-y-6">
-      {/* Quick Metrics Bar */}
+      {/* Quick metrics */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
-        <Card className="p-4 bg-card/60 backdrop-blur-sm border-border">
-          <div className="text-caption text-muted-foreground">Total Assets</div>
-          <div className="text-2xl font-bold mt-1 text-foreground">{vaultStats.total}</div>
+        <Card className="p-4">
+          <div className="text-caption text-muted-foreground">Saved assets</div>
+          <div className="mt-1 text-h3 text-foreground">{vaultStats.total}</div>
         </Card>
-        <Card className="p-4 bg-emerald-500/5 border-emerald-500/20">
-          <div className="text-caption text-emerald-600 dark:text-emerald-400 font-medium">
-            Published to Tenants
-          </div>
-          <div className="text-2xl font-bold mt-1 text-emerald-600 dark:text-emerald-400">
-            {vaultStats.published}
-          </div>
+        <Card className="p-4">
+          <div className="text-caption text-muted-foreground">Sent to restaurants</div>
+          <div className="mt-1 text-h3 text-foreground">{vaultStats.published}</div>
         </Card>
-        <Card className="p-4 bg-card/60 border-border">
-          <div className="text-caption text-muted-foreground">Photos & Graphics</div>
-          <div className="text-2xl font-bold mt-1 text-foreground">{vaultStats.images}</div>
+        <Card className="p-4">
+          <div className="text-caption text-muted-foreground">Photos and graphics</div>
+          <div className="mt-1 text-h3 text-foreground">{vaultStats.images}</div>
         </Card>
-        <Card className="p-4 bg-purple-500/5 border-purple-500/20">
-          <div className="text-caption text-purple-600 dark:text-purple-400 font-medium">
-            Video Reels
-          </div>
-          <div className="text-2xl font-bold mt-1 text-purple-600 dark:text-purple-400">
-            {vaultStats.videos}
-          </div>
+        <Card className="p-4">
+          <div className="text-caption text-muted-foreground">Reels</div>
+          <div className="mt-1 text-h3 text-foreground">{vaultStats.videos}</div>
         </Card>
-        <Card className="p-4 bg-amber-500/5 border-amber-500/20">
-          <div className="text-caption text-amber-600 dark:text-amber-400 font-medium">
-            Layout Blueprints
-          </div>
-          <div className="text-2xl font-bold mt-1 text-amber-600 dark:text-amber-400">
-            {vaultStats.specs}
-          </div>
+        <Card className="p-4">
+          <div className="text-caption text-muted-foreground">Poster layouts</div>
+          <div className="mt-1 text-h3 text-foreground">{vaultStats.specs}</div>
         </Card>
       </div>
 
-      {/* Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-muted/40 p-3 rounded-xl border border-border">
+      {/* Filter bar */}
+      <div className="flex flex-col items-stretch justify-between gap-3 rounded-lg border border-border bg-muted/40 p-3 sm:flex-row sm:items-center">
         <div className="flex items-center gap-2 overflow-x-auto">
-          <Button
-            variant={typeFilter === "all" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setTypeFilter("all")}
-          >
-            All Types
-          </Button>
-          <Button
-            variant={typeFilter === "image" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setTypeFilter("image")}
-          >
-            Images ({vaultStats.images})
-          </Button>
-          <Button
-            variant={typeFilter === "video" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setTypeFilter("video")}
-          >
-            Reels ({vaultStats.videos})
-          </Button>
-          <Button
-            variant={typeFilter === "poster_spec" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setTypeFilter("poster_spec")}
-          >
-            Specs ({vaultStats.specs})
-          </Button>
+          <div role="group" aria-label="Filter by type" className="flex items-center gap-2">
+            <Button variant={filterButton(typeFilter === "all")} size="sm" aria-pressed={typeFilter === "all"} onClick={() => setTypeFilter("all")}>
+              All types
+            </Button>
+            <Button variant={filterButton(typeFilter === "image")} size="sm" aria-pressed={typeFilter === "image"} onClick={() => setTypeFilter("image")}>
+              Images ({vaultStats.images})
+            </Button>
+            <Button variant={filterButton(typeFilter === "video")} size="sm" aria-pressed={typeFilter === "video"} onClick={() => setTypeFilter("video")}>
+              Reels ({vaultStats.videos})
+            </Button>
+            <Button
+              variant={filterButton(typeFilter === "poster_spec")}
+              size="sm"
+              aria-pressed={typeFilter === "poster_spec"}
+              onClick={() => setTypeFilter("poster_spec")}
+            >
+              Poster layouts ({vaultStats.specs})
+            </Button>
+          </div>
 
-          <div className="h-4 w-px bg-border mx-1" />
+          <div className="mx-1 h-4 w-px bg-border" aria-hidden />
 
-          <Button
-            variant={publishedFilter === "all" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setPublishedFilter("all")}
-          >
-            Status: All
-          </Button>
-          <Button
-            variant={publishedFilter === "published" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setPublishedFilter("published")}
-          >
-            Published
-          </Button>
-          <Button
-            variant={publishedFilter === "draft" ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => setPublishedFilter("draft")}
-          >
-            Drafts
-          </Button>
+          <div role="group" aria-label="Filter by status" className="flex items-center gap-2">
+            <Button
+              variant={filterButton(publishedFilter === "all")}
+              size="sm"
+              aria-pressed={publishedFilter === "all"}
+              onClick={() => setPublishedFilter("all")}
+            >
+              Any status
+            </Button>
+            <Button
+              variant={filterButton(publishedFilter === "published")}
+              size="sm"
+              aria-pressed={publishedFilter === "published"}
+              onClick={() => setPublishedFilter("published")}
+            >
+              Sent
+            </Button>
+            <Button
+              variant={filterButton(publishedFilter === "draft")}
+              size="sm"
+              aria-pressed={publishedFilter === "draft"}
+              onClick={() => setPublishedFilter("draft")}
+            >
+              Not sent yet
+            </Button>
+          </div>
         </div>
 
-        <div className="relative min-w-[220px]">
-          <PiMagnifyingGlassBold className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <input
-            type="text"
-            placeholder="Search vault..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
+        <SearchInput
+          aria-label="Search saved assets"
+          placeholder="Search saved assets"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="sm:max-w-xs"
+        />
       </div>
 
-      {/* Assets Grid */}
+      {/* Assets grid */}
       {loadingAssets ? (
         <div className="flex items-center justify-center py-24">
-          <Spinner className="h-8 w-8 text-primary" />
+          <Spinner className="size-8 text-primary" />
         </div>
       ) : filteredAssets.length === 0 ? (
         <EmptyState
-          icon={<PiImagesBold className="h-10 w-10 text-muted-foreground" />}
-          title="No assets found"
-          description="Generate AI pictures, decode flyers, or run browser automation to populate your Vault."
+          icon={<PiImagesBold className="size-10 text-muted-foreground" />}
+          title="No saved assets yet"
+          description="Generate pictures, copy a flyer's layout, or generate with your ChatGPT or Ideogram login to add assets here."
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {filteredAssets.map((asset) => (
-            <Card
-              key={asset.id}
-              className="group relative flex flex-col overflow-hidden border-border bg-card transition-all hover:shadow-lg hover:border-primary/40"
-            >
-              {/* Media Preview Container */}
-              <div className="relative aspect-[4/5] w-full overflow-hidden bg-zinc-950 flex items-center justify-center">
+            <Card key={asset.id} className="group relative flex flex-col overflow-hidden transition-colors hover:border-primary/40">
+              <div className="relative flex aspect-[4/5] w-full items-center justify-center overflow-hidden bg-muted">
                 {asset.type === "video" ? (
                   <video
                     src={asset.mediaUrl}
@@ -216,87 +213,89 @@ export function VaultTab({
                     onMouseOut={(e) => (e.target as HTMLVideoElement).pause()}
                   />
                 ) : (
+                  // eslint-disable-next-line @next/next/no-img-element -- arbitrary asset URLs
                   <img
                     src={asset.thumbnailUrl || asset.mediaUrl}
                     alt={asset.title}
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="h-full w-full object-cover"
                   />
                 )}
 
-                {/* Top Floating Badges */}
-                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                  <span className="rounded-md bg-black/70 px-2 py-0.5 text-[11px] font-semibold text-white uppercase backdrop-blur-md">
-                    {asset.type === "poster_spec" ? "Blueprint" : asset.type}
+                <div className="absolute left-2.5 top-2.5 flex items-center gap-2">
+                  <span className="rounded-md bg-card/90 px-2 py-0.5 text-caption font-medium text-foreground">
+                    {TYPE_LABELS[asset.type] ?? asset.type}
                   </span>
-                  <span className="rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] text-zinc-300 backdrop-blur-md">
+                  <span className="rounded-md bg-card/90 px-2 py-0.5 text-caption text-muted-foreground">
                     {asset.aspectRatio || "4:5"}
                   </span>
                 </div>
 
-                {/* Published Status Pill */}
-                <div className="absolute top-2.5 right-2.5">
+                <div className="absolute right-2.5 top-2.5">
                   {asset.isPublishedToTenants ? (
-                    <span className="flex items-center gap-1 rounded-full bg-emerald-500/90 px-2 py-0.5 text-[10px] font-medium text-white shadow-sm backdrop-blur-md">
-                      <PiCheckCircleBold className="h-3 w-3" />
-                      Published
+                    <span className="flex items-center gap-1 rounded-full bg-success px-2 py-0.5 text-caption font-medium text-success-foreground">
+                      <PiCheckCircleBold className="size-3" aria-hidden />
+                      Sent
                     </span>
                   ) : (
-                    <span className="rounded-full bg-zinc-800/80 px-2 py-0.5 text-[10px] font-medium text-zinc-300 backdrop-blur-md">
-                      Vault Draft
+                    <span className="rounded-full bg-card/90 px-2 py-0.5 text-caption font-medium text-muted-foreground">
+                      Not sent yet
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Body Content */}
               <div className="flex flex-1 flex-col p-4">
-                <h3 className="font-semibold text-body line-clamp-1 text-foreground" title={asset.title}>
+                <h3 className="line-clamp-1 text-body-medium text-foreground" title={asset.title}>
                   {asset.title}
                 </h3>
 
                 {asset.captionSuggestion && (
-                  <p className="mt-1.5 line-clamp-2 text-xs text-muted-foreground">
-                    {asset.captionSuggestion}
-                  </p>
+                  <p className="mt-2 line-clamp-2 text-caption text-muted-foreground">{asset.captionSuggestion}</p>
                 )}
 
-                <div className="mt-auto pt-3 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
+                <div className="mt-auto flex items-center justify-between border-t border-border pt-3 text-caption text-muted-foreground">
                   <span>
-                    Target:{" "}
-                    <strong className="text-foreground capitalize font-medium">
+                    For:{" "}
+                    <span className="font-medium text-foreground">
                       {asset.targetAudience === "selected_tenants"
-                        ? "Custom Tenants"
+                        ? "Specific restaurants"
                         : asset.targetAudience === "industry"
-                        ? "Industry"
-                        : "All Tenants"}
-                    </strong>
+                          ? "One industry"
+                          : "All restaurants"}
+                    </span>
                   </span>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <button
+                      type="button"
                       onClick={() => setPreviewAsset(asset)}
-                      className="rounded-lg p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                      title="Preview details"
+                      className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                      aria-label={`Preview ${asset.title}`}
+                      title="Preview"
                     >
-                      <PiEyeBold className="h-4 w-4" />
+                      <PiEyeBold className="size-4" aria-hidden />
                     </button>
                     <button
+                      type="button"
                       onClick={() => {
                         setPublishModalAsset(asset);
                         setPublishTarget(asset.targetAudience || "all");
                         setSelectedIndustryId(asset.targetIndustryId || "");
                       }}
-                      className="rounded-lg p-1.5 hover:bg-primary/10 text-primary transition-colors"
-                      title="Publish / Dispatch to Tenants"
+                      className="rounded-md p-2 text-primary transition-colors hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                      aria-label={`Send ${asset.title} to restaurants`}
+                      title="Send to restaurants"
                     >
-                      <PiPaperPlaneTiltBold className="h-4 w-4" />
+                      <PiPaperPlaneTiltBold className="size-4" aria-hidden />
                     </button>
                     <button
-                      onClick={() => handleDeleteAsset(asset.id)}
-                      className="rounded-lg p-1.5 hover:bg-destructive/10 text-destructive transition-colors"
+                      type="button"
+                      onClick={() => setPendingDelete(asset)}
+                      className="rounded-md p-2 text-destructive transition-colors hover:bg-destructive/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                      aria-label={`Delete ${asset.title}`}
                       title="Delete"
                     >
-                      <PiTrashBold className="h-4 w-4" />
+                      <PiTrashBold className="size-4" aria-hidden />
                     </button>
                   </div>
                 </div>
@@ -306,218 +305,172 @@ export function VaultTab({
         </div>
       )}
 
-      {/* Modal: Preview Asset Details */}
-      {previewAsset && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl">
-            <button
-              onClick={() => setPreviewAsset(null)}
-              className="absolute right-4 top-4 rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              <PiXBold className="h-5 w-5" />
-            </button>
+      {/* Preview dialog */}
+      <Modal
+        isOpen={Boolean(previewAsset)}
+        onClose={() => setPreviewAsset(null)}
+        title={previewAsset?.title ?? "Preview"}
+        maxWidth="max-w-2xl"
+        footer={
+          previewAsset ? (
+            <ModalFooter>
+              <Button type="button" variant="secondary" onClick={() => setPreviewAsset(null)}>
+                Close
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  setPublishModalAsset(previewAsset);
+                  setPreviewAsset(null);
+                }}
+              >
+                Send to restaurants
+              </Button>
+            </ModalFooter>
+          ) : null
+        }
+      >
+        {previewAsset && (
+          <div className="space-y-4">
+            <span className="inline-flex rounded-md bg-muted px-2 py-0.5 text-caption font-medium text-foreground">
+              {TYPE_LABELS[previewAsset.type] ?? previewAsset.type}
+            </span>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary uppercase">
-                  {previewAsset.type}
-                </span>
-                <h3 className="text-lg font-bold text-foreground">{previewAsset.title}</h3>
-              </div>
-
-              <div className="max-h-[380px] w-full rounded-xl overflow-hidden bg-zinc-950 flex items-center justify-center border border-border">
-                {previewAsset.type === "video" ? (
-                  <video src={previewAsset.mediaUrl} controls className="h-full w-full object-contain" />
-                ) : (
-                  <img
-                    src={previewAsset.mediaUrl}
-                    alt={previewAsset.title}
-                    className="h-full w-full object-contain"
-                  />
-                )}
-              </div>
-
-              {previewAsset.captionSuggestion && (
-                <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-1">
-                  <span className="text-[11px] font-semibold text-muted-foreground uppercase">
-                    Suggested Caption
-                  </span>
-                  <p className="text-sm text-foreground">{previewAsset.captionSuggestion}</p>
-                </div>
+            <div className="flex max-h-96 w-full items-center justify-center overflow-hidden rounded-lg border border-border bg-muted">
+              {previewAsset.type === "video" ? (
+                <video src={previewAsset.mediaUrl} controls className="h-full max-h-96 w-full object-contain" />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element -- arbitrary asset URLs
+                <img src={previewAsset.mediaUrl} alt={previewAsset.title} className="h-full max-h-96 w-full object-contain" />
               )}
-
-              {previewAsset.hashtags && previewAsset.hashtags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {previewAsset.hashtags.map((h, i) => (
-                    <span
-                      key={i}
-                      className="rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
-                    >
-                      {h}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex justify-end gap-2 pt-2 border-t border-border">
-                <Button variant="outline" size="sm" onClick={() => setPreviewAsset(null)}>
-                  Close
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => {
-                    setPublishModalAsset(previewAsset);
-                    setPreviewAsset(null);
-                  }}
-                >
-                  <PiPaperPlaneTiltBold className="h-4 w-4 mr-1.5" />
-                  Publish to Tenants
-                </Button>
-              </div>
             </div>
+
+            {previewAsset.captionSuggestion && (
+              <div className="space-y-1 rounded-lg border border-border bg-muted/30 p-3">
+                <p className="text-caption text-muted-foreground">Suggested caption</p>
+                <p className="text-body text-foreground">{previewAsset.captionSuggestion}</p>
+              </div>
+            )}
+
+            {previewAsset.hashtags && previewAsset.hashtags.length > 0 && (
+              <ul className="flex flex-wrap gap-2" aria-label="Hashtags">
+                {previewAsset.hashtags.map((h, i) => (
+                  <li key={i} className="rounded bg-primary/10 px-2 py-0.5 text-caption font-medium text-primary">
+                    {h}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
 
-      {/* Modal: Publish / Dispatch Asset to Tenants */}
-      {publishModalAsset && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl">
-            <button
-              onClick={() => setPublishModalAsset(null)}
-              className="absolute right-4 top-4 rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              <PiXBold className="h-5 w-5" />
-            </button>
+      {/* Send dialog */}
+      <Modal
+        isOpen={Boolean(publishModalAsset)}
+        onClose={() => setPublishModalAsset(null)}
+        title="Send to restaurants"
+        maxWidth="max-w-lg"
+        footer={
+          <ModalFooter>
+            <Button type="button" variant="secondary" onClick={() => setPublishModalAsset(null)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handlePublishAsset} loading={publishing}>
+              Send to restaurants
+            </Button>
+          </ModalFooter>
+        }
+      >
+        {publishModalAsset && (
+          <div className="space-y-4">
+            <p className="text-body text-muted-foreground">
+              Choose which restaurants get &ldquo;{publishModalAsset.title}&rdquo; in their social media library.
+            </p>
 
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-                  <PiPaperPlaneTiltBold className="h-5 w-5 text-primary" />
-                  Dispatch Asset to Tenant Inboxes
-                </h3>
-                <p className="text-caption text-muted-foreground mt-1">
-                  Select which tenant workspaces should receive &ldquo;{publishModalAsset.title}&rdquo; in their
-                  social media marketing library.
-                </p>
-              </div>
-
-              {/* Target Audience Selector */}
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-foreground block">Target Audience</label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setPublishTarget("all")}
+            <fieldset className="space-y-2">
+              <legend className="mb-2 text-body-medium text-foreground">Who gets it</legend>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {TARGET_OPTIONS.map((opt) => (
+                  <label
+                    key={opt.value}
                     className={cn(
-                      "rounded-xl border p-3 text-center text-xs transition-all",
-                      publishTarget === "all"
-                        ? "border-primary bg-primary/10 font-bold text-primary shadow-sm"
-                        : "border-border bg-card text-muted-foreground hover:bg-muted"
+                      "flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-body transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary",
+                      publishTarget === opt.value
+                        ? "border-primary bg-primary/5 text-foreground"
+                        : "border-border bg-card text-muted-foreground hover:bg-muted",
                     )}
                   >
-                    All Tenants
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setPublishTarget("industry")}
-                    className={cn(
-                      "rounded-xl border p-3 text-center text-xs transition-all",
-                      publishTarget === "industry"
-                        ? "border-primary bg-primary/10 font-bold text-primary shadow-sm"
-                        : "border-border bg-card text-muted-foreground hover:bg-muted"
-                    )}
-                  >
-                    By Industry
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setPublishTarget("selected_tenants")}
-                    className={cn(
-                      "rounded-xl border p-3 text-center text-xs transition-all",
-                      publishTarget === "selected_tenants"
-                        ? "border-primary bg-primary/10 font-bold text-primary shadow-sm"
-                        : "border-border bg-card text-muted-foreground hover:bg-muted"
-                    )}
-                  >
-                    Specific IDs
-                  </button>
-                </div>
-              </div>
-
-              {/* Industry Dropdown if selected */}
-              {publishTarget === "industry" && (
-                <div className="space-y-1.5 pt-2">
-                  <label className="text-xs font-semibold text-foreground block">
-                    Choose Target Industry
+                    <input
+                      type="radio"
+                      name="publish-target"
+                      value={opt.value}
+                      checked={publishTarget === opt.value}
+                      onChange={() => setPublishTarget(opt.value)}
+                      className="size-4 shrink-0 accent-primary"
+                    />
+                    {opt.label}
                   </label>
-                  <select
-                    value={selectedIndustryId}
-                    onChange={(e) => setSelectedIndustryId(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-                  >
-                    <option value="">Select an industry...</option>
-                    {industries.map((ind) => (
-                      <option key={ind.id} value={ind.id}>
-                        {ind.name || ind.title || `Industry #${ind.id}`}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Specific IDs input if selected */}
-              {publishTarget === "selected_tenants" && (
-                <div className="space-y-1.5 pt-2">
-                  <label className="text-xs font-semibold text-foreground block">
-                    Workspace IDs (comma separated)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 1, 4, 12"
-                    value={targetWorkspaceIds}
-                    onChange={(e) => setTargetWorkspaceIds(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-              )}
-
-              <div className="rounded-lg border border-border bg-muted/20 p-3 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground block mb-0.5">Distribution Guarantee:</span>
-                Tenants receive the high-resolution media, pre-filled captions, and hashtag suggestions.
-                They can publish on their connected accounts or download for local print/WhatsApp.
+                ))}
               </div>
+            </fieldset>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-border">
-                <Button variant="outline" size="sm" onClick={() => setPublishModalAsset(null)}>
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={handlePublishAsset}
-                  disabled={publishing}
-                >
-                  {publishing ? (
-                    <>
-                      <PiSpinnerBold className="h-4 w-4 animate-spin mr-1.5" />
-                      Publishing...
-                    </>
-                  ) : (
-                    <>
-                      <PiPaperPlaneTiltBold className="h-4 w-4 mr-1.5" />
-                      Dispatch to Inboxes
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
+            {publishTarget === "industry" && (
+              <FormField label="Industry" htmlFor="publish-industry" required>
+                <Select
+                  id="publish-industry"
+                  value={selectedIndustryId}
+                  onChange={(e) => setSelectedIndustryId(e.target.value)}
+                  placeholder="Choose an industry"
+                  options={industries.map((ind) => ({
+                    value: String(ind.id),
+                    label: ind.name || ind.title || `Industry #${ind.id}`,
+                  }))}
+                />
+              </FormField>
+            )}
+
+            {publishTarget === "selected_tenants" && (
+              <FormField
+                label="Restaurant IDs"
+                htmlFor="publish-workspace-ids"
+                required
+                hint="Separate with commas, e.g. 1, 4, 12"
+              >
+                <Input
+                  id="publish-workspace-ids"
+                  value={targetWorkspaceIds}
+                  onChange={(e) => setTargetWorkspaceIds(e.target.value)}
+                />
+              </FormField>
+            )}
+
+            <p className="text-caption text-muted-foreground">
+              Restaurants get the full-size file with a suggested caption and hashtags. They can post it to their
+              connected accounts or download it to print or share on WhatsApp.
+            </p>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
+
+      <ConfirmationDialog
+        isOpen={pendingDelete !== null}
+        onClose={() => !deleting && setPendingDelete(null)}
+        onConfirm={async () => {
+          if (!pendingDelete) return;
+          setDeleting(true);
+          try {
+            await handleDeleteAsset(pendingDelete.id);
+            setPendingDelete(null);
+          } finally {
+            setDeleting(false);
+          }
+        }}
+        title={`Delete "${pendingDelete?.title ?? ""}"?`}
+        description="It will also disappear for every restaurant it was sent to. This can't be undone."
+        confirmLabel="Delete"
+        loading={deleting}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 'use client';
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import { forwardRef, useImperativeHandle, useState } from 'react';
 import {
   workspaceService,
   type WorkspaceFaq,
@@ -38,6 +38,17 @@ function createDefaultForm(): FaqFormData {
   return { question: '', answer: '', isVisible: true };
 }
 
+function createFormFor(initial: WorkspaceFaq | null | undefined, isEdit: boolean): FaqFormData {
+  if (initial && isEdit) {
+    return {
+      question: initial.question || '',
+      answer: initial.answer || '',
+      isVisible: initial.isVisible ?? true,
+    };
+  }
+  return createDefaultForm();
+}
+
 function FaqFormModal({
   isOpen,
   onClose,
@@ -51,20 +62,15 @@ function FaqFormModal({
   initial?: WorkspaceFaq | null;
   isEdit: boolean;
 }) {
-  const [form, setForm] = useState<FaqFormData>(createDefaultForm());
+  const [form, setForm] = useState<FaqFormData>(() => createFormFor(initial, isEdit));
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (initial && isEdit) {
-      setForm({
-        question: initial.question || '',
-        answer: initial.answer || '',
-        isVisible: initial.isVisible ?? true,
-      });
-    } else {
-      setForm(createDefaultForm());
-    }
-  }, [initial, isEdit]);
+  // Reset the form when the FAQ being edited changes (adjusted during render).
+  const [formSource, setFormSource] = useState({ initial, isEdit });
+  if (formSource.initial !== initial || formSource.isEdit !== isEdit) {
+    setFormSource({ initial, isEdit });
+    setForm(createFormFor(initial, isEdit));
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,7 +98,7 @@ function FaqFormModal({
       <button
         type="button"
         onClick={onClose}
-        className="rounded-lg border border-border px-5 py-2.5 text-caption font-semibold text-foreground transition-colors hover:bg-muted"
+        className="rounded-lg border border-border px-6 py-3 text-caption font-semibold text-foreground transition-colors hover:bg-muted"
         disabled={submitting}
       >
         Cancel
@@ -100,7 +106,7 @@ function FaqFormModal({
       <button
         type="submit"
         form="faq-form"
-        className="rounded-lg bg-primary px-8 py-2.5 text-caption font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-70"
+        className="rounded-lg bg-primary px-8 py-3 text-caption font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-70"
         disabled={submitting}
       >
         {submitting ? 'Saving...' : isEdit ? 'Update' : 'Add FAQ'}
@@ -112,7 +118,7 @@ function FaqFormModal({
     <Modal isOpen={isOpen} onClose={onClose} title={isEdit ? 'Edit FAQ' : 'Add FAQ'} maxWidth="max-w-2xl" footer={footer}>
       <form id="faq-form" onSubmit={handleSubmit} className="space-y-6 py-2">
         <div className="space-y-2">
-          <label className="ml-1 text-caption font-semibold uppercase tracking-wide text-muted-foreground">
+          <label className="ml-1 text-caption font-semibold text-muted-foreground">
             Question *
           </label>
           <input
@@ -126,7 +132,7 @@ function FaqFormModal({
         </div>
 
         <div className="space-y-2">
-          <label className="ml-1 text-caption font-semibold uppercase tracking-wide text-muted-foreground">
+          <label className="ml-1 text-caption font-semibold text-muted-foreground">
             Answer *
           </label>
           <textarea
@@ -140,7 +146,7 @@ function FaqFormModal({
         </div>
 
         <div className="space-y-2">
-          <label className="ml-1 text-caption font-semibold uppercase tracking-wide text-muted-foreground">
+          <label className="ml-1 text-caption font-semibold text-muted-foreground">
             Visibility
           </label>
           <button
@@ -194,7 +200,7 @@ function DeleteFaqModal({
       <button
         type="button"
         onClick={onClose}
-        className="rounded-lg border border-border px-5 py-2.5 text-caption font-semibold text-foreground transition-colors hover:bg-muted"
+        className="rounded-lg border border-border px-6 py-3 text-caption font-semibold text-foreground transition-colors hover:bg-muted"
         disabled={deleting}
       >
         Cancel
@@ -202,7 +208,7 @@ function DeleteFaqModal({
       <button
         type="button"
         onClick={handleDelete}
-        className="rounded-lg bg-destructive px-8 py-2.5 text-caption font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-70"
+        className="rounded-lg bg-destructive px-8 py-3 text-caption font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-70"
         disabled={deleting}
       >
         {deleting ? 'Deleting...' : 'Delete'}
@@ -239,9 +245,12 @@ export const ListFaqs = forwardRef<ListFaqsHandle, ListFaqsProps>(({
     openNew: () => setShowForm(true),
   }));
 
-  useEffect(() => {
+  // Take fresh FAQs from the parent whenever it passes new ones (adjusted during render).
+  const [syncedFaqs, setSyncedFaqs] = useState(initialFaqs);
+  if (syncedFaqs !== initialFaqs) {
+    setSyncedFaqs(initialFaqs);
     if (initialFaqs) setItems(initialFaqs);
-  }, [initialFaqs]);
+  }
 
   const { page, pageCount, pageItems, pageSize, totalItems, setPage } = usePagination(items, 8);
 
@@ -285,7 +294,7 @@ export const ListFaqs = forwardRef<ListFaqsHandle, ListFaqsProps>(({
             <div className="min-w-0 flex-1">
               <div className="mb-1 flex flex-wrap items-center gap-3">
                 <h3 className="min-w-0 break-words text-h3 text-foreground">{f.question}</h3>
-                <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-caption font-semibold ${f.isVisible ? 'border-success/20 bg-success/15 text-success' : 'border-border bg-muted text-muted-foreground'}`}>
+                <span className={`inline-flex items-center gap-1 rounded-full border px-3 py-0.5 text-caption font-semibold ${f.isVisible ? 'border-success/20 bg-success/15 text-success' : 'border-border bg-muted text-muted-foreground'}`}>
                   {f.isVisible ? 'Visible' : 'Hidden'}
                 </span>
               </div>
@@ -295,21 +304,21 @@ export const ListFaqs = forwardRef<ListFaqsHandle, ListFaqsProps>(({
               <button
                 onClick={() => handleToggle(f)}
                 disabled={toggling === f.id}
-                className="rounded-lg border border-border bg-secondary p-2.5 text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-50"
+                className="rounded-lg border border-border bg-secondary p-3 text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-50"
                 title={f.isVisible ? 'Hide from landing page' : 'Show on landing page'}
               >
                 {f.isVisible ? <PiEyeBold className="text-lg" /> : <PiEyeSlashBold className="text-lg" />}
               </button>
               <button
                 onClick={() => { setEditItem(f); setShowForm(true); }}
-                className="rounded-lg border border-border bg-secondary p-2.5 text-secondary-foreground transition-colors hover:bg-secondary/80"
+                className="rounded-lg border border-border bg-secondary p-3 text-secondary-foreground transition-colors hover:bg-secondary/80"
                 title="Edit"
               >
                 <PiPencilSimpleBold className="text-lg" />
               </button>
               <button
                 onClick={() => setDeleteTarget(f)}
-                className="rounded-lg border border-border p-2.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                className="rounded-lg border border-border p-3 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                 title="Delete"
               >
                 <PiTrashBold className="text-lg" />

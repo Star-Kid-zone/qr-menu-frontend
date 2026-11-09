@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { shiftService, type Shift } from "@/services/shift.service";
 import { staffService } from "@/services/staff.service";
 import { getApiErrorMessage } from "@/utils/errors";
+import { formatDate } from "@/utils/date";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PermissionGuard } from "@/components/auth/PermissionGuard";
@@ -29,8 +30,9 @@ import { DayColumn } from "./DayColumn";
 import { ShiftModal } from "./ShiftModal";
 
 function SchedulePageContent() {
-  const { hasPermission } = usePermissions();
-  const canManage = hasPermission("dashboard");
+  const { ready, hasPermission, isStaff } = usePermissions();
+  // Owners and managers build the roster; floor staff only see their shifts.
+  const canManage = ready && hasPermission("dashboard");
 
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
   const [showModal, setShowModal] = useState(false);
@@ -52,10 +54,16 @@ function SchedulePageContent() {
     "Failed to load the shift schedule."
   );
 
-  const { data: staffData } = useAsyncData(
-    async () => (await staffService.list()).data.staff,
-    [],
-    "Failed to load staff list."
+  // Only roster builders need the team list (floor staff can't read it).
+  const {
+    data: staffData,
+    error: staffError,
+    loading: staffLoading,
+    refetch: refetchStaff,
+  } = useAsyncData(
+    async () => (canManage ? (await staffService.list()).data.staff : []),
+    [canManage],
+    "Check your connection and try again."
   );
 
   const shifts = useMemo(() => shiftsData ?? [], [shiftsData]);
@@ -141,7 +149,7 @@ function SchedulePageContent() {
   return (
     <div className="flex h-full flex-col gap-4">
       <PageHeader
-        title="Schedule"
+        title="Shifts"
         description={canManage ? "Plan who's working and when." : "Your upcoming shifts."}
         actions={
           canManage ? (
@@ -163,17 +171,13 @@ function SchedulePageContent() {
         </button>
         <div className="text-center">
           <p className="text-xs font-bold text-foreground">
-            {weekStart.toLocaleDateString(undefined, { month: "short", day: "numeric" })} –{" "}
-            {weekEnd.toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
+            {formatDate(weekStart, { month: "short", day: "numeric" })} –{" "}
+            {formatDate(weekEnd)}
           </p>
           <button
             type="button"
             onClick={() => setWeekStart(startOfWeek(new Date()))}
-            className="text-[10px] font-semibold uppercase tracking-wider text-primary hover:underline"
+            className="text-caption font-semibold text-primary hover:underline"
           >
             This week
           </button>
@@ -188,7 +192,7 @@ function SchedulePageContent() {
         </button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto pb-4">
+      <div className="min-h-0 flex-1 overflow-y-auto pb-6">
         {shifts.length === 0 ? (
           <div className="h-full min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-card p-4 md:p-6 flex flex-col">
             <EmptyState
@@ -236,6 +240,10 @@ function SchedulePageContent() {
         form={form}
         setForm={setForm}
         staff={staff}
+        staffError={staffError}
+        staffLoading={staffLoading}
+        onRetryStaff={refetchStaff}
+        canAddTeamMembers={!isStaff}
         onSubmit={handleSubmit}
         saving={saving}
       />

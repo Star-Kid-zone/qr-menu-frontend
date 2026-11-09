@@ -29,13 +29,6 @@ import {
   TiltCard,
   FloatingBlob,
 } from "./animations";
-import {
-  HiMenuAlt2,
-  HiCreditCard,
-  HiStar,
-  HiTag,
-  HiCheckCircle,
-} from "react-icons/hi";
 
 export interface ThemeConfig {
   slug: string;
@@ -198,7 +191,7 @@ export default function BaseTemplate({ theme: themeConfig, ...p }: Props) {
                     onClick={p.onPay}
                     className="rounded-full border-2 border-white/60 px-8 py-3 text-sm font-bold uppercase tracking-widest text-white backdrop-blur transition hover:bg-white/20"
                   >
-                    Pay Now
+                    Pay bill
                   </button>
                 )}
                 {c.cta.reviewBtn && c.cta.reviewLink && (
@@ -232,34 +225,7 @@ export default function BaseTemplate({ theme: themeConfig, ...p }: Props) {
         </Marquee>
       </div>
 
-      {/* ── Feature / Buttons Status ──────────────────────────────────── */}
-      {(() => {
-        const badges = [
-          c.cta.menuBtn      && { label: c.terms.catalogLabel, icon: HiMenuAlt2 },
-          c.cta.payBtn       && { label: "Pay Online", icon: HiCreditCard },
-          c.cta.reviewBtn    && { label: "Reviews",    icon: HiStar },
-          c.offers.length > 0 && { label: "Offers",    icon: HiTag },
-        ].filter(Boolean) as { label: string; icon: typeof HiTag }[];
-
-        if (badges.length === 0) return null;
-        return (
-          <section style={{ background: t.bg }} className="px-5 py-6 sm:px-10">
-            <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-3">
-              {badges.map((b) => (
-                <span
-                  key={b.label}
-                  style={{ borderColor: t.border, color: t.textPrimary }}
-                  className="inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-wider"
-                >
-                  <HiCheckCircle style={{ color: t.accent }} className="size-3.5" />
-                  <b.icon className="size-3.5" style={{ color: t.accent }} />
-                  {b.label}
-                </span>
-              ))}
-            </div>
-          </section>
-        );
-      })()}
+      
 
       {/* ── Stats Bar ─────────────────────────────────────────────────── */}
       {c.stats.length > 0 && (
@@ -522,7 +488,7 @@ export default function BaseTemplate({ theme: themeConfig, ...p }: Props) {
               </h2>
             </FadeIn>
             <StaggerGroup className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {c.offers.map((o: any, i: number) => (
+              {c.offers.map((o, i: number) => (
                 <StaggerItem key={i}>
                   <div
                     style={{ background: sectionBg, borderColor: t.border }}
@@ -635,7 +601,7 @@ export default function BaseTemplate({ theme: themeConfig, ...p }: Props) {
               style={{ color: t.textPrimary }}
               className={`mb-6 text-2xl font-bold ${t.headingClass ?? ""}`}
             >
-              When We're Open
+              When We&apos;re Open
             </h2>
             <div className="space-y-2">
               {c.hours.map((h) => (
@@ -783,7 +749,7 @@ export default function BaseTemplate({ theme: themeConfig, ...p }: Props) {
                     style={{ background: t.accent, color: t.accentText }}
                     className="rounded-full px-7 py-2.5 text-sm font-bold uppercase tracking-wider transition hover:opacity-85"
                   >
-                    Pay Online
+                    Pay bill
                   </button>
                 )}
                 {c.cta.reviewBtn && c.cta.reviewLink && (

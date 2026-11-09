@@ -15,7 +15,7 @@ export function BlueprintStorySection({
   return (
     <div className="space-y-4">
       <div>
-        <label className="mb-1.5 block text-xs font-bold text-foreground">Story Headline</label>
+        <label className="mb-2 block text-xs font-bold text-foreground">Story Headline</label>
         <input
           type="text"
           value={story?.headline || ''}
@@ -35,7 +35,7 @@ export function BlueprintStorySection({
       </div>
 
       <div>
-        <label className="mb-1.5 block text-xs font-bold text-foreground">Story Narrative Body</label>
+        <label className="mb-2 block text-xs font-bold text-foreground">Story Narrative Body</label>
         <textarea
           rows={4}
           value={story?.body || ''}
@@ -55,12 +55,12 @@ export function BlueprintStorySection({
       </div>
 
       <div className="rounded-xl border border-border bg-muted/10 p-4 space-y-3">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <h3 className="text-xs font-bold text-muted-foreground">
           Proof Metrics (4 Stats)
         </h3>
         <div className="grid gap-3 sm:grid-cols-2">
           {(story?.stats || []).map((st, idx) => (
-            <div key={idx} className="flex items-center gap-2 rounded-lg border border-border bg-background p-2.5">
+            <div key={idx} className="flex items-center gap-2 rounded-lg border border-border bg-background p-3">
               <input
                 type="text"
                 value={st.value}

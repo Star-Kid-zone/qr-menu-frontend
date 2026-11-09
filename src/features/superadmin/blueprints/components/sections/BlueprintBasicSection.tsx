@@ -22,8 +22,8 @@ export function BlueprintBasicSection({
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-foreground">
-            Identifier Slug <span className="text-rose-500">*</span>
+          <label className="mb-2 block text-xs font-bold text-foreground">
+            Identifier Slug <span className="text-destructive">*</span>
           </label>
           <input
             type="text"
@@ -38,14 +38,14 @@ export function BlueprintBasicSection({
             placeholder="e.g. taco_fiesta"
             className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground disabled:opacity-60 focus:border-primary focus:outline-none"
           />
-          <p className="mt-1 text-[11px] text-muted-foreground">
+          <p className="mt-1 text-caption text-muted-foreground">
             Unique machine ID (lowercase letters, numbers, dashes, underscores).
           </p>
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-foreground">
-            Blueprint Display Name <span className="text-rose-500">*</span>
+          <label className="mb-2 block text-xs font-bold text-foreground">
+            Blueprint Display Name <span className="text-destructive">*</span>
           </label>
           <input
             type="text"
@@ -58,7 +58,7 @@ export function BlueprintBasicSection({
       </div>
 
       <div>
-        <label className="mb-1.5 block text-xs font-bold text-foreground">Marketing Tagline</label>
+        <label className="mb-2 block text-xs font-bold text-foreground">Marketing Tagline</label>
         <input
           type="text"
           value={formData.tagline}
@@ -70,7 +70,7 @@ export function BlueprintBasicSection({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-foreground">Badge Label</label>
+          <label className="mb-2 block text-xs font-bold text-foreground">Badge Label</label>
           <input
             type="text"
             value={formData.badge}
@@ -81,7 +81,7 @@ export function BlueprintBasicSection({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-xs font-bold text-foreground">Icon Name</label>
+          <label className="mb-2 block text-xs font-bold text-foreground">Icon Name</label>
           <select
             value={formData.icon}
             onChange={(e) => setFormData((prev) => ({ ...prev, icon: e.target.value }))}
@@ -98,8 +98,8 @@ export function BlueprintBasicSection({
       </div>
 
       <div>
-        <label className="mb-1.5 block text-xs font-bold text-foreground">
-          Menu Categories Included (comma separated) <span className="text-rose-500">*</span>
+        <label className="mb-2 block text-xs font-bold text-foreground">
+          Menu Categories Included (comma separated) <span className="text-destructive">*</span>
         </label>
         <input
           type="text"
@@ -108,7 +108,7 @@ export function BlueprintBasicSection({
           placeholder="Street Tacos, Antojitos & Sides, Especiales, Margaritas"
           className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
         />
-        <div className="mt-2 flex flex-wrap gap-1.5">
+        <div className="mt-2 flex flex-wrap gap-2">
           {formData.categoryNames.map((cat) => (
             <span key={cat} className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
               {cat}

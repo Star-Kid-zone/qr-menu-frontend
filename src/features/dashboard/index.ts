@@ -5,3 +5,8 @@ export * from './components/VisitorRetentionCard';
 export * from './components/SearchIntelligenceCard';
 export * from './components/MenuCatalogCard';
 export * from './components/AdminDashboardPage';
+export * from './components/MostViewedDishesCard';
+export * from './components/TrafficSourcesCard';
+export * from './components/BusiestHoursCard';
+export * from './components/TodayPanel';
+export * from './components/FirstScansGuide';

@@ -2,7 +2,7 @@
 
 import { Suspense, lazy } from "react";
 import { Spinner } from "@/components/ui";
-import { menuTemplates } from "@/components/templates/core/registry";
+import { menuTemplates } from "@/components/templates/core/menuRegistry";
 import { mapPublicUserDetailsFromApi } from "@/components/templates/core/mapPublicUserDetails";
 import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
 import type { Menu } from "@/types";
@@ -65,7 +65,7 @@ export function MenuPreviewRenderer({ data }: { data: RawPublicSiteData }) {
     menuTemplates[themeSlug as keyof typeof menuTemplates] ||
     menuTemplates.swiss;
 
-  const rawItems = (data.menuItems ?? []) as any[];
+  const rawItems: Menu[] = data.menuItems ?? [];
   const normalizedMenuItems: Menu[] = rawItems.map((item) => {
     const img =
       item.image_url ||
@@ -77,13 +77,14 @@ export function MenuPreviewRenderer({ data }: { data: RawPublicSiteData }) {
           : item.images[0]?.url
         : null) ||
       null;
+    // A missing image stays `null` (not `undefined`), as the templates have always received it.
     return {
       ...item,
       id: Number(item.id),
       image_url: img,
       imageUrl: img,
       image: img,
-    };
+    } as unknown as Menu;
   });
 
   const payload = {
