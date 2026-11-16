@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import Image from 'next/image';
 import { resolvePublicImageUrl } from './publicMedia';
-import { NoImagePlaceholder } from './NoImagePlaceholder';
 import type { MenuImageProps } from "@/types/components/templates/MenuImage.types";
 
-export function MenuItemImage({ item, primary, secondary, className = '' }: MenuImageProps) {
+/**
+ * A dish photo, or — when there isn't one (or it fails to load) — a quiet
+ * monogram tile: the dish's initial set large on a tint of the menu's own
+ * colours with a fine diagonal pattern, so photo-less menus still look
+ * deliberate instead of showing a "No image" stamp on every card.
+ */
+export function MenuItemImage({ item, primary, secondary, className = '', style }: MenuImageProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const firstImage = item.images && item.images.length > 0 ? item.images[0] : null;
   const raw =
@@ -27,12 +32,14 @@ export function MenuItemImage({ item, primary, secondary, className = '' }: Menu
     setImageFailed(false);
   }
 
+  const name = (item.item || item.name || '').trim();
+
   if (src && !imageFailed) {
     return (
-      <div className={`relative overflow-hidden ${className}`}>
+      <div className={`relative overflow-hidden ${className}`} style={style}>
         <Image
           src={src}
-          alt={item.item || item.name || ""}
+          alt={name}
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
           className="object-cover"
@@ -42,9 +49,23 @@ export function MenuItemImage({ item, primary, secondary, className = '' }: Menu
     );
   }
 
+  const initial = name.match(/\p{L}|\p{N}/u)?.[0]?.toUpperCase() ?? '·';
   return (
-    <div className={`relative overflow-hidden ${className}`}>
-      <NoImagePlaceholder primary={primary} secondary={secondary} />
+    <div
+      className={`relative overflow-hidden ${className}`}
+      style={{
+        backgroundColor: `color-mix(in srgb, ${primary} 12%, transparent)`,
+        ...style,
+        backgroundImage: `repeating-linear-gradient(135deg, color-mix(in srgb, ${primary} 9%, transparent) 0 1px, transparent 1px 9px)`,
+      }}
+      aria-hidden
+    >
+      <span
+        className="absolute inset-0 grid place-items-center font-semibold leading-none select-none"
+        style={{ color: `color-mix(in srgb, ${primary} 70%, ${secondary})`, containerType: 'size' } as CSSProperties}
+      >
+        <span style={{ fontSize: 'min(2.6rem, 45cqmin)' }}>{initial}</span>
+      </span>
     </div>
   );
 }

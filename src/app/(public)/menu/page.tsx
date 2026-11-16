@@ -1,10 +1,11 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getRawLandingWithMenuBySlug, resolveMenuFromRequestHost } from "@/services/public-site.service";
-import { getTenantPublicUrl } from "@/config/app.constants";
+import { getTenantCanonicalUrl } from "@/config/app.constants";
 import { MenuItemSchema } from "@/components/seo";
 import { buildTenantMetadata, readBusinessSeo } from "@/utils/public-seo";
 import { TenantMenuPage } from "./TenantMenuPage";
+import { DEFAULT_TEMPLATE_SLUG } from "@/components/templates/core/defaultTemplate";
 
 export async function generateMetadata(): Promise<Metadata> {
   const payload = await resolveMenuFromRequestHost();
@@ -15,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildTenantMetadata({
     title: `Menu — ${business.name}`,
     description: business.description || `View the digital menu for ${business.name} and order online.`,
-    canonicalUrl: `${getTenantPublicUrl(payload.mapped.publicSlug)}/menu`,
+    canonicalUrl: `${getTenantCanonicalUrl(payload.mapped.settings, payload.mapped.publicSlug)}/menu`,
     siteName: business.name,
     imageUrl: business.logoUrl,
   });
@@ -28,7 +29,7 @@ export default async function MenuPage() {
     notFound();
   }
 
-  const menuTheme = payload.mapped.menuThemeRaw ?? "swiss";
+  const menuTheme = payload.mapped.menuThemeRaw || DEFAULT_TEMPLATE_SLUG;
   const rawMenuStructure = payload.mapped.settings?.menu_structure;
   const menuStructure = typeof rawMenuStructure === "string" ? rawMenuStructure : "";
 
@@ -45,7 +46,7 @@ export default async function MenuPage() {
         <MenuItemSchema
           menuItems={payload.menuItems}
           businessName={readBusinessSeo(payload.mapped.business, payload.mapped.settings).name}
-          url={getTenantPublicUrl(payload.mapped.publicSlug)}
+          url={getTenantCanonicalUrl(payload.mapped.settings, payload.mapped.publicSlug)}
           currencyCode={currencyCode}
         />
       ) : null}

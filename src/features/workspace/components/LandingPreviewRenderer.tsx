@@ -1,41 +1,21 @@
 "use client";
 
-import { Suspense, lazy } from "react";
+import { Suspense } from "react";
+import { STRUCTURE_MAP } from "@/components/templates/sections/layouts/structureMap";
+import { SiteStatusBanner } from "@/components/templates/sections/SiteStatusBanner";
 import { Spinner } from "@/components/ui";
 import { landingTemplates } from "@/components/templates/core/landingRegistry";
 import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
+import { DEFAULT_TEMPLATE_SLUG } from "@/components/templates/core/defaultTemplate";
 
 // Mirrors the resolution logic in `src/app/(public)/TenantLandingPage.tsx` so the
 // admin preview renders the exact same component the public site would — just fed
 // draft (unsaved) data instead of a server fetch, and with no analytics tracking.
-const StructureSplit           = lazy(() => import("@/components/templates/landing/_shared/structures/StructureSplit"));
-const StructureMinimal         = lazy(() => import("@/components/templates/landing/_shared/structures/StructureMinimal"));
-const StructureMagazine        = lazy(() => import("@/components/templates/landing/_shared/structures/StructureMagazine"));
-const StructureCards           = lazy(() => import("@/components/templates/landing/_shared/structures/StructureCards"));
-const StructureDashboard       = lazy(() => import("@/components/templates/landing/_shared/structures/StructureDashboard"));
-const StructureTabs            = lazy(() => import("@/components/templates/landing/_shared/structures/StructureTabs"));
-const StructureStory           = lazy(() => import("@/components/templates/landing/_shared/structures/StructureStory"));
-const StructureSidebarRight    = lazy(() => import("@/components/templates/landing/_shared/structures/StructureSidebarRight"));
-const StructureCompact         = lazy(() => import("@/components/templates/landing/_shared/structures/StructureCompact"));
-const StructureHorizontalSplit = lazy(() => import("@/components/templates/landing/_shared/structures/StructureHorizontalSplit"));
 
-const STRUCTURE_MAP = {
-  split:              StructureSplit,
-  minimal:            StructureMinimal,
-  magazine:           StructureMagazine,
-  cards:              StructureCards,
-  dashboard:          StructureDashboard,
-  tabs:               StructureTabs,
-  story:              StructureStory,
-  "sidebar-right":    StructureSidebarRight,
-  compact:            StructureCompact,
-  "horizontal-split": StructureHorizontalSplit,
-} as const;
 
 function getSafeSlug(raw: unknown): string {
-  if (!raw || typeof raw !== "string" || !raw.trim()) return "swiss";
+  if (!raw || typeof raw !== "string" || !raw.trim()) return DEFAULT_TEMPLATE_SLUG;
   const clean = raw.toLowerCase().trim();
-  if (clean === "bentogrid") return "bento-grid";
   return clean;
 }
 
@@ -73,14 +53,14 @@ export function LandingPreviewRenderer({ data }: { data: RawPublicSiteData }) {
 
   const structureKey =
     typeof settings.landing_structure === "string" && settings.landing_structure.trim()
-      ? (settings.landing_structure.trim() as keyof typeof STRUCTURE_MAP)
+      ? (settings.landing_structure.trim() as string)
       : null;
 
   const themeSlug = getSafeSlug(settings.landing_theme);
   const LandingTemplate =
     (structureKey && STRUCTURE_MAP[structureKey]) ||
     landingTemplates[themeSlug as keyof typeof landingTemplates] ||
-    landingTemplates.swiss;
+    landingTemplates[DEFAULT_TEMPLATE_SLUG as keyof typeof landingTemplates];
 
   return (
     <Suspense
@@ -90,9 +70,11 @@ export function LandingPreviewRenderer({ data }: { data: RawPublicSiteData }) {
         </div>
       }
     >
+      <SiteStatusBanner settings={settings} />
       <LandingTemplate
         data={data}
         routeSlug={null}
+        isPreview
         themeSlug={themeSlug}
         menuHref="#"
         onPay={() => {}}

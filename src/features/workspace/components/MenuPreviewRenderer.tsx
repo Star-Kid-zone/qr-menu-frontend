@@ -1,45 +1,26 @@
 "use client";
 
-import { Suspense, lazy } from "react";
+import { Suspense, createElement } from "react";
+import { SiteStatusBanner } from "@/components/templates/sections/SiteStatusBanner";
+import { MenuCurrencyContext } from "@/components/templates/menu/_shared/structures/DietaryBadges";
+import { MenuOccasionBanner } from "@/components/site-system/occasions/MenuOccasionBanner";
 import { Spinner } from "@/components/ui";
 import { menuTemplates } from "@/components/templates/core/menuRegistry";
+import { MENU_STRUCTURE_MAP, resolveMenuStructure } from "@/components/templates/menu/structureRegistry";
 import { mapPublicUserDetailsFromApi } from "@/components/templates/core/mapPublicUserDetails";
 import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
 import type { Menu } from "@/types";
+import { DEFAULT_TEMPLATE_SLUG } from "@/components/templates/core/defaultTemplate";
 
-// Mirrors the resolution logic in `src/app/(public)/menu/TenantMenuPage.tsx` so the
+// Same resolution as `src/app/(public)/menu/TenantMenuPage.tsx` (shared registry), so the
 // admin preview renders the exact same component the public site would — just fed
 // draft (unsaved) data instead of a server fetch.
-const MenuStructureList      = lazy(() => import("@/components/templates/menu/_shared/structures/MenuStructureList"));
-const MenuStructureGrid      = lazy(() => import("@/components/templates/menu/_shared/structures/MenuStructureGrid"));
-const MenuStructureSidebar   = lazy(() => import("@/components/templates/menu/_shared/structures/MenuStructureSidebar"));
-const MenuStructureTabs      = lazy(() => import("@/components/templates/menu/_shared/structures/MenuStructureTabs"));
-const MenuStructureAccordion = lazy(() => import("@/components/templates/menu/_shared/structures/MenuStructureAccordion"));
-const MenuStructureMagazine  = lazy(() => import("@/components/templates/menu/_shared/structures/MenuStructureMagazine"));
-const MenuStructureCompact   = lazy(() => import("@/components/templates/menu/_shared/structures/MenuStructureCompact"));
-const MenuStructureMasonry   = lazy(() => import("@/components/templates/menu/_shared/structures/MenuStructureMasonry"));
-const MenuStructureStory     = lazy(() => import("@/components/templates/menu/_shared/structures/MenuStructureStory"));
-const MenuStructureBento     = lazy(() => import("@/components/templates/menu/_shared/structures/MenuStructureBento"));
-
-const MENU_STRUCTURE_MAP = {
-  list:      MenuStructureList,
-  grid:      MenuStructureGrid,
-  sidebar:   MenuStructureSidebar,
-  tabs:      MenuStructureTabs,
-  accordion: MenuStructureAccordion,
-  magazine:  MenuStructureMagazine,
-  compact:   MenuStructureCompact,
-  masonry:   MenuStructureMasonry,
-  story:     MenuStructureStory,
-  bento:     MenuStructureBento,
-} as const;
 
 function getSafeMenuSlug(raw: unknown): string {
-  if (!raw || typeof raw !== "string" || !raw.trim()) return "swiss";
+  if (!raw || typeof raw !== "string" || !raw.trim()) return DEFAULT_TEMPLATE_SLUG;
   const clean = raw.toLowerCase().trim();
-  if (clean === "bentogrid") return "bento-grid";
   if (clean in menuTemplates) return clean;
-  return "swiss";
+  return DEFAULT_TEMPLATE_SLUG;
 }
 
 /**
@@ -54,16 +35,13 @@ export function MenuPreviewRenderer({ data }: { data: RawPublicSiteData }) {
 
   const settings = (data.settings ?? {}) as Record<string, unknown>;
 
-  const structureKey =
-    typeof settings.menu_structure === "string" && settings.menu_structure.trim()
-      ? (settings.menu_structure.trim() as keyof typeof MENU_STRUCTURE_MAP)
-      : null;
+  const structureKey = resolveMenuStructure(settings);
 
   const themeSlug = getSafeMenuSlug(settings.menu_theme);
   const MenuTemplate =
     (structureKey && MENU_STRUCTURE_MAP[structureKey]) ||
     menuTemplates[themeSlug as keyof typeof menuTemplates] ||
-    menuTemplates.swiss;
+    menuTemplates[DEFAULT_TEMPLATE_SLUG as keyof typeof menuTemplates];
 
   const rawItems: Menu[] = data.menuItems ?? [];
   const normalizedMenuItems: Menu[] = rawItems.map((item) => {
@@ -101,7 +79,13 @@ export function MenuPreviewRenderer({ data }: { data: RawPublicSiteData }) {
         </div>
       }
     >
-      <MenuTemplate payload={payload} routeSlug={null} themeSlug={themeSlug} />
+      <SiteStatusBanner settings={settings} />
+      {/* The preview runs in an iframe where the player can't see its own visibility, so the Lottie isn't frozen off screen. */}
+      <MenuOccasionBanner settings={settings} live={false} />
+      {/* Picked from module-level tables (never created here); createElement keeps the compiler lint from misreading the lookup. */}
+      <MenuCurrencyContext.Provider value={payload.mapped.currency?.symbol || "$"}>
+        {createElement(MenuTemplate, { payload, routeSlug: null, themeSlug })}
+      </MenuCurrencyContext.Provider>
     </Suspense>
   );
 }

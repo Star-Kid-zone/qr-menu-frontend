@@ -28,6 +28,8 @@ export function WorkspaceSettingsForm({
   section,
   onValuesChange,
   focusedPart,
+  menuCategories = [],
+  onAssetsChanged,
 }: WorkspaceSettingsFormProps & { section?: "landing" | "menu" }) {
   const disabled = loading || readOnly;
   const {
@@ -168,6 +170,12 @@ export function WorkspaceSettingsForm({
           register={register}
           setValue={setValue}
           focusedPart={focusedPart}
+          // A kit sets the style template *and* its own colours/fonts: record the template as
+          // already applied so the palette sync below doesn't overwrite the kit's look.
+          onAssetsChanged={onAssetsChanged}
+          onThemeAppliedWithLook={(theme) => {
+            prevLandingThemeRef.current = theme;
+          }}
         />
       )}
 
@@ -182,6 +190,7 @@ export function WorkspaceSettingsForm({
           register={register}
           setValue={setValue}
           focusedPart={focusedPart}
+          menuCategories={menuCategories}
         />
       )}
 

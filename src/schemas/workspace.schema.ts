@@ -1,6 +1,8 @@
 import * as z from 'zod';
+import type { SiteDocument } from '@/components/templates/sections/types';
 
-const hexColor = z.string().regex(/^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/, 'Must be a valid hex color');
+// Blank = no override: the chosen style decides this colour.
+const hexColor = z.string().regex(/^(#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?)?$/, 'Must be a valid hex color');
 
 export const workspaceSettingsSchema = z.object({
   theme_colour:        z.string().min(1, 'Theme alias is required'),
@@ -37,11 +39,17 @@ export const workspaceSettingsSchema = z.object({
   menu_font_family:         z.string(),
   menu_card_style:          z.string(),
   // Layout
-  menu_theme:          z.string().min(1, 'Menu layout is required'),
-  landing_theme:       z.string().min(1, 'Landing layout is required'),
+  // Old style templates: optional now that a style (skin) decides the look.
+  menu_theme:          z.string(),
+  landing_theme:       z.string(),
   landing_structure:   z.string(),
   menu_structure:      z.string(),
+  skin_id:             z.string(),
+  menu_skin_id:        z.string(),
+  business_type:       z.string(),
   loading_screen_theme: z.string().min(1, 'Loading screen is required'),
+  // Validated on the server (siteDocumentSchema); the editor only produces well-formed documents.
+  site_document:       z.custom<SiteDocument | null>(),
   // Visibility
   menubtn_status:      z.boolean(),
   paybtn_status:       z.boolean(),

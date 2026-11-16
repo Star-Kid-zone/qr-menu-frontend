@@ -41,24 +41,16 @@ export function toLoginPayload(values: LoginSchemaValues): { email: string; pass
 // Register Schema
 export const registerSchema = z.object({
   businessName: z.string().min(2, 'Business name must be at least 2 characters'),
-  slug: z
-    .string()
-    .min(2, 'Store URL slug is required')
-    .max(191, 'Slug is too long')
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Use lowercase letters, numbers, and single hyphens (e.g. bistro-hub)'),
   email: emailField,
   password: passwordRule,
-  blueprintId: z.string().optional(),
 });
 
 export type RegisterSchemaValues = z.infer<typeof registerSchema>;
 
 export const registerDefaultValues: RegisterSchemaValues = {
   businessName: '',
-  slug: '',
   email: '',
   password: '',
-  blueprintId: '',
 };
 
 // Forgot Password Schema

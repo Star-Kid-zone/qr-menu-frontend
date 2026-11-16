@@ -71,7 +71,7 @@ export const LANDING_PARTS: LandingPartConfig[] = [
   {
     id: "hero",
     label: "Hero image",
-    summary: "The tint laid over the big photo at the top of the page.",
+    summary: "The big photo at the top of your page, and the tint laid over it.",
     controls: [{ kind: "overlay", name: "hero_overlay", label: "Photo tint", paletteKey: "heroOverlay" }],
   },
   {

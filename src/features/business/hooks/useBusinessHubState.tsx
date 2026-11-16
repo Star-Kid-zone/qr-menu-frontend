@@ -6,7 +6,6 @@ import { normalizeTenantSlug, tenantSlugSchema } from "@/schemas/tenant.schema";
 import type { Availability } from "@/types/components/admin/workspace/PublicSlugEditor.types";
 import { toast } from "@/components/ui";
 import { getApiErrorMessage } from "@/utils/errors";
-import { industryService } from "@/services/industry.service";
 import { menuService } from "@/services/menu.service";
 import { workspaceService } from "@/services/workspace.service";
 import type { BannerAnnouncementValues } from "@/types/components/admin/workspace/BannerAnnouncementForm.types";
@@ -31,7 +30,7 @@ import type {
   WorkspaceBusinessProfile,
   WorkspaceData,
 } from "@/services/workspace.service";
-import type { Currency, Industry, Menu } from "@/types";
+import type { Currency, Menu } from "@/types";
 import { buildPublicLandingUrl, buildPublicMenuUrl } from "@/utils/tenantHost";
 import { usePermissions } from "@/hooks/usePermissions";
 import { getStoredPermissions } from "@/utils/storage";
@@ -40,6 +39,7 @@ import type {
   ListGalleryHandle,
   ListFaqsHandle,
 } from "@/features/workspace";
+import { parseSiteDocument } from "@/components/templates/sections/document";
 import { DEFAULT_TAB, type WorkspaceTabId } from "../types";
 import { TABS } from "../constants";
 import type { BusinessSchemaValues } from "../components/BusinessForm";
@@ -54,7 +54,7 @@ type HubBusiness = WorkspaceBusiness &
 
 // The mapped workspace carries every form field plus the uploaded asset URLs.
 type HubWorkspaceSetting = WorkspaceSetting &
-  Partial<WorkspaceSettingsFormValues> & { logo_url?: string; banner_url?: string };
+  Partial<WorkspaceSettingsFormValues> & { logo_url?: string; banner_url?: string; timezone?: string };
 
 type SlugCheckResult = { slug: string; status: "available" | "taken" | "error" };
 
@@ -130,17 +130,9 @@ export function useBusinessHubState() {
   const [refreshing, setRefreshing] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [industries, setIndustries] = useState<Industry[]>([]);
   const [workspaceDraft, setWorkspaceDraft] = useState<WorkspaceSettingsFormValues | null>(null);
   const [businessDraft, setBusinessDraft] = useState<BusinessSchemaValues | null>(null);
   const [bannerDraft, setBannerDraft] = useState<BannerAnnouncementValues | null>(null);
-
-  useEffect(() => {
-    industryService
-      .getIndustries()
-      .then((response) => setIndustries(response.data || []))
-      .catch((err: unknown) => console.error("Failed to fetch industries", err));
-  }, []);
 
   const setActiveTab = useCallback(
     (tab: WorkspaceTabId) => {
@@ -174,16 +166,16 @@ export function useBusinessHubState() {
       id: data.workspaceId ? parseInt(data.workspaceId) : undefined,
       public_slug: data.publicSlug,
       theme_colour: data.theme?.themeColour || "",
-      primary_color: data.theme?.primaryColor || "#171717",
-      secondary_color: data.theme?.secondaryColor || "#64748b",
-      accent_color: data.theme?.accentColor || "#0f172a",
-      text_primary_color: data.theme?.textPrimaryColor || "#0f172a",
-      text_secondary_color: data.theme?.textSecondaryColor || "#475569",
-      accent_text_color: data.theme?.accentTextColor || "#ffffff",
-      border_color: data.theme?.borderColor || "#e2e8f0",
-      footer_bg_color: data.theme?.footerBgColor || "#0f172a",
-      section_bg_color: data.theme?.sectionBgColor || "#f1f5f9",
-      font_family: data.theme?.fontFamily || '"Inter","Plus Jakarta Sans",system-ui,sans-serif',
+      primary_color: data.theme?.primaryColor ?? "",
+      secondary_color: data.theme?.secondaryColor ?? "",
+      accent_color: data.theme?.accentColor ?? "",
+      text_primary_color: data.theme?.textPrimaryColor ?? "",
+      text_secondary_color: data.theme?.textSecondaryColor ?? "",
+      accent_text_color: data.theme?.accentTextColor ?? "",
+      border_color: data.theme?.borderColor ?? "",
+      footer_bg_color: data.theme?.footerBgColor ?? "",
+      section_bg_color: data.theme?.sectionBgColor ?? "",
+      font_family: data.theme?.fontFamily ?? "",
       card_style: data.theme?.cardStyle || "rounded-2xl",
       hero_overlay:
         data.theme?.heroOverlay ||
@@ -192,23 +184,26 @@ export function useBusinessHubState() {
       theme_badge: data.theme?.themeBadge || "",
       theme_marquee: data.theme?.themeMarquee || "",
       hero_tagline: data.theme?.heroTagline || "",
-      menu_theme: data.theme?.menuTheme || "modern",
-      landing_theme: data.theme?.landingTheme || "modern",
+      menu_theme: data.theme?.menuTheme ?? "",
+      landing_theme: data.theme?.landingTheme ?? "",
       landing_structure: data.theme?.landingStructure || "",
       loading_screen_theme: data.theme?.loadingScreenTheme || "modern",
-      menu_primary_color: data.theme?.menuPrimaryColor || "#0F766E",
-      menu_secondary_color: data.theme?.menuSecondaryColor || "#14B8A6",
-      menu_accent_color: data.theme?.menuAccentColor || "#134E4A",
-      menu_text_primary_color: data.theme?.menuTextPrimaryColor || "#0f172a",
-      menu_text_secondary_color: data.theme?.menuTextSecondaryColor || "#475569",
-      menu_accent_text_color: data.theme?.menuAccentTextColor || "#ffffff",
-      menu_border_color: data.theme?.menuBorderColor || "#e2e8f0",
-      menu_footer_bg_color: data.theme?.menuFooterBgColor || "#0f172a",
-      menu_section_bg_color: data.theme?.menuSectionBgColor || "#f1f5f9",
-      menu_font_family:
-        data.theme?.menuFontFamily || '"Inter","Plus Jakarta Sans",system-ui,sans-serif',
+      menu_primary_color: data.theme?.menuPrimaryColor ?? "",
+      menu_secondary_color: data.theme?.menuSecondaryColor ?? "",
+      menu_accent_color: data.theme?.menuAccentColor ?? "",
+      menu_text_primary_color: data.theme?.menuTextPrimaryColor ?? "",
+      menu_text_secondary_color: data.theme?.menuTextSecondaryColor ?? "",
+      menu_accent_text_color: data.theme?.menuAccentTextColor ?? "",
+      menu_border_color: data.theme?.menuBorderColor ?? "",
+      menu_footer_bg_color: data.theme?.menuFooterBgColor ?? "",
+      menu_section_bg_color: data.theme?.menuSectionBgColor ?? "",
+      menu_font_family: data.theme?.menuFontFamily ?? "",
       menu_card_style: data.theme?.menuCardStyle || "rounded-2xl",
       menu_structure: data.theme?.menuStructure || "",
+      skin_id: data.theme?.skinId || "",
+      menu_skin_id: data.theme?.menuSkinId || "",
+      business_type: data.theme?.businessType || "",
+      site_document: parseSiteDocument(data.siteDocument),
       menubtn_status: data.buttons?.menubtnStatus ?? true,
       paybtn_status: data.buttons?.paybtnStatus ?? true,
       reviewbtn_status: data.buttons?.reviewbtnStatus ?? true,
@@ -224,6 +219,7 @@ export function useBusinessHubState() {
       currency_id: null,
       logo_url: data.theme?.logoUrl || "",
       banner_url: data.theme?.bannerUrl || "",
+      timezone: data.timezone || "UTC",
     };
 
     setWorkspace(mappedWorkspace);
@@ -356,7 +352,11 @@ export function useBusinessHubState() {
             menuFontFamily: values.menu_font_family,
             menuCardStyle: values.menu_card_style,
             menuStructure: values.menu_structure,
+            skinId: values.skin_id,
+            menuSkinId: values.menu_skin_id,
+            businessType: values.business_type,
           },
+          siteDocument: values.site_document,
           buttons: {
             menubtnStatus: values.menubtn_status,
             paybtnStatus: values.paybtn_status,
@@ -439,7 +439,6 @@ export function useBusinessHubState() {
           websiteUrl: values.website_url,
           socialLinks: values.social_media,
           availability: values.availability,
-          industryId: values.industry_id,
           gstin: values.gstin || null,
           pincode: values.pincode || null,
           taxInclusive: values.tax_inclusive,
@@ -615,6 +614,7 @@ export function useBusinessHubState() {
       public_slug: workspace?.public_slug ?? "",
       logo_url: workspace?.logo_url ?? "",
       banner_url: workspace?.banner_url ?? "",
+      timezone: workspace?.timezone ?? "UTC",
       story_headline: contentDraft.storyHeadline,
       story_body: contentDraft.storyBody,
       stats: contentDraft.stats,
@@ -631,10 +631,7 @@ export function useBusinessHubState() {
       business: effectiveBusiness
         ? {
             business_name: effectiveBusiness.business_name,
-            industry_id:
-              businessFields?.industryId ??
-              effectiveBusiness.industry_id ??
-              null,
+            industry_id: (businessFields?.industryId as number | null | undefined) ?? null,
             phone: effectiveBusiness.phone,
             address: effectiveBusiness.address,
             business_hours: businessFields?.businessHours ?? null,
@@ -655,8 +652,13 @@ export function useBusinessHubState() {
       review: workspaceReview
         ? { review_link: workspaceReview.googleReviewLink }
         : null,
-      gallery: workspaceGallery as unknown as RawPublicSiteData["gallery"],
-      offers: workspaceOffers as unknown as RawPublicSiteData["offers"],
+      // Same shape the public page builds from the portal (public-site.service.ts): the admin API
+      // returns camelCase `imageUrl`/`discount`, which the templates don't read — the preview used
+      // to show no gallery photos or offer images at all.
+      gallery: workspaceGallery.map((g) => ({ id: g.id, image_url: g.imageUrl })),
+      offers: workspaceOffers
+        .filter((o) => o.isActive !== false)
+        .map((o) => ({ id: o.id, title: o.title, description: o.description, offer_value: o.discount, image_url: o.imageUrl })),
       menuItems: workspaceMenuItems as unknown as RawPublicSiteData["menuItems"],
       faqs: workspaceFaqs as RawPublicSiteData["faqs"],
       googleReviews: workspaceGoogleReviews.filter(
@@ -770,7 +772,6 @@ export function useBusinessHubState() {
     setBannersSaveError,
     refreshing,
     error,
-    industries,
     workspaceDraft,
     setWorkspaceDraft,
     businessDraft,

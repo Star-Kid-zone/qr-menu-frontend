@@ -19,7 +19,8 @@ import {
   ToggleCard,
 } from "@/components/ui";
 
-import type { Industry } from "@/types";
+import Link from "next/link";
+import { BUSINESS_TYPE_HREF } from "../constants";
 
 // Form Schema
 export const businessSchema = z.object({
@@ -27,7 +28,6 @@ export const businessSchema = z.object({
   phone: z.string().regex(/^\d{10,15}$/, "Phone number must be 10-15 digits"),
   address: z.string().min(1, "Address is required"),
   website_url: z.string().url("Enter a valid URL").optional().or(z.literal("")),
-  industry_id: z.number().nullable().optional(),
   social_media: z.array(
     z.object({
       platform: z.string().min(1, "Platform name is required"),
@@ -101,7 +101,6 @@ export function BusinessForm({
   onSubmit,
   onLoadingChange,
   onValuesChange,
-  industries,
   disabled = false,
   section = "profile",
 }: {
@@ -110,7 +109,6 @@ export function BusinessForm({
   onSubmit: (values: BusinessSchemaValues) => Promise<void>;
   onLoadingChange?: (loading: boolean) => void;
   onValuesChange?: (values: BusinessSchemaValues) => void;
-  industries: Industry[];
   disabled?: boolean;
   section?: "profile" | "taxes" | "social" | "hours";
 }) {
@@ -129,7 +127,6 @@ export function BusinessForm({
       phone: "",
       address: "",
       website_url: "",
-      industry_id: null,
       social_media: [],
       availability: [],
       active: true,
@@ -155,7 +152,6 @@ export function BusinessForm({
         phone: initialData.phone || "",
         address: initialData.address || "",
         website_url: initialData.website_url || "",
-        industry_id: initialData.industry_id || null,
         active: Boolean(initialData.active),
         social_media: normalizedSocial,
         availability: Array.isArray(initialData.availability)
@@ -241,28 +237,15 @@ export function BusinessForm({
                   {...register("phone")}
                 />
               </FormField>
-              <FormField
-                label="Restaurant type"
-                htmlFor="business-industry"
-                error={errors.industry_id?.message}
-              >
-                <Select
-                  id="business-industry"
-                  invalid={Boolean(errors.industry_id)}
-                  disabled={disabled}
-                  value={watch("industry_id") ?? ""}
-                  {...register("industry_id", {
-                    setValueAs: (v) => (v === "" ? null : Number(v)),
-                  })}
-                >
-                  <option value="">Choose a type</option>
-                  {industries.map((ind) => (
-                    <option key={ind.id} value={ind.id}>
-                      {ind.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormField>
+              <div className="space-y-1.5">
+                <p className="text-body-medium text-foreground">Business type</p>
+                <p className="text-caption text-muted-foreground">
+                  Chosen on the Website page. It sets your categories, dish details and site style.{" "}
+                  <Link href={BUSINESS_TYPE_HREF} className="font-medium text-primary underline underline-offset-2">
+                    Change business type
+                  </Link>
+                </p>
+              </div>
               <FormField
                 label="Other website"
                 htmlFor="business-website"

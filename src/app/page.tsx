@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { MarketingLandingPage } from "@/features/marketing";
 
 import { resolveLandingFromRequestHost } from '@/services/public-site.service';
-import { getTenantPublicUrl } from "@/config/app.constants";
+import { getTenantCanonicalUrl } from "@/config/app.constants";
 import { FaqSchema, TenantSchema } from "@/components/seo";
 import { buildTenantMetadata, readBusinessSeo } from "@/utils/public-seo";
 import { TenantLandingPage } from './(public)/TenantLandingPage';
@@ -13,8 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   if (!tenant) return {};
 
   const business = readBusinessSeo(tenant.data.business, tenant.data.settings);
-  const rawSlug = tenant.data.settings?.public_slug;
-  const canonicalUrl = getTenantPublicUrl(typeof rawSlug === "string" ? rawSlug : tenant.slug);
+  const canonicalUrl = getTenantCanonicalUrl(tenant.data.settings, tenant.slug);
 
   return buildTenantMetadata({
     title: business.name,

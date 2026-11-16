@@ -26,7 +26,9 @@ const connectSrc = ["'self'", apiOrigin(), ...(isProd ? [] : ["http://localhost:
 // until nonces are wired in (Next injects inline bootstrap scripts).
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isProd ? "" : " 'unsafe-eval'"}`,
+  // 'wasm-unsafe-eval' allows WebAssembly compilation only (not JS eval): needed by the
+  // self-hosted Lottie player (public/vendor/dotlottie). Nothing is loaded from a CDN.
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isProd ? "" : " 'unsafe-eval'"}`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https: http://localhost:* http://127.0.0.1:*",

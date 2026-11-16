@@ -15,18 +15,9 @@ import { registerSchema, type RegisterSchemaValues } from "@/schemas/auth.schema
 import { setStoredUserRole, setStoredPermissions } from "@/utils/storage";
 import { getApiErrorMessage } from "@/utils/errors";
 import { fadeInUp } from "@/lib/motion";
-import { PiLinkBold } from "react-icons/pi";
 import { getLandingRoute } from "@/config/landing";
 
 const RESEND_SECONDS = 60;
-
-function toSlug(value: string): string {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 function RegisterForm() {
   const router = useRouter();
@@ -37,7 +28,6 @@ function RegisterForm() {
   const [email, setEmail] = useState(verifyParam);
   const [otp, setOtp] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
-  const [isManualSlug, setIsManualSlug] = useState(false);
   const [resendIn, setResendIn] = useState(0);
 
   useEffect(() => {
@@ -55,42 +45,22 @@ function RegisterForm() {
   const {
     register,
     handleSubmit,
-    watch,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RegisterSchemaValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       businessName: "",
-      slug: "",
       email: "",
       password: "",
     },
   });
 
-  const slugValue = watch("slug");
-
-  const onBusinessNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setValue("businessName", val, { shouldValidate: true });
-    if (!isManualSlug) {
-      setValue("slug", toSlug(val), { shouldValidate: true });
-    }
-  };
-
-  const onSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsManualSlug(true);
-    setValue("slug", toSlug(e.target.value), { shouldValidate: true });
-  };
-
   const onSubmit = async (data: RegisterSchemaValues) => {
     try {
       await authService.register({
         businessName: data.businessName.trim(),
-        slug: data.slug.trim(),
         email: data.email.trim().toLowerCase(),
         password: data.password,
-        blueprintId: data.blueprintId || undefined,
       });
       setEmail(data.email.trim().toLowerCase());
       setResendIn(RESEND_SECONDS);
@@ -239,6 +209,7 @@ function RegisterForm() {
               label="Business / Restaurant Name"
               htmlFor="businessName"
               error={errors.businessName?.message}
+              hint="We'll use it to build your public menu link"
             >
               <Input
                 id="businessName"
@@ -246,33 +217,7 @@ function RegisterForm() {
                 placeholder="e.g. Cedar & Spice Bistro"
                 invalid={!!errors.businessName}
                 {...register("businessName")}
-                onChange={onBusinessNameChange}
               />
-            </FormField>
-
-            {/* Dynamic Slug */}
-            <FormField
-              label="Store URL Slug"
-              htmlFor="slug"
-              error={errors.slug?.message}
-              hint="Your public QR menu web link"
-            >
-              <div className="relative">
-                <Input
-                  id="slug"
-                  type="text"
-                  placeholder="e.g. cedar-and-spice"
-                  invalid={!!errors.slug}
-                  {...register("slug")}
-                  onChange={onSlugChange}
-                />
-              </div>
-              {slugValue && (
-                <div className="mt-2 flex items-center gap-2 text-caption text-muted-foreground">
-                  <PiLinkBold className="h-3 w-3 text-primary shrink-0" />
-                  <span className="truncate">Preview: <strong className="text-foreground">/{slugValue}</strong></span>
-                </div>
-              )}
             </FormField>
 
             {/* Email */}
@@ -308,25 +253,6 @@ function RegisterForm() {
                 {...register("password")}
               />
             </FormField>
-
-            {/* Starter Menu Concept */}
-            <div className="space-y-2 pt-1">
-              <label className="text-caption font-semibold text-foreground flex items-center justify-between">
-                <span>Starter Menu Pack (Optional)</span>
-                <span className="text-caption text-muted-foreground font-normal">Seeds your QR menu</span>
-              </label>
-              <select
-                {...register("blueprintId")}
-                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-xs text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="">Platform Default (Recommended)</option>
-                <option value="cafe_bakery">☕ Artisan Cafe & Bakery</option>
-                <option value="italian_bistro">🍕 Italian Bistro & Pizzeria</option>
-                <option value="burger_craft">🍔 Craft Burgers & Hot Wings</option>
-                <option value="asian_fusion">🍜 Asian Wok, Bowls & Dim Sum</option>
-                <option value="blank">⬜ None (Start completely blank)</option>
-              </select>
-            </div>
 
             <Button type="submit" fullWidth loading={isSubmitting} className="mt-2">
               {isSubmitting ? "Creating store…" : "Register Store"}

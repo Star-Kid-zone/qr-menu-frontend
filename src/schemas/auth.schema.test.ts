@@ -20,7 +20,7 @@ describe('login identifier', () => {
 });
 
 describe('register / forgot / reset use email and the 8-character rule', () => {
-  const base = { businessName: 'Cafe', slug: 'cafe', password: 'Tulip-Garden9' };
+  const base = { businessName: 'Cafe', password: 'Tulip-Garden9' };
 
   it('requires a valid email to register', () => {
     expect(registerSchema.safeParse({ ...base, email: 'jane@example.com' }).success).toBe(true);

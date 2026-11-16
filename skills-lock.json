@@ -13,6 +13,12 @@
       "skillPath": "skills/apple-design/SKILL.md",
       "computedHash": "0d19303902efa64eace10e6b183eb29ef3220d424c1a7fd1eafc52adde216932"
     },
+    "dotlottie-web": {
+      "source": "lottiefiles/dotlottie-web",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "fb4a457444678ca4965920e465e76be92c1e45c350abedbb141b6fd52a93bab9"
+    },
     "emil-design-eng": {
       "source": "emilkowalski/skills",
       "sourceType": "github",
@@ -54,6 +60,12 @@
       "sourceType": "github",
       "skillPath": "skills/review-animations/SKILL.md",
       "computedHash": "26bec85a9bfe7cfbfd500ff1ffebc7819ac0cef75cf068c4a97b5af865ccccf7"
+    },
+    "text-to-lottie": {
+      "source": "diffusionstudio/lottie",
+      "sourceType": "github",
+      "skillPath": "skills/text-to-lottie/SKILL.md",
+      "computedHash": "6657f58de9b9b647a9e9761f708634534f0073e597436034023d09bf8707de81"
     },
     "ux-ui-mastery": {
       "source": "podo/design-agent-skills",

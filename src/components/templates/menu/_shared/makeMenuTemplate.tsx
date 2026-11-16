@@ -1,9 +1,13 @@
 'use client';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import type { KeyboardEvent, ReactNode } from 'react';
+import { PiMagnifyingGlassBold, PiPhoneBold, PiStarFill, PiXBold } from 'react-icons/pi';
 import { MenuItemImage } from '@/components/templates/core/MenuImage';
 import { useMenuTemplateData } from '@/components/templates/core/useTemplateData';
-import { Modal } from '@/components/Modal';
+import { DishDetailSheet } from './structures/MenuItemDetailModal';
+import { DietaryBadges } from './structures/DietaryBadges';
+import { MenuChrome } from '@/components/site-system/menu-kit/chrome';
 import type { PublicMenuPayload } from '@/types/public-site';
+import type { Menu } from '@/types';
 
 export interface MenuTheme {
   bg: string;
@@ -32,54 +36,41 @@ export interface MenuTheme {
   dividerColor?: string;
 }
 
-// ── Animated filter chip ──────────────────────────────────────────────────────
-function Chip({
-  label,
-  active,
-  onClick,
-  accent,
-  accentText,
-  bg,
-  border,
-  textMuted,
-  reduced,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-  accent: string;
-  accentText: string;
-  bg: string;
-  border: string;
-  textMuted: string;
-  reduced: boolean | null;
-}) {
-  return (
-    <motion.button
-      type="button"
-      onClick={onClick}
-      className="shrink-0 rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-widest transition-all"
-      style={
-        active
-          ? { background: accent, color: accentText, border: `1.5px solid ${accent}` }
-          : { background: bg, color: textMuted, border: `1.5px solid ${border}` }
-      }
-      whileHover={reduced ? {} : { scale: 1.05 }}
-      whileTap={reduced ? {} : { scale: 0.95 }}
-      animate={active ? { scale: [1, 1.08, 1] } : { scale: 1 }}
-      transition={{ duration: 0.25 }}
-    >
-      {label}
-    </motion.button>
-  );
-}
-
 const CARD_RADIUS_MAP: Record<string, string> = {
   'rounded-none': '0',
   'rounded-lg':   '0.5rem',
   'rounded-xl':   '0.75rem',
   'rounded-2xl':  '1rem',
   'rounded-3xl':  '1.5rem',
+};
+
+/** Fades the ends of a sideways-scrolling row so it reads as "more this way". */
+const EDGE_FADE = '[mask-image:linear-gradient(to_right,transparent,#000_20px,#000_calc(100%-20px),transparent)]';
+
+function Chip({ label, active, onClick, t, icon }: { label: string; active: boolean; onClick: () => void; t: MenuTheme; icon?: ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-4 text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+      style={
+        active
+          ? { background: t.textPrimary, color: t.bg, borderColor: t.textPrimary, outlineColor: t.accent }
+          : { background: t.searchBg, color: t.textPrimary, borderColor: t.searchBorder, outlineColor: t.accent }
+      }
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+const keyOpen = (open: () => void) => (e: KeyboardEvent) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    open();
+  }
 };
 
 export function MenuTemplateRenderer({
@@ -91,378 +82,283 @@ export function MenuTemplateRenderer({
   payload: PublicMenuPayload;
   routeSlug: string | null;
 }) {
-    const p = useMenuTemplateData(payload, routeSlug);
-    const r = useReducedMotion();
+  const p = useMenuTemplateData(payload, routeSlug);
 
-    // Merge workspace settings over the template's hardcoded defaults
-    const t: MenuTheme = {
-      ...theme,
-      accent:      p.primary    || theme.accent,
-      bg:          p.accent     || theme.bg,
-      cardBg:      p.secondary  || theme.cardBg,
-      textPrimary: p.textPrimary    || theme.textPrimary,
-      textMuted:   p.textSecondary  || theme.textMuted,
-      accentText:  p.accentText || theme.accentText,
-      border:      p.borderColor || theme.border,
-      cardBorder:  p.borderColor || theme.cardBorder,
-      searchText:  p.textPrimary || theme.searchText,
-      font:        p.fontFamily  || theme.font,
-      cardRadius:  (p.cardStyle && CARD_RADIUS_MAP[p.cardStyle]) || theme.cardRadius,
-    };
+  // Merge workspace settings over the template's defaults.
+  const t: MenuTheme = {
+    ...theme,
+    accent:      p.primary       || theme.accent,
+    bg:          p.accent        || theme.bg,
+    cardBg:      p.secondary     || theme.cardBg,
+    textPrimary: p.textPrimary   || theme.textPrimary,
+    textMuted:   p.textSecondary || theme.textMuted,
+    accentText:  p.accentText    || theme.accentText,
+    border:      p.borderColor   || theme.border,
+    cardBorder:  p.borderColor   || theme.cardBorder,
+    searchText:  p.textPrimary   || theme.searchText,
+    font:        p.fontFamily    || theme.font,
+    cardRadius:  (p.cardStyle && CARD_RADIUS_MAP[p.cardStyle]) || theme.cardRadius,
+  };
+  const radius = t.cardRadius ?? '1rem';
+  const price = (m: Menu) => `${p.currencySymbol}${m.price}`;
 
-    // Are any filters active?
-    const filtersActive = p.popularOnly || !!p.activeCategory || !!p.activeType;
-    const showTypeRow = p.allTypes.length > 1;
-    const showCatRow = p.allCategories.length > 1;
-    const showFilters = p.hasPopular || showCatRow || showTypeRow;
+  const filtersActive = p.popularOnly || !!p.activeCategory || !!p.activeType || !!p.activeDietaryTag;
+  const clearAll = () => {
+    p.setActiveCategory(null);
+    p.setActiveType(null);
+    p.setPopularOnly(false);
+    p.setActiveDietaryTag(null);
+    p.setSearchQuery('');
+  };
+  const showCatRow = p.filterCategories.length > 1;
+  const showTypeRow = p.allTypes.length > 1;
+  const popular = p.grouped.flatMap(([, items]) => items).filter((m) => m.popular);
+  const showPopularStrip = popular.length > 1 && !filtersActive && !p.searchQuery;
+  const focusRing = { outlineColor: t.accent };
 
-    return (
-      <div className="min-h-screen pb-36" style={{ background: t.bg, fontFamily: t.font, color: t.textPrimary }}>
-
-        {/* ── Sticky header ── */}
-        <header
-          className="sticky top-0 z-20 px-4 py-4"
-          style={{ background: t.headerBg, borderBottom: `1px solid ${t.headerBorder}`, backdropFilter: 'blur(14px)' }}
-        >
-          <div className="mx-auto max-w-2xl space-y-3">
-
-            {/* Business name + back */}
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <h1 className={`truncate text-lg xs:text-xl font-bold tracking-tight ${t.headingClass ?? ''}`} style={{ color: t.textPrimary }}>
-                  {p.businessName}
-                </h1>
-                <p.LinkComponent
-                  to={p.landingHref}
-                  className="text-xs opacity-60 hover:opacity-100 transition-opacity underline underline-offset-2"
-                  style={{ color: t.accent }}
-                >
-                  ← Back to Venue
-                </p.LinkComponent>
-              </div>
-              {p.phone && (
-                <a href={`tel:${p.phone}`} className="shrink-0 text-xs opacity-60" style={{ color: t.textMuted }}>
-                  {p.phone}
-                </a>
-              )}
-            </div>
-
-            {/* Search */}
-            <input
-              type="search"
-              value={p.searchQuery}
-              onChange={(e) => p.setSearchQuery(e.target.value)}
-              className="w-full rounded-full px-5 py-2.5 text-sm outline-none"
-              style={{ background: t.searchBg, border: `1px solid ${t.searchBorder}`, color: t.searchText }}
-              placeholder="Search menu…"
-            />
-
-            {/* ── Filter chips ── */}
-            {showFilters && (
-              <div className="space-y-2">
-
-                {/* Popular + clear row */}
-                <div className="no-scrollbar flex items-center gap-2 overflow-x-auto pb-0.5">
-                  {p.hasPopular && (
-                    <Chip
-                      label="⭐ Popular"
-                      active={p.popularOnly}
-                      onClick={() => p.setPopularOnly(!p.popularOnly)}
-                      accent={t.accent}
-                      accentText={t.accentText}
-                      bg={t.searchBg}
-                      border={t.searchBorder}
-                      textMuted={t.textMuted}
-                      reduced={r}
-                    />
-                  )}
-                  {showCatRow && p.allCategories.map((cat) => (
-                    <Chip
-                      key={cat}
-                      label={cat}
-                      active={p.activeCategory === cat}
-                      onClick={() => p.setActiveCategory(p.activeCategory === cat ? null : cat)}
-                      accent={t.accent}
-                      accentText={t.accentText}
-                      bg={t.searchBg}
-                      border={t.searchBorder}
-                      textMuted={t.textMuted}
-                      reduced={r}
-                    />
-                  ))}
-                </div>
-
-                {/* Type chips — only if multiple types exist */}
-                {showTypeRow && (
-                  <div className="no-scrollbar flex items-center gap-2 overflow-x-auto pb-0.5">
-                    {p.allTypes.map((type) => (
-                      <Chip
-                        key={type}
-                        label={type}
-                        active={p.activeType === type}
-                        onClick={() => p.setActiveType(p.activeType === type ? null : type)}
-                        accent={t.catColor}
-                        accentText={t.accentText}
-                        bg={t.searchBg}
-                        border={t.searchBorder}
-                        textMuted={t.textMuted}
-                        reduced={r}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {/* Clear all */}
-                <AnimatePresence>
-                  {filtersActive && (
-                    <motion.button
-                      type="button"
-                      className="text-[10px] uppercase tracking-widest underline underline-offset-2 opacity-60 hover:opacity-100"
-                      style={{ color: t.textMuted }}
-                      onClick={() => {
-                        p.setActiveCategory(null);
-                        p.setActiveType(null);
-                        p.setPopularOnly(false);
-                      }}
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 0.6, y: 0 }}
-                      exit={{ opacity: 0, y: -4 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      ✕ Clear filters
-                    </motion.button>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
-          </div>
-        </header>
-
-        {/* ── Menu content ── */}
-        <main className="mx-auto max-w-2xl px-4 py-8">
-          <AnimatePresence mode="wait">
-            {p.grouped.length === 0 ? (
-              <motion.div
-                key="empty"
-                className="py-24 text-center"
-                style={{ color: t.textMuted }}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-              >
-                <p className="text-4xl mb-3">🍽</p>
-                <p className="text-sm italic">No items match your filters.</p>
-                {filtersActive && (
-                  <button
-                    type="button"
-                    className="mt-4 text-xs underline underline-offset-2 opacity-70"
-                    style={{ color: t.accent }}
-                    onClick={() => {
-                      p.setActiveCategory(null);
-                      p.setActiveType(null);
-                      p.setPopularOnly(false);
-                      p.setSearchQuery('');
-                    }}
-                  >
-                    Clear all filters
-                  </button>
-                )}
-              </motion.div>
-            ) : (
-              <motion.div
-                key="list"
-                initial={false}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                {p.grouped.map(([cat, items], ci) => (
-                  <motion.section
-                    key={cat}
-                    className="mb-12"
-                    initial={r ? false : { opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: ci * 0.04 }}
-                  >
-                    {/* Category heading */}
-                    <div className="mb-5 border-b pb-2" style={{ borderColor: t.border }}>
-                      <div className="flex items-center justify-between gap-2">
-                        <h2
-                          className={`min-w-0 truncate text-[10px] font-black uppercase tracking-[0.3em] xs:tracking-[0.4em] ${t.catClass ?? ''}`}
-                          style={{ color: t.catColor }}
-                        >
-                          {cat}
-                        </h2>
-                        <span className="shrink-0 text-[10px] opacity-40" style={{ color: t.textMuted }}>
-                          {items.length} item{items.length !== 1 ? 's' : ''}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Items */}
-                    <div className="space-y-2">
-                      {items.map((item, ii) => (
-                        <motion.div
-                          key={item.id}
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => p.openItem(item)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              p.openItem(item);
-                            }
-                          }}
-                          className="group flex cursor-pointer gap-4 overflow-hidden p-3 transition-all"
-                          style={{
-                            background: t.cardBg,
-                            border: `1px solid ${t.cardBorder}`,
-                            borderRadius: t.cardRadius ?? '0.75rem',
-                          }}
-                          initial={r ? false : { opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.28, delay: ci * 0.04 + ii * 0.025 }}
-                          whileHover={r ? {} : { scale: 1.01 }}
-                        >
-                          <MenuItemImage
-                            item={item}
-                            primary={t.accent}
-                            secondary={t.textMuted}
-                            className="h-20 w-20 shrink-0 rounded-lg object-cover"
-                          />
-                          <div className="flex min-w-0 flex-1 flex-col justify-between py-0.5">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0 flex-1">
-                                <h3 className="truncate font-bold leading-tight" style={{ color: t.textPrimary }}>
-                                  {item.item}
-                                </h3>
-                                {/* Badges */}
-                                <div className="mt-1 flex flex-wrap gap-1">
-                                  {item.popular && (
-                                    <span
-                                      className="inline-block rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-widest"
-                                      style={{ background: t.accent, color: t.accentText }}
-                                    >
-                                      ⭐ Popular
-                                    </span>
-                                  )}
-                                  {item.type && (
-                                    <span
-                                      className="inline-block rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest"
-                                      style={{ background: t.searchBg, color: t.catColor, border: `1px solid ${t.border}` }}
-                                    >
-                                      {item.type}
-                                    </span>
-                                  )}
-                                  {!item.availability && (
-                                    <span
-                                      className="inline-block rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest opacity-70"
-                                      style={{ background: t.searchBg, color: t.textMuted, border: `1px solid ${t.border}` }}
-                                    >
-                                      Unavailable
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              <span
-                                className="shrink-0 font-mono text-sm font-bold tabular-nums"
-                                style={{ color: t.priceColor }}
-                              >
-                                {p.currencySymbol}{item.price}
-                              </span>
-                            </div>
-                            {item.description && (
-                              <p
-                                className="mt-1.5 line-clamp-2 text-xs leading-relaxed"
-                                style={{ color: t.textMuted }}
-                              >
-                                {item.description}
-                              </p>
-                            )}
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.section>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </main>
-
-        {/* ── Pay button ── */}
-        {p.payBtn && Boolean(p.paymentLink) && (
-          <div
-            className="fixed bottom-0 left-0 right-0 z-50 p-4"
-            style={{ background: t.headerBg, borderTop: `1px solid ${t.headerBorder}`, backdropFilter: 'blur(16px)' }}
+  return (
+    <div className="min-h-dvh overflow-x-clip pb-32" style={{ background: t.bg, fontFamily: t.font, color: t.textPrimary }}>
+      {/* ── Masthead ── */}
+      <header className="mx-auto max-w-6xl px-4 pb-5 pt-5 sm:px-6 sm:pt-8 lg:px-8">
+        <div className="flex items-center justify-between gap-3 text-[13px]" style={{ color: t.textMuted }}>
+          <p.LinkComponent
+            to={p.landingHref}
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-full pr-2 font-medium hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{ color: t.textMuted, ...focusRing }}
           >
-            <motion.button
-              type="button"
-              className="w-full rounded-2xl py-4 text-center text-sm font-black uppercase tracking-widest"
-              style={{ background: t.payBg, color: t.payText }}
-              onClick={p.onPay}
-              whileHover={r ? {} : { scale: 1.01 }}
-              whileTap={r ? {} : { scale: 0.98 }}
+            ← Back to {p.businessName}
+          </p.LinkComponent>
+          {p.phone && (
+            <a
+              href={`tel:${p.phone}`}
+              className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 font-medium tabular-nums focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ borderColor: t.border, color: t.textPrimary, ...focusRing }}
             >
-              Pay bill
-            </motion.button>
-          </div>
-        )}
+              <PiPhoneBold className="size-3.5" aria-hidden />
+              <span className="hidden sm:inline">{p.phone}</span>
+              <span className="sm:hidden">Call</span>
+            </a>
+          )}
+        </div>
+        <h1
+          className={`mt-5 text-[2.25rem] font-semibold leading-[1.05] tracking-tight sm:text-5xl ${t.headingClass ?? ''}`}
+          style={{ color: t.textPrimary, textWrap: 'balance' }}
+        >
+          {p.businessName}
+        </h1>
+        <p className="mt-2 text-[15px]" style={{ color: t.textMuted }}>
+          Menu
+        </p>
+      </header>
 
-        {/* ── Item detail modal ── */}
-        <Modal isOpen={Boolean(p.selectedItem)} onClose={p.closeItem} title={p.selectedItem?.item ?? ''}>
-          {p.selectedItem && (
-            <div className="space-y-4">
-              <MenuItemImage
-                item={p.selectedItem}
-                primary={t.accent}
-                secondary={t.textMuted}
-                className="h-48 w-full rounded-xl object-cover"
+      {/* ── Sticky search + category bar ── */}
+      <div
+        className="sticky top-0 z-30 border-b backdrop-blur-md"
+        style={{ background: `color-mix(in srgb, ${t.bg} 88%, transparent)`, borderColor: t.headerBorder }}
+      >
+        <div className="mx-auto max-w-6xl space-y-3 px-4 py-3 sm:px-6 lg:px-8">
+          {p.showSearch && (
+            <label className="relative block">
+              <span className="sr-only">Search the menu</span>
+              <PiMagnifyingGlassBold className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2" style={{ color: t.textMuted }} aria-hidden />
+              <input
+                type="search"
+                value={p.searchQuery}
+                onChange={(e) => p.setSearchQuery(e.target.value)}
+                className="h-11 w-full rounded-full border pl-11 pr-4 text-[15px] outline-none transition-shadow focus-visible:ring-2 sm:max-w-md"
+                style={{ background: t.searchBg, borderColor: t.searchBorder, color: t.searchText, ['--tw-ring-color' as string]: t.accent }}
+                placeholder="Search dishes"
               />
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-mono text-lg font-bold" style={{ color: t.priceColor }}>
-                  {p.currencySymbol}{p.selectedItem.price}
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {p.selectedItem.popular && (
-                    <span
-                      className="inline-block rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest"
-                      style={{ background: t.accent, color: t.accentText }}
-                    >
-                      ⭐ Popular
-                    </span>
-                  )}
-                  {p.selectedItem.type && (
-                    <span
-                      className="inline-block rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest"
-                      style={{ background: t.searchBg, color: t.catColor, border: `1px solid ${t.border}` }}
-                    >
-                      {p.selectedItem.type}
-                    </span>
-                  )}
-                  {!p.selectedItem.availability && (
-                    <span
-                      className="inline-block rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest opacity-70"
-                      style={{ background: t.searchBg, color: t.textMuted, border: `1px solid ${t.border}` }}
-                    >
-                      Unavailable
-                    </span>
-                  )}
-                </div>
-              </div>
-              {p.selectedItem.category && (
-                <p className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: t.catColor }}>
-                  {p.selectedItem.category}
-                </p>
+            </label>
+          )}
+
+          {(showCatRow || p.hasPopular) && (
+            <nav aria-label="Menu sections" className={`no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 ${EDGE_FADE} lg:[mask-image:none] lg:flex-wrap`}>
+              <Chip label="All" active={!p.activeCategory && !p.popularOnly} onClick={() => { p.setActiveCategory(null); p.setPopularOnly(false); }} t={t} />
+              {p.hasPopular && (
+                <Chip label="Popular" icon={<PiStarFill className="size-3.5" aria-hidden />} active={p.popularOnly} onClick={() => p.setPopularOnly(!p.popularOnly)} t={t} />
               )}
-              {p.selectedItem.description && (
-                <p className="text-sm leading-relaxed" style={{ color: t.textMuted }}>
-                  {p.selectedItem.description}
-                </p>
+              {showCatRow &&
+                p.filterCategories.map((cat) => (
+                  <Chip key={cat} label={cat} active={p.activeCategory === cat} onClick={() => p.setActiveCategory(p.activeCategory === cat ? null : cat)} t={t} />
+                ))}
+            </nav>
+          )}
+
+          {(showTypeRow || p.allDietaryTags.length > 0) && (
+            <div className={`no-scrollbar -mx-4 flex items-center gap-2 overflow-x-auto px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 ${EDGE_FADE} lg:[mask-image:none] lg:flex-wrap`}>
+              {showTypeRow &&
+                p.allTypes.map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    aria-pressed={p.activeType === type}
+                    onClick={() => p.setActiveType(p.activeType === type ? null : type)}
+                    className="inline-flex h-8 shrink-0 items-center rounded-full border px-3 text-[13px] focus-visible:outline-2 focus-visible:outline-offset-2"
+                    style={
+                      p.activeType === type
+                        ? { background: t.accent, color: t.accentText, borderColor: t.accent, ...focusRing }
+                        : { borderColor: t.border, color: t.textMuted, ...focusRing }
+                    }
+                  >
+                    {type}
+                  </button>
+                ))}
+              {p.allDietaryTags.map((tag) => {
+                const on = p.activeDietaryTag === tag;
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => p.setActiveDietaryTag(on ? null : tag)}
+                    className="inline-flex h-8 shrink-0 items-center rounded-full border px-3 text-[13px] capitalize focus-visible:outline-2 focus-visible:outline-offset-2"
+                    style={on ? { background: t.accent, color: t.accentText, borderColor: t.accent, ...focusRing } : { borderColor: t.border, color: t.textMuted, ...focusRing }}
+                  >
+                    {tag.replace(/_/g, ' ')}
+                  </button>
+                );
+              })}
+              {filtersActive && (
+                <button type="button" onClick={clearAll} className="inline-flex h-8 shrink-0 items-center gap-1 px-2 text-[13px] underline underline-offset-4" style={{ color: t.textMuted }}>
+                  <PiXBold className="size-3" aria-hidden /> Clear
+                </button>
               )}
             </div>
           )}
-        </Modal>
+        </div>
       </div>
-    );
+
+      <main className="mx-auto max-w-6xl px-4 pt-8 sm:px-6 lg:px-8">
+        {/* ── Popular strip: the one big, photo-led moment on the page ── */}
+        {showPopularStrip && (
+          <section aria-labelledby="popular-heading" className="mb-12">
+            <h2 id="popular-heading" className="mb-4 text-xl font-semibold tracking-tight sm:text-2xl">
+              Guests&apos; favourites
+            </h2>
+            <ul className={`no-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 ${EDGE_FADE} lg:[mask-image:none]`}>
+              {popular.slice(0, 8).map((item) => (
+                <li key={item.id} className="w-[68%] shrink-0 snap-start sm:w-[42%] lg:w-[calc((100%-3rem)/4)]">
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => p.openItem(item)}
+                    onKeyDown={keyOpen(() => p.openItem(item))}
+                    className="group block cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4"
+                    style={{ ...focusRing, borderRadius: radius }}
+                  >
+                    <div className="overflow-hidden" style={{ borderRadius: radius }}>
+                      <MenuItemImage item={item} primary={t.accent} secondary={t.textMuted} className="aspect-[4/3] w-full transition-transform duration-500 motion-safe:group-hover:scale-[1.03]" />
+                    </div>
+                    <div className="mt-3 flex items-baseline justify-between gap-3">
+                      <h3 className="min-w-0 truncate text-[15px] font-semibold">{item.item}</h3>
+                      <span className="shrink-0 text-[15px] font-semibold tabular-nums" style={{ color: t.priceColor }}>{price(item)}</span>
+                    </div>
+                    {item.category && <p className="mt-0.5 truncate text-[13px]" style={{ color: t.textMuted }}>{item.category}</p>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {p.grouped.length === 0 ? (
+          <div className="mx-auto max-w-sm py-24 text-center">
+            <p className="text-lg font-semibold">No dishes match</p>
+            <p className="mt-1 text-[15px]" style={{ color: t.textMuted }}>Try another search or clear the filters.</p>
+            <button
+              type="button"
+              onClick={clearAll}
+              className="mt-5 inline-flex h-10 items-center rounded-full px-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ background: t.accent, color: t.accentText, ...focusRing }}
+            >
+              Show the full menu
+            </button>
+          </div>
+        ) : (
+          p.grouped.map(([cat, items]) => (
+            <section key={cat} aria-labelledby={`cat-${cat}`} className="mb-14 scroll-mt-40">
+              <div className="mb-5 flex items-baseline gap-3 border-b pb-3" style={{ borderColor: t.border }}>
+                <h2 id={`cat-${cat}`} className={`min-w-0 text-2xl font-semibold tracking-tight sm:text-[1.75rem] ${t.catClass ?? ''}`} style={{ color: t.textPrimary }}>
+                  {cat}
+                </h2>
+                <span className="shrink-0 text-[13px] tabular-nums" style={{ color: t.textMuted }}>
+                  {items.length} {items.length === 1 ? 'dish' : 'dishes'}
+                </span>
+              </div>
+
+              {/* One column on phones, two on laptops, three on large monitors. */}
+              <div className="grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
+                {items.map((item) => (
+                  <div
+                    key={item.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => p.openItem(item)}
+                    onKeyDown={keyOpen(() => p.openItem(item))}
+                    className={`group flex min-w-0 cursor-pointer gap-4 border p-3 transition-[border-color,box-shadow] hover:shadow-[0_6px_24px_-12px_rgba(0,0,0,0.25)] focus-visible:outline-2 focus-visible:outline-offset-2 sm:p-4 ${item.availability ? '' : 'opacity-60'}`}
+                    style={{ background: t.cardBg, borderColor: t.cardBorder, borderRadius: radius, ...focusRing }}
+                  >
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <div className="flex items-start gap-2">
+                        <h3 className="min-w-0 flex-1 text-[15px] font-semibold leading-snug [overflow-wrap:anywhere]" style={{ color: t.textPrimary }}>
+                          {item.item}
+                        </h3>
+                      </div>
+                      <p className="mt-0.5 text-[15px] font-semibold tabular-nums" style={{ color: t.priceColor }}>
+                        {price(item)}
+                      </p>
+                      {item.description && (
+                        <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed" style={{ color: t.textMuted }}>
+                          {item.description}
+                        </p>
+                      )}
+                      <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-2.5 empty:hidden" style={{ color: t.textMuted }}>
+                        {item.popular && (
+                          <span className="inline-flex h-5 items-center gap-1 rounded-full px-1.5 text-[11px] font-semibold" style={{ background: t.accent, color: t.accentText }}>
+                            <PiStarFill className="size-2.5" aria-hidden /> Popular
+                          </span>
+                        )}
+                        {!item.availability && <span className="text-[11px] font-medium">Not available today</span>}
+                        <DietaryBadges item={item} />
+                      </div>
+                    </div>
+                    <MenuItemImage
+                      item={item}
+                      primary={t.accent}
+                      secondary={t.textMuted}
+                      className="size-24 shrink-0 self-start sm:size-28"
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))
+        )}
+      </main>
+
+      <MenuChrome p={p} />
+
+      {/* ── Pay bill: floating pill (full width on phones) ── */}
+      {p.payBtn && Boolean(p.paymentLink) && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-6 sm:pb-6">
+          <button
+            type="button"
+            onClick={p.onPay}
+            className="pointer-events-auto mx-auto flex h-14 w-full items-center justify-center rounded-full text-base font-semibold shadow-[0_10px_30px_-8px_rgba(0,0,0,0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 motion-safe:active:scale-[0.98] sm:h-12 sm:w-auto sm:px-10"
+            style={{ background: t.payBg, color: t.payText, ...focusRing }}
+          >
+            Pay bill
+          </button>
+        </div>
+      )}
+
+      <DishDetailSheet
+        item={p.selectedItem ?? null}
+        onClose={p.closeItem}
+        currencySymbol={p.currencySymbol}
+        c={{ surface: t.cardBg, border: t.border, textPrimary: t.textPrimary, textSecondary: t.textMuted, accent: t.accent, accentText: t.accentText, fontFamily: t.font }}
+      />
+    </div>
+  );
 }

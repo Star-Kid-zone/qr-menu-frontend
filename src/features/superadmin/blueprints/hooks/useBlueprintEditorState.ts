@@ -10,8 +10,9 @@ import {
 } from '@/services/superadmin.service';
 import { toast } from '@/components/ui';
 import { getApiErrorMessage } from '@/utils/errors';
+import { DEFAULT_TEMPLATE_SLUG } from '@/components/templates/core/defaultTemplate';
 
-export type EditorTab = 'basic' | 'dishes' | 'theme' | 'story' | 'offers_faqs';
+export type EditorTab = 'basic' | 'dishes' | 'theme' | 'story' | 'content' | 'offers_faqs';
 
 export const DEFAULT_NEW_BLUEPRINT: MenuBlueprint = {
   id: '',
@@ -21,8 +22,10 @@ export const DEFAULT_NEW_BLUEPRINT: MenuBlueprint = {
   icon: 'utensils',
   badge: 'Custom',
   isCustom: true,
+  site: { businessType: '', layout: '', skinId: '' },
+  content: { amenities: [], awards: [], team: [], events: [] },
   theme: {
-    landingTheme: 'bento-grid',
+    landingTheme: DEFAULT_TEMPLATE_SLUG,
     menuTheme: 'modern-compact',
     landingStructure: 'split',
     menuStructure: 'accordion',

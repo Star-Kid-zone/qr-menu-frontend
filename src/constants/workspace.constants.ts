@@ -196,32 +196,48 @@ export const MENU_LAYOUT_OPTIONS: WorkspaceLayoutOption[] = MENU_THEME_OPTIONS;
 export const LANDING_LAYOUT_OPTIONS: WorkspaceLayoutOption[] =
   LANDING_THEME_OPTIONS;
 
+// Keys are stored per site (`landing_structure`) and kept stable; the designs behind them were
+// rebuilt as full layouts (components/templates/sections/layouts) that each show every section.
 export const LANDING_STRUCTURE_OPTIONS = [
-  { value: '',                 label: 'Default (follows template)' },
-  { value: 'split',            label: 'Split — fixed sidebar + scrollable content' },
-  { value: 'minimal',          label: 'Minimal — fullscreen hero + 3 dishes + footer' },
-  { value: 'magazine',         label: 'Magazine — editorial hero + story/stats sidebar' },
-  { value: 'cards',            label: 'Stacked Cards — every section as its own card' },
-  { value: 'dashboard',        label: 'Bento Dashboard — variable-sized tile grid' },
-  { value: 'tabs',             label: 'Tabbed — Menu / About / Reviews / Visit tabs' },
-  { value: 'story',            label: 'Storytelling — full-bleed alternating narrative' },
-  { value: 'sidebar-right',    label: 'Sidebar Right — menu-first, sidebar on the right' },
-  { value: 'compact',          label: 'Compact Storefront — narrow link-in-bio style' },
-  { value: 'horizontal-split', label: 'Horizontal Split — top hero band + 2-column body' },
+  { value: '',                 label: 'Default — clean and simple (follows the style template)' },
+  { value: 'split',            label: 'Royal Luxe — opulent dark-and-gold hotel dining' },
+  { value: 'minimal',          label: 'Odyssey Classic — calm Italian editorial, full-bleed photos' },
+  { value: 'magazine',         label: 'Trattoria — classic printed-menu look with ornament bands' },
+  { value: 'cards',            label: 'Legend — huge headlines, warm colour blocks, round photos' },
+  { value: 'dashboard',        label: 'Bento — modern tile grid' },
+  { value: 'tabs',             label: 'Street Pop — loud stickers, coupons, zigzag edges' },
+  { value: 'story',            label: "Chef's Journal — numbered chapters, tasting-menu courses" },
+  { value: 'sidebar-right',    label: 'Café Notebook — paper, doodles, polaroids, sticky info card' },
+  { value: 'compact',          label: 'Link Card — mobile-first link-in-bio storefront' },
+  { value: 'horizontal-split', label: 'Zen Grid — minimal hairlines, numbered sections' },
 ] as const;
 
 export const MENU_STRUCTURE_OPTIONS = [
-  { value: '',          label: 'Default (follows template)' },
-  { value: 'list',       label: 'List Classic — grouped list + filter chips' },
-  { value: 'grid',       label: 'Grid Cards — image-forward item grid' },
-  { value: 'sidebar',    label: 'Sidebar Categories — sticky nav, one category at a time' },
-  { value: 'tabs',       label: 'Tabbed Categories — horizontal tab bar' },
-  { value: 'accordion',  label: 'Accordion Categories — collapsible sections' },
-  { value: 'magazine',   label: 'Magazine Menu — editorial banner rows' },
-  { value: 'compact',    label: 'Compact Table — dense printed-menu look' },
-  { value: 'masonry',    label: 'Masonry Gallery — Pinterest-style photo grid' },
-  { value: 'story',      label: 'Story Menu — full-width category banners' },
-  { value: 'bento',      label: 'Bento Menu — dashboard-style tile grid' },
+  // '' = "Match my layout": the menu designed for the chosen page layout (or the template's menu for the original layouts).
+  { value: '',          label: 'Match my layout — the menu designed for your page layout' },
+  { value: 'list',       label: 'Classic list — grouped list + filter chips' },
+  { value: 'grid',       label: 'Photo grid — image-forward item grid' },
+  { value: 'sidebar',    label: 'Sidebar — sticky nav, one category at a time' },
+  { value: 'tabs',       label: 'Tabs — horizontal tab bar' },
+  { value: 'accordion',  label: 'Fold-out sections — collapsible sections' },
+  { value: 'magazine',   label: 'Magazine — editorial banner rows' },
+  { value: 'compact',    label: 'Compact list — dense printed-menu look' },
+  { value: 'masonry',    label: 'Photo wall — Pinterest-style photo grid' },
+  { value: 'story',      label: 'Story — full-width category banners' },
+  { value: 'bento',      label: 'Bento tiles — dashboard-style tile grid' },
+  // Site system (docs/site-system/PLAN.md §2.5)
+  { value: 'bill-of-fare',    label: 'Bill of fare — framed card with dotted price lines' },
+  { value: 'spotlight',       label: 'Spotlight — one category at a time, large rows' },
+  { value: 'magazine-spread', label: 'Magazine spread — a feature dish per category' },
+  { value: 'drinks-list',     label: 'Drinks list — style, origin, ABV and a column per size' },
+  { value: 'shop-shelf',      label: 'Shop shelf — product cards with stock and size' },
+  { value: 'garden-cards',    label: 'Garden cards — soft rounded cards' },
+  { value: 'catch-board',     label: 'Catch board — chalkboard, market prices' },
+  { value: 'grill-board',     label: 'Grill board — big price tiles' },
+  { value: 'bento-box',       label: 'Bento box — compartments per category' },
+  { value: 'market-stalls',   label: 'Market stalls — a striped awning per category' },
+  { value: 'deco-card',       label: 'Deco card — symmetric two columns' },
+  { value: 'jukebox',         label: 'Jukebox — pick a selection, it flips in' },
 ] as const;
 
 export const WORKSPACE_TOGGLE_OPTIONS: WorkspaceToggleOption[] = [

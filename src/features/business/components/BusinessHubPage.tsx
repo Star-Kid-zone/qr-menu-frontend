@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Suspense, useEffect, useState } from "react";
+import { categoriesInItemOrder } from "@/components/templates/sections/menu/categories";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PiDeviceMobileBold, PiWarningCircle } from "react-icons/pi";
 import { Modal } from "@/components/Modal";
@@ -86,7 +87,6 @@ function BusinessHubPageContent() {
     bannersSaveLoading,
     bannersSaveError,
     setBannersSaveError,
-    industries,
     setWorkspaceDraft,
     setBusinessDraft,
     setBannerDraft,
@@ -96,6 +96,7 @@ function BusinessHubPageContent() {
     previewMenuUrl,
     previewDefaultView,
     previewData,
+    workspaceMenuItems,
     fetchWorkspaceData,
     handleWorkspaceSave,
     handleBannerSave,
@@ -186,6 +187,8 @@ function BusinessHubPageContent() {
             setWorkspaceDraft={setWorkspaceDraft}
             onOpenAddWorkspaceModal={() => setAddWorkspaceModalOpen(true)}
             focusedPart={focusedPart}
+            onSiteRestored={() => fetchWorkspaceData()}
+            menuCategories={categoriesInItemOrder(workspaceMenuItems as Array<{ category?: string | null }>)}
           />
         );
       case "businesses":
@@ -198,7 +201,6 @@ function BusinessHubPageContent() {
             setBusinessSection={setBusinessSection}
             businessFormLoading={businessFormLoading}
             setBusinessFormLoading={setBusinessFormLoading}
-            industries={industries}
             setBusinessDraft={setBusinessDraft}
             onUpdateBusiness={handleUpdateBusiness}
           />

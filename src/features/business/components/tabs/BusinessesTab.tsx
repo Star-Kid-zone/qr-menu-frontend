@@ -9,7 +9,6 @@ import {
   type BusinessSchemaValues,
 } from "../BusinessForm";
 import type { WorkspaceBusiness } from "@/types/workspace.types";
-import type { Industry } from "@/types";
 
 interface BusinessesTabProps {
   businesses: WorkspaceBusiness[];
@@ -19,7 +18,6 @@ interface BusinessesTabProps {
   setBusinessSection: (val: "profile" | "taxes" | "social" | "hours") => void;
   businessFormLoading: boolean;
   setBusinessFormLoading: (val: boolean) => void;
-  industries: Industry[];
   setBusinessDraft: (val: BusinessSchemaValues | null) => void;
   onUpdateBusiness: (values: BusinessSchemaValues) => Promise<void>;
 }
@@ -32,7 +30,6 @@ export function BusinessesTab({
   setBusinessSection,
   businessFormLoading,
   setBusinessFormLoading,
-  industries,
   setBusinessDraft,
   onUpdateBusiness,
 }: BusinessesTabProps) {
@@ -98,7 +95,6 @@ export function BusinessesTab({
           <BusinessForm
             key={`business-${biz.id}-${businessEditMode}`}
             formId={editBusinessFormId(biz.id)}
-            industries={industries}
             initialData={biz}
             disabled={!businessEditMode}
             section={businessSection}

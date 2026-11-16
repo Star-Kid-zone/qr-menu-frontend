@@ -323,7 +323,7 @@ export default function LoadingScreen({
     <div
       className={cn(
         'flex w-full items-center justify-center overflow-x-hidden px-4',
-        fullScreen ? 'min-h-screen' : 'min-h-[40vh]',
+        fullScreen ? 'min-h-dvh' : 'min-h-[40vh]',
         className,
         surfaceClassName
       )}

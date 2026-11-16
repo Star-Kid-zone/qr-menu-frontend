@@ -1,4 +1,5 @@
 import { APP_NAME, TENANT_ROOT_DOMAIN } from "@/config/app.constants";
+import { LANDING_THEME_OPTIONS } from "@/components/templates/landing/constants";
 
 /*
  * Every line on the marketing page describes something the product does today.
@@ -7,57 +8,93 @@ import { APP_NAME, TENANT_ROOT_DOMAIN } from "@/config/app.constants";
  */
 
 export const BRAND = APP_NAME;
+export const ROOT_DOMAIN = TENANT_ROOT_DOMAIN;
 
-export const GUEST_FEATURES = [
-  {
-    title: "Your menu",
-    body: "Dishes with photos, prices and descriptions, marked veg or non-veg, with spice level and calories when you add them. Guests can search it. Switch a dish off and it disappears straight away.",
-  },
-  {
-    title: "Your website",
-    body: `A home page at your-restaurant.${TENANT_ROOT_DOMAIN} with your story, offers, photos, opening hours, address and phone number, and the Google reviews you choose to show.`,
-  },
-  {
-    title: "Pay bill and Review buttons",
-    body: "Pay bill opens your payment link or shows your payment QR code. Review takes guests straight to your Google review page.",
-  },
+/** Number of looks a restaurant can choose from for its website and menu (one list drives both). */
+export const LOOK_COUNT = LANDING_THEME_OPTIONS.length;
+
+/**
+ * Looks that have a photo set under public/landing/<slug>/. Only these are
+ * shown in the photo band; the full list of looks lives in the template constants.
+ */
+export const LOOKS_WITH_PHOTOS: { slug: string; label: string; ext?: "png" | "jpg"; photo?: "hero" | "dish" | "scene" }[] = [
+  { slug: "fine-dining", label: "Fine dining" },
+  { slug: "cafe-bakery", label: "Cafe & bakery" },
+  { slug: "street-food", label: "Street food" },
+  { slug: "japanese-fusion", label: "Japanese fusion" },
+  { slug: "dark-bar", label: "Dark bar" },
+  { slug: "garden-outdoor", label: "Garden" },
+  { slug: "casual-bistro", label: "Casual bistro" },
+  { slug: "seafood-coastal", label: "Seafood" },
+  { slug: "cocktail-bar", label: "Cocktail bar" },
+  { slug: "colorful-brunch", label: "Brunch" },
+  { slug: "pasta-italian", label: "Italian" },
+  { slug: "industrial-grill", label: "Grill house" },
+  { slug: "nordic-minimal", label: "Nordic minimal", photo: "scene" },
+  { slug: "vintage-diner", label: "Vintage diner" },
+  { slug: "botanical", label: "Botanical" },
 ];
+
+export const GUEST_SCREENS = [
+  {
+    id: "menu",
+    title: "The menu, with photos and prices",
+    body: "Dishes with photos, descriptions and prices, marked veg or non-veg, with spice level and calories when you add them. Guests can search it. Switch a dish off in your dashboard and it disappears straight away.",
+  },
+  {
+    id: "website",
+    title: `A website at your-restaurant.${TENANT_ROOT_DOMAIN}`,
+    body: "Your story, offers, photos, opening hours, address and phone number, plus the Google reviews you choose to show. Use your own domain if you have one.",
+  },
+  {
+    id: "pay",
+    title: "Pay bill and Review buttons",
+    body: "Pay bill opens your payment link or shows your payment QR code, so guests pay you directly. Review takes them straight to your Google review page.",
+  },
+] as const;
 
 export const DASHBOARD_AREAS = [
   {
+    id: "menu",
     title: "Menu",
     body: "Add dishes one at a time, import a CSV file, or photograph a printed menu and let AI read the dishes for you to check. Change prices in bulk and switch dishes off when they sell out.",
   },
   {
+    id: "website",
     title: "Website",
-    body: "Choose a layout and colours, write your story, and add offers, photos, questions and answers and opening hours. Check it on a phone preview before guests see it.",
+    body: `Choose one of ${LOOK_COUNT} looks for your website and menu, pick colours, write your story, and add offers, photos, questions and opening hours. Check it on a phone preview before guests see it.`,
   },
   {
+    id: "qr",
     title: "QR codes",
-    body: "Download your QR code as PNG or SVG for table cards, stickers and posters.",
+    body: "Download your QR code as PNG or SVG for table cards, stickers and posters. Guests scan with the phone camera, nothing to install.",
   },
   {
+    id: "reviews",
     title: "Reviews",
-    body: "Connect your Google Business Profile to see your reviews in one place. Reply with a suggested reply you can edit, or turn on automatic replies. Pick which reviews appear on your website.",
+    body: "Connect your Google Business Profile to see reviews in one place. Reply with a suggested reply you can edit, or turn on automatic replies. Pick which reviews appear on your website.",
   },
   {
+    id: "social",
     title: "Social posts",
     body: "Connect Facebook, Instagram, X and LinkedIn. Write a post once, send it now or schedule it, and use the ready-made weekly posters.",
   },
   {
+    id: "team",
     title: "Team",
     body: "Give managers and staff their own sign-in with only the access they need. Plan shifts and keep opening and closing checklists.",
   },
   {
+    id: "visits",
     title: "Visits",
     body: "See how many people opened your menu and website, which buttons they tapped, what they searched for, and which searches found no dish.",
   },
-];
+] as const;
 
 export const STEPS = [
   { title: "Create your account", body: "Sign up with your mobile number and the code we text you." },
   { title: "Add your dishes", body: "Type them in, import a CSV file, or scan a printed menu." },
-  { title: "Choose how it looks", body: "Pick a layout and colours, then check it on the phone preview." },
+  { title: "Choose how it looks", body: "Pick a look and colours, then check it on the phone preview." },
   { title: "Put the QR code on your tables", body: "Download it and print it for tables, the counter and the door." },
 ];
 
@@ -90,5 +127,9 @@ export const FAQS = [
     question: "Can my staff use it too?",
     answer:
       "Yes. Add managers and staff with their phone numbers. Staff can look after the menu, shifts and checklists without being able to change your website or settings.",
+  },
+  {
+    question: "Can we use our own domain?",
+    answer: `Yes. Every restaurant gets your-restaurant.${TENANT_ROOT_DOMAIN}. If you own a domain, point it at us from Settings and your website and menu answer on it.`,
   },
 ];

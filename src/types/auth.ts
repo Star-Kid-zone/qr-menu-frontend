@@ -31,11 +31,9 @@ export interface LoginFormValues {
 export interface RegisterFormValues {
   name?: string;
   businessName?: string;
-  slug?: string;
   email: string;
   phone?: string;
   password?: string;
   confirmPassword?: string;
   role?: string;
-  blueprintId?: string;
 }

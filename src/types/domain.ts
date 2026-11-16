@@ -32,6 +32,10 @@ export interface Menu {
   /** 0 (not spicy) to 3 (hot); undefined/null = not specified */
   spiceLevel?: number | null;
   calories?: number | null;
+  /** Business-type details, display only: { [setId]: { [field]: value } } — see site-system/attributes.ts */
+  attributes?: Record<string, Record<string, unknown>>;
+  /** Several prices for one item (e.g. Glass / Bottle). `price` is the lowest of them. */
+  priceOptions?: Array<{ label: string; price: string }>;
   created_at?: string;
   updated_at?: string;
 }

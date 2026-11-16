@@ -5,14 +5,18 @@ import type { MenuStructureTheme } from "./buildMenuTheme";
 import { dietaryTagLabel } from "@/constants/dietary.constants";
 import { DietaryTagIcon } from "./DietaryBadges";
 
-/** Guest-facing dietary filter pills — renders nothing when no item on the
- *  menu has any dietary tags, so it never adds empty chrome to a menu that
- *  hasn't been tagged yet. */
+/** Guest-facing dietary filter pills. One row that scrolls sideways (with
+ *  faded edges) on phones and wraps on wider screens. Renders nothing when no
+ *  dish is tagged, so it never adds empty chrome. */
 export function DietaryFilterPills({ p, t }: { p: PublicMenuTemplateProps; t: MenuStructureTheme }) {
   if (!p.allDietaryTags || p.allDietaryTags.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div
+      role="group"
+      aria-label="Dietary preferences"
+      className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 py-0.5 [mask-image:linear-gradient(to_right,transparent,#000_16px,#000_calc(100%-16px),transparent)] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:[mask-image:none]"
+    >
       {p.allDietaryTags.map((tag) => {
         const selected = p.activeDietaryTag === tag;
         return (
@@ -21,10 +25,14 @@ export function DietaryFilterPills({ p, t }: { p: PublicMenuTemplateProps; t: Me
             type="button"
             onClick={() => p.setActiveDietaryTag(selected ? null : tag)}
             aria-pressed={selected}
-            style={selected ? { background: t.accent, color: t.accentText } : { borderColor: t.border, color: t.textSecondary }}
-            className={`flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest ${selected ? "" : "border"}`}
+            style={
+              selected
+                ? { background: t.accent, color: t.accentText, borderColor: t.accent }
+                : { borderColor: t.border, color: t.textPrimary, background: t.surface }
+            }
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
           >
-            <DietaryTagIcon tag={tag} size={13} className={selected ? "!text-current" : ""} />
+            <DietaryTagIcon tag={tag} size={14} className={selected ? "!text-current" : ""} />
             {dietaryTagLabel(tag)}
           </button>
         );

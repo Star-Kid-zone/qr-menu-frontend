@@ -278,10 +278,7 @@ export function UserListPage() {
                             {u.public_slug}
                           </span>
                           <a
-                            href={
-                              buildPublicLandingUrl(u.public_slug) ||
-                              `/${u.public_slug}`
-                            }
+                            href={buildPublicLandingUrl(u.public_slug)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-primary"

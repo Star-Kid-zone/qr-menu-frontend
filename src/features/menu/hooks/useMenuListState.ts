@@ -4,11 +4,9 @@ import { useState, useEffect, useMemo, useCallback, useSyncExternalStore } from 
 import { toast } from "@/components/ui";
 import { menuService } from "@/services/menu.service";
 import { workspaceService, type WorkspaceData } from "@/services/workspace.service";
-import industryService from "@/services/industry.service";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { getApiErrorMessage } from "@/utils";
 import { getRawStorageItem, setRawStorageItem } from "@/utils/storage";
-import type { Industry } from "@/types";
 import type { MenuItem } from "../types";
 import { getItemDisplayName } from "../utils";
 
@@ -45,11 +43,8 @@ export function useMenuListState() {
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
-  // Industry settings
   const [workspace, setWorkspace] = useState<WorkspaceData | null>(null);
-  const [industries, setIndustries] = useState<Industry[]>([]);
   const [industryLoading, setIndustryLoading] = useState(true);
-  const [industrySaving, setIndustrySaving] = useState(false);
   const [onboardingDismissedNow, setOnboardingDismissedNow] = useState(false);
   // Server and first client render keep the banner hidden; it appears after
   // hydration unless the dismissal is stored.
@@ -66,41 +61,15 @@ export function useMenuListState() {
   }, []);
 
   useEffect(() => {
-    async function loadIndustryContext() {
-      try {
-        setIndustryLoading(true);
-        const [wsRes, indRes] = await Promise.all([
-          workspaceService.getWorkspace(),
-          industryService.getIndustries(),
-        ]);
-        setWorkspace(wsRes.data);
-        setIndustries(indRes.data || []);
-      } catch (err) {
-        console.error("Failed to load industry context:", err);
-      } finally {
-        setIndustryLoading(false);
-      }
-    }
-    loadIndustryContext();
+    workspaceService
+      .getWorkspace()
+      .then((res) => setWorkspace(res.data))
+      .catch((err: unknown) => console.error("Failed to load workspace:", err))
+      .finally(() => setIndustryLoading(false));
   }, []);
 
+  // The industry follows the business type chosen in the website studio (set on the server).
   const currentIndustryId = workspace?.business?.industryId != null ? Number(workspace.business.industryId) : null;
-
-  const handleIndustryChange = useCallback(async (value: string) => {
-    setIndustrySaving(true);
-    try {
-      const industryId = value ? Number(value) : null;
-      await workspaceService.updateWorkspace({ business: { industryId } });
-      setWorkspace((prev) =>
-        prev && prev.business ? { ...prev, business: { ...prev.business, industryId } } : prev,
-      );
-      toast.success("Industry updated");
-    } catch (err) {
-      toast.error(getApiErrorMessage(err, "Failed to update industry"));
-    } finally {
-      setIndustrySaving(false);
-    }
-  }, []);
 
   const {
     data: itemsData,
@@ -256,13 +225,10 @@ export function useMenuListState() {
     setBulkPriceOpen,
     togglingId,
     workspace,
-    industries,
     industryLoading,
-    industrySaving,
     showOnboardingBanner,
     dismissOnboardingBanner,
     currentIndustryId,
-    handleIndustryChange,
     items,
     fetchMenus,
     handleDelete,

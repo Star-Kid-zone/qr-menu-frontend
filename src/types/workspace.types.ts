@@ -1,4 +1,5 @@
 import type { Setting, SocialLink } from "@/types";
+import type { SiteDocument } from "@/components/templates/sections/types";
 
 export type WorkspaceToggleKey =
   | "menubtn_status"
@@ -69,6 +70,13 @@ export interface WorkspaceSettingsFormValues {
   landing_structure: string;
   menu_structure: string;
   loading_screen_theme: string;
+  /** Site system: chosen style (skin) for the site and, optionally, the menu; '' = from the style template. */
+  skin_id: string;
+  menu_skin_id: string;
+  /** Business type id ('' = from the starter kit, else generic). */
+  business_type: string;
+  /** Website CMS: section order + hidden flags for landing/menu. null = default layout. */
+  site_document: SiteDocument | null;
   // Visibility toggles
   menubtn_status: boolean;
   paybtn_status: boolean;
@@ -230,6 +238,10 @@ export interface WorkspaceSettingSource extends Omit<
   // Layout
   landing_structure?: string | null;
   menu_structure?: string | null;
+  skin_id?: string | null;
+  menu_skin_id?: string | null;
+  business_type?: string | null;
+  site_document?: SiteDocument | null;
   // Announcement schedule (ISO strings)
   announcement_starts_at?: string | null;
   announcement_ends_at?: string | null;

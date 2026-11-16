@@ -37,6 +37,9 @@ export const WEBSITE_SECTIONS: WebsiteSectionConfig[] = [
   { id: "offers", label: "Offers", tabs: ["offers"] },
 ];
 
+/** Where the owner picks their business type (the studio opens on the Layout panel, which starts with it). */
+export const BUSINESS_TYPE_HREF = "/admin/listbusiness?tab=workspace";
+
 /** Panels that moved off the Website page, and where they live now. */
 export const MOVED_TABS: Partial<Record<WorkspaceTabConfig["id"], string>> = {
   businesses: "/admin/settings?tab=business",

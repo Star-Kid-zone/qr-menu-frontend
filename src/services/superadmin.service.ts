@@ -58,6 +58,26 @@ export interface BlueprintMenuItem {
   calories?: number | null;
 }
 
+/** Website content a new restaurant starts with (events dated from sign-up). */
+/** Superadmin wording for one occasion; empty = the shipped wording. */
+export interface OccasionPackWording {
+  banner?: string;
+  specialsCategory?: string;
+}
+
+export interface BlueprintContent {
+  amenities: Array<{ id: string; note?: string }>;
+  awards: Array<{ title: string; publisher?: string; year?: number }>;
+  team: Array<{ name: string; role?: string; bio?: string; photoUrl?: string }>;
+  events: Array<{ title: string; description?: string; startsInDays: number; durationHours?: number; imageUrl?: string }>;
+}
+
+export interface BlueprintSite {
+  businessType: string;
+  layout: string;
+  skinId: string;
+}
+
 export interface BlueprintTheme {
   landingTheme: string;
   menuTheme: string;
@@ -120,6 +140,9 @@ export interface MenuBlueprint {
   icon: string;
   badge: string;
   isCustom?: boolean;
+  /** The guest-site look a new restaurant starts with. */
+  site?: BlueprintSite;
+  content?: BlueprintContent;
   items: BlueprintMenuItem[];
   theme?: BlueprintTheme;
   story?: BlueprintStory;
@@ -499,6 +522,16 @@ export const superadminService = {
       itemsAdded: number;
       mode: string;
     }>(api.post(`/superadmin/users/${userId}/apply-blueprint`, { blueprintId, mode }));
+  },
+
+  /** Corrections to the occasion date table, keyed "occasion-id:year". */
+  /** Superadmin wording for the occasion packs (suggested banner / specials category). */
+  getOccasionPacks() {
+    return unwrap<Record<string, OccasionPackWording>>(api.get('/superadmin/occasion-packs'));
+  },
+
+  saveOccasionPacks(packs: Record<string, OccasionPackWording>) {
+    return unwrap<Record<string, OccasionPackWording>>(api.put('/superadmin/occasion-packs', { packs }));
   },
 
   getAnnouncements() {

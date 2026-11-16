@@ -34,10 +34,10 @@ export async function POST(req: NextRequest) {
   }
 
   for (const tag of tags) {
-    // Next 16's revalidateTag requires a cache-life profile — 'max' purges
-    // the tag regardless of the fetch's own configured revalidate window,
-    // matching the "invalidate right now" intent of this endpoint.
-    revalidateTag(tag, 'max');
+    // Next 16: a 'max' profile only marks the tag stale (stale-while-revalidate),
+    // so the first guest after an owner's save still got the old page. `expire: 0`
+    // expires it immediately — the next request renders the new content.
+    revalidateTag(tag, { expire: 0 });
   }
 
   return NextResponse.json({ revalidated: true, tags });

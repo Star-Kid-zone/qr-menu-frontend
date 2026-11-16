@@ -8,15 +8,35 @@ import { mapPublicUserDetailsFromApi } from '@/components/templates/core/mapPubl
 import { MappedPublicUserDetails } from '@/types/components/templates/mapPublicUserDetails.types';
 import type { RawPublicSiteData } from '@/types/components/templates/rawPublicSiteData.types';
 import type { Menu } from '@/types';
+import type { PublicAward, PublicTeamMember, PublicSiteEvent } from '@/components/site-system/types';
 import { normalizeMenuItems } from '@/utils/public-site.utils';
 import type { PublicMenuPayload } from '@/types/public-site';
-import { getTenantSlugFromHost } from '@/utils/tenantHost';
+import { buildPublicTenantUrlServer, getTenantSlugFromHost, isLocalDevHost } from '@/utils/tenantHost';
+import { PUBLIC_LANDING_PATH, PUBLIC_MENU_PATH } from '@/components/templates/core/paths';
+import { TENANT_SLUG_HEADER } from '@/proxy';
 
 // Guest pages are cached for up to a minute and invalidated immediately on
 // any admin edit via on-demand revalidation (see revalidatePortal on the
 // backend + /api/revalidate below) — this restores real ISR/CDN caching
 // instead of re-fetching from the API on every single guest request.
 export const PUBLIC_REVALIDATE_SECONDS = 60;
+
+/** A non-2xx answer from the public API, keeping the status so callers can tell "no such site" from "backend down". */
+export class PublicApiError extends Error {
+  constructor(readonly path: string, readonly status: number) {
+    super(`Request failed for ${path}: ${status}`);
+    this.name = 'PublicApiError';
+  }
+}
+
+/**
+ * True when the API said the site does not exist (any 4xx). Network failures
+ * and 5xx are NOT "missing": treating them as missing would 404 every guest
+ * page during a backend outage, so they are rethrown to the error boundary.
+ */
+function isMissingSiteError(err: unknown): boolean {
+  return err instanceof PublicApiError && err.status >= 400 && err.status < 500;
+}
 
 async function fetchJson(path: string, init?: RequestInit & { revalidate?: number; tags?: string[] }) {
   const response = await fetch(`${SERVER_API_BASE_URL}${path}`, {
@@ -30,7 +50,7 @@ async function fetchJson(path: string, init?: RequestInit & { revalidate?: numbe
   });
 
   if (!response.ok) {
-    throw new Error(`Request failed for ${path}: ${response.status}`);
+    throw new PublicApiError(path, response.status);
   }
 
   const json = await response.json();
@@ -66,6 +86,8 @@ type PortalMenuItem = {
   allergens?: unknown;
   spiceLevel?: unknown;
   calories?: unknown;
+  attributes?: unknown;
+  priceOptions?: unknown;
 };
 
 type PortalResponse = {
@@ -91,7 +113,14 @@ type PortalResponse = {
     relativePublishDescription?: string | null;
     publishTime?: string | null;
   }> | null;
+  awards?: PublicAward[] | null;
+  team?: PublicTeamMember[] | null;
+  events?: PublicSiteEvent[] | null;
 };
+
+function isPlainObject(v: unknown): boolean {
+  return v !== null && typeof v === 'object' && !Array.isArray(v);
+}
 
 export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<RawPublicSiteData> => {
   const normalizedSlug = slug.trim().toLowerCase();
@@ -124,6 +153,8 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
           allergens: Array.isArray(item.allergens) ? item.allergens : [],
           spiceLevel: typeof item.spiceLevel === 'number' ? item.spiceLevel : null,
           calories: typeof item.calories === 'number' ? item.calories : null,
+          attributes: isPlainObject(item.attributes) ? (item.attributes as Menu['attributes']) : {},
+          priceOptions: Array.isArray(item.priceOptions) ? (item.priceOptions as Menu['priceOptions']) : [],
         });
       });
     });
@@ -139,6 +170,11 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
       menu_structure: portal.portalInfo.menuStructure,
       menu_theme: portal.portalInfo.menuTheme,
       loading_screen_theme: portal.portalInfo.loadingScreenTheme,
+      // Site system ('' = not chosen yet; the renderer falls back to the legacy theme / generic type)
+      skin_id:              portal.portalInfo.skinId ?? '',
+      menu_skin_id:         portal.portalInfo.menuSkinId ?? '',
+      business_type:        portal.portalInfo.businessType ?? '',
+      amenities:            Array.isArray(portal.portalInfo.amenities) ? portal.portalInfo.amenities : [],
       theme_colour: portal.portalInfo.themeColour,
       primary_color:        portal.portalInfo.primaryColor,
       secondary_color:      portal.portalInfo.secondaryColor,
@@ -159,6 +195,10 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
       story_headline:       portal.portalInfo.storyHeadline,
       story_body:           portal.portalInfo.storyBody,
       stats:                portal.portalInfo.stats,
+      // Website CMS section layout (null = default order; parsed by resolvePageSections)
+      site_document:        portal.portalInfo.siteDocument ?? null,
+      timezone:             portal.portalInfo.timezone ?? 'UTC',
+      custom_domain:        portal.portalInfo.customDomain ?? null,
       // Menu-specific design
       menu_primary_color:        portal.portalInfo.menuPrimaryColor,
       menu_secondary_color:      portal.portalInfo.menuSecondaryColor,
@@ -228,20 +268,14 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
       relativePublishDescription: r.relativePublishDescription ?? null,
       publishTime: r.publishTime ?? null,
     })),
+    awards: portal.awards ?? [],
+    team: portal.team ?? [],
+    events: portal.events ?? [],
   } as RawPublicSiteData;
 });
 
 export const getLandingBySlug = cache(async (slug: string): Promise<MappedPublicUserDetails> => {
   const data = await getRawLandingWithMenuBySlug(slug);
-  const mapped = mapPublicUserDetailsFromApi(data);
-  if (!mapped.ok) {
-    throw new Error(mapped.error);
-  }
-  return mapped.value;
-});
-
-export const getLandingById = cache(async (id: string): Promise<MappedPublicUserDetails> => {
-  const data = await getRawLandingWithMenuBySlug(id);
   const mapped = mapPublicUserDetailsFromApi(data);
   if (!mapped.ok) {
     throw new Error(mapped.error);
@@ -259,39 +293,53 @@ export const getMenuBySlug = cache(async (slug: string): Promise<PublicMenuPaylo
   };
 });
 
-export const getMenuById = cache(async (id: string): Promise<PublicMenuPayload> => {
-  const mapped = await getLandingById(id);
-  const data = await getRawLandingWithMenuBySlug(id);
-  return {
-    mapped,
-    menuItems: data.menuItems,
-    routeSlug: mapped.publicSlug ?? '',
-  };
-});
-
-export async function getTenantSlugFromRequestHost() {
+/** The host the guest asked for (the CDN/proxy sets x-forwarded-host). The single place pages read it from. */
+export async function getRequestHost(): Promise<string> {
   const headerStore = await headers();
-  const host = headerStore.get('x-forwarded-host') || headerStore.get('host') || '';
-  return getTenantSlugFromHost(host);
+  return headerStore.get('x-forwarded-host') || headerStore.get('host') || '';
 }
 
+export async function getRequestProto(): Promise<string> {
+  const headerStore = await headers();
+  const forwarded = headerStore.get('x-forwarded-proto');
+  if (forwarded) return forwarded;
+  return isLocalDevHost(await getRequestHost()) ? 'http' : 'https';
+}
+
+/**
+ * The restaurant for this request: a verified custom domain resolved by
+ * src/proxy.ts (which strips any client-sent copy of the header first), or a
+ * `<slug>.<root>` subdomain.
+ */
+export async function getTenantSlugFromRequestHost() {
+  const fromProxy = (await headers()).get(TENANT_SLUG_HEADER);
+  if (fromProxy) return fromProxy;
+  return getTenantSlugFromHost(await getRequestHost());
+}
+
+/**
+ * The tenant landing for the current host, or null when the host is not a
+ * tenant host (bare domain, app., localhost…), where the platform's own
+ * marketing page belongs.
+ *
+ * A tenant-shaped host whose slug does not exist follows a stored redirect
+ * (renamed slug) or 404s; it no longer falls back to the marketing page.
+ */
 export async function resolveLandingFromRequestHost() {
   const slug = await getTenantSlugFromRequestHost();
   if (!slug) return null;
-  try {
-    return { slug, data: await getRawLandingWithMenuBySlug(slug) };
-  } catch {
-    return null;
-  }
+  return { slug, data: await requireRawLandingBySlug(slug) };
 }
 
+/** Same as resolveLandingFromRequestHost, for /menu. */
 export async function resolveMenuFromRequestHost() {
   const slug = await getTenantSlugFromRequestHost();
   if (!slug) return null;
   try {
     return await getMenuBySlug(slug);
-  } catch {
-    return null;
+  } catch (err) {
+    if (!isMissingSiteError(err)) throw err;
+    return await redirectOrNotFound(slug, PUBLIC_MENU_PATH);
   }
 }
 
@@ -304,14 +352,17 @@ export async function resolveMenuFromRequestHost() {
  * require a middleware-level redirect instead of one thrown from a Server
  * Component, which is a reasonable follow-up but out of scope here.
  */
-async function redirectOrNotFound(path: string): Promise<never> {
+async function redirectOrNotFound(path: string, page: string = PUBLIC_LANDING_PATH): Promise<never> {
   let redirectTarget: string | null = null;
 
   try {
     const res = await fetchJson(`/public/redirects/${encodeURIComponent(path.trim().toLowerCase())}`, { revalidate: 0 });
     const { target, targetType } = res as { target?: string; targetType?: 'internal' | 'external' };
     if (target) {
-      redirectTarget = targetType === 'external' ? target : `/${target}`;
+      // An internal target is the restaurant's new slug: send the guest to that restaurant's own host.
+      redirectTarget = targetType === 'external'
+        ? target
+        : buildPublicTenantUrlServer(target, await getRequestHost(), await getRequestProto(), page);
     }
   } catch {
     // No redirect for this path — fall through to notFound() below.
@@ -327,42 +378,12 @@ async function redirectOrNotFound(path: string): Promise<never> {
 export async function requireRawLandingBySlug(slug: string): Promise<RawPublicSiteData> {
   try {
     return await getRawLandingWithMenuBySlug(slug);
-  } catch {
+  } catch (err) {
+    if (!isMissingSiteError(err)) throw err;
     return await redirectOrNotFound(slug);
   }
 }
 
-export async function requireLandingBySlug(slug: string) {
-  try {
-    return await getLandingBySlug(slug);
-  } catch {
-    return await redirectOrNotFound(slug);
-  }
-}
-
-export async function requireLandingById(id: string) {
-  try {
-    return await getLandingById(id);
-  } catch {
-    return await redirectOrNotFound(id);
-  }
-}
-
-export async function requireMenuBySlug(slug: string) {
-  try {
-    return await getMenuBySlug(slug);
-  } catch {
-    return await redirectOrNotFound(slug);
-  }
-}
-
-export async function requireMenuById(id: string) {
-  try {
-    return await getMenuById(id);
-  } catch {
-    return await redirectOrNotFound(id);
-  }
-}
 
 export interface PublicSitemapSlug {
   slug: string;

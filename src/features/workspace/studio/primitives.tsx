@@ -68,11 +68,13 @@ export function StructureTiles({
             key={o.value || "default"}
             title={blurb}
             className={cn(
-              "flex cursor-pointer items-center gap-2 rounded-xl border p-2 transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary",
+              "relative flex cursor-pointer items-center gap-2 rounded-xl border p-2 transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary",
               selected ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border bg-card hover:border-primary/40",
               disabled && "cursor-not-allowed"
             )}
           >
+            {/* `relative` on the label anchors this visually hidden input inside the tile; without it,
+                focusing it on click scrolled a distant ancestor and shifted the whole admin layout. */}
             <input type="radio" value={o.value} disabled={disabled} className="sr-only" {...register(field)} />
             <StructureGlyph glyphs={glyphs} id={o.value} active={selected} />
             <span className="text-body-medium leading-tight text-foreground">{title.replace(" (follows template)", "")}</span>

@@ -8,8 +8,6 @@ import {
   HEADING_CLASS_OPTIONS,
   HERO_OVERLAY_OPTIONS,
   HERO_TAGLINE_OPTIONS,
-  LANDING_LAYOUT_OPTIONS,
-  LANDING_STRUCTURE_OPTIONS,
   THEME_BADGE_OPTIONS,
   THEME_MARQUEE_OPTIONS,
   WORKSPACE_TOGGLE_OPTIONS,
@@ -20,15 +18,28 @@ import type { WorkspaceSettingsFormValues, WorkspaceToggleKey } from "@/types/wo
 import { LANDING_PARTS, getLandingPart, isLandingPartCustomised, type LandingControl, type LandingPartId } from "../landingParts";
 import { LANDING_ROLE_FIELD, MENU_COLOUR_THEMES, themeToValues, type ColourRole } from "../menuThemes";
 import { StudioShell } from "../studio/StudioShell";
+import { useRememberedPanel } from "../studio/useRememberedPanel";
+import { SectionsPanel } from "./SectionsPanel";
+import { KitPicker } from "./KitPicker";
+import { ColourPartPreview } from "./ColourPartPreview";
+import { HeroImagePanel } from "./HeroImagePanel";
+
+/** Parts whose colours get the live mini-preview and readability checks. */
+const COLOUR_PREVIEW_PARTS: readonly LandingPartId[] = ["page", "cards", "text", "accent"];
+import { kitFormValues, type RestaurantKit } from "@/components/templates/sections/kits/kits";
+import { SiteStatusPanel } from "./SiteStatusPanel";
 import type { StudioPartFocus } from "../studio/resolvePart";
+import { BusinessTypePicker, LayoutGallery, StyleGallery, skinFormValues } from "../studio/SitePickers";
+import { OccasionsPanel } from "../studio/OccasionsPanel";
+import { SiteContentPanel } from "../studio/SiteContentPanel";
+import { getBusinessType, resolveBusinessType } from "@/components/site-system/business-types";
+import type { Palette, SkinDefinition } from "@/components/site-system/types";
 import {
   FontControl,
   ShapeControl,
-  StructureTiles,
   SwatchControl,
   TextWithSuggestions,
   ThemeStrip,
-  type Glyphs,
 } from "../studio/primitives";
 
 export interface LandingDesignStudioProps {
@@ -41,25 +52,16 @@ export interface LandingDesignStudioProps {
   register: UseFormRegister<WorkspaceSettingsFormValues>;
   setValue: UseFormSetValue<WorkspaceSettingsFormValues>;
   focusedPart?: StudioPartFocus | null;
+  /** Called before a kit changes the style template along with its own colours, so the form skips its template-palette sync. */
+  onThemeAppliedWithLook?: (landingTheme: string) => void;
+  /** Reload after the hero photo changes (saved straight away). */
+  onAssetsChanged?: () => void | Promise<void>;
 }
 
-type RailId = LandingPartId | "layout";
+type RailId = LandingPartId | "quick" | "type" | "layout" | "style" | "loading" | "sections" | "status" | "occasions" | "content";
 
 const SET_OPTS = { shouldDirty: true, shouldTouch: true, shouldValidate: true } as const;
 
-const GLYPHS: Glyphs = {
-  "": [[4, 4, 32, 4], [4, 11, 32, 13]],
-  split: [[3, 3, 11, 22], [17, 3, 20, 8], [17, 13, 20, 5], [17, 20, 20, 5]],
-  minimal: [[3, 3, 34, 13], [3, 19, 10, 6], [15, 19, 10, 6], [27, 19, 10, 6]],
-  magazine: [[3, 3, 22, 12], [27, 3, 10, 22], [3, 17, 22, 8]],
-  cards: [[4, 3, 32, 6], [4, 11, 32, 6], [4, 19, 32, 6]],
-  dashboard: [[3, 3, 20, 10], [25, 3, 12, 10], [3, 15, 12, 10], [17, 15, 20, 10]],
-  tabs: [[4, 3, 8, 4], [14, 3, 8, 4], [24, 3, 8, 4], [4, 11, 32, 14]],
-  story: [[3, 3, 15, 10], [20, 5, 17, 3], [20, 10, 17, 3], [22, 15, 15, 10], [3, 17, 17, 3], [3, 22, 17, 3]],
-  "sidebar-right": [[3, 3, 22, 7], [3, 12, 22, 6], [3, 20, 22, 5], [28, 3, 9, 22]],
-  compact: [[12, 3, 16, 5], [12, 10, 16, 4], [12, 16, 16, 4], [12, 22, 16, 3]],
-  "horizontal-split": [[3, 3, 34, 8], [3, 13, 16, 12], [21, 13, 16, 12]],
-};
 
 const TOGGLES = WORKSPACE_TOGGLE_OPTIONS.filter((t) => t.id !== "announcement_enabled");
 
@@ -122,8 +124,11 @@ export function LandingDesignStudio({
   register,
   setValue,
   focusedPart,
+  onThemeAppliedWithLook,
+  onAssetsChanged,
 }: LandingDesignStudioProps) {
-  const [active, setActive] = useState<RailId>("layout");
+  // A new site starts at its business type; one that has one starts at the layout.
+  const [active, setActive] = useRememberedPanel<RailId>("landing", watchedValues.business_type ? "layout" : "type");
 
   // A tap in the preview picks a part. Adjusted during render, not in an effect,
   // so the panel never flashes the previous part.
@@ -135,7 +140,23 @@ export function LandingDesignStudio({
 
   const values = watchedValues as unknown as Record<string, unknown>;
   const palette = getTemplatePalette(watchedValues.landing_theme ?? "");
-  const part = getLandingPart(active === "layout" ? "page" : active);
+  const part = getLandingPart(LANDING_PARTS.some((p) => p.id === active) ? (active as LandingPartId) : "page");
+  const business = getBusinessType(watchedValues.business_type) ?? resolveBusinessType({ site_document: watchedValues.site_document });
+  /** The current colours as a palette, for the layout thumbnails. */
+  const currentPalette: Palette = {
+    bg: String(values.accent_color || "#ffffff"),
+    surface: String(values.secondary_color || "#f4f4f4"),
+    accent: String(values.primary_color || "#333333"),
+    accentText: String(values.accent_text_color || "#ffffff"),
+    text: String(values.text_primary_color || "#111111"),
+    textMuted: String(values.text_secondary_color || "#555555"),
+    border: String(values.border_color || "#dddddd"),
+    band: String(values.section_bg_color || "#eeeeee"),
+    footer: String(values.footer_bg_color || "#222222"),
+  };
+  const pickSkin = (skin: SkinDefinition) => {
+    for (const [field, v] of Object.entries(skinFormValues(skin))) set(field as keyof WorkspaceSettingsFormValues, v);
+  };
 
   const set = (name: keyof WorkspaceSettingsFormValues, v: unknown) => setValue(name, v as never, SET_OPTS);
 
@@ -145,6 +166,17 @@ export function LandingDesignStudio({
     for (const [field, colour] of Object.entries(themeToValues(theme, LANDING_ROLE_FIELD))) {
       set(field as keyof WorkspaceSettingsFormValues, colour);
     }
+  };
+
+  /** Apply a restaurant-type kit to the form (live preview; saved with the normal Save). */
+  const applyKit = (kit: RestaurantKit) => {
+    // A recipe sets no old template; tell the form so its template colour sync stays out of the way.
+    onThemeAppliedWithLook?.("");
+    for (const [field, v] of Object.entries(kitFormValues(kit, watchedValues))) {
+      set(field as keyof WorkspaceSettingsFormValues, v);
+    }
+    const doc = watchedValues.site_document;
+    set("site_document", { ...(doc ?? {}), version: 1, landing: { sections: kit.sections }, kit: kit.id });
   };
 
   const colourCount = part.controls.filter((x) => x.kind === "color").length;
@@ -230,63 +262,89 @@ export function LandingDesignStudio({
     <StudioShell
       formId={formId}
       ariaLabel="Landing page design"
-      strip={<ThemeStrip values={values} fields={LANDING_ROLE_FIELD} disabled={disabled} dirty={isDirty} onPick={applyTheme} />}
+      strip={
+        COLOUR_PREVIEW_PARTS.includes(active as LandingPartId) ? (
+          <ThemeStrip values={values} fields={LANDING_ROLE_FIELD} disabled={disabled} dirty={isDirty} onPick={applyTheme} />
+        ) : null
+      }
+      groups={[
+        { id: "setup", label: "Set up" },
+        { id: "content", label: "Content" },
+        { id: "tune", label: "Fine-tune", collapsible: true },
+      ]}
       items={[
-        { id: "layout", label: "Layout" },
+        { id: "quick", group: "setup", label: "Quick start", hint: "A ready-made look for your cuisine: business type, layout, style and section order in one click." },
+        { id: "type", group: "setup", label: "Business type", hint: "Sets the words guests see (Menu or Drinks), the item details you can add, and icons.", customised: Boolean(watchedValues.business_type) },
+        { id: "layout", group: "setup", label: "Layout", hint: "How the page is arranged and how it moves. Suggested layouts for your business type come first." },
+        { id: "style", group: "setup", label: "Style", hint: "Colours, fonts, icons and ornaments. Picking one sets your colours; you can fine-tune them later.", customised: Boolean(watchedValues.skin_id) },
+        { id: "sections", group: "content", label: "Sections", hint: "Choose which parts of the page show, and in what order.", customised: Boolean(watchedValues.site_document?.landing) },
+        { id: "content", group: "content", label: "Awards, team, events", hint: "Extra content guests can see: press and awards, your team, upcoming events, amenities and picks." },
+        { id: "occasions", group: "content", label: "Occasions", hint: "Switch on a festival: guests get its opening scene, a banner and decorations until you turn it off.", customised: Boolean(watchedValues.site_document?.occasion) },
+        { id: "status", group: "content", label: "Open / closed", hint: "Tell guests you're closed for a day or a holiday.", customised: Boolean(watchedValues.site_document?.status) },
         ...LANDING_PARTS.map((p) => ({
           id: p.id as string,
+          group: "tune",
           label: p.label,
+          hint: p.summary,
           customised: isLandingPartCustomised(p, values, palette),
         })),
+        { id: "loading", group: "tune", label: "Loading screen", hint: "What guests see for a moment while the page opens." },
       ]}
       active={active}
       onActive={(id) => setActive(id as RailId)}
     >
-      {active === "layout" ? (
-        <>
-          <StructureTiles
-            label="Page structure"
-            field="landing_structure"
-            options={LANDING_STRUCTURE_OPTIONS}
-            glyphs={GLYPHS}
-            value={watchedValues.landing_structure ?? ""}
-            register={register}
+      {active === "quick" ? (
+        <KitPicker activeKitId={watchedValues.site_document?.kit} disabled={disabled} onApply={applyKit} />
+      ) : active === "type" ? (
+        <BusinessTypePicker value={watchedValues.business_type ?? ""} disabled={disabled} onChange={(id) => set("business_type", id)} />
+      ) : active === "layout" ? (
+        <LayoutGallery
+          value={watchedValues.landing_structure ?? ""}
+          recommended={business.recommended.layouts}
+          palette={currentPalette}
+          disabled={disabled}
+          onChange={(key) => set("landing_structure", key)}
+        />
+      ) : active === "style" ? (
+        <StyleGallery value={watchedValues.skin_id ?? ""} recommended={business.recommended.skins} disabled={disabled} onChange={pickSkin} />
+      ) : active === "loading" ? (
+        <FormField label="Loading screen" htmlFor={`${formId}-loading-layout`} error={errors.loading_screen_theme?.message}>
+          <Select
+            id={`${formId}-loading-layout`}
+            invalid={Boolean(errors.loading_screen_theme)}
             disabled={disabled}
-          />
-          <div className="grid gap-3 sm:grid-cols-2">
-            <FormField label="Style template" htmlFor={`${formId}-landing-layout`} error={errors.landing_theme?.message}>
-              <Select
-                id={`${formId}-landing-layout`}
-                invalid={Boolean(errors.landing_theme)}
-                disabled={disabled}
-                className="h-9 text-sm"
-                {...register("landing_theme")}
-              >
-                {LANDING_LAYOUT_OPTIONS.map((l) => (
-                  <option key={l.value} value={l.value}>
-                    {l.label}
-                  </option>
-                ))}
-              </Select>
-            </FormField>
-            <FormField label="Loading screen" htmlFor={`${formId}-loading-layout`} error={errors.loading_screen_theme?.message}>
-              <Select
-                id={`${formId}-loading-layout`}
-                invalid={Boolean(errors.loading_screen_theme)}
-                disabled={disabled}
-                className="h-9 text-sm"
-                {...register("loading_screen_theme")}
-              >
-                <option value="minimal">Minimalist - Clean spinner</option>
-                <option value="branded">Branded - Logo &amp; Primary color</option>
-                <option value="skeleton">Skeleton - Content placeholders</option>
-              </Select>
-            </FormField>
-          </div>
-        </>
+            className="h-9 max-w-sm text-sm"
+            {...register("loading_screen_theme")}
+          >
+            <option value="minimal">Simple spinner</option>
+            <option value="branded">Your logo and colour</option>
+            <option value="skeleton">Outline of the page</option>
+          </Select>
+        </FormField>
+      ) : active === "sections" ? (
+        <SectionsPanel
+          value={watchedValues.site_document ?? null}
+          structureKey={watchedValues.landing_structure ?? ""}
+          disabled={disabled}
+          onChange={(doc) => set("site_document", doc)}
+        />
+      ) : active === "occasions" ? (
+        <OccasionsPanel
+          value={watchedValues.site_document ?? null}
+          disabled={disabled}
+          onChange={(doc) => set("site_document", doc)}
+        />
+      ) : active === "content" ? (
+        <SiteContentPanel value={watchedValues.site_document ?? null} disabled={disabled} onChange={(doc) => set("site_document", doc)} />
+      ) : active === "status" ? (
+        <SiteStatusPanel
+          formId={formId}
+          value={watchedValues.site_document ?? null}
+          disabled={disabled}
+          onChange={(doc) => set("site_document", doc)}
+        />
       ) : active === "show" ? (
         <>
-          <p className="text-caption text-muted-foreground">{part.summary}</p>
           <div className="grid gap-2 sm:grid-cols-2">
             {TOGGLES.map((t) => (
               <ToggleCard
@@ -326,7 +384,9 @@ export function LandingDesignStudio({
         </>
       ) : (
         <>
-          <p className="text-caption text-muted-foreground">{part.summary}</p>
+          {COLOUR_PREVIEW_PARTS.includes(part.id) ? <ColourPartPreview part={part.id} values={values} /> : null}
+          {part.id === "hero" ? <HeroImagePanel disabled={disabled} onChanged={onAssetsChanged} /> : null}
+          {part.id === "hero" ? <p className="text-body-medium text-foreground">Photo tint</p> : null}
           <div className="grid gap-3 sm:grid-cols-2">{part.controls.map(renderControl)}</div>
         </>
       )}

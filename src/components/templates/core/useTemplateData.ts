@@ -1,23 +1,20 @@
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAnalytics } from '@/hooks/useAnalytics.hook';
 import { NextLinkAdapter } from '@/components/next/NextLinkAdapter';
-import { publicLandingPath, publicMenuPath } from '@/components/templates/core/paths';
+import { PUBLIC_LANDING_PATH, PUBLIC_MENU_PATH } from '@/components/templates/core/paths';
 import { mapGalleryWithResolvedUrls } from '@/components/templates/core/publicMedia';
-import { getTenantSlugFromHost } from '@/utils/tenantHost';
+import { parseSiteDocument } from '@/components/templates/sections/document';
+import {
+  CATEGORY_SECTION_TYPE,
+  categoriesInItemOrder,
+  visibleMenuCategories,
+} from '@/components/templates/sections/menu/categories';
+import { isMenuPartShown } from '@/components/templates/sections/menu/parts';
+import { lookFromSettings, siteToday } from '@/components/site-system/kit/look';
 import type { PublicLandingTemplateProps, PublicMenuTemplateProps } from '@/components/templates/core/types';
 import type { MappedPublicUserDetails } from '@/types/components/templates/mapPublicUserDetails.types';
 import type { PublicMenuPayload } from '@/types/public-site';
 import type { Menu } from '@/types';
-
-// The hostname never changes for the lifetime of the page, so there is nothing to subscribe to.
-const subscribeNoop = () => () => {};
-const getIsSubdomainSnapshot = () => Boolean(getTenantSlugFromHost(window.location.hostname));
-// Server render (and hydration) always assume a path-based URL; the client snapshot takes over after hydration.
-const getIsSubdomainServerSnapshot = () => false;
-
-function useIsSubdomain(): boolean {
-  return useSyncExternalStore(subscribeNoop, getIsSubdomainSnapshot, getIsSubdomainServerSnapshot);
-}
 
 function safeString(v: unknown, fallback = ''): string {
   return typeof v === 'string' && v.trim() ? v : fallback;
@@ -66,11 +63,7 @@ export function useLandingTemplateData(mapped: MappedPublicUserDetails, routeSlu
     track('visit', 'landing_page', { page: 'landing', path: window.location.pathname, ...getAcquisitionMetadata() });
   }, [track]);
 
-  const isSubdomain = useIsSubdomain();
-  const menuHref = useMemo(
-    () => publicMenuPath(mapped.userId, routeSlug ?? mapped.publicSlug, isSubdomain),
-    [mapped, routeSlug, isSubdomain],
-  );
+  const menuHref = PUBLIC_MENU_PATH;
 
   const paymentLink = safeString(mapped.paymentLink, '');
   const reviewLink = safeString(mapped.reviewLink, '');
@@ -78,8 +71,8 @@ export function useLandingTemplateData(mapped: MappedPublicUserDetails, routeSlu
   const websiteHref =
     websiteUrl && /^https?:\/\//i.test(websiteUrl) ? websiteUrl : websiteUrl ? `https://${websiteUrl}` : '';
 
-  const hasMenuHref = Boolean(menuHref && menuHref !== '#');
-  const finalMenuBtn = mapped.menubtnStatus || hasMenuHref;
+  // The menu always lives at /menu on the restaurant's host, so the landing always links to it.
+  const finalMenuBtn = true;
 
   return {
     businessName: safeString(mapped.business.business_name, 'Venue'),
@@ -118,8 +111,38 @@ export function useLandingTemplateData(mapped: MappedPublicUserDetails, routeSlu
   };
 }
 
+/**
+ * Apply the owner's menu category layout (site_document.menu): drop items in
+ * hidden or out-of-date-window categories and, when the owner has placed
+ * categories, order items so categories appear in that order. Item order
+ * within a category is kept (stable sort). With no saved layout the list is
+ * returned as-is, so the menu looks exactly as it always has.
+ */
+export function applyMenuCategoryLayout(items: Menu[], settings: Record<string, unknown> | undefined): Menu[] {
+  const doc = settings?.site_document;
+  const placed = parseSiteDocument(doc)?.menu?.sections.some((s) => s.type === CATEGORY_SECTION_TYPE);
+  if (!placed) return items;
+
+  const order = visibleMenuCategories(doc, categoriesInItemOrder(items), siteToday(settings as Record<string, unknown> | undefined));
+  const rank = new Map(order.map((name, i) => [name.trim().toLowerCase(), i]));
+  const UNCATEGORISED = order.length; // items with no category ("Other") stay visible, after the placed ones
+  const rankOf = (it: Menu) => {
+    const c = it.category?.trim();
+    return c ? rank.get(c.toLowerCase()) : UNCATEGORISED;
+  };
+  return items
+    .filter((it) => rankOf(it) !== undefined)
+    .map((it, i) => ({ it, i, r: rankOf(it)! }))
+    .sort((a, b) => a.r - b.r || a.i - b.i)
+    .map(({ it }) => it);
+}
+
 export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: string | null): PublicMenuTemplateProps {
-  const { mapped, menuItems } = payload;
+  const { mapped } = payload;
+  const menuItems = useMemo(
+    () => applyMenuCategoryLayout(payload.menuItems, mapped.settings),
+    [payload.menuItems, mapped.settings],
+  );
   const { track } = useAnalytics({ userId: mapped.userId });
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -161,7 +184,11 @@ export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: strin
     return Array.from(seen);
   }, [menuItems]);
 
-  const hasPopular = useMemo(() => menuItems.some((it) => it.popular), [menuItems]);
+  // Owner switches for the search box and filter chips (site_document.menu).
+  const showSearch = isMenuPartShown(mapped.settings?.site_document, 'search');
+  const showFilters = isMenuPartShown(mapped.settings?.site_document, 'filters');
+
+  const hasPopular = useMemo(() => showFilters && menuItems.some((it) => it.popular), [menuItems, showFilters]);
 
   const allDietaryTags = useMemo(() => {
     const seen = new Set<string>();
@@ -222,13 +249,10 @@ export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: strin
     return Array.from(map.entries());
   }, [filtered]);
 
-  const isSubdomain = useIsSubdomain();
-  const homeHref = useMemo(
-    () => publicLandingPath(mapped.userId, routeSlug ?? mapped.publicSlug, isSubdomain),
-    [mapped, routeSlug, isSubdomain],
-  );
+  const homeHref = PUBLIC_LANDING_PATH;
   const paymentLink = mapped.paymentLink || '';
   const settings = mapped.settings;
+  const look = useMemo(() => lookFromSettings(settings, '', 'menu'), [settings]);
 
   return {
     businessName: (mapped.business.business_name as string) || 'Venue',
@@ -246,15 +270,17 @@ export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: strin
     searchQuery,
     setSearchQuery,
     allCategories,
-    allTypes,
+    allTypes: showFilters ? allTypes : [],
     hasPopular,
+    showSearch,
+    filterCategories: showFilters ? allCategories : [],
     activeCategory,
     setActiveCategory,
     activeType,
     setActiveType,
     popularOnly,
     setPopularOnly,
-    allDietaryTags,
+    allDietaryTags: showFilters ? allDietaryTags : [],
     activeDietaryTag,
     setActiveDietaryTag,
     selectedItem,
@@ -284,5 +310,6 @@ export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: strin
     borderColor:   (settings.menu_border_color         as string) || (settings.border_color         as string) || '',
     footerBg:      (settings.menu_footer_bg_color      as string) || (settings.footer_bg_color      as string) || '',
     sectionBg:     (settings.menu_section_bg_color     as string) || (settings.section_bg_color     as string) || '',
+    look,
   };
 }

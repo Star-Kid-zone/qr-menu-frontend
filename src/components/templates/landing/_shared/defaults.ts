@@ -2,6 +2,7 @@ import type { Menu } from '@/types';
 import type { RawPublicSiteData } from '@/types/components/templates/rawPublicSiteData.types';
 import { toSafeExternalUrl } from '@/utils/url';
 import { resolveTerms } from './industryTerms';
+import { DEFAULT_TEMPLATE_SLUG } from '@/components/templates/core/defaultTemplate';
 
 export type SignatureDish = { name: string; description: string; price?: string; image?: string };
 export type Faq = { q: string; a: string };
@@ -35,7 +36,7 @@ function firstImageObjectUrl(m: MenuRow): string | undefined {
  */
 export function getLandingThemeSlug(data: RawPublicSiteData): string {
   const landingTheme = data.settings?.landing_theme;
-  return landingTheme == null ? 'swiss' : String(landingTheme);
+  return landingTheme == null || landingTheme === '' ? DEFAULT_TEMPLATE_SLUG : String(landingTheme);
 }
 
 /**

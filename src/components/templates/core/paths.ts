@@ -1,13 +1,6 @@
-import { routes } from '@/config/routes';
-
-export function publicMenuPath(userId: number, tenantSlug?: string | null, isSubdomain?: boolean): string {
-  const s = typeof tenantSlug === 'string' ? tenantSlug.trim().toLowerCase() : '';
-  if (!s) return routes.user.menu(userId);
-  return isSubdomain ? '/menu' : `/${s}/menu`;
-}
-
-export function publicLandingPath(userId: number, tenantSlug?: string | null, isSubdomain?: boolean): string {
-  const s = typeof tenantSlug === 'string' ? tenantSlug.trim().toLowerCase() : '';
-  if (!s) return routes.user.landing(userId);
-  return isSubdomain ? '/' : `/${s}`;
-}
+/**
+ * A restaurant's site lives only on its own host (`<slug>.<root>` or a custom
+ * domain), so guest links are always host-relative.
+ */
+export const PUBLIC_LANDING_PATH = '/';
+export const PUBLIC_MENU_PATH = '/menu';

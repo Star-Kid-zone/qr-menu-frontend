@@ -1,6 +1,6 @@
 import React from 'react';
 import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
-import { getTenantPublicUrl } from "@/config/app.constants";
+import { getTenantCanonicalUrl } from "@/config/app.constants";
 import { readBusinessSeo } from "@/utils/public-seo";
 
 /** Converts a raw `HH:mm`/`H:mm AM|PM`-ish time string into schema.org's `HH:MM` 24h format. Returns null if unparsable. */
@@ -46,7 +46,7 @@ export function TenantSchema({ data }: { data: RawPublicSiteData }) {
   const b = data.business;
   const seo = readBusinessSeo(b, data.settings);
   const rawSlug = data.settings?.public_slug;
-  const url = getTenantPublicUrl(typeof rawSlug === 'string' ? rawSlug : undefined);
+  const url = getTenantCanonicalUrl(data.settings, typeof rawSlug === 'string' ? rawSlug : undefined);
 
   const openingHours = buildOpeningHours(b.availability);
 

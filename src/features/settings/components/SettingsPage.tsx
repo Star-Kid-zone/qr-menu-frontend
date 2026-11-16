@@ -15,8 +15,10 @@ import { useBusinessHubState } from "@/features/business/hooks/useBusinessHubSta
 import { BusinessesTab } from "@/features/business/components/tabs/BusinessesTab";
 import { ListPaymentPage } from "@/features/payments/components/ListPaymentPage";
 import { ConnectedAccounts } from "./ConnectedAccounts";
+import { TimeZoneCard } from "./TimeZoneCard";
+import { CustomDomainsCard } from "./CustomDomainsCard";
 
-type SettingsTab = "business" | "payment" | "accounts";
+type SettingsTab = "business" | "address" | "payment" | "accounts";
 
 /** Business details uses the same state and form the Website page used before. */
 function BusinessDetails() {
@@ -46,19 +48,36 @@ function BusinessDetails() {
     );
   }
   return (
-    <BusinessesTab
-      businesses={s.businesses}
-      businessEditMode={s.businessEditMode}
-      setBusinessEditMode={s.setBusinessEditMode}
-      businessSection={s.businessSection}
-      setBusinessSection={s.setBusinessSection}
-      businessFormLoading={s.businessFormLoading}
-      setBusinessFormLoading={s.setBusinessFormLoading}
-      industries={s.industries}
-      setBusinessDraft={s.setBusinessDraft}
-      onUpdateBusiness={s.handleUpdateBusiness}
-    />
+    <div className="space-y-6">
+      <BusinessesTab
+        businesses={s.businesses}
+        businessEditMode={s.businessEditMode}
+        setBusinessEditMode={s.setBusinessEditMode}
+        businessSection={s.businessSection}
+        setBusinessSection={s.setBusinessSection}
+        businessFormLoading={s.businessFormLoading}
+        setBusinessFormLoading={s.setBusinessFormLoading}
+        setBusinessDraft={s.setBusinessDraft}
+        onUpdateBusiness={s.handleUpdateBusiness}
+      />
+      {s.workspace ? (
+        <TimeZoneCard
+          key={s.workspace.timezone ?? "UTC"}
+          value={s.workspace.timezone ?? "UTC"}
+          onSaved={() => s.fetchWorkspaceData()}
+        />
+      ) : null}
+    </div>
   );
+}
+
+/** Free subdomain + custom domains. */
+function WebsiteAddress() {
+  const s = useBusinessHubState();
+  if (s.isInitialLoading) {
+    return <Skeleton className="h-64 w-full rounded-lg" />;
+  }
+  return <CustomDomainsCard publicSlug={s.workspace?.public_slug} />;
 }
 
 function SettingsContent() {
@@ -68,6 +87,7 @@ function SettingsContent() {
 
   const tabs: { id: SettingsTab; label: string; allowed: boolean }[] = [
     { id: "business", label: "Business details", allowed: canEditWebsite },
+    { id: "address", label: "Website address", allowed: canEditWebsite },
     { id: "payment", label: "Bill payment", allowed: hasPermission("payments") },
     { id: "accounts", label: "Connected accounts", allowed: hasPermission("reviews") || hasPermission("marketing") },
   ];
@@ -122,6 +142,7 @@ function SettingsContent() {
       {/* The only scroll area on the page; tabs stay pinned above it. */}
       <div className="min-h-0 flex-1 overflow-y-auto pb-6 [scrollbar-gutter:stable]">
         {active.id === "business" && <BusinessDetails />}
+        {active.id === "address" && <WebsiteAddress />}
         {active.id === "payment" && <ListPaymentPage startEditing={startEditingPayment} />}
         {active.id === "accounts" && <ConnectedAccounts />}
       </div>

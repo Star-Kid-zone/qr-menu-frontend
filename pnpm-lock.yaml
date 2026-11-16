@@ -18,6 +18,9 @@ importers:
       '@lglab/react-qr-code':
         specifier: ^1.7.0
         version: 1.7.0(react@19.2.8)
+      '@lottiefiles/dotlottie-react':
+        specifier: ^0.21.1
+        version: 0.21.1(react@19.2.8)
       '@thumbmarkjs/thumbmarkjs':
         specifier: ^1.10.1
         version: 1.10.1
@@ -511,6 +514,16 @@ packages:
     resolution: {integrity: sha512-nocFONGSsDkgCKpMEvBkOsBZc7OXih4d9TDRBMdikLnlN4p5a63i2zfs2fEnsyyF02gBfhw8rgLWpFZNOyfabQ==}
     peerDependencies:
       react: ^18 || ^19
+
+  '@lottiefiles/dotlottie-react@0.21.1':
+    resolution: {integrity: sha512-y5ec2Ipko1TvUfoUmS9zn+g0Ud+oYtUEJS5Xj27edv1kO8ZAowoA2v6DUWNniZ/+A9m5wjEswqPzShOK6+pdAw==}
+    engines: {node: '>=18.17.0', npm: '>=9.5.0'}
+    peerDependencies:
+      react: ^17 || ^18 || ^19
+
+  '@lottiefiles/dotlottie-web@0.82.1':
+    resolution: {integrity: sha512-hLPdAL0dUeHKvQvXqw1p3FtvzZUHRtBsTMt3FLLgphFThsUPNUj2+U+GyttJ5H5qSt5JreLzoaD+IaKO8H/VnA==}
+    engines: {node: '>=18.17.0', npm: '>=9.5.0'}
 
   '@napi-rs/wasm-runtime@1.2.0':
     resolution: {integrity: sha512-kDoONqMa+VnZ4vvvu/ZUurpJ4gkZU57e7g69qpNgWhYcZFPUHZM2CEMKm+cG6ufDVALbjMvfmMjFVqaK7uEMnA==}
@@ -3439,6 +3452,13 @@ snapshots:
   '@lglab/react-qr-code@1.7.0(react@19.2.8)':
     dependencies:
       react: 19.2.8
+
+  '@lottiefiles/dotlottie-react@0.21.1(react@19.2.8)':
+    dependencies:
+      '@lottiefiles/dotlottie-web': 0.82.1
+      react: 19.2.8
+
+  '@lottiefiles/dotlottie-web@0.82.1': {}
 
   '@napi-rs/wasm-runtime@1.2.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
     dependencies:

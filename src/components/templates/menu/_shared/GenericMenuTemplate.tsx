@@ -2,8 +2,9 @@
 import { MenuTemplateRenderer } from './makeMenuTemplate';
 import { MENU_THEME_DATA } from './menuThemeData';
 import type { PublicMenuPayload } from '@/types/public-site';
+import { DEFAULT_TEMPLATE_SLUG } from '@/components/templates/core/defaultTemplate';
 
-const FALLBACK_THEME = MENU_THEME_DATA['bento-grid'];
+const FALLBACK_THEME = MENU_THEME_DATA[DEFAULT_TEMPLATE_SLUG];
 
 /**
  * Single shared renderer for every "flat" menu template — one that's just a

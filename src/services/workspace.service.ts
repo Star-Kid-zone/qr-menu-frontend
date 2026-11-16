@@ -1,5 +1,6 @@
 import api from './api.service';
 import type { Currency, SocialLink } from '@/types';
+import type { SiteDocument } from '@/components/templates/sections/types';
 
 export interface WorkspaceTheme {
   themeColour: string;
@@ -23,6 +24,10 @@ export interface WorkspaceTheme {
   landingTheme: string;
   landingStructure: string;
   loadingScreenTheme: string;
+  /** Site system: '' = not chosen (falls back to landingTheme / menuTheme / the generic business type). */
+  skinId?: string;
+  menuSkinId?: string;
+  businessType?: string;
   // Menu-specific design
   menuPrimaryColor?: string;
   menuSecondaryColor?: string;
@@ -173,6 +178,10 @@ export interface WorkspaceData {
   payment: WorkspacePaymentConfig;
   qrCode: WorkspaceQrCodeConfig;
   content: WorkspaceContent;
+  /** Website CMS section layout; null = default layout. */
+  siteDocument?: SiteDocument | null;
+  /** IANA time zone the restaurant runs in (default "UTC"). */
+  timezone?: string;
   gallery: WorkspaceGalleryItem[];
   offers: WorkspaceOfferItem[];
   faqs: WorkspaceFaq[];
@@ -189,6 +198,29 @@ export interface WorkspaceListItem {
   isDefault: boolean;
 }
 
+/** A custom domain connected (or being connected) to the guest site. */
+export interface SiteDomain {
+  id: string;
+  domain: string;
+  verified: boolean;
+  verifiedAt: string | null;
+  lastCheckedAt: string | null;
+  dns: {
+    txt: { name: string; value: string };
+    cname: { name: string; target: string } | null;
+  };
+}
+
+/** One saved snapshot of the website layout (sections, menu categories, open/closed status). */
+export interface SiteVersion {
+  id: string;
+  createdAt: string;
+  createdByName: string | null;
+  /** The snapshot guests see now. */
+  isCurrent: boolean;
+  summary: string;
+}
+
 export const workspaceService = {
   listWorkspaces: () => api.get<WorkspaceListItem[]>('/workspace/list'),
   getWorkspace: () => api.get<WorkspaceData>('/workspace'),
@@ -203,6 +235,17 @@ export const workspaceService = {
   toggleFaq: (id: string) => api.patch<{ message: string, faq: WorkspaceFaq }>(`/workspace/faqs/${id}/toggle`),
   removeFaq: (id: string) => api.delete<{ message: string }>(`/workspace/faqs/${id}`),
   getCurrencies: () => api.get<Currency[]>('/workspace/currencies'),
+  /** Hero photo: upload a new one, or choose a gallery/built-in photo (null = the style's own photo). */
+  uploadHeroImage: (data: FormData) => api.post<{ url: string }>('/workspace/banner', data),
+  chooseHeroImage: (url: string | null) => api.put<{ url: string | null }>('/workspace/banner', { url }),
+  /** Custom domains for the guest site. */
+  listDomains: () => api.get<SiteDomain[]>('/workspace/domains'),
+  addDomain: (domain: string) => api.post<SiteDomain>('/workspace/domains', { domain }),
+  removeDomain: (id: string) => api.delete<{ removed: boolean }>(`/workspace/domains/${id}`),
+  verifyDomain: (id: string) => api.post<{ domain: SiteDomain; reason: string | null }>(`/workspace/domains/${id}/verify`),
+  /** Website layout history (newest first). */
+  listSiteVersions: () => api.get<SiteVersion[]>('/workspace/site-versions'),
+  restoreSiteVersion: (id: string) => api.post<{ restored: boolean }>(`/workspace/site-versions/${id}/restore`),
   uploadPaymentQr: (data: FormData) => api.post<{ message: string, url: string }>('/workspace/payment-qr', data),
   checkSlugAvailability: (slug: string) =>
     api.get<{ available: boolean }>('/workspace/slug-availability', { params: { slug } }),

@@ -1,72 +1,28 @@
 'use client';
 
 import React from 'react';
-import type { MenuBlueprint, BlueprintTheme } from '@/services/superadmin.service';
+import type { MenuBlueprint, BlueprintTheme, BlueprintSite } from '@/services/superadmin.service';
+import { BlueprintSiteSection } from './BlueprintSiteSection';
 
 interface BlueprintThemeSectionProps {
   theme?: BlueprintTheme;
+  site?: BlueprintSite;
   setFormData: React.Dispatch<React.SetStateAction<MenuBlueprint>>;
 }
 
 export function BlueprintThemeSection({
   theme,
+  site,
   setFormData,
 }: BlueprintThemeSectionProps) {
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-border bg-muted/10 p-4 space-y-4">
-        <h3 className="text-xs font-bold text-muted-foreground">
-          Layout Templates
-        </h3>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-xs font-bold text-foreground">Landing Theme</label>
-            <select
-              value={theme?.landingTheme || 'swiss'}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  theme: { ...prev.theme, landingTheme: e.target.value } as BlueprintTheme,
-                }))
-              }
-              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground"
-            >
-              <option value="swiss">Swiss Minimal</option>
-              <option value="bento-grid">Bento Grid</option>
-              <option value="card-based-ui">Card Based UI</option>
-              <option value="serif-elegance">Serif Elegance</option>
-              <option value="editorial-magazine">Editorial Magazine</option>
-              <option value="warm-rustic">Warm Rustic</option>
-              <option value="dark-mode-noir">Dark Mode Noir</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="mb-1 block text-xs font-bold text-foreground">Landing Structure</label>
-            <select
-              value={theme?.landingStructure || 'split'}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  theme: { ...prev.theme, landingStructure: e.target.value } as BlueprintTheme,
-                }))
-              }
-              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground"
-            >
-              <option value="split">Split Layout</option>
-              <option value="cards">Stacked Cards</option>
-              <option value="dashboard">Dashboard Cards</option>
-              <option value="tabs">Tabbed Sections</option>
-              <option value="minimal">Minimal Grid</option>
-            </select>
-          </div>
-        </div>
-      </div>
+      <BlueprintSiteSection site={site} setFormData={setFormData} />
 
       {/* Color Palette */}
       <div className="rounded-xl border border-border bg-muted/10 p-4 space-y-4">
         <h3 className="text-xs font-bold text-muted-foreground">
-          Color Palette (Tailored Tokens)
+          Colours (used only when no style is chosen)
         </h3>
         <div className="grid gap-4 sm:grid-cols-3">
           <div>

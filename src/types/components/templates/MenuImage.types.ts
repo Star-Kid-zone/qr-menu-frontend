@@ -5,4 +5,5 @@ export type MenuImageProps = {
       primary: string;
       secondary: string;
       className?: string;
+      style?: import("react").CSSProperties;
     };

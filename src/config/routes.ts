@@ -26,10 +26,6 @@ export const routes = {
   },
   user: {
     dashboard: "/",
-    landing: (id: string | number) => `/id/${id}`,
-    landingBySlug: (slug: string) => `/${encodeURIComponent(slug.trim())}`,
-    menu: (id: string | number) => `/menu/id/${id}`,
-    menuBySlug: (slug: string) => `/menu/${encodeURIComponent(slug.trim())}`,
   },
   superadmin: {
     home: "/superadmin",
@@ -41,6 +37,7 @@ export const routes = {
     prompts: "/superadmin/prompts",
     blueprints: "/superadmin/blueprints",
     announcements: "/superadmin/announcements",
+    occasionPacks: "/superadmin/occasion-packs",
   },
 
 } as const;

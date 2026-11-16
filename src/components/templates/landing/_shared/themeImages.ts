@@ -1,26 +1,17 @@
 export const THEME_IMAGES: Record<string, { hero: string; dish: string; scene: string }> = {
   // ── Already hand-crafted (AI + stock) ────────────────────────────────────────
-  'luxury-minimal':   { hero: '/landing/luxury-minimal/hero.png',   dish: '/landing/luxury-minimal/dish.png',   scene: '/landing/luxury-minimal/scene.png' },
   'vaporwave':        { hero: '/landing/vaporwave/hero.png',         dish: '/landing/vaporwave/dish.png',         scene: '/landing/vaporwave/scene.png' },
   'neo-brutalism':    { hero: '/landing/neo-brutalism/hero.png',     dish: '/landing/neo-brutalism/dish.png',     scene: '/landing/neo-brutalism/scene.png' },
   'art-deco':         { hero: '/landing/art-deco/hero.png',          dish: '/landing/art-deco/dish.jpg',          scene: '/landing/art-deco/scene.jpg' },
-  'comic-book':       { hero: '/landing/comic-book/hero.jpg',        dish: '/landing/comic-book/dish.jpg',        scene: '/landing/comic-book/scene.jpg' },
   'minimalism':       { hero: '/landing/minimalism/hero.jpg',        dish: '/landing/minimalism/dish.jpg',        scene: '/landing/minimalism/scene.jpg' },
   'dark-mode-noir':   { hero: '/landing/dark-mode-noir/hero.jpg',    dish: '/landing/dark-mode-noir/dish.jpg',    scene: '/landing/dark-mode-noir/scene.jpg' },
   'botanical':        { hero: '/landing/botanical/hero.jpg',         dish: '/landing/botanical/dish.jpg',         scene: '/landing/botanical/scene.jpg' },
-  'retro-80s':        { hero: '/landing/retro-80s/hero.jpg',         dish: '/landing/retro-80s/dish.jpg',         scene: '/landing/retro-80s/scene.jpg' },
-  'cottagecore':      { hero: '/landing/cottagecore/hero.jpg',       dish: '/landing/cottagecore/dish.jpg',       scene: '/landing/cottagecore/scene.jpg' },
   'cyberpunk':        { hero: '/landing/cyberpunk/hero.jpg',         dish: '/landing/cyberpunk/dish.jpg',         scene: '/landing/cyberpunk/scene.jpg' },
-  'swiss':            { hero: '/landing/swiss/hero.jpg',             dish: '/landing/swiss/dish.jpg',             scene: '/landing/swiss/scene.jpg' },
-  'glassmorphism':    { hero: '/landing/glassmorphism/hero.jpg',     dish: '/landing/glassmorphism/dish.jpg',     scene: '/landing/glassmorphism/scene.jpg' },
   'baroque-gold':     { hero: '/landing/baroque-gold/hero.jpg',      dish: '/landing/baroque-gold/dish.jpg',      scene: '/landing/baroque-gold/scene.jpg' },
   'steampunk':        { hero: '/landing/steampunk/hero.jpg',         dish: '/landing/steampunk/dish.jpg',         scene: '/landing/steampunk/scene.jpg' },
-  'mid-century-modern':{ hero: '/landing/mid-century-modern/hero.jpg', dish: '/landing/mid-century-modern/dish.jpg', scene: '/landing/mid-century-modern/scene.jpg' },
-  'memphis-design':   { hero: '/landing/memphis-design/hero.jpg',    dish: '/landing/memphis-design/dish.jpg',    scene: '/landing/memphis-design/scene.jpg' },
   'neon-glow':        { hero: '/landing/neon-glow/hero.jpg',         dish: '/landing/neon-glow/dish.jpg',         scene: '/landing/neon-glow/scene.jpg' },
 
   // ── Fine dining set ──────────────────────────────────────────────────────────
-  'art-nouveau':          { hero: '/landing/fine-dining/hero.jpg', dish: '/landing/fine-dining/dish.jpg', scene: '/landing/fine-dining/scene.jpg' },
   'folio':                { hero: '/landing/fine-dining/hero.jpg', dish: '/landing/fine-dining/dish.jpg', scene: '/landing/fine-dining/scene.jpg' },
   'velum':                { hero: '/landing/fine-dining/hero.jpg', dish: '/landing/fine-dining/dish.jpg', scene: '/landing/fine-dining/scene.jpg' },
   'serif-elegance':       { hero: '/landing/fine-dining/hero.jpg', dish: '/landing/fine-dining/dish.jpg', scene: '/landing/fine-dining/scene.jpg' },
@@ -28,24 +19,12 @@ export const THEME_IMAGES: Record<string, { hero: string; dish: string; scene: s
   'victorian-maximalism': { hero: '/landing/fine-dining/hero.jpg', dish: '/landing/fine-dining/dish.jpg', scene: '/landing/fine-dining/scene.jpg' },
   'oil-painting-ui':      { hero: '/landing/fine-dining/hero.jpg', dish: '/landing/fine-dining/dish.jpg', scene: '/landing/fine-dining/scene.jpg' },
   'expressionism':        { hero: '/landing/fine-dining/hero.jpg', dish: '/landing/fine-dining/dish.jpg', scene: '/landing/fine-dining/scene.jpg' },
-  'impressionism-inspired':{ hero: '/landing/fine-dining/hero.jpg', dish: '/landing/fine-dining/dish.jpg', scene: '/landing/fine-dining/scene.jpg' },
 
   // ── Casual bistro set ────────────────────────────────────────────────────────
-  'flat-design':          { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
-  'material-design':      { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
-  'semi-flat':            { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
-  'soft-minimalism':      { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
   'grid-minimal':         { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
-  'card-based-ui':        { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
-  'bento-grid':           { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
-  'saas-modern':          { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
   'dashboard-ui':         { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
   'fluent-design':        { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
   'modernism':            { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
-  'modern-skeuomorphism': { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
-  'neumorphism':          { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
-  'claymorphism':         { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
-  'postmodernism':        { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
   'swiss-international':  { hero: '/landing/casual-bistro/hero.jpg', dish: '/landing/casual-bistro/dish.jpg', scene: '/landing/casual-bistro/scene.jpg' },
 
   // ── Dark bar set ─────────────────────────────────────────────────────────────
@@ -55,66 +34,44 @@ export const THEME_IMAGES: Record<string, { hero: string; dish: string; scene: s
   'grunge':           { hero: '/landing/dark-bar/hero.jpg', dish: '/landing/dark-bar/dish.jpg', scene: '/landing/dark-bar/scene.jpg' },
   'galactic-void':    { hero: '/landing/dark-bar/hero.jpg', dish: '/landing/dark-bar/dish.jpg', scene: '/landing/dark-bar/scene.jpg' },
   'matrix-style':     { hero: '/landing/dark-bar/hero.jpg', dish: '/landing/dark-bar/dish.jpg', scene: '/landing/dark-bar/scene.jpg' },
-  'glitch-art':       { hero: '/landing/dark-bar/hero.jpg', dish: '/landing/dark-bar/dish.jpg', scene: '/landing/dark-bar/scene.jpg' },
-  'weirdcore':        { hero: '/landing/dark-bar/hero.jpg', dish: '/landing/dark-bar/dish.jpg', scene: '/landing/dark-bar/scene.jpg' },
   'dreamcore':        { hero: '/landing/dark-bar/hero.jpg', dish: '/landing/dark-bar/dish.jpg', scene: '/landing/dark-bar/scene.jpg' },
 
   // ── Café bakery set ──────────────────────────────────────────────────────────
   'chalkboard-style':     { hero: '/landing/cafe-bakery/hero.jpg', dish: '/landing/cafe-bakery/dish.jpg', scene: '/landing/cafe-bakery/scene.jpg' },
-  'paper-zine':           { hero: '/landing/cafe-bakery/hero.jpg', dish: '/landing/cafe-bakery/dish.jpg', scene: '/landing/cafe-bakery/scene.jpg' },
   'vintage-print':        { hero: '/landing/cafe-bakery/hero.jpg', dish: '/landing/cafe-bakery/dish.jpg', scene: '/landing/cafe-bakery/scene.jpg' },
   'light-academia':       { hero: '/landing/cafe-bakery/hero.jpg', dish: '/landing/cafe-bakery/dish.jpg', scene: '/landing/cafe-bakery/scene.jpg' },
-  'lo-fi':                { hero: '/landing/cafe-bakery/hero.jpg', dish: '/landing/cafe-bakery/dish.jpg', scene: '/landing/cafe-bakery/scene.jpg' },
-  'hand-drawn':           { hero: '/landing/cafe-bakery/hero.jpg', dish: '/landing/cafe-bakery/dish.jpg', scene: '/landing/cafe-bakery/scene.jpg' },
   'charcoal-sketch':      { hero: '/landing/cafe-bakery/hero.jpg', dish: '/landing/cafe-bakery/dish.jpg', scene: '/landing/cafe-bakery/scene.jpg' },
-  'watercolor-wash':      { hero: '/landing/cafe-bakery/hero.jpg', dish: '/landing/cafe-bakery/dish.jpg', scene: '/landing/cafe-bakery/scene.jpg' },
   'illustrative':         { hero: '/landing/cafe-bakery/hero.jpg', dish: '/landing/cafe-bakery/dish.jpg', scene: '/landing/cafe-bakery/scene.jpg' },
 
   // ── Japanese fusion set ──────────────────────────────────────────────────────
   'ai-interface':     { hero: '/landing/japanese-fusion/hero.jpg', dish: '/landing/japanese-fusion/dish.jpg', scene: '/landing/japanese-fusion/scene.jpg' },
   'holographic-ui':   { hero: '/landing/japanese-fusion/hero.jpg', dish: '/landing/japanese-fusion/dish.jpg', scene: '/landing/japanese-fusion/scene.jpg' },
   'sci-fi-ui':        { hero: '/landing/japanese-fusion/hero.jpg', dish: '/landing/japanese-fusion/dish.jpg', scene: '/landing/japanese-fusion/scene.jpg' },
-  'space-ui':         { hero: '/landing/japanese-fusion/hero.jpg', dish: '/landing/japanese-fusion/dish.jpg', scene: '/landing/japanese-fusion/scene.jpg' },
   'biopunk':          { hero: '/landing/japanese-fusion/hero.jpg', dish: '/landing/japanese-fusion/dish.jpg', scene: '/landing/japanese-fusion/scene.jpg' },
   'auroramorphism':   { hero: '/landing/japanese-fusion/hero.jpg', dish: '/landing/japanese-fusion/dish.jpg', scene: '/landing/japanese-fusion/scene.jpg' },
   'prism':            { hero: '/landing/japanese-fusion/hero.jpg', dish: '/landing/japanese-fusion/dish.jpg', scene: '/landing/japanese-fusion/scene.jpg' },
-  'y2k-frutiger-aero':{ hero: '/landing/japanese-fusion/hero.jpg', dish: '/landing/japanese-fusion/dish.jpg', scene: '/landing/japanese-fusion/scene.jpg' },
 
   // ── Garden outdoor set ───────────────────────────────────────────────────────
-  'eco-design':       { hero: '/landing/garden-outdoor/hero.jpg', dish: '/landing/garden-outdoor/dish.jpg', scene: '/landing/garden-outdoor/scene.jpg' },
   'solarpunk':        { hero: '/landing/garden-outdoor/hero.jpg', dish: '/landing/garden-outdoor/dish.jpg', scene: '/landing/garden-outdoor/scene.jpg' },
-  'nature-inspired':  { hero: '/landing/garden-outdoor/hero.jpg', dish: '/landing/garden-outdoor/dish.jpg', scene: '/landing/garden-outdoor/scene.jpg' },
-  'earthy-tones':     { hero: '/landing/garden-outdoor/hero.jpg', dish: '/landing/garden-outdoor/dish.jpg', scene: '/landing/garden-outdoor/scene.jpg' },
   'jungle-lush':      { hero: '/landing/garden-outdoor/hero.jpg', dish: '/landing/garden-outdoor/dish.jpg', scene: '/landing/garden-outdoor/scene.jpg' },
-  'organic-fluid':    { hero: '/landing/garden-outdoor/hero.jpg', dish: '/landing/garden-outdoor/dish.jpg', scene: '/landing/garden-outdoor/scene.jpg' },
-  'biomorphic':       { hero: '/landing/garden-outdoor/hero.jpg', dish: '/landing/garden-outdoor/dish.jpg', scene: '/landing/garden-outdoor/scene.jpg' },
-  'desert-minimal':   { hero: '/landing/garden-outdoor/hero.jpg', dish: '/landing/garden-outdoor/dish.jpg', scene: '/landing/garden-outdoor/scene.jpg' },
 
   // ── Vintage diner set ────────────────────────────────────────────────────────
-  'retro-90s':        { hero: '/landing/vintage-diner/hero.jpg', dish: '/landing/vintage-diner/dish.jpg', scene: '/landing/vintage-diner/scene.jpg' },
   'retro-futurism':   { hero: '/landing/vintage-diner/hero.jpg', dish: '/landing/vintage-diner/dish.jpg', scene: '/landing/vintage-diner/scene.jpg' },
   'cassette-futurism':{ hero: '/landing/vintage-diner/hero.jpg', dish: '/landing/vintage-diner/dish.jpg', scene: '/landing/vintage-diner/scene.jpg' },
-  'formica-dinette':  { hero: '/landing/vintage-diner/hero.jpg', dish: '/landing/vintage-diner/dish.jpg', scene: '/landing/vintage-diner/scene.jpg' },
-  'web-brutalism-90s':{ hero: '/landing/vintage-diner/hero.jpg', dish: '/landing/vintage-diner/dish.jpg', scene: '/landing/vintage-diner/scene.jpg' },
   'ascii-art':        { hero: '/landing/vintage-diner/hero.jpg', dish: '/landing/vintage-diner/dish.jpg', scene: '/landing/vintage-diner/scene.jpg' },
   'pixel-art':        { hero: '/landing/vintage-diner/hero.jpg', dish: '/landing/vintage-diner/dish.jpg', scene: '/landing/vintage-diner/scene.jpg' },
 
   // ── Cocktail bar set ─────────────────────────────────────────────────────────
-  'pop-art':          { hero: '/landing/cocktail-bar/hero.jpg', dish: '/landing/cocktail-bar/dish.jpg', scene: '/landing/cocktail-bar/scene.jpg' },
   'pop-surrealism':   { hero: '/landing/cocktail-bar/hero.jpg', dish: '/landing/cocktail-bar/dish.jpg', scene: '/landing/cocktail-bar/scene.jpg' },
   'psychedelic':      { hero: '/landing/cocktail-bar/hero.jpg', dish: '/landing/cocktail-bar/dish.jpg', scene: '/landing/cocktail-bar/scene.jpg' },
   'surrealism':       { hero: '/landing/cocktail-bar/hero.jpg', dish: '/landing/cocktail-bar/dish.jpg', scene: '/landing/cocktail-bar/scene.jpg' },
   'maximalism':       { hero: '/landing/cocktail-bar/hero.jpg', dish: '/landing/cocktail-bar/dish.jpg', scene: '/landing/cocktail-bar/scene.jpg' },
-  'collage-art':      { hero: '/landing/cocktail-bar/hero.jpg', dish: '/landing/cocktail-bar/dish.jpg', scene: '/landing/cocktail-bar/scene.jpg' },
-  'cartoon-ui':       { hero: '/landing/cocktail-bar/hero.jpg', dish: '/landing/cocktail-bar/dish.jpg', scene: '/landing/cocktail-bar/scene.jpg' },
 
   // ── Industrial grill set ─────────────────────────────────────────────────────
   'forge':              { hero: '/landing/industrial-grill/hero.jpg', dish: '/landing/industrial-grill/dish.jpg', scene: '/landing/industrial-grill/scene.jpg' },
   'blueprint-schematic':{ hero: '/landing/industrial-grill/hero.jpg', dish: '/landing/industrial-grill/dish.jpg', scene: '/landing/industrial-grill/scene.jpg' },
   'technical-drawing':  { hero: '/landing/industrial-grill/hero.jpg', dish: '/landing/industrial-grill/dish.jpg', scene: '/landing/industrial-grill/scene.jpg' },
-  'dieselpunk':         { hero: '/landing/industrial-grill/hero.jpg', dish: '/landing/industrial-grill/dish.jpg', scene: '/landing/industrial-grill/scene.jpg' },
   'brutalist-industrial':{ hero: '/landing/industrial-grill/hero.jpg', dish: '/landing/industrial-grill/dish.jpg', scene: '/landing/industrial-grill/scene.jpg' },
-  'brutalist-soft':     { hero: '/landing/industrial-grill/hero.jpg', dish: '/landing/industrial-grill/dish.jpg', scene: '/landing/industrial-grill/scene.jpg' },
 
   // ── Seafood coastal set ──────────────────────────────────────────────────────
   'oceanic-deep':     { hero: '/landing/seafood-coastal/hero.jpg', dish: '/landing/seafood-coastal/dish.jpg', scene: '/landing/seafood-coastal/scene.jpg' },
@@ -122,7 +79,6 @@ export const THEME_IMAGES: Record<string, { hero: string; dish: string; scene: s
   // ── Italian pasta set ────────────────────────────────────────────────────────
   'constructivism':   { hero: '/landing/pasta-italian/hero.jpg', dish: '/landing/pasta-italian/dish.jpg', scene: '/landing/pasta-italian/scene.jpg' },
   'de-stijl':         { hero: '/landing/pasta-italian/hero.jpg', dish: '/landing/pasta-italian/dish.jpg', scene: '/landing/pasta-italian/scene.jpg' },
-  'bauhaus':          { hero: '/landing/pasta-italian/hero.jpg', dish: '/landing/pasta-italian/dish.jpg', scene: '/landing/pasta-italian/scene.jpg' },
   'bauhaus-classic':  { hero: '/landing/pasta-italian/hero.jpg', dish: '/landing/pasta-italian/dish.jpg', scene: '/landing/pasta-italian/scene.jpg' },
 
   // ── Colorful brunch set ──────────────────────────────────────────────────────
@@ -138,12 +94,10 @@ export const THEME_IMAGES: Record<string, { hero: string; dish: string; scene: s
   // ── Nordic minimal set ───────────────────────────────────────────────────────
   'minimalist-monochrome': { hero: '/landing/nordic-minimal/hero.jpg', dish: '/landing/nordic-minimal/dish.jpg', scene: '/landing/nordic-minimal/scene.jpg' },
   'arctic-minimal':        { hero: '/landing/nordic-minimal/hero.jpg', dish: '/landing/nordic-minimal/dish.jpg', scene: '/landing/nordic-minimal/scene.jpg' },
-  'editorial-minimal':     { hero: '/landing/nordic-minimal/hero.jpg', dish: '/landing/nordic-minimal/dish.jpg', scene: '/landing/nordic-minimal/scene.jpg' },
   'editorial-magazine':    { hero: '/landing/nordic-minimal/hero.jpg', dish: '/landing/nordic-minimal/dish.jpg', scene: '/landing/nordic-minimal/scene.jpg' },
   'zen-ui':                { hero: '/landing/nordic-minimal/hero.jpg', dish: '/landing/nordic-minimal/dish.jpg', scene: '/landing/nordic-minimal/scene.jpg' },
 
   // ── Spicy bold set ───────────────────────────────────────────────────────────
-  'volcanic-heat':    { hero: '/landing/spicy-bold/hero.jpg', dish: '/landing/spicy-bold/dish.jpg', scene: '/landing/spicy-bold/scene.jpg' },
   'retro-futurism-b': { hero: '/landing/spicy-bold/hero.jpg', dish: '/landing/spicy-bold/dish.jpg', scene: '/landing/spicy-bold/scene.jpg' },
 };
 

@@ -23,4 +23,8 @@ export interface WorkspaceSettingsFormProps {
   initialActiveSubSection?: string | null;
   /** A part of the page the owner tapped in the live preview. */
   focusedPart?: StudioPartFocus | null;
+  /** Menu category names in item order, for the menu Categories panel. */
+  menuCategories?: readonly string[];
+  /** Reload settings after something saved outside the form (e.g. a new hero photo). */
+  onAssetsChanged?: () => void | Promise<void>;
 }

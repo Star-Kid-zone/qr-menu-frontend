@@ -14,10 +14,30 @@ export interface MenuStructureTheme {
   sectionBg: string;
 }
 
-/** Builds a consistent theme object entirely from DB-saved values (same
- * fallback palette as the landing page's `buildTheme`) — used by every menu
- * "structure" component so they don't each hardcode their own defaults. */
+/**
+ * The colours every menu structure draws with: the resolved site look (the
+ * skin, then the owner's menu colours, then their site colours — see
+ * site-system/kit/look.ts), so the menu always matches the landing page.
+ */
 export function buildMenuTheme(p: PublicMenuTemplateProps): MenuStructureTheme {
+  const look = p.look;
+  if (look) {
+    const pal = look.palette;
+    return {
+      bg: pal.bg,
+      surface: pal.surface,
+      accent: pal.accent,
+      textPrimary: pal.text,
+      textSecondary: pal.textMuted,
+      accentText: pal.accentText,
+      border: pal.border,
+      footerBg: pal.footer,
+      sectionBg: pal.band,
+      fontFamily: look.fonts.body,
+      cardStyle: p.cardStyle || "rounded-2xl",
+    };
+  }
+  // Callers without a resolved look (tests that build props by hand).
   return {
     bg:            p.accent        || "#f8fafc",
     surface:       p.secondary     || "#ffffff",

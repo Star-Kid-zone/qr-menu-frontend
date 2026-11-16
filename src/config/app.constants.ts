@@ -51,6 +51,17 @@ export function getTenantPublicUrl(slug: string | null | undefined): string {
   return `https://${safeSlug}.${TENANT_ROOT_DOMAIN}`;
 }
 
+/**
+ * Canonical public URL for a tenant: their verified custom domain when they have one
+ * (settings.custom_domain from the portal), otherwise their subdomain.
+ */
+export function getTenantCanonicalUrl(settings: Record<string, unknown> | null | undefined, fallbackSlug?: string | null): string {
+  const custom = typeof settings?.custom_domain === 'string' ? settings.custom_domain.trim().toLowerCase() : '';
+  if (/^[a-z0-9.-]+\.[a-z]{2,}$/.test(custom)) return `https://${custom}`;
+  const slug = typeof settings?.public_slug === 'string' && settings.public_slug ? settings.public_slug : fallbackSlug;
+  return getTenantPublicUrl(slug);
+}
+
 /** Default labels for route-level Suspense fallbacks */
 export const SUSPENSE_LABELS = {
   route: 'Loading…',

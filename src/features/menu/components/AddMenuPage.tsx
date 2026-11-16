@@ -20,6 +20,7 @@ import {
   DietaryNutritionFields,
 } from "@/features/menu";
 import Link from "next/link";
+import { BUSINESS_TYPE_HREF } from "@/features/business/constants";
 import {
   PiImageBold,
   PiVideoCameraBold,
@@ -34,6 +35,16 @@ import { workspaceService } from "@/services/workspace.service";
 import { IndustryCategory, IndustryType } from "@/types";
 import { getApiErrorMessage } from "@/utils/errors";
 import { cn } from "@/utils/cn";
+import { resolveBusinessType } from "@/components/site-system/business-types";
+import type { BusinessTypeDefinition } from "@/components/site-system/types";
+import {
+  ItemDetailsFields,
+  cleanAttributes,
+  cleanPriceOptions,
+  lowestOptionPrice,
+  type ItemAttributes,
+  type PriceOptionRow,
+} from "./ItemDetailsFields";
 
 export function AddMenuPage() {
   const router = useRouter();
@@ -72,6 +83,10 @@ export function AddMenuPage() {
   const [allergens, setAllergens] = useState<string[]>([]);
   const [spiceLevel, setSpiceLevel] = useState<number | null>(null);
   const [calories, setCalories] = useState("");
+  const [business, setBusiness] = useState<BusinessTypeDefinition>(() => resolveBusinessType(null));
+  const [attributes, setAttributes] = useState<ItemAttributes>({});
+  const [priceOptions, setPriceOptions] = useState<PriceOptionRow[]>([]);
+  const fromPrice = lowestOptionPrice(priceOptions);
 
   useEffect(() => {
     workspaceService.getWorkspace()
@@ -79,6 +94,7 @@ export function AddMenuPage() {
         const id = res.data.business?.industryId;
         setIndustryId(id != null ? Number(id) : null);
         setCurrencySymbol(res.data.currency?.symbol?.trim() || "$");
+        setBusiness(resolveBusinessType({ business_type: res.data.theme?.businessType, site_document: res.data.siteDocument }));
       })
       .catch(console.error)
       .finally(() => setIndustryLoading(false));
@@ -116,12 +132,12 @@ export function AddMenuPage() {
   };
 
   const handleCreateCategory = () => {
-    if (!industryId) return toast.error("Set your restaurant type in Settings first");
+    if (!industryId) return toast.error("Choose your business type on the Website page first");
     setCategoryDialogOpen(true);
   };
 
   const handleCreateType = () => {
-    if (!industryId) return toast.error("Set your restaurant type in Settings first");
+    if (!industryId) return toast.error("Choose your business type on the Website page first");
     setTypeDialogOpen(true);
   };
 
@@ -160,7 +176,7 @@ export function AddMenuPage() {
   const handleCreateItem = async () => {
     const missing: Record<string, string> = {};
     if (!itemName.trim()) missing["item-name"] = "Dish name";
-    if (!price) missing["item-price"] = "Price";
+    if (!price && !fromPrice) missing["item-price"] = "Price";
     if (!selectedCategory) missing["category"] = "Category";
     if (!selectedType) missing["type"] = "Dish type";
     setFieldErrors(missing);
@@ -169,11 +185,18 @@ export function AddMenuPage() {
       document.getElementById(firstMissing)?.focus();
       return;
     }
+    if (priceOptions.length !== cleanPriceOptions(priceOptions).length) {
+      toast.error("Give every size a name and a price, or remove it.");
+      return;
+    }
     try {
       setSubmitting(true);
       const formData = new FormData();
       formData.append("item", itemName);
-      formData.append("price", price);
+      // With sizes, the headline price is the lowest size (the server enforces the same rule).
+      formData.append("price", fromPrice ?? price);
+      formData.append("attributes", JSON.stringify(cleanAttributes(attributes)));
+      formData.append("priceOptions", JSON.stringify(cleanPriceOptions(priceOptions)));
       formData.append("description", description);
       formData.append("popular", isPopular.toString());
       formData.append("availability", isActive.toString());
@@ -269,15 +292,19 @@ export function AddMenuPage() {
                 <Input
                   id="item-price"
                   invalid={Boolean(fieldErrors["item-price"])}
-                  aria-describedby={fieldErrors["item-price"] ? "item-price-error" : undefined}
                   type="number"
                   className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   placeholder="0.00"
                   step="any"
                   min="0"
-                  value={price}
+                  value={fromPrice ?? price}
+                  disabled={Boolean(fromPrice)}
+                  aria-describedby={fromPrice ? "item-price-from" : fieldErrors["item-price"] ? "item-price-error" : undefined}
                   onChange={(e) => setPrice(e.target.value)}
                 />
+              {fromPrice && (
+                <p id="item-price-from" className="mt-1.5 text-xs text-muted-foreground">Set by the sizes below: the lowest one shows as the starting price.</p>
+              )}
               {fieldError("item-price")}
               </div>
 
@@ -315,9 +342,9 @@ export function AddMenuPage() {
                 <div className="flex items-start gap-2 rounded-lg border border-warning/60 bg-warning/10 p-3 text-caption text-warning-foreground dark:border-warning/60 dark:bg-warning/40 dark:text-warning">
                   <PiWarningCircleBold size={15} className="mt-0.5 shrink-0" />
                   <span>
-                    No restaurant type set yet.{" "}
-                    <Link href="/admin/settings?tab=business" className="font-semibold underline underline-offset-2">
-                      Set your restaurant type in Settings
+                    No business type chosen yet.{" "}
+                    <Link href={BUSINESS_TYPE_HREF} className="font-semibold underline underline-offset-2">
+                      Choose your business type
                     </Link>{" "}
                     to choose categories and dish types.
                   </span>
@@ -459,6 +486,15 @@ export function AddMenuPage() {
             calories={calories}
             onCaloriesChange={setCalories}
           />
+
+          <ItemDetailsFields
+            business={business}
+            attributes={attributes}
+            onAttributesChange={setAttributes}
+            priceOptions={priceOptions}
+            onPriceOptionsChange={setPriceOptions}
+            currencySymbol={currencySymbol}
+          />
         </div>
 
         {/* ── Right column (4/12): Live Preview only ── */}
@@ -469,7 +505,7 @@ export function AddMenuPage() {
               images={imagePreviews}
               videos={videoPreviewUrl ? [videoPreviewUrl] : []}
               name={itemName}
-              price={price}
+              price={fromPrice ?? price}
               description={description}
               category={selectedCategory}
               type={selectedType}

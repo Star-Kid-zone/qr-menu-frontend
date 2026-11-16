@@ -90,6 +90,7 @@ export const SUPERADMIN_NAV: NavGroup[] = [
     items: [
       { label: "Announcements", href: routes.superadmin.announcements, icon: PiSpeakerHigh },
       { label: "Weekly posters", href: routes.superadmin.weeklyPosters, icon: PiMegaphone },
+          { label: "Occasion wording", href: routes.superadmin.occasionPacks, icon: PiCalendarCheck },
     ],
   },
   {

@@ -28,6 +28,7 @@ import {
 } from "./sections";
 import { getItemDisplayName } from "../utils";
 import { Notice } from "@/components/ui/Notice";
+import { BUSINESS_TYPE_HREF } from "@/features/business/constants";
 import { usePermissions } from "@/hooks/usePermissions";
 
 export function MenuListPage() {
@@ -147,23 +148,23 @@ export function MenuListPage() {
         }
       />
 
-      {/* Restaurant type drives the category and dish-type lists. It is set
-          in Settings > Business details (moved from this page). */}
+      {/* The business type (chosen in the website studio) decides the category
+          and dish-type lists. */}
       {!industryLoading && !currentIndustryId ? (
         <Notice
           tone="info"
-          title="Set your restaurant type"
+          title="Choose your business type"
           action={
             canEditWebsite ? (
-              <Link href="/admin/settings?tab=business" className={buttonVariants({ variant: "secondary", size: "sm" })}>
-                Set restaurant type
+              <Link href={BUSINESS_TYPE_HREF} className={buttonVariants({ variant: "secondary", size: "sm" })}>
+                Choose business type
               </Link>
             ) : undefined
           }
         >
           {canEditWebsite
-            ? "It decides which categories and dish types you can pick when adding dishes."
-            : "Ask the owner to set it in Settings. It decides which categories and dish types you can pick."}
+            ? "It decides which categories and dish types you can pick when adding dishes, and how your website looks."
+            : "Ask the owner to choose it on the Website page. It decides which categories and dish types you can pick."}
         </Notice>
       ) : null}
 

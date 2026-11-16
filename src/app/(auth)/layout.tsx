@@ -44,7 +44,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           src="https://images.unsplash.com/photo-1600891964092-4316c288032e?q=80&w=1600&auto=format&fit=crop"
           alt=""
           fill
-          priority
+          loading="eager"
+          fetchPriority="high"
           sizes="50vw"
           className="object-cover"
         />

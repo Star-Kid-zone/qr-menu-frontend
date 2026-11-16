@@ -2,6 +2,7 @@ import type { ComponentType, CSSProperties, ReactNode } from 'react';
 import type { Menu } from '@/types';
 import type { SocialLink } from '@/types';
 import type { AnalyticsEvent } from '@/services/analytics.service';
+import type { SiteLook } from '@/components/site-system/types';
 
 export type PublicTrackFn = (
   actionType: AnalyticsEvent['action_type'],
@@ -98,8 +99,12 @@ export type PublicMenuTemplateProps = {
   allCategories: string[];
   /** All unique types derived from menu items */
   allTypes: string[];
-  /** Whether any items are marked popular */
+  /** Whether any items are marked popular (false when the owner turned filters off) */
   hasPopular: boolean;
+  /** Show the search box (owner can turn it off in the menu Sections panel). */
+  showSearch: boolean;
+  /** Categories to offer as filter chips — empty when the owner turned filters off. Navigation (tabs/sidebars) uses allCategories. */
+  filterCategories: string[];
   /** Active category filter — null means all */
   activeCategory: string | null;
   setActiveCategory: (c: string | null) => void;
@@ -140,5 +145,7 @@ export type PublicMenuTemplateProps = {
   sectionBg?: string;
   address?: string;
   announcement?: string | null;
+  /** The resolved site look for the menu page (skin + owner menu colours, business type). */
+  look?: SiteLook;
   [key: string]: unknown;
 };

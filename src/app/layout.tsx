@@ -12,6 +12,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],
+  axes: ["opsz", "SOFT", "WONK"],
 });
 
 const newsreader = Newsreader({
@@ -30,7 +31,7 @@ const spaceMono = Space_Mono({
   subsets: ["latin"],
 });
 
-const DEFAULT_DESCRIPTION = "Digital menus and QR ordering for restaurants.";
+const DEFAULT_DESCRIPTION = "One QR code on the table: your menu, website and Google reviews, managed from one dashboard.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_BASE_URL),
@@ -57,8 +58,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: light)", color: "#3b1d4f" },
+    { media: "(prefers-color-scheme: dark)", color: "#24102f" },
   ],
 };
 

@@ -13,6 +13,7 @@ import {
   BlueprintStorySection,
   BlueprintOffersFaqsSection,
 } from './sections';
+import { BlueprintContentSection } from './sections/BlueprintContentSection';
 
 interface BlueprintEditorModalProps {
   blueprint: MenuBlueprint | null;
@@ -56,6 +57,7 @@ export function BlueprintEditorModal({
     { id: 'dishes', label: `Dishes (${formData.items.length})` },
     { id: 'theme', label: 'Theme and colours' },
     { id: 'story', label: 'Story and stats' },
+    { id: 'content', label: 'Website content' },
     { id: 'offers_faqs', label: 'Offers, gallery and FAQs' },
   ];
 
@@ -80,7 +82,7 @@ export function BlueprintEditorModal({
     >
       <div className="space-y-6">
         <p className="text-body text-muted-foreground">
-          Dishes, look, story, offers, gallery and FAQs that a new restaurant starts with.
+          Dishes, look, story, website content, offers, gallery and FAQs that a new restaurant starts with.
         </p>
 
         <SubTabPills options={tabs} active={activeTab} onChange={setActiveTab} />
@@ -107,12 +109,14 @@ export function BlueprintEditorModal({
           )}
 
           {activeTab === 'theme' && (
-            <BlueprintThemeSection theme={formData.theme} setFormData={setFormData} />
+            <BlueprintThemeSection theme={formData.theme} site={formData.site} setFormData={setFormData} />
           )}
 
           {activeTab === 'story' && (
             <BlueprintStorySection story={formData.story} setFormData={setFormData} />
           )}
+
+          {activeTab === 'content' && <BlueprintContentSection content={formData.content} setFormData={setFormData} />}
 
           {activeTab === 'offers_faqs' && (
             <BlueprintOffersFaqsSection

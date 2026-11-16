@@ -1,4 +1,5 @@
 import type { Menu } from "@/types";
+import type { PublicAward, PublicTeamMember, PublicSiteEvent } from "@/components/site-system/types";
 
 /**
  * Raw API response shape from GET /settings/user/:id and /settings/user/slug/:slug
@@ -42,11 +43,18 @@ export type RawPublicSiteData = {
     image_path?: string | null;
   }>;
   workspace_offers?: unknown[];
+  /** Owner-managed content for the awards / team / events sections (site system). */
+  awards?: PublicAward[];
+  team?: PublicTeamMember[];
+  /** Upcoming, visible events only. */
+  events?: PublicSiteEvent[];
   [key: string]: unknown;
 };
 
 /** Runtime callbacks injected by TenantLandingPage — not from the API */
 export type LandingTemplateCallbacks = {
+  /** True in the admin's live preview: full-screen overlays (e.g. the opening screen) render inline instead. */
+  isPreview?: boolean;
   menuHref: string;
   onPay: () => void;
   onReview: () => void;

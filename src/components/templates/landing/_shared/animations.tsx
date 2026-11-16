@@ -112,7 +112,7 @@ export function ParallaxImage({
         style={{ y, scale: reduce ? 1 : scale }}
         className="absolute inset-0 will-change-transform"
       >
-        <Image src={src} alt={alt} fill className="object-cover" priority />
+        <Image src={src} alt={alt} fill className="object-cover" loading="eager" fetchPriority="high" />
       </motion.div>
       {overlay ? <div className="pointer-events-none absolute inset-0">{overlay}</div> : null}
       {children ? <div className="relative z-10">{children}</div> : null}

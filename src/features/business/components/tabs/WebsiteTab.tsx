@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Button, EmptyState, PageHeader, SubTabPills } from "@/components/ui";
-import { PiPencilSimpleBold, PiPlusBold, PiSwatchesBold } from "react-icons/pi";
+import { PiClockCounterClockwiseBold, PiPencilSimpleBold, PiPlusBold, PiSwatchesBold } from "react-icons/pi";
 import { WorkspaceSettingsForm } from "@/features/workspace";
+import { SiteHistoryModal } from "@/features/workspace/components/SiteHistoryModal";
 import type { StudioPartFocus } from "@/features/workspace/studio/resolvePart";
 import type {
   WorkspaceSetting,
@@ -29,6 +30,9 @@ interface WebsiteTabProps {
   setWorkspaceDraft: (val: WorkspaceSettingsFormValues | null) => void;
   onOpenAddWorkspaceModal: () => void;
   focusedPart?: StudioPartFocus | null;
+  menuCategories?: readonly string[];
+  /** Reload settings after a layout version is restored. */
+  onSiteRestored?: () => void | Promise<void>;
 }
 
 export function WebsiteTab({
@@ -48,7 +52,11 @@ export function WebsiteTab({
   setWorkspaceDraft,
   onOpenAddWorkspaceModal,
   focusedPart,
+  menuCategories,
+  onSiteRestored,
 }: WebsiteTabProps) {
+  const [historyOpen, setHistoryOpen] = useState(false);
+
   return (
     <div className="flex h-full min-h-0 flex-col gap-4 overflow-hidden">
       <PageHeader
@@ -57,7 +65,9 @@ export function WebsiteTab({
         actions={
           workspace ? (
             workspaceEditMode ? (
-              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
+              // Distinct keys: if React reused the Edit <button> as Save (type="submit"), the click
+              // that entered edit mode would also submit the form and save immediately.
+              <div key="edit-actions" className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
                 <Button
                   variant="secondary"
                   type="button"
@@ -82,19 +92,30 @@ export function WebsiteTab({
                 </Button>
               </div>
             ) : (
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => {
-                  setWorkspaceSaveError(null);
-                  setWorkspaceActiveSubSection(null);
-                  setWorkspaceEditMode(true);
-                }}
-                startIcon={<PiPencilSimpleBold className="size-4" />}
-                size="sm"
-              >
-                Edit
-              </Button>
+              <div key="view-actions" className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setHistoryOpen(true)}
+                  startIcon={<PiClockCounterClockwiseBold className="size-4" />}
+                  size="sm"
+                >
+                  History
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    setWorkspaceSaveError(null);
+                    setWorkspaceActiveSubSection(null);
+                    setWorkspaceEditMode(true);
+                  }}
+                  startIcon={<PiPencilSimpleBold className="size-4" />}
+                  size="sm"
+                >
+                  Edit
+                </Button>
+              </div>
             )
           ) : null
         }
@@ -130,6 +151,8 @@ export function WebsiteTab({
               onValuesChange={setWorkspaceDraft}
               initialActiveSubSection={workspaceActiveSubSection}
               focusedPart={focusedPart}
+              menuCategories={menuCategories}
+              onAssetsChanged={onSiteRestored}
               onStartEditing={(subSectionKey) => {
                 setWorkspaceSaveError(null);
                 setWorkspaceActiveSubSection(subSectionKey || null);
@@ -153,6 +176,13 @@ export function WebsiteTab({
           />
         )}
       </div>
+      <SiteHistoryModal
+        isOpen={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        onRestored={async () => {
+          await onSiteRestored?.();
+        }}
+      />
     </div>
   );
 }
