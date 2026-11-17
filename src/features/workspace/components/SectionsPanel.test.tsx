@@ -79,4 +79,22 @@ describe("SectionsPanel", () => {
     expect(screen.getByRole("button", { name: "Hide Hero" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Move Hero down" })).toBeDisabled();
   });
+
+  it("does not render any date fields or schedule buttons", () => {
+    setup();
+    expect(screen.queryByRole("button", { name: /Schedule/i })).toBeNull();
+    expect(screen.queryByLabelText(/show from/i)).toBeNull();
+    expect(screen.queryByLabelText(/until/i)).toBeNull();
+  });
+
+  it("renders position badges and visual thumbnails for all sections", () => {
+    setup();
+    const items = within(screen.getByRole("list", { name: "Page sections" })).getAllByRole("listitem");
+    expect(items).toHaveLength(LANDING_SECTIONS.length);
+    // Position numbers start from 1
+    expect(items[0]).toHaveTextContent("1");
+    expect(items[1]).toHaveTextContent("2");
+    // Has thumbnail SVG in each row
+    expect(items[0].querySelector("svg")).not.toBeNull();
+  });
 });

@@ -55,11 +55,12 @@ export function AmenitiesSection({ ctx, section }: LandingSectionProps) {
 export function EventsSection({ ctx, section }: LandingSectionProps) {
   if (ctx.site.events.length === 0) return null;
   const id = `${section.id}-title`;
+  const hasImages = ctx.site.events.some((e) => Boolean(e.imageUrl));
   return (
     <SectionShell labelledBy={id}>
       <Container size="md">
         <PlainHeading id={id} title="What's on" align="left" />
-        <EventList events={ctx.site.events} className="mt-8" />
+        <EventList events={ctx.site.events} variant={hasImages ? "cards" : "programme"} className="mt-8" />
       </Container>
     </SectionShell>
   );

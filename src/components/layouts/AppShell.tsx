@@ -118,7 +118,7 @@ export function AppShell({ area, banners, children }: AppShellProps) {
         {banners}
 
         <main id="main-content" tabIndex={-1} className="min-h-0 flex-1 overflow-hidden p-4 focus:outline-none sm:p-6 lg:p-8">
-          <div className="mx-auto h-full w-full max-w-[1440px]">{children}</div>
+          <div className="mx-auto h-full w-full min-w-0 max-w-[1440px]">{children}</div>
         </main>
       </div>
     </div>

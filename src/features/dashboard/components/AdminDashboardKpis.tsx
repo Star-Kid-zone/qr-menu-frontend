@@ -10,11 +10,11 @@ export interface AdminDashboardKpisProps {
 
 export function AdminDashboardKpis({ statCards, loading }: AdminDashboardKpisProps) {
   return (
-    <div className="grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+    <div className="grid min-w-0 shrink-0 grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
       {statCards.map((stat) => (
         <div
           key={stat.label}
-          className="flex flex-col justify-between rounded-xl border border-border bg-card p-3 sm:p-4 shadow-sm transition hover:shadow-md"
+          className="flex min-w-0 flex-col justify-between rounded-xl border border-border bg-card p-3 sm:p-4 shadow-sm transition hover:shadow-md"
         >
           <div className="flex items-center justify-between">
             <span className="text-caption font-semibold text-muted-foreground sm:text-xs">{stat.label}</span>

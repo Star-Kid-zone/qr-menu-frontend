@@ -9,7 +9,8 @@ import { structureCatalogue } from "@/components/templates/sections/landing/stru
 import { LAYOUT_MAP } from "@/components/templates/sections/layouts/registry";
 import { LANDING_SECTIONS } from "@/components/templates/sections/landing/registry";
 import type { SectionInstance, SiteDocument } from "@/components/templates/sections/types";
-import { moveItem, OrderableList, withSchedule } from "./OrderableList";
+import { moveItem, OrderableList } from "./OrderableList";
+import { SectionThumbnail } from "./SectionThumbnail";
 
 export { scheduleSummary } from "./OrderableList";
 
@@ -22,9 +23,8 @@ export interface SectionsPanelProps {
 }
 
 /**
- * Landing page section list: reorder, show/hide, date windows, and reset to
- * the layout's default order. Edits the `site_document` form value, so the
- * live preview follows every change and the page's normal Save button stores it.
+ * Landing page section list: visual thumbnails, reordering, show/hide,
+ * design variants, and reset to the layout's default order.
  */
 export function SectionsPanel({ value, structureKey, disabled, onChange }: SectionsPanelProps) {
   // Every layout renders all sections in the saved order; a layout may define its own starting order.
@@ -50,10 +50,10 @@ export function SectionsPanel({ value, structureKey, disabled, onChange }: Secti
   const visibleCount = sections.filter((s) => !s.hidden && LANDING_SECTION_MAP.has(s.type)).length;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3.5">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <p className="text-caption text-muted-foreground max-w-prose">
-          Drag sections to change their order, or use the arrows. Hidden sections stay in the list so you can bring them back.
+        <p className="max-w-prose text-caption text-muted-foreground">
+          Drag sections to change their order, or use the arrow buttons. Hidden sections stay in the list so you can bring them back.
           {isLayout ? " This layout has its own hero and photo designs; switch to Default to choose between them." : ""}
         </p>
         <Button
@@ -77,6 +77,7 @@ export function SectionsPanel({ value, structureKey, disabled, onChange }: Secti
       <OrderableList
         ariaLabel="Page sections"
         disabled={disabled}
+        allowSchedule={false}
         items={sections.map((s) => {
           const def = LANDING_SECTION_MAP.get(s.type);
           return {
@@ -84,17 +85,21 @@ export function SectionsPanel({ value, structureKey, disabled, onChange }: Secti
             label: def?.label ?? "Unavailable section",
             description: def?.description,
             hidden: Boolean(s.hidden),
-            schedule: s.schedule,
-            // Only offer a design choice that changes the page (the preview would otherwise ignore it).
             variants: !isLayout || LAYOUT_DESIGN_TYPES.has(s.type) ? def?.variants : undefined,
             variant: s.variant,
+            thumbnail: (
+              <SectionThumbnail
+                type={s.type}
+                variant={s.variant}
+                hidden={Boolean(s.hidden)}
+              />
+            ),
           };
         })}
         onMove={(from, to) => commit(moveItem(sections, from, to))}
         onToggle={(index) =>
           commit(sections.map((s, i) => (i === index ? { ...s, hidden: s.hidden ? undefined : true } : s)))
         }
-        onSchedule={(index, patch) => commit(sections.map((s, i) => (i === index ? withSchedule(s, patch) : s)))}
         onVariant={(index, variant) =>
           commit(
             sections.map((s, i) => {

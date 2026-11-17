@@ -5,6 +5,8 @@ export interface PageContainerProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   /** When true, keeps page within fixed bounds without outer vertical scroll */
   fixed?: boolean;
+  /** When true (default), hides the visible scrollbar while preserving scroll functionality */
+  hideScrollbar?: boolean;
 }
 
 /**
@@ -16,13 +18,19 @@ export function PageContainer({
   children,
   className,
   fixed = false,
+  hideScrollbar = true,
   ...props
 }: PageContainerProps) {
   return (
     <div
       className={cn(
-        "flex h-full w-full flex-col gap-4 sm:gap-4",
-        fixed ? "min-h-0 overflow-hidden" : "min-h-0 overflow-y-auto pr-0.5 pb-6",
+        "flex h-full w-full min-w-0 flex-col gap-4 sm:gap-4",
+        fixed
+          ? "min-h-0 overflow-hidden"
+          : cn(
+              "min-h-0 overflow-y-auto overflow-x-hidden pb-6",
+              hideScrollbar ? "no-scrollbar" : "pr-0.5",
+            ),
         className,
       )}
       {...props}

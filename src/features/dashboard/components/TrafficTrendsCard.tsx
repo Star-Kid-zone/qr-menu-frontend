@@ -64,7 +64,7 @@ export function TrafficTrendsCard({ data, loading, rangeLabel, derived }: Traffi
                 });
               })()}
             </div>
-            <div className="mt-3 flex justify-between border-t border-border pt-3 whitespace-nowrap text-caption font-medium text-muted-foreground">
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-caption font-medium text-muted-foreground">
               <span>{data.visitHistory[0] ? formatDate(data.visitHistory[0].date) : null}</span>
               <span>Average <strong className="text-foreground">{derived.avgDailyVisits}</strong> visits a day</span>
               <span>{data.visitHistory.length ? formatDate(data.visitHistory[data.visitHistory.length - 1].date) : null}</span>

@@ -36,9 +36,9 @@ export function SearchIntelligenceCard({ data, loading }: SearchIntelligenceCard
               {data?.topSearches && data.topSearches.length > 0 ? (
                 <ul className="space-y-2">
                   {data.topSearches.slice(0, 5).map((s, i) => (
-                    <li key={`${s.query}-${i}`} className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2 text-xs">
-                      <span className="truncate font-medium text-foreground">{s.query}</span>
-                      <span className="text-muted-foreground">{s.count}×</span>
+                    <li key={`${s.query}-${i}`} className="flex min-w-0 items-center justify-between gap-2 rounded-lg bg-muted/40 px-3 py-2 text-xs">
+                      <span className="min-w-0 truncate font-medium text-foreground">{s.query}</span>
+                      <span className="shrink-0 text-muted-foreground">{s.count}×</span>
                     </li>
                   ))}
                 </ul>
@@ -53,8 +53,8 @@ export function SearchIntelligenceCard({ data, loading }: SearchIntelligenceCard
               {data?.zeroResultSearches && data.zeroResultSearches.length > 0 ? (
                 <ul className="space-y-2">
                   {data.zeroResultSearches.slice(0, 5).map((s, i) => (
-                    <li key={`${s.query}-${i}`} className="flex items-center justify-between rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning-foreground dark:bg-warning/40 dark:text-warning">
-                      <span className="truncate font-medium">{s.query}</span>
+                    <li key={`${s.query}-${i}`} className="flex min-w-0 items-center justify-between gap-2 rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning-foreground dark:bg-warning/40 dark:text-warning">
+                      <span className="min-w-0 truncate font-medium">{s.query}</span>
                       <span className="flex shrink-0 items-center gap-2">
                         {s.count}×
                         <Link href={`/admin/addmenu?name=${encodeURIComponent(s.query)}`} className="font-semibold underline">

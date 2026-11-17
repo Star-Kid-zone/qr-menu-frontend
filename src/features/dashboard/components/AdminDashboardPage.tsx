@@ -239,7 +239,7 @@ export function AdminDashboardPage() {
       <AdminDashboardKpis statCards={statCards} loading={loading} />
 
       {/* ─── Main Grid: Visit Trends ───────────────────────────────────── */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
         <TrafficTrendsCard
           data={data}
           loading={loading}
@@ -252,7 +252,7 @@ export function AdminDashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
         <MostViewedDishesCard data={data} loading={loading} />
         <BusiestHoursCard data={data} loading={loading} />
       </div>
@@ -260,7 +260,7 @@ export function AdminDashboardPage() {
       <TrafficSourcesCard data={data} loading={loading} />
 
       {/* ─── Secondary Section: Search Intelligence & Menu Health ─────── */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
         <SearchIntelligenceCard
           data={data}
           loading={loading}

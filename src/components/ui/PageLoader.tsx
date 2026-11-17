@@ -5,7 +5,7 @@ export function PageLoader({
   label = 'Loading...',
   fullScreen = false,
   className,
-  theme = 'circular',
+  theme = 'restaurant-plate',
   surfaceClassName,
   textClassName,
 }: PageLoaderProps) {

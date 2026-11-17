@@ -49,9 +49,9 @@ export function MenuCatalogCard({ menuStats, loading }: MenuCatalogCardProps) {
                 const pct = menuStats.total > 0 ? Math.round((c.count / menuStats.total) * 100) : 0;
                 return (
                   <div key={c.category} className="space-y-0.5">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-medium text-foreground">{c.category}</span>
-                      <span className="text-muted-foreground">{c.count} items ({pct}%)</span>
+                    <div className="flex min-w-0 items-center justify-between gap-2 text-xs">
+                      <span className="min-w-0 truncate font-medium text-foreground">{c.category}</span>
+                      <span className="shrink-0 text-muted-foreground">{c.count} items ({pct}%)</span>
                     </div>
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                       <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />

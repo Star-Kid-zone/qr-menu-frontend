@@ -64,7 +64,7 @@ export function AdminFormPage({
         }
       />
 
-      <div className="relative min-h-0 flex-1 overflow-y-auto pr-0.5 pb-6">{children}</div>
+      <div className="relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden no-scrollbar pb-6">{children}</div>
     </div>
   );
 }

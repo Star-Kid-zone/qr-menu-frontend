@@ -177,29 +177,17 @@
     letter-spacing: -0.011em;
   }
 
+  html,
+  body,
   * {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted-foreground) / 0.5) transparent;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
 
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.4);
-    border-radius: 999px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.7);
-  }
-  ::-webkit-scrollbar-corner {
-    background: transparent;
+    display: none;
+    width: 0;
+    height: 0;
   }
 }
 
@@ -258,6 +246,28 @@
   }
   .no-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+  .show-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.5) transparent;
+    -ms-overflow-style: auto;
+  }
+  .show-scrollbar::-webkit-scrollbar {
+    display: block;
+    width: 8px;
+    height: 8px;
+  }
+  .show-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .show-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.4);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  .show-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.7);
   }
   .animate-fade-in-up {
     animation: fade-in-up 0.36s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -350,11 +360,29 @@
 .animate-marquee-reverse:hover {
   animation-play-state: paused;
 }
+@keyframes cloche-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes steam-rise {
+  0% { transform: translateY(2px); opacity: 0; }
+  35% { opacity: 0.85; }
+  65% { opacity: 0.6; }
+  100% { transform: translateY(-10px); opacity: 0; }
+}
+.animate-cloche-float {
+  animation: cloche-float 2.4s ease-in-out infinite;
+}
+.animate-steam-rise {
+  animation: steam-rise 1.8s ease-in-out infinite;
+}
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
   .animate-scale-in,
   .animate-marquee,
-  .animate-marquee-reverse {
+  .animate-marquee-reverse,
+  .animate-cloche-float,
+  .animate-steam-rise {
     animation: none;
   }
 }

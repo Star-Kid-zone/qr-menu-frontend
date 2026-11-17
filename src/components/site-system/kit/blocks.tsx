@@ -368,6 +368,11 @@ export function AmenityGrid({ amenities, variant = "grid", className = "" }: { a
 function AwardInner({ a }: { a: PublicAward }) {
   return (
     <>
+      {a.logoUrl ? (
+        <span className="relative mx-auto mb-2 block h-10 w-24 overflow-hidden">
+          <Image src={a.logoUrl} alt={a.title} fill sizes="96px" className="object-contain" />
+        </span>
+      ) : null}
       <span className="block font-medium" style={{ color: tv.text }}>{a.title}</span>
       {a.publisher || a.year ? (
         <span className="block text-sm" style={{ color: tv.muted }}>

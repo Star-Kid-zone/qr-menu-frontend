@@ -1,5 +1,6 @@
 import { cn } from '@/utils/cn';
 import { Spinner } from '@/components/ui/Spinner';
+import { RestaurantLoaderIcon } from '@/components/ui/RestaurantLoaderIcon';
 import { getLoadingScreenOption, normalizeLoadingScreenTheme } from './registry';
 import { LoadingScreenProps } from "@/types/components/LoadingScreens/LoadingScreen.types";
 
@@ -53,16 +54,7 @@ function AnimatedStage({ theme }: { theme: string | null }) {
           </div>
         );
       case 'restaurant-plate':
-        return (
-          <div className="relative h-24 w-24">
-            <div
-              className="absolute inset-0 rounded-full border-[3px] animate-[spin_4s_linear_infinite]"
-              style={{ borderColor: `${accent}30`, borderTopColor: accent }}
-            />
-            <div className="absolute inset-4 rounded-full border-[3px] border-white/70" />
-            <div className="absolute inset-[30%] rounded-full" style={{ background: accent }} />
-          </div>
-        );
+        return <RestaurantLoaderIcon size="lg" accentColor={accent} />;
       case 'restaurant-bento':
         return (
           <div className="grid h-24 w-24 grid-cols-2 gap-2">

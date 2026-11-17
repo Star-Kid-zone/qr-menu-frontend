@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { PiCaretDownBold } from "react-icons/pi";
+import {
+  PiCaretDownBold,
+  PiSparkleBold,
+  PiArticleBold,
+  PiFadersBold,
+  PiFolderBold,
+} from "react-icons/pi";
 import { cn } from "@/utils/cn";
 
 export interface RailItem {
@@ -20,7 +26,61 @@ export interface RailGroup {
   label: string;
   /** Starts folded away (opens itself when one of its items is active). */
   collapsible?: boolean;
+  /** Optional badge tag */
+  tag?: string;
+  /** Custom icon override */
+  icon?: React.ComponentType<{ className?: string }>;
 }
+
+interface GroupVisual {
+  icon: React.ComponentType<{ className?: string }>;
+  iconBg: string;
+  iconColor: string;
+  badgeBg: string;
+  badgeText: string;
+  borderActive: string;
+  borderInactive: string;
+}
+
+const DEFAULT_GROUP_VISUALS: Record<string, GroupVisual> = {
+  setup: {
+    icon: PiSparkleBold,
+    iconBg: "bg-primary/10 dark:bg-primary/25",
+    iconColor: "text-primary dark:text-primary",
+    badgeBg: "bg-primary/10 text-primary dark:bg-primary/25",
+    badgeText: "1",
+    borderActive: "border-primary",
+    borderInactive: "border-primary/25",
+  },
+  content: {
+    icon: PiArticleBold,
+    iconBg: "bg-sky-500/10 dark:bg-sky-500/25",
+    iconColor: "text-sky-600 dark:text-sky-400",
+    badgeBg: "bg-sky-500/10 text-sky-600 dark:bg-sky-500/25 dark:text-sky-400",
+    badgeText: "2",
+    borderActive: "border-sky-500",
+    borderInactive: "border-sky-500/25",
+  },
+  tune: {
+    icon: PiFadersBold,
+    iconBg: "bg-violet-500/10 dark:bg-violet-500/25",
+    iconColor: "text-violet-600 dark:text-violet-400",
+    badgeBg: "bg-violet-500/10 text-violet-600 dark:bg-violet-500/25 dark:text-violet-400",
+    badgeText: "3",
+    borderActive: "border-violet-500",
+    borderInactive: "border-violet-500/25",
+  },
+};
+
+const FALLBACK_GROUP_VISUAL: GroupVisual = {
+  icon: PiFolderBold,
+  iconBg: "bg-muted",
+  iconColor: "text-muted-foreground",
+  badgeBg: "bg-muted text-muted-foreground",
+  badgeText: "•",
+  borderActive: "border-border",
+  borderInactive: "border-border/40",
+};
 
 /**
  * The studio's frame: a rail of parts on the left, grouped into a few plain
@@ -79,11 +139,13 @@ export function StudioShell({
         onClick={() => onActive(p.id)}
         onKeyDown={(e) => onKey(e, p.id)}
         className={cn(
-          "flex h-10 shrink-0 items-center justify-between gap-2 rounded-lg px-3 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:h-8",
-          selected ? "bg-accent font-medium text-accent-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          "flex h-10 shrink-0 items-center justify-between gap-2 rounded-lg px-2.5 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:h-8",
+          selected
+            ? "bg-accent font-medium text-accent-foreground shadow-xs"
+            : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
         )}
       >
-        <span className="whitespace-nowrap">{p.label}</span>
+        <span className="truncate">{p.label}</span>
         {p.customised ? (
           <>
             <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-primary" />
@@ -102,29 +164,130 @@ export function StudioShell({
         role="tablist"
         aria-label={ariaLabel}
         aria-orientation="vertical"
-        className="flex shrink-0 gap-1 overflow-x-auto pb-1 md:sticky md:top-2 md:w-44 md:flex-col md:gap-0.5 md:overflow-visible md:pb-0"
+        className="flex shrink-0 gap-1 overflow-x-auto pb-1 no-scrollbar md:sticky md:top-2 md:w-48 md:flex-col md:gap-0.5 md:overflow-visible md:pb-0"
       >
         {ungrouped.map(tab)}
-        {(groups ?? []).map((g) => {
-          const members = items.filter((i) => i.group === g.id);
+        {(groups ?? []).map((g, i) => {
+          const members = items.filter((item) => item.group === g.id);
           if (members.length === 0) return null;
           const open = !g.collapsible || openGroups[g.id] || activeItem?.group === g.id;
+          const visual = DEFAULT_GROUP_VISUALS[g.id] ?? FALLBACK_GROUP_VISUAL;
+          const Icon = g.icon ?? visual.icon;
+          const isGroupActive = activeItem?.group === g.id;
+
           return (
-            <div key={g.id} role="presentation" className="flex shrink-0 gap-1 md:mt-3 md:flex-col md:gap-0.5 md:first:mt-0">
-              {g.collapsible ? (
-                <button
-                  type="button"
-                  aria-expanded={open}
-                  onClick={() => setOpenGroups((o) => ({ ...o, [g.id]: !open }))}
-                  className="flex h-10 shrink-0 items-center gap-1.5 rounded-lg px-3 text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary md:h-7"
-                >
-                  {g.label}
-                  <PiCaretDownBold aria-hidden className={cn("size-3 transition-transform", open ? "" : "-rotate-90")} />
-                </button>
-              ) : (
-                <p className="hidden px-3 pb-1 text-xs font-medium text-muted-foreground md:block">{g.label}</p>
+            <div
+              key={g.id}
+              role="presentation"
+              className={cn(
+                "flex shrink-0 gap-1 md:flex-col md:gap-1",
+                i > 0 && "md:mt-3 md:border-t md:border-border/70 md:pt-3"
               )}
-              {open ? members.map(tab) : null}
+            >
+              {/* Group Header (Desktop) */}
+              <div className="hidden md:block">
+                {g.collapsible ? (
+                  <button
+                    type="button"
+                    aria-expanded={open}
+                    onClick={() => setOpenGroups((o) => ({ ...o, [g.id]: !open }))}
+                    className="flex h-7 w-full shrink-0 items-center justify-between rounded-md px-2 text-left transition-colors hover:bg-muted/70 focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span
+                        className={cn(
+                          "flex size-4 shrink-0 items-center justify-center rounded",
+                          visual.iconBg,
+                          visual.iconColor
+                        )}
+                      >
+                        <Icon className="size-2.5" />
+                      </span>
+                      <span
+                        className={cn(
+                          "truncate text-[11px] font-bold uppercase tracking-wider",
+                          isGroupActive ? "text-foreground" : "text-muted-foreground"
+                        )}
+                      >
+                        {g.label}
+                      </span>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <span
+                        className={cn(
+                          "rounded px-1 py-0.5 text-[9px] font-bold leading-none",
+                          visual.badgeBg
+                        )}
+                      >
+                        {g.tag ?? visual.badgeText}
+                      </span>
+                      <PiCaretDownBold
+                        aria-hidden
+                        className={cn(
+                          "size-2.5 text-muted-foreground transition-transform duration-200",
+                          open ? "" : "-rotate-90"
+                        )}
+                      />
+                    </div>
+                  </button>
+                ) : (
+                  <div className="flex items-center justify-between px-2 pb-0.5 text-left">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span
+                        className={cn(
+                          "flex size-4 shrink-0 items-center justify-center rounded",
+                          visual.iconBg,
+                          visual.iconColor
+                        )}
+                      >
+                        <Icon className="size-2.5" />
+                      </span>
+                      <span
+                        className={cn(
+                          "truncate text-[11px] font-bold uppercase tracking-wider",
+                          isGroupActive ? "text-foreground" : "text-muted-foreground"
+                        )}
+                      >
+                        {g.label}
+                      </span>
+                    </div>
+                    <span
+                      className={cn(
+                        "rounded px-1 py-0.5 text-[9px] font-bold leading-none",
+                        visual.badgeBg
+                      )}
+                    >
+                      {g.tag ?? visual.badgeText}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Group Heading (Mobile Horizontal Scroller) */}
+              <div className="flex md:hidden items-center gap-1 shrink-0 px-1 py-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span
+                  className={cn(
+                    "flex size-4 shrink-0 items-center justify-center rounded",
+                    visual.iconBg,
+                    visual.iconColor
+                  )}
+                >
+                  <Icon className="size-2.5" />
+                </span>
+                <span className="whitespace-nowrap">{g.label}</span>
+              </div>
+
+              {/* Child Nav Items with Left Accent Line */}
+              {open ? (
+                <div
+                  className={cn(
+                    "flex shrink-0 gap-1 md:flex-col md:gap-0.5 md:ml-1 md:pl-2 md:border-l-2 transition-colors",
+                    isGroupActive ? visual.borderActive : visual.borderInactive
+                  )}
+                >
+                  {members.map(tab)}
+                </div>
+              ) : null}
             </div>
           );
         })}

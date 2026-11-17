@@ -22,9 +22,9 @@ function Bars({ rows }: { rows: Array<{ label: string; count: number }> }) {
     <ul className="space-y-2">
       {rows.map((r) => (
         <li key={r.label} className="space-y-0.5">
-          <div className="flex items-center justify-between text-xs">
-            <span className="truncate font-medium text-foreground">{r.label}</span>
-            <span className="text-muted-foreground">{r.count}</span>
+          <div className="flex min-w-0 items-center justify-between gap-2 text-xs">
+            <span className="min-w-0 truncate font-medium text-foreground">{r.label}</span>
+            <span className="shrink-0 text-muted-foreground">{r.count}</span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
             <div className="h-full rounded-full bg-primary" style={{ width: `${(r.count / max) * 100}%` }} />

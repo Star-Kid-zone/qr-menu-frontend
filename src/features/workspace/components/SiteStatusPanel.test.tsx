@@ -40,7 +40,7 @@ describe("SiteStatusPanel", () => {
   });
 });
 
-describe("SectionsPanel with status and schedules", () => {
+describe("SectionsPanel with status", () => {
   it("Reset order keeps the site status", () => {
     const onChange = vi.fn();
     const value: SiteDocument = { version: 1, landing: { sections: [{ id: "hero", type: "hero" }] }, status: { mode: "holiday" } };
@@ -49,17 +49,11 @@ describe("SectionsPanel with status and schedules", () => {
     expect(onChange).toHaveBeenCalledWith({ version: 1, status: { mode: "holiday" } });
   });
 
-  it("schedules a section and clears it again", () => {
+  it("does not render schedule or date fields in SectionsPanel", () => {
     const onChange = vi.fn();
-    const { rerender } = render(<SectionsPanel value={null} structureKey="" disabled={false} onChange={onChange} />);
-    fireEvent.click(screen.getByRole("button", { name: "Schedule Offers" }));
-    fireEvent.change(screen.getByLabelText("Offers: until"), { target: { value: "2026-12-31" } });
-    const doc = onChange.mock.calls[0][0] as SiteDocument;
-    expect(doc.landing?.sections.find((s) => s.type === "offers")?.schedule).toEqual({ to: "2026-12-31" });
-
-    rerender(<SectionsPanel value={doc} structureKey="" disabled={false} onChange={onChange} />);
-    fireEvent.click(screen.getByRole("button", { name: "Always show" }));
-    const cleared = onChange.mock.calls[1][0] as SiteDocument;
-    expect(cleared.landing?.sections.find((s) => s.type === "offers")?.schedule).toBeUndefined();
+    render(<SectionsPanel value={null} structureKey="" disabled={false} onChange={onChange} />);
+    expect(screen.queryByRole("button", { name: "Schedule Offers" })).toBeNull();
+    expect(screen.queryByLabelText(/show from/i)).toBeNull();
+    expect(screen.queryByLabelText(/until/i)).toBeNull();
   });
 });

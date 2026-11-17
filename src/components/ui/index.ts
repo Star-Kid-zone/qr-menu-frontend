@@ -15,6 +15,7 @@ export * from './Notice';
 export * from './PageContainer';
 export * from './PageHeader';
 export * from './PageLoader';
+export * from './RestaurantLoaderIcon';
 export * from './Pagination';
 export * from './PromptDialog';
 export * from './ScrollableTabRow';

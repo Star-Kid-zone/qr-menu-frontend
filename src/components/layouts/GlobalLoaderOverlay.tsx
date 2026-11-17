@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useGlobalLoading } from "@/hooks/useGlobalLoading";
-import { Spinner } from "@/components/ui/Spinner";
+import { RestaurantLoaderIcon } from "@/components/ui/RestaurantLoaderIcon";
 
 // Avoids a flash on near-instant requests — only shows once loading has
 // genuinely lasted a moment.
@@ -11,11 +11,12 @@ const SHOW_DELAY_MS = 150;
 const MIN_VISIBLE_MS = 250;
 
 /**
- * Full-screen semi-transparent overlay that appears whenever any API request
- * is in-flight, driven by the global loading store (globalLoading.store.ts).
+ * Full-screen semi-transparent overlay with a dimmed backdrop and an animated
+ * restaurant cloche icon that appears whenever any API request is in-flight,
+ * driven by the global loading store (globalLoading.store.ts).
  *
- * Mounted once inside AdminLayout / SuperadminLayout — zero per-page wiring
- * needed. Works on all screen sizes automatically via fixed inset-0.
+ * Mounted once inside AdminLayout / SuperadminLayout — zero per-page wiring needed.
+ * Works on all screen sizes automatically via fixed inset-0.
  */
 export function GlobalLoaderOverlay() {
   const isLoading = useGlobalLoading();
@@ -83,11 +84,26 @@ export function GlobalLoaderOverlay() {
       className="
         fixed inset-0 z-[200]
         flex items-center justify-center
-        bg-background/60 backdrop-blur-sm
-        cursor-wait
+        bg-black/35 dark:bg-black/60 backdrop-blur-[2px]
+        cursor-wait transition-opacity duration-200
       "
     >
-      <Spinner size="lg" />
+      <div
+        className="
+          relative flex flex-col items-center justify-center
+          rounded-2xl border border-border/50
+          bg-card/95 p-6 shadow-2xl backdrop-blur-md
+          text-center max-w-[210px] min-w-[170px]
+          animate-scale-in
+        "
+      >
+        <RestaurantLoaderIcon size="lg" />
+        <p className="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-foreground/80">
+          Loading...
+        </p>
+      </div>
     </div>
   );
 }
+
+export default GlobalLoaderOverlay;

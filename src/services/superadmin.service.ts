@@ -67,9 +67,9 @@ export interface OccasionPackWording {
 
 export interface BlueprintContent {
   amenities: Array<{ id: string; note?: string }>;
-  awards: Array<{ title: string; publisher?: string; year?: number }>;
+  awards: Array<{ title: string; publisher?: string; year?: number; url?: string; logoUrl?: string }>;
   team: Array<{ name: string; role?: string; bio?: string; photoUrl?: string }>;
-  events: Array<{ title: string; description?: string; startsInDays: number; durationHours?: number; imageUrl?: string }>;
+  events: Array<{ title: string; description?: string; startsInDays: number; durationHours?: number; imageUrl?: string; linkUrl?: string }>;
 }
 
 export interface BlueprintSite {
