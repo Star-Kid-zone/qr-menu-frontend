@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
-import Image from 'next/image';
+import Image from '@/components/ui/Image';
 import type { CSSProperties, ReactNode } from 'react';
 import { useRef } from 'react';
 

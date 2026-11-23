@@ -1,13 +1,7 @@
-import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/utils/cn";
+import type { PageContainerProps } from "@/types/ui/PageContainer.types";
 
-export interface PageContainerProps extends HTMLAttributes<HTMLDivElement> {
-  children: ReactNode;
-  /** When true, keeps page within fixed bounds without outer vertical scroll */
-  fixed?: boolean;
-  /** When true (default), hides the visible scrollbar while preserving scroll functionality */
-  hideScrollbar?: boolean;
-}
+export type { PageContainerProps };
 
 /**
  * Universal PageContainer primitive.

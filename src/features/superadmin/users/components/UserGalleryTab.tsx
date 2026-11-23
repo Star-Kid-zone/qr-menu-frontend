@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import { Modal } from "@/components/Modal";
 import { Card, EmptyState } from "@/components/ui";
 import {

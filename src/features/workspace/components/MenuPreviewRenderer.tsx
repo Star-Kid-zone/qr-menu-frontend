@@ -8,7 +8,7 @@ import { Spinner } from "@/components/ui";
 import { menuTemplates } from "@/components/templates/core/menuRegistry";
 import { MENU_STRUCTURE_MAP, resolveMenuStructure } from "@/components/templates/menu/structureRegistry";
 import { mapPublicUserDetailsFromApi } from "@/components/templates/core/mapPublicUserDetails";
-import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
+import type { RawPublicSiteData } from "@/types/public/templates/rawPublicSiteData.types";
 import type { Menu } from "@/types";
 import { DEFAULT_TEMPLATE_SLUG } from "@/components/templates/core/defaultTemplate";
 

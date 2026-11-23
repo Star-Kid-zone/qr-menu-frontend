@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useSyncExternalStore, type ReactNode } from 'react';
 import { getRawStorageItem, setRawStorageItem, storageKeys } from '@/utils/storage';
+import { STORAGE_EVENTS } from '@/constants/storage.constants';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -20,7 +21,7 @@ export const useThemeContext = (): ThemeContextType => {
   return context;
 };
 
-const THEME_MODE_EVENT = 'qr-theme-mode';
+const THEME_MODE_EVENT = STORAGE_EVENTS.themeMode;
 
 function subscribeThemeMode(onChange: () => void) {
   window.addEventListener(THEME_MODE_EVENT, onChange);

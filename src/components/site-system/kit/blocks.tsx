@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import type { CSSProperties, ElementType, ReactNode } from "react";
 import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/templates/core/socialPlatforms";
 import type { LandingSectionContext } from "@/components/templates/sections/types";

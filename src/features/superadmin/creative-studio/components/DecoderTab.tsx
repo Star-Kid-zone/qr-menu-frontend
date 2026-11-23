@@ -12,7 +12,7 @@ import {
   PiTrashBold,
 } from "react-icons/pi";
 import { cn } from "@/utils/cn";
-import { SAMPLE_DECODER_CONTEXTS } from "../constants";
+import { SAMPLE_DECODER_CONTEXTS } from "@/constants/studio.constants";
 
 /** One layout layer in a decoded poster spec, as returned by the decode endpoint. */
 interface DecodedLayer {

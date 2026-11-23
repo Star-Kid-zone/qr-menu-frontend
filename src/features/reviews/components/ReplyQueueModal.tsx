@@ -10,7 +10,7 @@ import { Notice } from "@/components/ui/Notice";
 import { toast } from "@/components/ui/toast";
 import { getApiErrorMessage } from "@/utils/errors";
 import { StarRating } from "./StarRating";
-import { AUTO_REPLY_TONE_OPTIONS } from "../types";
+import { AUTO_REPLY_TONE_OPTIONS } from "@/constants/reviews.constants";
 
 interface ReplyQueueModalProps {
   /** Unreplied reviews, already in the order they should be shown. */

@@ -2,16 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useGlobalLoading } from "@/hooks/useGlobalLoading";
+import { UI_TIMING } from "@/constants/app.constants";
 
 // Avoids a flicker on near-instant requests — only shows once loading has
 // genuinely lasted a moment.
-const SHOW_DELAY_MS = 150;
+const SHOW_DELAY_MS = UI_TIMING.progressBarShowDelayMs;
 // Once shown, stays up at least this long — an under-100ms flash reads as a
 // glitch, not as feedback.
-const MIN_VISIBLE_MS = 300;
+const MIN_VISIBLE_MS = UI_TIMING.progressBarMinVisibleMs;
 // How long the bar lingers at 100% before unmounting, so the "done" frame
 // actually gets seen.
-const COMPLETE_HOLD_MS = 200;
+const COMPLETE_HOLD_MS = UI_TIMING.progressBarCompleteHoldMs;
 
 /**
  * Thin top-of-page progress bar driven by the app-wide in-flight API request

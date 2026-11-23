@@ -1,13 +1,7 @@
-import type { ReactNode } from "react";
 import { cn } from "@/utils/cn";
+import type { SectionHeaderProps } from "@/types/ui/SectionHeader.types";
 
-export interface SectionHeaderProps {
-  title: string;
-  description?: string;
-  overline?: string;
-  actions?: ReactNode;
-  className?: string;
-}
+export type { SectionHeaderProps };
 
 /**
  * Shared SectionHeader for major sub-sections inside complex pages

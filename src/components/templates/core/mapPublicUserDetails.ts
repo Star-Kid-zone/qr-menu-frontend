@@ -9,7 +9,7 @@ import type {
   PublicBusinessBranch,
 } from './types';
 import type { SocialLink } from '@/types';
-import { MappedPublicUserDetails } from "@/types/components/templates/mapPublicUserDetails.types";
+import { MappedPublicUserDetails } from "@/types/public/templates/mapPublicUserDetails.types";
 import { toSafeExternalUrl } from '@/utils/url';
 
 function asRecord(v: unknown): Record<string, unknown> | null {

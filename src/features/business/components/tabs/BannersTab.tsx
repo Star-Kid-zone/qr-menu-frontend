@@ -4,9 +4,9 @@ import React from "react";
 import { Button, EmptyState, PageHeader } from "@/components/ui";
 import { PiMegaphoneBold, PiPencilSimpleBold, PiPlusBold } from "react-icons/pi";
 import { BannerAnnouncementForm } from "@/features/workspace";
-import type { BannerAnnouncementValues } from "@/types/components/admin/workspace/BannerAnnouncementForm.types";
-import type { WorkspaceSetting } from "@/types/workspace.types";
-import { INLINE_BANNER_FORM_ID } from "../../types";
+import type { BannerAnnouncementValues } from "@/types/admin/workspace/BannerAnnouncementForm.types";
+import type { WorkspaceSetting } from "@/types/admin/workspace/workspace.types";
+import { INLINE_BANNER_FORM_ID } from "@/constants/site.constants";
 
 interface BannersTabProps {
   workspace: WorkspaceSetting | null;

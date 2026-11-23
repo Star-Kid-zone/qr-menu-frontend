@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import type { CSSProperties, ReactNode } from "react";
 import type { LandingSectionContext, LandingSectionProps } from "../../types";
 import { SITE_CONTENT_SECTIONS } from "../../landing/siteContent";

@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { mapPublicUserDetailsFromApi } from "@/components/templates/core/mapPublicUserDetails";
 import { menuSample } from "@/app/menu-lab/[key]/sample";
-import type { PublicMenuPayload } from "@/types/public-site";
+import type { PublicMenuPayload } from "@/types/public/publicSite.types";
 import type { Menu } from "@/types";
 import GenericMenuTemplate from "./_shared/GenericMenuTemplate";
 
@@ -43,7 +43,7 @@ describe.each(LAYOUTS.map(([name], i) => [name, i] as const))("menu layout: %s",
 
   it("names the restaurant and links back to it", () => {
     expect(out).toContain("Casa Nonna");
-    expect(out).toMatch(/href="[^"]*"[^>]*>[^<]*(Back|back|Venue|venue|Home|home)/);
+    expect(out).toMatch(/href="[^"]*"[^>]*>[^<]*(Back|back|Venue|venue|Home|home|website|Website)/);
   });
 
   it("has a search box", () => {

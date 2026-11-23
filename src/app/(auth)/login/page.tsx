@@ -15,6 +15,7 @@ import { setStoredUserRole, setStoredPermissions } from "@/utils/storage";
 import { loginSchema, toLoginPayload, type LoginSchemaValues } from "@/schemas/auth.schema";
 import { getApiErrorMessage } from "@/utils/errors";
 import { getLandingRoute } from "@/config/landing";
+import { HTTP_STATUS } from "@/constants";
 
 function LoginForm() {
   const router = useRouter();
@@ -51,7 +52,7 @@ function LoginForm() {
     } catch (err) {
       // Signed up but never confirmed the emailed code: continue on the code step.
       const body = (err as { response?: { status?: number; data?: { code?: string; email?: string | null } } })?.response;
-      if (body?.status === 403 && body.data?.code === "ACCOUNT_INACTIVE" && body.data.email) {
+      if (body?.status === HTTP_STATUS.FORBIDDEN && body.data?.code === "ACCOUNT_INACTIVE" && body.data.email) {
         router.push(`/register?verify=${encodeURIComponent(body.data.email)}`);
         return;
       }

@@ -2,7 +2,7 @@ import { cn } from '@/utils/cn';
 import { Spinner } from '@/components/ui/Spinner';
 import { RestaurantLoaderIcon } from '@/components/ui/RestaurantLoaderIcon';
 import { getLoadingScreenOption, normalizeLoadingScreenTheme } from './registry';
-import { LoadingScreenProps } from "@/types/components/LoadingScreens/LoadingScreen.types";
+import { LoadingScreenProps } from "@/types/public/LoadingScreens/LoadingScreen.types";
 
 function AnimatedStage({ theme }: { theme: string | null }) {
   const normalized = normalizeLoadingScreenTheme(theme);

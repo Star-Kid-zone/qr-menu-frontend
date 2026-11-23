@@ -1,33 +1,21 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import { useEffect, useRef, useState } from "react";
 import { PiArrowCounterClockwiseBold, PiCheckBold, PiUploadSimpleBold } from "react-icons/pi";
 import { Button, Spinner, toast } from "@/components/ui";
 import { cn } from "@/utils/cn";
 import { workspaceService } from "@/services/workspace.service";
 import { getApiErrorMessage } from "@/utils/errors";
+import { compressImageFile } from "@/utils/imageCompressor";
 
 /**
  * Built-in photos (public/landing/<set>/hero.*), hand-picked: only ones that
  * actually show food or a dining room, labelled by what they show.
  */
-export const STOCK_HERO_PHOTOS: readonly { url: string; label: string }[] = [
-  { url: "/landing/fine-dining/hero.jpg", label: "Fine dining" },
-  { url: "/landing/casual-bistro/hero.jpg", label: "Bistro" },
-  { url: "/landing/pasta-italian/hero.jpg", label: "Italian" },
-  { url: "/landing/street-food/hero.jpg", label: "Street food" },
-  { url: "/landing/japanese-fusion/hero.jpg", label: "Night market" },
-  { url: "/landing/industrial-grill/hero.jpg", label: "Grill" },
-  { url: "/landing/cafe-bakery/hero.jpg", label: "Café" },
-  { url: "/landing/colorful-brunch/hero.jpg", label: "Brunch" },
-  { url: "/landing/garden-outdoor/hero.jpg", label: "Garden" },
-  { url: "/landing/cocktail-bar/hero.jpg", label: "Bar" },
-  { url: "/landing/vintage-diner/hero.jpg", label: "Diner" },
-];
+import { STOCK_HERO_PHOTOS, HERO_IMAGE_UPLOAD } from "@/constants/workspace.constants";
 
-const ACCEPT = "image/jpeg,image/png,image/webp";
-const MAX_MB = 8;
+export { STOCK_HERO_PHOTOS };
 
 export interface HeroImagePanelProps {
   disabled: boolean;
@@ -98,6 +86,7 @@ export function HeroImagePanel({ disabled, onChanged }: HeroImagePanelProps) {
 
   const choose = async (url: string | null) => {
     setBusy(true);
+    setError(null);
     try {
       await workspaceService.chooseHeroImage(url);
       await done(url);
@@ -109,12 +98,14 @@ export function HeroImagePanel({ disabled, onChanged }: HeroImagePanelProps) {
   };
 
   const upload = async (file: File) => {
-    if (!ACCEPT.split(",").includes(file.type)) return setError("Use a JPG, PNG or WebP photo.");
-    if (file.size > MAX_MB * 1024 * 1024) return setError(`Use a photo under ${MAX_MB} MB.`);
+    if (!HERO_IMAGE_UPLOAD.ACCEPT.split(",").includes(file.type)) return setError("Use a JPG, PNG or WebP photo.");
+    if (file.size > HERO_IMAGE_UPLOAD.MAX_MB * 1024 * 1024) return setError(`Use a photo under ${HERO_IMAGE_UPLOAD.MAX_MB} MB.`);
     setBusy(true);
+    setError(null);
     try {
+      const fileToUpload = await compressImageFile(file);
       const form = new FormData();
-      form.append("image", file);
+      form.append("image", fileToUpload);
       const res = await workspaceService.uploadHeroImage(form);
       await done(res.data.url);
     } catch (err) {
@@ -150,7 +141,7 @@ export function HeroImagePanel({ disabled, onChanged }: HeroImagePanelProps) {
             <input
               ref={fileRef}
               type="file"
-              accept={ACCEPT}
+              accept={HERO_IMAGE_UPLOAD.ACCEPT}
               className="sr-only"
               id="hero-photo-upload"
               disabled={locked}

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useId, useRef } from 'react';
 import { PiX } from "react-icons/pi";
-import { ModalProps } from "@/types/components/Modal.types";
+import { ModalProps } from "@/types/ui/Modal.types";
 
 export type { ModalProps };
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { PublicMenuPayload } from "@/types/public-site";
+import type { PublicMenuPayload } from "@/types/public/publicSite.types";
 import type { PublicMenuTemplateProps } from "@/components/templates/core/types";
 import type { Menu } from "@/types";
 import { useMenuTemplateData } from "@/components/templates/core/useTemplateData";

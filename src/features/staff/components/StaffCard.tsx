@@ -14,10 +14,9 @@ export function getInitials(name: string) {
   return name.slice(0, 2).toUpperCase() || 'ST';
 }
 
-export const ROLE_COPY = {
-  manager: { label: 'Manager', access: 'Everything except managing team members.' },
-  staff: { label: 'Staff', access: 'Menu, shifts and checklists. Can view the website settings but not change them.' },
-} as const;
+import { ROLE_COPY } from '@/constants/auth.constants';
+
+export { ROLE_COPY };
 
 export function Avatar({ name, manager, dim }: { name: string; manager: boolean; dim?: boolean }) {
   return (

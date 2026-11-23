@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { cn } from '@/utils/cn';
-import { CheckboxProps } from "@/types/components/ui/Checkbox.types";
+import { CheckboxProps } from "@/types/ui/Checkbox.types";
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>((
   { className, label, description, id, invalid = false, ...props },

@@ -7,7 +7,7 @@
  * API is for: syncing React to state that lives outside it.
  */
 
-type Listener = () => void;
+import type { StoreListener as Listener } from '@/types';
 
 let pendingCount = 0;
 const listeners = new Set<Listener>();

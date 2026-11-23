@@ -25,13 +25,15 @@ import {
   PiXBold,
 } from 'react-icons/pi';
 import { cn } from '@/utils/cn';
+import { STORAGE_KEYS } from '@/constants/storage.constants';
+import { EMPTY_STAFF_FORM } from '@/constants/auth.constants';
 import type { StaffFormState, StaffSort, StaffView, StatusFilter } from '../types';
 import { StaffCard } from './StaffCard';
 import { StaffModal, ROLE_OPTIONS } from './StaffModal';
 import { StaffTable } from './StaffTable';
 
-const emptyForm: StaffFormState = { id: null, name: '', email: '', password: '', role: 'staff', active: true };
-const VIEW_KEY = 'staff-view';
+const emptyForm: StaffFormState = EMPTY_STAFF_FORM;
+const VIEW_KEY = STORAGE_KEYS.staffViewMode;
 
 const viewListeners = new Set<() => void>();
 

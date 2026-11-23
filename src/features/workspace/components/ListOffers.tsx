@@ -1,6 +1,6 @@
 'use client';
 import { useState, forwardRef, useImperativeHandle } from 'react';
-import Image from 'next/image';
+import Image from '@/components/ui/Image';
 import { workspaceService } from '@/services/workspace.service';
 import {
   PiPlusBold,
@@ -13,8 +13,9 @@ import {
 } from 'react-icons/pi';
 import { Modal } from '@/components/Modal';
 import { toast } from '@/components/ui/toast';
-import { OfferFormData, ListOffersProps, Offer } from "@/types/components/admin/workspace/ListOffers.types";
+import { OfferFormData, ListOffersProps, Offer } from "@/types/admin/workspace/ListOffers.types";
 import { getApiErrorMessage } from "@/utils/errors";
+import { compressImageFile } from "@/utils/imageCompressor";
 import { usePagination } from '@/hooks/usePagination';
 import { Pagination } from '@/components/ui/Pagination';
 
@@ -75,7 +76,10 @@ function OfferFormModal({
       fd.append('description', form.description);
       fd.append('discount', form.discount);
       fd.append('isActive', String(form.isActive));
-      if (imageFile) fd.append('image', imageFile);
+      if (imageFile) {
+        const fileToUpload = await compressImageFile(imageFile);
+        fd.append('image', fileToUpload);
+      }
 
       if (isEdit && initial) {
         await workspaceService.updateOfferItem(initial.id, fd);

@@ -1,4 +1,4 @@
-import { Industry, IndustryCategory, IndustryType } from '@/types';
+import type { Industry, IndustryCategory, IndustryType } from '@/types';
 import api from './api.service';
 
 export const industryService = {

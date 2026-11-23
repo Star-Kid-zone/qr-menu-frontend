@@ -4,13 +4,14 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@/utils/cn";
+import { toast } from "@/components/ui";
 import { getTemplatePalette } from "@/constants/templatePalettes";
 import { workspaceSettingsSchema } from "@/schemas/workspace.schema";
 import type {
   WorkspacePalette,
   WorkspaceSettingsFormValues,
-} from "@/types/workspace.types";
-import type { WorkspaceSettingsFormProps } from "@/types/components/admin/workspace/WorkspaceSettingsForm.types";
+} from "@/types/admin/workspace/workspace.types";
+import type { WorkspaceSettingsFormProps } from "@/types/admin/workspace/WorkspaceSettingsForm.types";
 import { LandingDesignStudio } from "./LandingDesignStudio";
 import { MenuDesignStudio } from "./MenuDesignStudio";
 
@@ -154,7 +155,18 @@ export function WorkspaceSettingsForm({
           e.preventDefault();
           return;
         }
-        void handleSubmit(onSubmit)(e);
+        void handleSubmit(
+          onSubmit,
+          (invalidErrors) => {
+            console.error("Workspace settings validation failed:", invalidErrors);
+            const firstError = Object.values(invalidErrors)[0];
+            if (firstError?.message) {
+              toast.error(String(firstError.message));
+            } else {
+              toast.error("Please check the form for errors.");
+            }
+          }
+        )(e);
       }}
       className={cn("py-0", compact ? "space-y-4" : "space-y-6")}
     >

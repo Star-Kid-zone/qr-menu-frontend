@@ -106,8 +106,14 @@ export function AnnouncementsPage() {
     }
   };
 
-  const safeAnnouncements = Array.isArray(announcements) ? announcements : [];
-  const activeCount = useMemo(() => safeAnnouncements.filter((a) => a.isActive).length, [safeAnnouncements]);
+  const safeAnnouncements = useMemo(
+    () => (Array.isArray(announcements) ? announcements : []),
+    [announcements]
+  );
+  const activeCount = useMemo(
+    () => safeAnnouncements.filter((a) => a.isActive).length,
+    [safeAnnouncements]
+  );
 
   return (
     <motion.div

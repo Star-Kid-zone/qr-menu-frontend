@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import type { LandingTemplateProps } from "@/types/components/templates/rawPublicSiteData.types";
+import type { LandingTemplateProps } from "@/types/public/templates/rawPublicSiteData.types";
 import type { ThemeConfig } from "@/components/templates/landing/_shared/BaseTemplate";
 import type { RichContent } from "@/components/templates/landing/_shared/defaults";
 import type { getThemeImages } from "@/components/templates/landing/_shared/themeImages";

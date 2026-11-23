@@ -4,7 +4,8 @@ import React from "react";
 import { type Shift } from "@/services/shift.service";
 import { PiPencilSimpleBold, PiTrashBold } from "react-icons/pi";
 import { cn } from "@/utils/cn";
-import { formatTime, STATUS_STYLES } from "../types";
+import { STATUS_STYLES } from "@/constants/schedule.constants";
+import { formatTime } from "../schedule.utils";
 
 interface ShiftCardProps {
   shift: Shift;

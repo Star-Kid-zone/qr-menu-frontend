@@ -12,8 +12,8 @@ import {
 import { isMenuPartShown } from '@/components/templates/sections/menu/parts';
 import { lookFromSettings, siteToday } from '@/components/site-system/kit/look';
 import type { PublicLandingTemplateProps, PublicMenuTemplateProps } from '@/components/templates/core/types';
-import type { MappedPublicUserDetails } from '@/types/components/templates/mapPublicUserDetails.types';
-import type { PublicMenuPayload } from '@/types/public-site';
+import type { MappedPublicUserDetails } from '@/types/public/templates/mapPublicUserDetails.types';
+import type { PublicMenuPayload } from '@/types/public/publicSite.types';
 import type { Menu } from '@/types';
 
 function safeString(v: unknown, fallback = ''): string {

@@ -10,22 +10,10 @@ import { ModalFooter } from '@/components/ui/ModalFooter';
 import { ToggleCard } from '@/components/ui/ToggleCard';
 import { cn } from '@/utils/cn';
 import type { StaffRole } from '@/constants/permissions';
+import { ROLE_OPTIONS } from '@/constants/auth.constants';
 import type { StaffModalProps } from '../types';
 
-export const ROLE_OPTIONS: { value: StaffRole; label: string; description: string; can: string[] }[] = [
-  {
-    value: 'manager',
-    label: 'Manager',
-    description: 'Runs the restaurant day to day.',
-    can: ['Dashboard & analytics', 'Menu', 'Payments & reviews', 'Marketing & QR assets', 'Shifts & checklists', 'Website settings'],
-  },
-  {
-    value: 'staff',
-    label: 'Staff',
-    description: 'Works the floor and the menu.',
-    can: ['Menu', 'Shifts & checklists', 'View website settings (read only)'],
-  },
-];
+export { ROLE_OPTIONS };
 
 function generatePassword(length = 12) {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';

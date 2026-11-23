@@ -7,10 +7,11 @@ import { superadminService, type OccasionPackWording } from '@/services/superadm
 import { getApiErrorMessage } from '@/utils/errors';
 import { OCCASION_REGIONS, occasionsByRegion } from '@/components/site-system/occasions/definitions';
 import { SiteIcon } from '@/components/site-system/icons/SiteIcon';
+import { OCCASION_REGION_LABELS } from '@/constants/workspace.constants';
 
 type Packs = Record<string, OccasionPackWording>;
 
-const REGION_LABEL = { india: 'India', gulf: 'Gulf', western: 'Western', general: 'Any time' } as const;
+const REGION_LABEL = OCCASION_REGION_LABELS;
 
 /**
  * Superadmin: the wording each occasion suggests to owners — the banner and

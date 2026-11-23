@@ -1,24 +1,19 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { PiCaretDown } from "react-icons/pi";
 import { buttonVariants } from "./button";
 import { Tooltip } from "./Tooltip";
 import { cn } from "@/utils/cn";
+import type { ActionMenuItem, ActionMenuProps } from "@/types/ui/ActionMenu.types";
 
-export interface ActionMenuItem {
-  label: string;
-  icon?: ReactNode;
-  onSelect: () => void;
-  /** Explains the item in one line under its label. */
-  description?: string;
-}
+export type { ActionMenuItem, ActionMenuProps };
 
 /**
  * A "More" button that groups secondary page actions, so a page header keeps
  * one primary action. Arrow keys move between items, Escape closes.
  */
-export function ActionMenu({ label = "More", items, align = "end", tooltip }: { label?: string; items: ActionMenuItem[]; align?: "start" | "end"; tooltip?: string }) {
+export function ActionMenu({ label = "More", items, align = "end", tooltip }: ActionMenuProps) {
   const [open, setOpen] = useState(false);
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);

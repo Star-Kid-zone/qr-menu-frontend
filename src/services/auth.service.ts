@@ -1,4 +1,4 @@
-import { LoginFormValues, RegisterFormValues } from '@/types';
+import type { LoginFormValues, RegisterFormValues } from '@/types';
 import api from './api.service';
 
 export const authService = {

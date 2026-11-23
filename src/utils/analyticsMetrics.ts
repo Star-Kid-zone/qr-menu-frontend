@@ -1,17 +1,6 @@
-import type { DashboardData } from "@/services/analytics.service";
+import type { DashboardData, AnalyticsDerivedMetrics } from "@/types";
 
-export interface AnalyticsDerivedMetrics {
-  /** Total clicks / total visits, as a percentage string with one decimal place (e.g. "12.3"). */
-  conversionRate: string;
-  /** Average visits per day across `visitHistory`, rounded to the nearest integer. */
-  avgDailyVisits: number;
-  /** Human-readable label (e.g. "Jul 21") for the day with the highest visit count, or "—" if unavailable. */
-  peakDay: string;
-  /** Visit count on `peakDay`. */
-  peakCount: number;
-  /** Sum of all values in `clickBreakdown`. */
-  totalClickSum: number;
-}
+export type { AnalyticsDerivedMetrics };
 
 /**
  * Computes shared derived analytics metrics (conversion rate, average daily

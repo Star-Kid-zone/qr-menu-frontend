@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import { useState, type ReactNode } from "react";
 import { IntroSection } from "../../landing/intro";
 import { ART_MOTIF_MAP, ART_MOTIFS } from "../../art/motifs";

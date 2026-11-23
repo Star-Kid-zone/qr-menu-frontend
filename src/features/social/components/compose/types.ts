@@ -1,5 +1,5 @@
 import React from "react";
-import type { SocialPlatform } from "@/services/social.service";
+import type { SocialPlatform } from "@/types";
 
 export interface ComposePlatformInfo {
   id: SocialPlatform;

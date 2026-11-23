@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo, useRef, useState } from 'react';
-import Image from 'next/image';
+import Image from '@/components/ui/Image';
 import { PiArrowLeftBold, PiArrowRightBold } from 'react-icons/pi';
 import { resolvePublicImageUrl } from './publicMedia';
 import { NoImagePlaceholder } from './NoImagePlaceholder';
-import type { MenuImageProps } from "@/types/components/templates/MenuImage.types";
+import type { MenuImageProps } from "@/types/public/templates/MenuImage.types";
 
 type MediaSlide = { type: 'image' | 'video'; url: string };
 

@@ -13,7 +13,7 @@ import {
   type SocialAccount,
   type SocialPlatform,
 } from "@/services/social.service";
-import { POPULAR_HASHTAGS } from "../../constants";
+import { POPULAR_HASHTAGS } from "@/constants/social.constants";
 import type { RecurrenceRule } from "../../types";
 import type { ComposePlatformInfo } from "./types";
 

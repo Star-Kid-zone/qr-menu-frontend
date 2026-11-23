@@ -1,31 +1,7 @@
-import { Menu } from '@/types';
+import type { Menu, MenuStats, MenuImportRow, MenuImportPreviewResult } from '@/types/admin/menu/menu.types';
 import api from './api.service';
 
-export interface MenuStats {
-  total: number;
-  byCategory: Array<{ category: string; count: number }>;
-  available: number;
-  unavailable: number;
-  popular: number;
-}
-
-export interface MenuImportRow {
-  item: string;
-  price: number;
-  description: string;
-  category: string;
-  type: string;
-  dietaryTags?: string[];
-  allergens?: string[];
-  spiceLevel?: number | null;
-  calories?: number | null;
-}
-
-export interface MenuImportPreviewResult {
-  valid: MenuImportRow[];
-  errors: Array<{ row: number; message: string }>;
-  totalRows: number;
-}
+export type { MenuStats, MenuImportRow, MenuImportPreviewResult };
 
 export const menuService = {
   getMenus: () => api.get('/menu'),

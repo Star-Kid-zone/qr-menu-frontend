@@ -5,7 +5,7 @@ import type { SiteDocument } from '@/components/templates/sections/types';
 const hexColor = z.string().regex(/^(#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?)?$/, 'Must be a valid hex color');
 
 export const workspaceSettingsSchema = z.object({
-  theme_colour:        z.string().min(1, 'Theme alias is required'),
+  theme_colour:        z.string(),
   // Core colours
   primary_color:       hexColor,
   secondary_color:     hexColor,
@@ -47,7 +47,7 @@ export const workspaceSettingsSchema = z.object({
   skin_id:             z.string(),
   menu_skin_id:        z.string(),
   business_type:       z.string(),
-  loading_screen_theme: z.string().min(1, 'Loading screen is required'),
+  loading_screen_theme: z.string(),
   // Validated on the server (siteDocumentSchema); the editor only produces well-formed documents.
   site_document:       z.custom<SiteDocument | null>(),
   // Visibility

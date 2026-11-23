@@ -1,5 +1,5 @@
 import { lazy, type ComponentType } from "react";
-import type { PublicMenuPayload } from "@/types/public-site";
+import type { PublicMenuPayload } from "@/types/public/publicSite.types";
 
 /**
  * Menu structures by their `menu_structure` key — one table for the public

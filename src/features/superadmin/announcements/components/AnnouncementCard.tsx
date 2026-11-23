@@ -2,7 +2,7 @@
 
 import { PiEyeBold, PiTrashBold } from 'react-icons/pi';
 import { Badge, Button, Card } from '@/components/ui';
-import type { BadgeTone } from '@/types/components/ui/Badge.types';
+import type { BadgeTone } from '@/types/ui/Badge.types';
 import type { PlatformAnnouncement } from '@/services/superadmin.service';
 import { formatDate } from "@/utils/date";
 

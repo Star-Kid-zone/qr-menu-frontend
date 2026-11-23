@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
+import { DESCRIPTION_MAX_LENGTH } from "@/constants/site.constants";
+import type { TenantMetadataInput } from "@/types/public/publicSite.types";
 
-export interface TenantMetadataInput {
-  title: string;
-  description: string;
-  canonicalUrl: string;
-  siteName: string;
-  imageUrl?: string | null;
-}
+export type { TenantMetadataInput };
 
 /**
  * Metadata for a tenant's public pages: title, description, canonical URL and
@@ -38,10 +34,8 @@ export function buildTenantMetadata({ title, description, canonicalUrl, siteName
 
 const str = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
-const DESCRIPTION_MAX = 160;
-
 function clip(text: string): string {
-  return text.length <= DESCRIPTION_MAX ? text : `${text.slice(0, DESCRIPTION_MAX - 1).trimEnd()}…`;
+  return text.length <= DESCRIPTION_MAX_LENGTH ? text : `${text.slice(0, DESCRIPTION_MAX_LENGTH - 1).trimEnd()}…`;
 }
 
 /**

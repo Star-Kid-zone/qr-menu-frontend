@@ -1,4 +1,7 @@
 /** Colour parsing helpers. Alpha is ignored (treated as opaque). */
+import type { Readability } from "@/types";
+
+export type { Readability };
 
 export function parseHex(input: string | null | undefined): [number, number, number] | null {
   if (!input) return null;
@@ -42,8 +45,6 @@ export function contrastRatio(a: string | null | undefined, b: string | null | u
   const [hi, lo] = la > lb ? [la, lb] : [lb, la];
   return (hi + 0.05) / (lo + 0.05);
 }
-
-export type Readability = "good" | "large-only" | "poor";
 
 /** WCAG AA buckets: ≥4.5 normal text, ≥3 large text only, otherwise hard to read. */
 export function readability(ratio: number): Readability {

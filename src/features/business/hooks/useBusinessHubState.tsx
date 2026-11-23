@@ -3,13 +3,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { normalizeTenantSlug, tenantSlugSchema } from "@/schemas/tenant.schema";
-import type { Availability } from "@/types/components/admin/workspace/PublicSlugEditor.types";
+import type { Availability } from "@/types/admin/workspace/PublicSlugEditor.types";
 import { toast } from "@/components/ui";
 import { getApiErrorMessage } from "@/utils/errors";
 import { menuService } from "@/services/menu.service";
 import { workspaceService } from "@/services/workspace.service";
-import type { BannerAnnouncementValues } from "@/types/components/admin/workspace/BannerAnnouncementForm.types";
-import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
+import type { BannerAnnouncementValues } from "@/types/admin/workspace/BannerAnnouncementForm.types";
+import type { RawPublicSiteData } from "@/types/public/templates/rawPublicSiteData.types";
 import {
   mapWorkspaceSettingToFormValues,
   isoToDatetimeLocal,
@@ -19,7 +19,7 @@ import type {
   WorkspaceBusiness,
   WorkspaceSetting,
   WorkspaceSettingsFormValues,
-} from "@/types/workspace.types";
+} from "@/types/admin/workspace/workspace.types";
 import type {
   WorkspaceFaq,
   WorkspaceGalleryItem,
@@ -40,7 +40,8 @@ import type {
   ListFaqsHandle,
 } from "@/features/workspace";
 import { parseSiteDocument } from "@/components/templates/sections/document";
-import { DEFAULT_TAB, type WorkspaceTabId } from "../types";
+import { DEFAULT_TAB } from "@/constants/site.constants";
+import type { WorkspaceTabId } from "../types";
 import { TABS } from "../constants";
 import type { BusinessSchemaValues } from "../components/BusinessForm";
 
@@ -368,9 +369,10 @@ export function useBusinessHubState() {
         setWorkspaceActiveSubSection(null);
         toast.success("Workspace settings updated successfully!");
         await fetchWorkspaceData();
-      } catch {
-        toast.error("Failed to save workspace settings.");
-        setWorkspaceSaveError("Failed to save workspace settings.");
+      } catch (err) {
+        const errorMsg = getApiErrorMessage(err, "Failed to save workspace settings.");
+        toast.error(errorMsg);
+        setWorkspaceSaveError(errorMsg);
       } finally {
         setWorkspaceSaveLoading(false);
       }

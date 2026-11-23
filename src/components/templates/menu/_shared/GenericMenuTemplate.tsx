@@ -1,7 +1,7 @@
 'use client';
 import { MenuTemplateRenderer } from './makeMenuTemplate';
 import { MENU_THEME_DATA } from './menuThemeData';
-import type { PublicMenuPayload } from '@/types/public-site';
+import type { PublicMenuPayload } from '@/types/public/publicSite.types';
 import { DEFAULT_TEMPLATE_SLUG } from '@/components/templates/core/defaultTemplate';
 
 const FALLBACK_THEME = MENU_THEME_DATA[DEFAULT_TEMPLATE_SLUG];

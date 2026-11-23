@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Fraunces, Newsreader, Outfit, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/providers/AppProviders";
-import { APP_BASE_URL, APP_NAME } from "@/config/app.constants";
+import { APP_BASE_URL } from "@/config/app.constants";
+import { APP_NAME, DEFAULT_APP_DESCRIPTION } from "@/constants/app.constants";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -31,7 +32,7 @@ const spaceMono = Space_Mono({
   subsets: ["latin"],
 });
 
-const DEFAULT_DESCRIPTION = "One QR code on the table: your menu, website and Google reviews, managed from one dashboard.";
+const DEFAULT_DESCRIPTION = DEFAULT_APP_DESCRIPTION;
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_BASE_URL),

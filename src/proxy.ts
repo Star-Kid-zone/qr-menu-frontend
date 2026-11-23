@@ -1,21 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { APP_BASE_URL, SERVER_API_BASE_URL } from "@/config/app.constants";
 import { classifyHost, isAdminPath, isLocalDevHost } from "@/utils/tenantHost";
+import { HTTP_STATUS, TENANT_SLUG_HEADER, CACHE_TTL_MS, MISS_TTL_MS } from "@/constants";
 
-/**
- * Request routing by host (Next 16 "proxy", formerly middleware).
- *
- * - Restaurant hosts (tenant subdomains and verified custom domains) never serve
- *   the admin app: /admin, /login, … redirect to the app domain.
- * - A custom domain is looked up once per minute per host; a verified one is
- *   passed to the pages as the TENANT_SLUG_HEADER, an unknown one gets a 404.
- * - TENANT_SLUG_HEADER is always stripped from the incoming request first, so
- *   a client can never choose which restaurant a page renders.
- */
-export const TENANT_SLUG_HEADER = "x-qr-tenant-slug";
+export { TENANT_SLUG_HEADER };
 
-const CACHE_TTL_MS = 60_000;
-const MISS_TTL_MS = 30_000;
 const domainCache = new Map<string, { slug: string | null; expires: number }>();
 
 async function lookupCustomDomain(domain: string): Promise<string | null> {
@@ -68,14 +57,14 @@ export async function proxy(request: NextRequest) {
     // Guards against a redirect loop: skip when the app lives on this same host, and on local
     // dev hosts (the dev server maps a redirect to "localhost" back onto "<slug>.localhost").
     if (target.host !== normaliseHost(host) && !isLocalDevHost(host)) {
-      return NextResponse.redirect(target, 307);
+      return NextResponse.redirect(target, HTTP_STATUS.TEMPORARY_REDIRECT);
     }
   }
 
   if (hostKind.kind === "custom") {
     const slug = await lookupCustomDomain(hostKind.domain);
     if (!slug) {
-      return new NextResponse(UNKNOWN_DOMAIN_PAGE, { status: 404, headers: { "content-type": "text/html; charset=utf-8" } });
+      return new NextResponse(UNKNOWN_DOMAIN_PAGE, { status: HTTP_STATUS.NOT_FOUND, headers: { "content-type": "text/html; charset=utf-8" } });
     }
     headers.set(TENANT_SLUG_HEADER, slug);
   }

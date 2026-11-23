@@ -1,9 +1,14 @@
 /**
- * Application-wide constants (env-backed where needed).
- * Import from `@/config/app.constants` or legacy `@/Constants/constants`.
+ * Application-wide configuration (env-backed runtime config).
+ * Pure constants live in src/constants/app.constants.ts and are re-exported here for compatibility.
  */
+import {
+  APP_NAME,
+  SUSPENSE_LABELS,
+  UI_TIMING,
+} from '@/constants/app.constants';
 
-export const APP_NAME = 'QRMenu';
+export { APP_NAME, SUSPENSE_LABELS, UI_TIMING };
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -62,24 +67,4 @@ export function getTenantCanonicalUrl(settings: Record<string, unknown> | null |
   return getTenantPublicUrl(slug);
 }
 
-/** Default labels for route-level Suspense fallbacks */
-export const SUSPENSE_LABELS = {
-  route: 'Loading…',
-  workspace: 'Loading workspace',
-  page: 'Loading page',
-  guest: 'Loading',
-  /** Admin shell (sidebar + navbar) */
-  shell: 'Loading app…',
-  /** Dialogs / modals opened on demand */
-  modal: 'Loading…',
-  /** Heavy tab sections (e.g. offers, gallery) */
-  section: 'Loading…',
-  /** Recharts and other chart bundles */
-  charts: 'Loading charts…',
-} as const;
 
-/** Debounce / UI timing defaults */
-export const UI_TIMING = {
-  searchDebounceMs: 300,
-  toastAutoCloseMs: 4000,
-} as const;

@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { cn } from "@/utils/cn";
-import { SelectProps } from "@/types/components/ui/Select.types";
+import { SelectProps } from "@/types/ui/Select.types";
 import { PiCaretDownBold } from "react-icons/pi";
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(

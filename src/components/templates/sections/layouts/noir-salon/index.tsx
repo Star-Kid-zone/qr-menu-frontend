@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { IntroSection } from "../../landing/intro";
 import { useCuratedList } from "../../landing/siteContent";

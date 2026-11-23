@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ModalFooter } from "@/components/ui/ModalFooter";
 import { Notice } from "@/components/ui/Notice";
 import { StarRating } from "./StarRating";
-import { AUTO_REPLY_TONE_OPTIONS } from "../types";
+import { AUTO_REPLY_TONE_OPTIONS } from "@/constants/reviews.constants";
 
 interface ReplyModalProps {
   selectedReview: GoogleReviewRecord | null;

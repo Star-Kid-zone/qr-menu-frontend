@@ -40,3 +40,10 @@ export function dietaryTagEmoji(value: string): string {
 export function allergenLabel(value: string): string {
   return ALLERGEN_OPTIONS.find((o) => o.value === value)?.label ?? value;
 }
+
+export const DIET_SCHEMA_MAP: Record<string, string> = {
+  vegetarian: 'https://schema.org/VegetarianDiet',
+  vegan: 'https://schema.org/VeganDiet',
+  gluten_free: 'https://schema.org/GlutenFreeDiet',
+  halal: 'https://schema.org/HalalDiet',
+};

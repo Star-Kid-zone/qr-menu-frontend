@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { WorkspaceSettingsForm } from './WorkspaceSettingsForm';
-import type { WorkspaceSettingsFormValues } from '@/types/workspace.types';
+import type { WorkspaceSettingsFormValues } from '@/types/admin/workspace/workspace.types';
 import { getDefaultWorkspaceSettings } from '@/utils/workspace.utils';
 import { Button, ModalFooter } from '@/components/ui';
 import { toast } from '@/components/ui/toast';
@@ -10,7 +10,9 @@ import { workspaceService } from '@/services/workspace.service';
 import { Modal } from '@/components/Modal';
 import { getApiErrorMessage } from '@/utils/errors';
 
-export const ADD_WORKSPACE_FORM_ID = 'add-workspace-form';
+import { ADD_WORKSPACE_FORM_ID } from '@/constants/workspace.constants';
+
+export { ADD_WORKSPACE_FORM_ID };
 
 export function AddSettingModal({
   isOpen,

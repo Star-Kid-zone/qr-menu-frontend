@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { TenantSchema } from "./TenantSchema";
-import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
+import type { RawPublicSiteData } from "@/types/public/templates/rawPublicSiteData.types";
 
 const make = (business: Record<string, unknown>, extra: Partial<RawPublicSiteData> = {}) =>
   ({ user_id: 1, settings: { public_slug: "cafe" }, business, payment: null, review: null, gallery: [], offers: [], menuItems: [], ...extra }) as RawPublicSiteData;

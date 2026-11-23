@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { useRef } from "react";
 import { LOOKS_WITH_PHOTOS } from "../content";

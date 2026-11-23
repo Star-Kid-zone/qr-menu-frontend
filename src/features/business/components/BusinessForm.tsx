@@ -17,20 +17,22 @@ import {
   Input,
   Select,
   ToggleCard,
+  toast,
 } from "@/components/ui";
+import { WEEK_DAYS } from "@/constants/schedule.constants";
 
 import Link from "next/link";
-import { BUSINESS_TYPE_HREF } from "../constants";
+import { BUSINESS_TYPE_HREF } from "@/constants/site.constants";
 
 // Form Schema
 export const businessSchema = z.object({
   business_name: z.string().min(1, "Business name is required"),
-  phone: z.string().regex(/^\d{10,15}$/, "Phone number must be 10-15 digits"),
-  address: z.string().min(1, "Address is required"),
+  phone: z.string().regex(/^\d{10,15}$/, "Phone number must be 10-15 digits").optional().or(z.literal("")),
+  address: z.string().optional().or(z.literal("")),
   website_url: z.string().url("Enter a valid URL").optional().or(z.literal("")),
   social_media: z.array(
     z.object({
-      platform: z.string().min(1, "Platform name is required"),
+      platform: z.string().optional().or(z.literal("")),
       url: z.string().url("Enter a valid URL").optional().or(z.literal("")),
     })
   ),
@@ -85,15 +87,7 @@ export interface BusinessFormInitialData {
 
 export const editBusinessFormId = (id: number) => `inline-edit-business-${id}`;
 
-const weekDays = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-] as const;
+const weekDays = WEEK_DAYS;
 
 export function BusinessForm({
   formId,
@@ -202,7 +196,18 @@ export function BusinessForm({
     <div className="flex h-full min-h-0 flex-col">
       <form
         id={formId}
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(
+          onSubmit,
+          (invalidErrors) => {
+            console.error("Business form validation failed:", invalidErrors);
+            const firstError = Object.values(invalidErrors)[0];
+            const msg =
+              firstError && typeof firstError === "object" && "message" in firstError
+                ? String(firstError.message)
+                : "Please check the form for errors.";
+            toast.error(msg);
+          }
+        )}
         className="flex h-full min-h-0 flex-col gap-4"
       >
         {section === "profile" && (

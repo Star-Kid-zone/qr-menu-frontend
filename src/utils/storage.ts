@@ -1,25 +1,13 @@
-import type { UserRole } from '@/types';
+import type { UserRole, ImpersonationSession } from '@/types';
 import type { PermissionUnit } from '@/constants/permissions';
+import { STORAGE_KEYS, CSRF_COOKIE_NAME } from '@/constants/storage.constants';
 
 const isBrowser = typeof window !== 'undefined';
 
-export const storageKeys = {
-  userRole: 'user',
-  themeMode: 'theme-mode',
-  visitorId: 'visitor_id',
-  permissions: 'permissions',
-  impersonation: 'impersonation_session',
-  activeWorkspaceId: 'active_workspace_id',
-} as const;
+export const storageKeys = STORAGE_KEYS;
 
-export interface ImpersonationSession {
-  isImpersonating: boolean;
-  originalSuperadminId: string;
-  targetUserId: string;
-  targetUserName: string;
-}
+export type { ImpersonationSession };
 
-const CSRF_COOKIE_NAME = 'csrfToken';
 
 function getRawCookie(name: string): string | null {
   if (!isBrowser) return null;

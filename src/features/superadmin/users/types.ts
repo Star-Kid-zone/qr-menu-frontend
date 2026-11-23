@@ -7,7 +7,7 @@ export type {
   UserListRow,
   DateRange,
   MenuBlueprint,
-} from "@/services/superadmin.service";
+} from "@/types";
 
 export type UserDetailTabId =
   | "overview"

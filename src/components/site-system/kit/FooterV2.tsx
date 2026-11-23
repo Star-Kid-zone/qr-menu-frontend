@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import { useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { ReactQRCode } from "@lglab/react-qr-code";
 import { APP_NAME } from "@/config/app.constants";

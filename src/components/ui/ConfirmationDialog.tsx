@@ -4,7 +4,7 @@ import { Button } from './button';
 import { Input } from './input';
 import { ModalFooter } from './ModalFooter';
 import { Notice } from './Notice';
-import { ConfirmationDialogProps } from "@/types/components/ui/ConfirmationDialog.types";
+import { ConfirmationDialogProps } from "@/types/ui/ConfirmationDialog.types";
 
 export function ConfirmationDialog({
   isOpen,

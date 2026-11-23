@@ -4,7 +4,8 @@ import React from "react";
 import { type Shift } from "@/services/shift.service";
 import { PiPlusBold } from "react-icons/pi";
 import { cn } from "@/utils/cn";
-import { DAY_LABELS, toIsoDate } from "../types";
+import { DAY_LABELS } from "@/constants/schedule.constants";
+import { toIsoDate } from "../schedule.utils";
 import { ShiftCard } from "./ShiftCard";
 
 interface DayColumnProps {

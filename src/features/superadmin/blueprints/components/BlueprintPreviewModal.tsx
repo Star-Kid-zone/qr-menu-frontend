@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import Image from '@/components/ui/Image';
 import { Modal } from '@/components/Modal';
 import { Button } from '@/components/ui';
 import { ModalFooter } from '@/components/ui/ModalFooter';

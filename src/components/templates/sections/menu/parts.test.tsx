@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { MenuCategoriesPanel } from "@/features/workspace/components/MenuCategoriesPanel";
-import type { PublicMenuPayload } from "@/types/public-site";
+import type { PublicMenuPayload } from "@/types/public/publicSite.types";
 import type { SiteDocument } from "../types";
 import { isMenuPartShown } from "./parts";
 

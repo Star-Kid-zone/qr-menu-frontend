@@ -14,7 +14,7 @@ import {
 } from "@/constants/workspace.constants";
 import { getTemplatePalette } from "@/constants/templatePalettes";
 import type { Currency } from "@/types";
-import type { WorkspaceSettingsFormValues, WorkspaceToggleKey } from "@/types/workspace.types";
+import type { WorkspaceSettingsFormValues, WorkspaceToggleKey } from "@/types/admin/workspace/workspace.types";
 import { LANDING_PARTS, getLandingPart, isLandingPartCustomised, type LandingControl, type LandingPartId } from "../landingParts";
 import { LANDING_ROLE_FIELD, MENU_COLOUR_THEMES, themeToValues, type ColourRole } from "../menuThemes";
 import { StudioShell } from "../studio/StudioShell";

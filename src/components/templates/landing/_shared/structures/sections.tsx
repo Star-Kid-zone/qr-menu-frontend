@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import type { LandingTemplateProps } from "@/types/components/templates/rawPublicSiteData.types";
+import Image from "@/components/ui/Image";
+import type { LandingTemplateProps } from "@/types/public/templates/rawPublicSiteData.types";
 import type { RichContent, GoogleReviewItem } from "../defaults";
 import type { ThemeConfig } from "../BaseTemplate";
 import { FadeIn, StaggerGroup, StaggerItem, Marquee } from "../animations";

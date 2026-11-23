@@ -10,7 +10,7 @@ import {
   PiStorefront,
   PiTag,
 } from "react-icons/pi";
-import type { WebsiteSectionConfig, WorkspaceTabConfig } from "./types";
+import type { WorkspaceTabConfig } from "./types";
 
 /**
  * Internal panels. Ids are kept stable so existing `?tab=` links keep working;
@@ -29,20 +29,3 @@ export const TABS: WorkspaceTabConfig[] = [
   { id: "businesses", label: "Business details", description: "Moved to Settings", icon: <PiStorefront className="size-5" />, unit: "workspace" },
   { id: "reviews", label: "Reviews on your website", description: "Moved to Reviews", icon: <PiGoogleLogo className="size-5" />, unit: "reviews" },
 ];
-
-/** What the Website page shows: four jobs, in the order owners use them. */
-export const WEBSITE_SECTIONS: WebsiteSectionConfig[] = [
-  { id: "look", label: "Look & feel", tabs: ["workspace"] },
-  { id: "content", label: "Content", tabs: ["banners", "content", "gallery", "faqs"] },
-  { id: "offers", label: "Offers", tabs: ["offers"] },
-];
-
-/** Where the owner picks their business type (the studio opens on the Layout panel, which starts with it). */
-export const BUSINESS_TYPE_HREF = "/admin/listbusiness?tab=workspace";
-
-/** Panels that moved off the Website page, and where they live now. */
-export const MOVED_TABS: Partial<Record<WorkspaceTabConfig["id"], string>> = {
-  businesses: "/admin/settings?tab=business",
-  reviews: "/admin/listreview",
-  "public-site": "/admin/qr-menu",
-};

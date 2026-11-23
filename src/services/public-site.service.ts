@@ -5,12 +5,14 @@ import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { SERVER_API_BASE_URL } from '@/config/app.constants';
 import { mapPublicUserDetailsFromApi } from '@/components/templates/core/mapPublicUserDetails';
-import { MappedPublicUserDetails } from '@/types/components/templates/mapPublicUserDetails.types';
-import type { RawPublicSiteData } from '@/types/components/templates/rawPublicSiteData.types';
+import { MappedPublicUserDetails } from '@/types/public/templates/mapPublicUserDetails.types';
+import type { RawPublicSiteData } from '@/types/public/templates/rawPublicSiteData.types';
 import type { Menu } from '@/types';
 import type { PublicAward, PublicTeamMember, PublicSiteEvent } from '@/components/site-system/types';
 import { normalizeMenuItems } from '@/utils/public-site.utils';
-import type { PublicMenuPayload } from '@/types/public-site';
+import type { PublicMenuPayload, PublicSitemapSlug, PortalMenuItem, PortalResponse } from '@/types/public/publicSite.types';
+
+export type { PublicSitemapSlug };
 import { buildPublicTenantUrlServer, getTenantSlugFromHost, isLocalDevHost } from '@/utils/tenantHost';
 import { PUBLIC_LANDING_PATH, PUBLIC_MENU_PATH } from '@/components/templates/core/paths';
 import { TENANT_SLUG_HEADER } from '@/proxy';
@@ -19,7 +21,9 @@ import { TENANT_SLUG_HEADER } from '@/proxy';
 // any admin edit via on-demand revalidation (see revalidatePortal on the
 // backend + /api/revalidate below) — this restores real ISR/CDN caching
 // instead of re-fetching from the API on every single guest request.
-export const PUBLIC_REVALIDATE_SECONDS = 60;
+import { PUBLIC_REVALIDATE_SECONDS } from '@/constants/app.constants';
+
+export { PUBLIC_REVALIDATE_SECONDS };
 
 /** A non-2xx answer from the public API, keeping the status so callers can tell "no such site" from "backend down". */
 export class PublicApiError extends Error {
@@ -66,57 +70,6 @@ async function fetchJson(path: string, init?: RequestInit & { revalidate?: numbe
 
   return json as Promise<{ data?: unknown }>;
 }
-
-/**
- * Raw `GET /public/portal/:slug` payload (camelCase). Only the fields the
- * mapper below reads are typed; `portalInfo` is passed through into the
- * untyped `settings` / `business` bags, so its scalar fields stay `unknown`.
- */
-type PortalMenuItem = {
-  id: string | number;
-  item: string;
-  description?: string | null;
-  price?: string | number | null;
-  type?: string | null;
-  popular?: boolean;
-  imageUrl?: string | null;
-  images?: unknown;
-  videos?: unknown;
-  dietaryTags?: unknown;
-  allergens?: unknown;
-  spiceLevel?: unknown;
-  calories?: unknown;
-  attributes?: unknown;
-  priceOptions?: unknown;
-};
-
-type PortalResponse = {
-  portalInfo: Record<string, unknown> & {
-    payment?: { type?: string; link?: string; qrImage?: string } | null;
-  };
-  menu?: Record<string, PortalMenuItem[]> | null;
-  gallery?: Array<{ id?: string | number; imageUrl?: string | null }> | null;
-  offers?: Array<{
-    id?: string | number;
-    title?: string;
-    description?: string | null;
-    discount?: string | null;
-    imageUrl?: string | null;
-  }> | null;
-  faqs?: Array<{ id?: string | number; question?: string; answer?: string }> | null;
-  googleReviews?: Array<{
-    id: string | number;
-    authorName: string;
-    authorPhotoUrl?: string | null;
-    rating: number;
-    text?: string | null;
-    relativePublishDescription?: string | null;
-    publishTime?: string | null;
-  }> | null;
-  awards?: PublicAward[] | null;
-  team?: PublicTeamMember[] | null;
-  events?: PublicSiteEvent[] | null;
-};
 
 function isPlainObject(v: unknown): boolean {
   return v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -382,12 +335,6 @@ export async function requireRawLandingBySlug(slug: string): Promise<RawPublicSi
     if (!isMissingSiteError(err)) throw err;
     return await redirectOrNotFound(slug);
   }
-}
-
-
-export interface PublicSitemapSlug {
-  slug: string;
-  updatedAt: string;
 }
 
 /**

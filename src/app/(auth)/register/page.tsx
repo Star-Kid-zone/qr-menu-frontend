@@ -16,8 +16,7 @@ import { setStoredUserRole, setStoredPermissions } from "@/utils/storage";
 import { getApiErrorMessage } from "@/utils/errors";
 import { fadeInUp } from "@/lib/motion";
 import { getLandingRoute } from "@/config/landing";
-
-const RESEND_SECONDS = 60;
+import { HTTP_STATUS, OTP_RESEND_SECONDS } from "@/constants";
 
 function RegisterForm() {
   const router = useRouter();
@@ -39,7 +38,7 @@ function RegisterForm() {
   // Coming back from sign-in: send a fresh code right away (the API rate-limits repeats).
   useEffect(() => {
     if (!verifyParam) return;
-    authService.resendOtp(verifyParam).then(() => setResendIn(RESEND_SECONDS)).catch(() => undefined);
+    authService.resendOtp(verifyParam).then(() => setResendIn(OTP_RESEND_SECONDS)).catch(() => undefined);
   }, [verifyParam]);
 
   const {
@@ -63,14 +62,14 @@ function RegisterForm() {
         password: data.password,
       });
       setEmail(data.email.trim().toLowerCase());
-      setResendIn(RESEND_SECONDS);
+      setResendIn(OTP_RESEND_SECONDS);
       setStep("otp");
     } catch (err) {
       // Registered earlier but never confirmed: the API already sent a new code, so continue there.
       const body = (err as { response?: { status?: number; data?: { code?: string } } })?.response;
-      if (body?.status === 409 && body.data?.code === "ACCOUNT_NOT_VERIFIED") {
+      if (body?.status === HTTP_STATUS.CONFLICT && body.data?.code === "ACCOUNT_NOT_VERIFIED") {
         setEmail(data.email.trim().toLowerCase());
-        setResendIn(RESEND_SECONDS);
+        setResendIn(OTP_RESEND_SECONDS);
         setStep("otp");
         toast.info("This email is waiting to be verified. We sent you a new code.");
         return;
@@ -82,7 +81,7 @@ function RegisterForm() {
   const onResend = async () => {
     try {
       await authService.resendOtp(email);
-      setResendIn(RESEND_SECONDS);
+      setResendIn(OTP_RESEND_SECONDS);
       toast.success("A new code is on its way.");
     } catch (err) {
       toast.error(getApiErrorMessage(err, "We couldn't send a new code. Try again in a moment."));

@@ -13,6 +13,7 @@ import {
   PiLightbulbFilamentBold,
   PiEyeBold,
 } from 'react-icons/pi';
+import Image from '@/components/ui/Image';
 import { Badge, Button, Card } from '@/components/ui';
 import { cn } from '@/utils/cn';
 import type { PromptCardProps } from '../types';
@@ -117,10 +118,12 @@ export function PromptCard({
               className="relative h-12 w-12 rounded-lg overflow-hidden bg-zinc-950 border border-border shrink-0 cursor-pointer group/ref hover:ring-2 hover:ring-primary transition-all"
               title="Click to view full reference benchmark"
             >
-              <img
+              <Image
                 src={p.referenceImages[0]}
                 alt="Ref"
-                className="h-full w-full object-cover transition-transform group-hover/ref:scale-110"
+                fill
+                sizes="48px"
+                className="object-cover transition-transform group-hover/ref:scale-110"
               />
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/ref:opacity-100 transition-opacity">
                 <PiEyeBold className="h-3.5 w-3.5 text-white" />

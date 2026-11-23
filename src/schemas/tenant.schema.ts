@@ -1,7 +1,7 @@
 import * as z from 'zod';
+import { TENANT_SLUG_REGEX } from '@/constants/site.constants';
 
-/** Same rule as backend tenant slugs (lowercase in storage). */
-export const TENANT_SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+export { TENANT_SLUG_REGEX };
 
 export function normalizeTenantSlug(raw: string): string {
   return raw.trim().toLowerCase();

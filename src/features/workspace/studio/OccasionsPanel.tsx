@@ -20,8 +20,9 @@ import { SiteIcon } from "@/components/site-system/icons/SiteIcon";
 import { getOccasion, OCCASION_REGIONS, occasionsByRegion } from "@/components/site-system/occasions/definitions";
 import { parseOccasion } from "@/components/site-system/occasions/activeOccasion";
 import { setOccasion } from "./occasionsDoc";
+import { OCCASION_REGION_LABELS } from "@/constants/workspace.constants";
 
-const REGION_LABEL: Record<OccasionRegion, string> = { india: "India", gulf: "Gulf", western: "Western", general: "Any time" };
+const REGION_LABEL: Record<OccasionRegion, string> = OCCASION_REGION_LABELS;
 
 /** The festival's colour chip with its icon. */
 function Badge({ def, size = "md" }: { def: OccasionDefinition; size?: "sm" | "md" | "lg" }) {
@@ -57,10 +58,13 @@ export function OccasionsPanel({ value, disabled, onChange }: { value: SiteDocum
   // Local state for banner text so typing spaces is never trimmed prematurely
   const rawBanner = (value?.occasion as { banner?: string } | undefined)?.banner;
   const [bannerText, setBannerText] = useState(rawBanner ?? "");
+  const [prevSyncKey, setPrevSyncKey] = useState(() => `${current?.id ?? ""}:${rawBanner ?? ""}`);
 
-  useEffect(() => {
+  const syncKey = `${current?.id ?? ""}:${rawBanner ?? ""}`;
+  if (syncKey !== prevSyncKey) {
+    setPrevSyncKey(syncKey);
     setBannerText(rawBanner ?? "");
-  }, [rawBanner, current?.id]);
+  }
 
   useEffect(() => {
     siteContentService

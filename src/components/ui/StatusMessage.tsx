@@ -1,5 +1,5 @@
 import { cn } from '@/utils/cn';
-import { StatusMessageProps, StatusVariant } from "@/types/components/ui/StatusMessage.types";
+import { StatusMessageProps, StatusVariant } from "@/types/ui/StatusMessage.types";
 
 const variantClasses: Record<StatusVariant, string> = {
   error: 'border-destructive/20 bg-destructive/10 text-destructive',

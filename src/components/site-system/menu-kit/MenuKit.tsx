@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
-import type { PublicMenuPayload } from "@/types/public-site";
+import type { PublicMenuPayload } from "@/types/public/publicSite.types";
 import type { PublicMenuTemplateProps } from "@/components/templates/core/types";
 import type { Menu } from "@/types";
 import { AgeNotice, MenuFooter } from "./chrome";

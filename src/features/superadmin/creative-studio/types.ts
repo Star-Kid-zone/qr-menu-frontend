@@ -1,4 +1,4 @@
-export type { PlatformMarketingAsset } from "@/services/superadmin.service";
+export type { PlatformMarketingAsset } from "@/types";
 
 export type StudioTab = "vault" | "decoder" | "aistudio" | "automation";
 

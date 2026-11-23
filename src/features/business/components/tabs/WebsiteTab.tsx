@@ -9,9 +9,9 @@ import type { StudioPartFocus } from "@/features/workspace/studio/resolvePart";
 import type {
   WorkspaceSetting,
   WorkspaceSettingsFormValues,
-} from "@/types/workspace.types";
+} from "@/types/admin/workspace/workspace.types";
 import type { Currency } from "@/types";
-import { INLINE_WORKSPACE_FORM_ID } from "../../types";
+import { INLINE_WORKSPACE_FORM_ID } from "@/constants/site.constants";
 
 interface WebsiteTabProps {
   workspace: WorkspaceSetting | null;

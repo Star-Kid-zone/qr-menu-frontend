@@ -1,7 +1,7 @@
 import type {
   PlatformAnalyticsOverview,
   AnalyticsByUserResponse,
-} from '@/services/superadmin.service';
+} from '@/types';
 
 export type TabId = 'traffic' | 'demand' | 'dishes' | 'time_tech' | 'tenants';
 

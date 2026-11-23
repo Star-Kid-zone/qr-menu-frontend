@@ -1,7 +1,7 @@
-export * from './api';
+// Centralized barrel for all page, subcomponent, and shared types
+export * from './shared';
 export * from './auth';
-export * from './common';
-export * from './domain';
-export * from './landing.types';
-export * from './workspace.types';
-export * from './ui.interface';
+export * from './admin';
+export * from './superadmin';
+export * from './public';
+export * from './ui';

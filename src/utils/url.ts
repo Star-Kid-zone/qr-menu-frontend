@@ -1,4 +1,4 @@
-const SAFE_HTTP_URL_RE = /^https?:\/\//i;
+import { SAFE_HTTP_URL_REGEX } from '@/constants/site.constants';
 
 /**
  * Returns the URL unchanged if it's a safe http(s) link, otherwise ''.
@@ -11,9 +11,9 @@ const SAFE_HTTP_URL_RE = /^https?:\/\//i;
  */
 export function toSafeExternalUrl(raw: string | null | undefined): string {
   const value = (raw ?? "").trim();
-  return SAFE_HTTP_URL_RE.test(value) ? value : "";
+  return SAFE_HTTP_URL_REGEX.test(value) ? value : "";
 }
 
 export function isSafeExternalUrl(raw: string | null | undefined): boolean {
-  return SAFE_HTTP_URL_RE.test((raw ?? "").trim());
+  return SAFE_HTTP_URL_REGEX.test((raw ?? "").trim());
 }

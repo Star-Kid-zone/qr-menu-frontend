@@ -8,11 +8,12 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { useShellIdentity } from "@/hooks/useShellIdentity";
 import { getRawStorageItem, setRawStorageItem } from "@/utils/storage";
 import { cn } from "@/utils/cn";
+import { STORAGE_KEYS, STORAGE_EVENTS } from "@/constants/storage.constants";
 import { AppSidebar, ViewWebsiteLink } from "./AppSidebar";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
-const COLLAPSED_KEY = "qr_sidebar_collapsed";
-const COLLAPSED_EVENT = "qr-sidebar-collapsed";
+const COLLAPSED_KEY = STORAGE_KEYS.sidebarCollapsed;
+const COLLAPSED_EVENT = STORAGE_EVENTS.sidebarCollapsed;
 
 // Labels are the navigation, so the menu starts expanded. A person's own
 // choice is remembered; with no choice yet, narrow laptops start collapsed.

@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import { FadeIn } from "@/components/templates/landing/_shared/animations";
 import type { LandingSectionProps } from "../types";
 

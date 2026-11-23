@@ -22,6 +22,7 @@ import {
   PiTrashBold,
 } from "react-icons/pi";
 import { cn } from "@/utils/cn";
+import { VAULT_TYPE_LABELS, VAULT_TARGET_OPTIONS } from "@/constants/studio.constants";
 import type { PlatformMarketingAsset, IndustryItem } from "../types";
 
 interface VaultTabProps {
@@ -56,17 +57,9 @@ interface VaultTabProps {
   industries: IndustryItem[];
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  image: "Image",
-  video: "Reel",
-  poster_spec: "Poster layout",
-};
+const TYPE_LABELS: Record<string, string> = VAULT_TYPE_LABELS;
 
-const TARGET_OPTIONS: { value: "all" | "industry" | "selected_tenants"; label: string }[] = [
-  { value: "all", label: "All restaurants" },
-  { value: "industry", label: "By industry" },
-  { value: "selected_tenants", label: "Specific restaurants" },
-];
+const TARGET_OPTIONS: { value: "all" | "industry" | "selected_tenants"; label: string }[] = VAULT_TARGET_OPTIONS as unknown as { value: "all" | "industry" | "selected_tenants"; label: string }[];
 
 export function VaultTab({
   vaultStats,

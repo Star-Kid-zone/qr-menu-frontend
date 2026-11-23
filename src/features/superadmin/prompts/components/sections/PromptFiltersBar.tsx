@@ -4,7 +4,7 @@ import React from "react";
 import { PiMagnifyingGlassBold, PiStarFill } from "react-icons/pi";
 import { Input } from "@/components/ui";
 import { cn } from "@/utils/cn";
-import { MEDIA_TYPE_TABS } from "../../constants";
+import { MEDIA_TYPE_TABS } from "@/constants/studio.constants";
 
 export interface PromptFiltersBarProps {
   selectedMediaType: string;

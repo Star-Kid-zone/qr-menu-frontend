@@ -11,18 +11,12 @@ import {
   PiXBold,
 } from "react-icons/pi";
 import { cn } from "@/utils/cn";
+import { UI_TIMING } from "@/constants/app.constants";
+import type { ToastVariant, ToastItem } from "@/types/ui/Toast.types";
 
-export type ToastVariant = "success" | "error" | "info" | "warning";
+export type { ToastVariant, ToastItem };
 
-export interface ToastItem {
-  id: number;
-  variant: ToastVariant;
-  title?: string;
-  message: string;
-  duration: number;
-}
-
-const DEFAULT_DURATION = 4000;
+const DEFAULT_DURATION = UI_TIMING.toastAutoCloseMs;
 
 let toasts: ToastItem[] = [];
 let nextId = 1;
@@ -64,7 +58,7 @@ function pushToast(
 ) {
   const id = nextId++;
   let title: string | undefined;
-  let duration = DEFAULT_DURATION;
+  let duration: number = DEFAULT_DURATION;
 
   if (typeof titleOrDuration === "string") {
     title = titleOrDuration;

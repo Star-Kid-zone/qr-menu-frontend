@@ -19,26 +19,9 @@ import {
   PiGear,
 } from "react-icons/pi";
 import { routes } from "@/config/routes";
-import type { PermissionUnit } from "@/constants/permissions";
+import type { NavItem, NavGroup } from "@/types";
 
-export interface NavItem {
-  label: string;
-  href: string;
-  icon: IconType;
-  /** Permission needed to see the item; 'workspace' also admits view-only roles. */
-  unit?: PermissionUnit;
-  ownerOnly?: boolean;
-  /** Visible when the role holds any one of these (for pages with mixed sections). */
-  anyOf?: PermissionUnit[];
-  /** Other routes that belong to this item (add/edit pages), for the active state. */
-  match?: string[];
-}
-
-export interface NavGroup {
-  /** Omit for the top group. Short, plain group names only. */
-  label?: string;
-  items: NavItem[];
-}
+export type { NavItem, NavGroup };
 
 /**
  * Restaurant area. Labels follow the glossary in docs/ux-audit/03 §5.

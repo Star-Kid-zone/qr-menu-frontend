@@ -19,7 +19,7 @@ import {
   PiCheckCircleBold,
   PiCursorClickBold,
 } from 'react-icons/pi';
-import { DONUT_COLORS } from '../constants';
+import { DONUT_COLORS } from '@/constants/analytics.constants';
 import { CustomTimelineTooltip, CustomPieTooltip } from './AnalyticsTooltips';
 import type { TrafficFunnelTabProps } from '../types';
 

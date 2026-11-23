@@ -9,14 +9,12 @@ import {
 } from '@/services/superadmin.service';
 import { getJsonStorageItem, setJsonStorageItem } from '@/utils/storage';
 import { cn } from '@/utils/cn';
+import { STORAGE_KEYS } from '@/constants/storage.constants';
+import { ANNOUNCEMENT_BADGE_TONE } from '@/constants/app.constants';
 
-const DISMISSED_KEY = 'dismissed_announcements';
+const DISMISSED_KEY = STORAGE_KEYS.announcementsDismissed;
 
-const BADGE_TONE: Record<string, string> = {
-  warning: 'bg-warning/15 text-warning-foreground',
-  promo: 'bg-primary/10 text-primary',
-  feature: 'bg-success/10 text-success',
-};
+const BADGE_TONE = ANNOUNCEMENT_BADGE_TONE;
 
 export function TenantAnnouncementBanner() {
   const [announcements, setAnnouncements] = useState<PlatformAnnouncement[] | null>(null);

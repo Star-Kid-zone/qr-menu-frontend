@@ -4,7 +4,7 @@ import {
   ButtonProps,
   ButtonVariant,
   ButtonSize,
-} from "@/types/components/ui/Button.types";
+} from "@/types/ui/Button.types";
 
 // Four real styles: primary (one per screen), secondary, ghost, destructive.
 // `outline`, `subtle` and `danger` are kept as aliases so older call sites

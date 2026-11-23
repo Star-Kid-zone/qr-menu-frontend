@@ -24,8 +24,8 @@ import {
   emptyForm,
   startOfWeek,
   toIsoDate,
-  type FormState,
-} from "../types";
+} from "../schedule.utils";
+import type { FormState } from "../types";
 import { DayColumn } from "./DayColumn";
 import { ShiftModal } from "./ShiftModal";
 

@@ -1,25 +1,13 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { springDefault } from "@/lib/motion";
+import { AUTH_PANEL_COPY } from "@/constants/auth.constants";
 
-const PANEL_COPY: Record<string, { heading: string; body: string }> = {
-  "/login": {
-    heading: "Your menu, right where you left it.",
-    body: "Update dishes, answer reviews and check how many guests scanned today.",
-  },
-  "/register": {
-    heading: "Put your menu on every table.",
-    body: "Add your dishes, choose a look and print your QR codes in one sitting.",
-  },
-  "/forgot-password": {
-    heading: "Back in a couple of minutes.",
-    body: "We'll email a 6-digit code to the address you sign in with.",
-  },
-};
+const PANEL_COPY = AUTH_PANEL_COPY;
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const prefersReducedMotion = useReducedMotion();

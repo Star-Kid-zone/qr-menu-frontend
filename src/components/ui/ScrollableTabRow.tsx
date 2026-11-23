@@ -1,21 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { PiCaretLeftBold, PiCaretRightBold } from "react-icons/pi";
 import { cn } from "@/utils/cn";
+import type { ScrollableTabRowProps } from "@/types/ui/ScrollableTabRow.types";
 
-interface ScrollableTabRowProps {
-  /** Direct children must be the tab/pill buttons themselves — required for CSS scroll-snap to align on them. */
-  children: ReactNode;
-  /** Changes whenever the active tab changes — triggers scrolling it into view. */
-  activeKey: string;
-  className?: string;
-  scrollContainerClassName?: string;
-  /** Tailwind class controlling the fade/background color behind the edge gradients and arrow buttons. Defaults to the card surface. */
-  edgeFrom?: string;
-  role?: string;
-  "aria-label"?: string;
-}
+export type { ScrollableTabRowProps };
 
 /**
  * Wraps a horizontally-scrollable row of tab/pill buttons with edge fades,

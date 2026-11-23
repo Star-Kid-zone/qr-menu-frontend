@@ -1,5 +1,5 @@
 import { cn } from "@/utils/cn";
-import { BadgeProps, BadgeTone } from "@/types/components/ui/Badge.types";
+import { BadgeProps, BadgeTone } from "@/types/ui/Badge.types";
 
 // Status words, not decoration: 12px, sentence case, tinted background.
 const toneClasses: Record<BadgeTone, string> = {

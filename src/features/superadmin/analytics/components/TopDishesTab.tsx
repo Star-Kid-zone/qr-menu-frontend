@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import Image from '@/components/ui/Image';
 import { Card, Badge } from '@/components/ui';
 import { PiForkKnifeBold } from 'react-icons/pi';
 import type { TopDishesTabProps } from '../types';

@@ -3,12 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { RestaurantLoaderIcon } from "@/components/ui/RestaurantLoaderIcon";
+import { UI_TIMING } from "@/constants/app.constants";
 
 // Avoids a flash on near-instant requests — only shows once loading has
 // genuinely lasted a moment.
-const SHOW_DELAY_MS = 150;
+const SHOW_DELAY_MS = UI_TIMING.loaderShowDelayMs;
 // Once shown, stays visible at least this long so it doesn't flicker off.
-const MIN_VISIBLE_MS = 250;
+const MIN_VISIBLE_MS = UI_TIMING.loaderMinVisibleMs;
 
 /**
  * Full-screen semi-transparent overlay with a dimmed backdrop and an animated

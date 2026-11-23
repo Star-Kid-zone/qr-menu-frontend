@@ -3,7 +3,7 @@
 import React from "react";
 import { Button, FormField, Input, PageHeader, Textarea } from "@/components/ui";
 import { PiPencilSimpleBold, PiPlusBold, PiTrashBold } from "react-icons/pi";
-import type { WorkspaceSetting } from "@/types/workspace.types";
+import type { WorkspaceSetting } from "@/types/admin/workspace/workspace.types";
 
 interface ContentDraft {
   storyHeadline: string;

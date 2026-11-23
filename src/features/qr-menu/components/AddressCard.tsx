@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { PiCopyBold, PiPencilSimpleBold } from "react-icons/pi";
+import { PiCopyBold, PiGlobeHemisphereWestBold, PiPencilSimpleBold } from "react-icons/pi";
 import { Button, Card, Input } from "@/components/ui";
 import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog";
 import { toast } from "@/components/ui/toast";
@@ -9,6 +9,7 @@ import { normalizeTenantSlug, tenantSlugSchema } from "@/schemas/tenant.schema";
 import { workspaceService } from "@/services/workspace.service";
 import { getApiErrorMessage } from "@/utils/errors";
 import { buildPublicMenuUrl } from "@/utils/tenantHost";
+import { SLUG_STATUS_TEXT } from "@/constants/site.constants";
 
 type Status = "idle" | "checking" | "available" | "taken" | "error";
 
@@ -19,12 +20,7 @@ interface AddressCardProps {
   onChanged: () => void;
 }
 
-const STATUS_TEXT: Record<Exclude<Status, "idle">, { text: string; className: string }> = {
-  checking: { text: "Checking…", className: "text-muted-foreground" },
-  available: { text: "Available", className: "text-success font-semibold" },
-  taken: { text: "Already taken. Try another.", className: "text-destructive font-semibold" },
-  error: { text: "Couldn't check this address right now. You can still save it.", className: "text-muted-foreground" },
-};
+const STATUS_TEXT: Record<Exclude<Status, "idle">, { text: string; className: string }> = SLUG_STATUS_TEXT;
 
 /** Step 1: choose the web address. First run shows the editor; afterwards a summary. */
 export function AddressCard({ slug, canEdit, onChanged }: AddressCardProps) {
@@ -91,7 +87,7 @@ export function AddressCard({ slug, canEdit, onChanged }: AddressCardProps) {
   const previewUrl = normalized && !formatError ? buildPublicMenuUrl(normalized) : "";
 
   return (
-    <Card className="space-y-4 p-6">
+    <Card className={isEditing || firstRun ? "space-y-4 p-6" : "p-4 sm:px-6"}>
       <ConfirmationDialog
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
@@ -102,14 +98,16 @@ export function AddressCard({ slug, canEdit, onChanged }: AddressCardProps) {
         confirmLabel="Change address"
         tone="default"
       />
-      <div>
-        <h2 className="text-h2 text-foreground">{firstRun ? "Choose your web address" : "Your web address"}</h2>
-        <p className="mt-1 text-body text-muted-foreground">
-          {firstRun
-            ? "Guests will see this in their browser after scanning. Pick something short that people can read."
-            : "Guests open your menu here when they scan your QR code."}
-        </p>
-      </div>
+      {isEditing || firstRun ? (
+        <div>
+          <h2 className="text-h2 text-foreground">{firstRun ? "Choose your web address" : "Change your web address"}</h2>
+          <p className="mt-1 text-body text-muted-foreground">
+            {firstRun
+              ? "Guests will see this in their browser after scanning. Pick something short that people can read."
+              : "Guests open your menu here when they scan your QR code."}
+          </p>
+        </div>
+      ) : null}
 
       {isEditing ? (
         <div className="space-y-2">
@@ -154,15 +152,23 @@ export function AddressCard({ slug, canEdit, onChanged }: AddressCardProps) {
       ) : firstRun ? (
         <p className="text-body text-muted-foreground">Only the owner or a manager can set the web address.</p>
       ) : (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
-          <a
-            href={menuUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="min-w-0 break-all text-body font-semibold text-foreground hover:underline"
-          >
-            {menuUrl}
-          </a>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+              <PiGlobeHemisphereWestBold className="size-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-caption text-muted-foreground">Guests open your menu at</p>
+              <a
+                href={menuUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="block min-w-0 break-all text-body font-semibold text-foreground hover:underline"
+              >
+                {menuUrl}
+              </a>
+            </div>
+          </div>
           <div className="flex shrink-0 gap-2">
             <Button
               variant="secondary"

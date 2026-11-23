@@ -11,6 +11,7 @@ import { Notice } from "@/components/ui/Notice";
 import { toast } from "@/components/ui/toast";
 import { menuService } from "@/services/menu.service";
 import { getApiErrorMessage } from "@/utils/errors";
+import { BULK_PRICE_ADJUST_PREVIEW_COUNT } from "@/constants/menu.constants";
 import type { MenuItem } from "../types";
 import { getItemDisplayName } from "../utils";
 
@@ -23,7 +24,7 @@ interface BulkPriceAdjustModalProps {
   onApplied: () => void;
 }
 
-const PREVIEW_COUNT = 3;
+const PREVIEW_COUNT = BULK_PRICE_ADJUST_PREVIEW_COUNT;
 
 // Mirrors the API's rounding (roundTo: 2) so the preview matches what is saved.
 // The API sends prices as decimal strings (e.g. "12.49"), so coerce first.

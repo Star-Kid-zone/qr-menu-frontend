@@ -1,5 +1,4 @@
 export * from './types';
-export * from './constants';
 export * from './components/CreativeStudioPage';
 export * from './components/VaultTab';
 export * from './components/DecoderTab';

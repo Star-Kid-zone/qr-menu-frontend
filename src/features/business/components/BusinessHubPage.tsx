@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { PiDeviceMobileBold, PiWarningCircle } from "react-icons/pi";
 import { Modal } from "@/components/Modal";
 import { SubTabPills } from "@/components/ui";
-import { MOVED_TABS, WEBSITE_SECTIONS } from "../constants";
+import { MOVED_TABS, WEBSITE_SECTIONS } from "@/constants/site.constants";
 import type { WorkspaceTabId } from "../types";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/EmptyState";

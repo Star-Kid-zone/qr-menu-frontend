@@ -8,7 +8,7 @@ import {
   PiUploadSimpleBold,
   PiSpinnerBold,
 } from "react-icons/pi";
-import { PRESET_IMAGE_PROMPTS } from "../../constants";
+import { PRESET_IMAGE_PROMPTS } from "@/constants/studio.constants";
 
 export interface FoodPhotoStudioCardProps {
   imagePrompt: string;

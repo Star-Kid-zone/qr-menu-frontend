@@ -1,14 +1,9 @@
 "use client";
 
 import { PiCaretLeftBold, PiCaretRightBold } from "react-icons/pi";
+import type { PaginationProps } from "@/types/ui/Pagination.types";
 
-export interface PaginationProps {
-  page: number;
-  pageCount: number;
-  onPageChange: (page: number) => void;
-  totalItems: number;
-  pageSize: number;
-}
+export type { PaginationProps };
 
 export function Pagination({ page, pageCount, onPageChange, totalItems, pageSize }: PaginationProps) {
   if (pageCount <= 1) return null;

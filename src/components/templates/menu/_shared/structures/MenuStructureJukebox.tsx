@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
-import type { PublicMenuPayload } from "@/types/public-site";
+import type { PublicMenuPayload } from "@/types/public/publicSite.types";
 import { displayStyle, fluid, mixv, tv } from "@/components/site-system/kit/tokens";
 import { catId, MenuColumns, MenuFilters, MenuShell, MenuTopLinks, openable, priceText, useMenuSystem } from "@/components/site-system/menu-kit/MenuKit";
 import { itemChips } from "@/components/site-system/menu-kit/attributes";

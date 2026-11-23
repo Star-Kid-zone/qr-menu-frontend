@@ -1,11 +1,8 @@
 import { PiTrashBold } from "react-icons/pi";
 import { cn } from "@/utils/cn";
+import type { MediaRemoveButtonProps } from "@/types/ui/MediaRemoveButton.types";
 
-interface MediaRemoveButtonProps {
-  onClick: () => void;
-  label: string;
-  className?: string;
-}
+export type { MediaRemoveButtonProps };
 
 /**
  * Round remove chip that sits on the top-right corner of a media tile

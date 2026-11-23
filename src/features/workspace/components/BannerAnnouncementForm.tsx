@@ -4,9 +4,9 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { PiMegaphoneBold } from 'react-icons/pi';
-import { FormField, Textarea, ToggleCard } from '@/components/ui';
+import { FormField, Textarea, ToggleCard, toast } from '@/components/ui';
 import { cn } from '@/utils/cn';
-import { BannerAnnouncementFormProps, BannerAnnouncementValues } from "@/types/components/admin/workspace/BannerAnnouncementForm.types";
+import { BannerAnnouncementFormProps, BannerAnnouncementValues } from "@/types/admin/workspace/BannerAnnouncementForm.types";
 
 export const bannerAnnouncementSchema = z.object({
   announcement_enabled: z.boolean(),
@@ -83,7 +83,18 @@ export function BannerAnnouncementForm({
           e.preventDefault();
           return;
         }
-        void handleSubmit(onSubmit)(e);
+        void handleSubmit(
+          onSubmit,
+          (invalidErrors) => {
+            console.error("Banner announcement validation failed:", invalidErrors);
+            const firstError = Object.values(invalidErrors)[0];
+            const msg =
+              firstError && typeof firstError === "object" && "message" in firstError
+                ? String(firstError.message)
+                : "Please check the form for errors.";
+            toast.error(msg);
+          }
+        )(e);
       }}
       className={cn('py-1', compact ? 'space-y-4' : 'space-y-6 py-2')}
     >

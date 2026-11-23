@@ -1,5 +1,5 @@
 import { cn } from '@/utils/cn';
-import { SpinnerProps, SpinnerSize } from "@/types/components/ui/Spinner.types";
+import { SpinnerProps, SpinnerSize } from "@/types/ui/Spinner.types";
 
 const sizeClasses: Record<SpinnerSize, string> = {
   sm: 'h-4 w-4 border-2',

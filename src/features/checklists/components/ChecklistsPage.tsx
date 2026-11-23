@@ -7,13 +7,11 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 import { TodayTab } from './TodayTab';
 import { TemplatesTab } from './TemplatesTab';
+import { CHECKLIST_TABS } from '@/constants/schedule.constants';
 
 type ChecklistTab = 'today' | 'templates';
 
-const TABS: { id: ChecklistTab; label: string }[] = [
-  { id: 'today', label: 'Today' },
-  { id: 'templates', label: 'Edit checklists' },
-];
+const TABS: { id: ChecklistTab; label: string }[] = CHECKLIST_TABS as unknown as { id: ChecklistTab; label: string }[];
 
 function ChecklistsPageContent() {
   const { hasPermission } = usePermissions();

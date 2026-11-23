@@ -1,7 +1,7 @@
 import { HiSearch } from 'react-icons/hi';
 import { cn } from '@/utils/cn';
 import { Input } from './input';
-import { SearchInputProps } from "@/types/components/ui/SearchInput.types";
+import { SearchInputProps } from "@/types/ui/SearchInput.types";
 
 export function SearchInput({ className, ...props }: SearchInputProps) {
   return (

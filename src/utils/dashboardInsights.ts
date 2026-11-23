@@ -1,12 +1,7 @@
-import type { DashboardData } from "@/services/analytics.service";
+import type { DashboardData, Insight } from "@/types";
 import type { MenuStats } from "@/services/menu.service";
 
-export interface Insight {
-  id: string;
-  text: string;
-  href?: string;
-  cta?: string;
-}
+export type { Insight };
 
 /** Percent change vs previous period; null when there is no baseline to compare against. */
 export function pctChange(current: number, previous: number | undefined | null): number | null {

@@ -1,9 +1,8 @@
 import React, { forwardRef, type HTMLAttributes, type TdHTMLAttributes, type ThHTMLAttributes } from "react";
 import { cn } from "@/utils/cn";
+import type { TableContainerProps } from "@/types/ui/Table.types";
 
-export interface TableContainerProps extends HTMLAttributes<HTMLDivElement> {
-  maxHeight?: string;
-}
+export type { TableContainerProps };
 
 export const TableContainer = forwardRef<HTMLDivElement, TableContainerProps>(
   ({ className, maxHeight, children, ...props }, ref) => (

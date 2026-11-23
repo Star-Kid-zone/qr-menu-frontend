@@ -12,7 +12,7 @@ import { useAnalytics } from "@/hooks/useAnalytics.hook";
 import { PUBLIC_MENU_PATH } from "@/components/templates/core/paths";
 import { toSafeExternalUrl } from "@/utils/url";
 import { SiteStatusBanner } from "@/components/templates/sections/SiteStatusBanner";
-import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
+import type { RawPublicSiteData } from "@/types/public/templates/rawPublicSiteData.types";
 import { DEFAULT_TEMPLATE_SLUG } from "@/components/templates/core/defaultTemplate";
 
 

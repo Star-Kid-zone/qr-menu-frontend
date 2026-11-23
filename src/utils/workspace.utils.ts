@@ -1,4 +1,4 @@
-import type { WorkspaceSettingsFormValues, WorkspaceSetting, WorkspaceSettingSource } from '@/types/workspace.types';
+import type { WorkspaceSettingsFormValues, WorkspaceSetting, WorkspaceSettingSource } from '@/types/admin/workspace/workspace.types';
 import { parseSiteDocument } from '@/components/templates/sections/document';
 
 /**

@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { LandingTemplateProps, RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
+import type { LandingTemplateProps, RawPublicSiteData } from "@/types/public/templates/rawPublicSiteData.types";
 import { LayoutPage } from "./LayoutPage";
 import { LAYOUTS } from "./registry";
 import { LANDING_SECTION_TYPES } from "./types";

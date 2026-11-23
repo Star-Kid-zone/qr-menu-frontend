@@ -3,15 +3,10 @@
 import React from "react";
 import { FormField, Input } from "@/components/ui";
 import { cn } from "@/utils/cn";
+import { SITE_STATUS_MODES } from "@/constants/site.constants";
 import type { SiteDocument, SiteStatus, SiteStatusMode } from "@/components/templates/sections/types";
 
-const MODES: { mode: SiteStatusMode; label: string; description: string; defaultLine: string }[] = [
-  { mode: "open", label: "Open", description: "No notice. Your page shows as normal.", defaultLine: "" },
-  { mode: "closed-today", label: "Closed today", description: "A one-day closure.", defaultLine: "We're closed today." },
-  { mode: "temporarily-closed", label: "Temporarily closed", description: "Closed for a while.", defaultLine: "We're temporarily closed." },
-  { mode: "holiday", label: "Holiday", description: "Closed for a holiday or festival.", defaultLine: "We're closed for the holidays." },
-  { mode: "renovation", label: "Renovation", description: "Closed while you refurbish.", defaultLine: "We're closed for renovation." },
-];
+const MODES: { mode: SiteStatusMode; label: string; description: string; defaultLine: string }[] = SITE_STATUS_MODES as unknown as { mode: SiteStatusMode; label: string; description: string; defaultLine: string }[];
 
 export interface SiteStatusPanelProps {
   formId: string;

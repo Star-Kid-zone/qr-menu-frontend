@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type KeyboardEvent } from "react";
-import type { PublicMenuPayload } from "@/types/public-site";
+import type { PublicMenuPayload } from "@/types/public/publicSite.types";
 import { useMenuTemplateData } from "@/components/templates/core/useTemplateData";
 import { MenuItemImage } from "@/components/templates/core/MenuImage";
 import { buildMenuTheme } from "./buildMenuTheme";

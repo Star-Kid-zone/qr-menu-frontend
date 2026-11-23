@@ -10,3 +10,4 @@ export * from './thumbprint.utils';
 export * from './url';
 export * from './workspace.utils';
 export * from './public-site.utils';
+export * from './imageCompressor';

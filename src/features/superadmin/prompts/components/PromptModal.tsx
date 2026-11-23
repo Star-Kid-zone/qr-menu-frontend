@@ -6,7 +6,7 @@ import { Modal } from '@/components/Modal';
 import { Button, FormField, Input, Textarea } from '@/components/ui';
 import { ModalFooter } from '@/components/ui/ModalFooter';
 import { Select } from '@/components/ui/Select';
-import { PRESET_CATEGORIES, RECOMMENDED_MODELS } from '../constants';
+import { PRESET_CATEGORIES, RECOMMENDED_MODELS } from '@/constants/studio.constants';
 import type { PromptModalProps } from '../types';
 
 export function PromptModal({

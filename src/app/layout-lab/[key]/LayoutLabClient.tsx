@@ -3,7 +3,7 @@
 import { LayoutPage } from "@/components/templates/sections/layouts/LayoutPage";
 import { LAYOUT_MAP } from "@/components/templates/sections/layouts/registry";
 import { LANDING_SECTIONS } from "@/components/templates/sections/landing/registry";
-import type { LandingTemplateProps, RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
+import type { LandingTemplateProps, RawPublicSiteData } from "@/types/public/templates/rawPublicSiteData.types";
 
 const IMG = (set: string, f: string) => `/landing/${set}/${f}`;
 

@@ -1,19 +1,6 @@
-import type { PlatformPrompt } from '@/services/superadmin.service';
+import type { PlatformPrompt, PromptFormData } from '@/types';
 
-export interface PromptFormData {
-  title: string;
-  prompt: string;
-  negativePrompt: string;
-  category: string;
-  mediaType: 'image' | 'video' | 'poster';
-  aspectRatio: string;
-  recommendedModel: string;
-  stylePreset: string;
-  referenceImages: string[];
-  tags: string[];
-  cameraNotes: string;
-  isFavorite: boolean;
-}
+export type { PromptFormData };
 
 export interface PromptCardProps {
   prompt: PlatformPrompt;

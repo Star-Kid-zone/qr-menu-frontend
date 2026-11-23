@@ -1,5 +1,5 @@
 import React from 'react';
-import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
+import type { RawPublicSiteData } from "@/types/public/templates/rawPublicSiteData.types";
 
 /**
  * FAQPage JSON-LD, built from the same tenant-entered FAQ data rendered on

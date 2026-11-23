@@ -7,6 +7,7 @@ import { Button, FormField, Input, Textarea } from '@/components/ui';
 import { ModalFooter } from '@/components/ui/ModalFooter';
 import { Notice } from '@/components/ui/Notice';
 import { Select } from '@/components/ui/Select';
+import { ANNOUNCEMENT_TYPE_OPTIONS } from '@/constants/app.constants';
 
 export interface AnnouncementFormData {
   title: string;
@@ -27,12 +28,7 @@ export interface CreateAnnouncementModalProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
-const TYPE_OPTIONS: { value: AnnouncementFormData['type']; label: string }[] = [
-  { value: 'feature', label: 'New feature' },
-  { value: 'info', label: 'General info' },
-  { value: 'warning', label: 'Maintenance or warning' },
-  { value: 'promo', label: 'Promotion or festival' },
-];
+const TYPE_OPTIONS: { value: AnnouncementFormData['type']; label: string }[] = ANNOUNCEMENT_TYPE_OPTIONS as unknown as { value: AnnouncementFormData['type']; label: string }[];
 
 export function CreateAnnouncementModal({
   isOpen,

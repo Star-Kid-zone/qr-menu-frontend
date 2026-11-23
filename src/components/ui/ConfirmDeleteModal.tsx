@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { toast } from './toast';
 import { ConfirmationDialog } from './ConfirmationDialog';
-import { ConfirmDeleteModalProps } from "@/types/components/ui/ConfirmDeleteModal.types";
+import { ConfirmDeleteModalProps } from "@/types/ui/ConfirmDeleteModal.types";
 import { getApiErrorMessage } from "@/utils/errors";
 
 export function ConfirmDeleteModal({

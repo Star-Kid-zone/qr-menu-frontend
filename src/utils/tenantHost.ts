@@ -1,19 +1,17 @@
 import { TENANT_ROOT_DOMAIN } from '@/config/app.constants';
+import type { HostKind } from '@/types';
+import {
+  PLATFORM_SUBDOMAINS,
+  PLATFORM_HOST_SUFFIXES,
+  ADMIN_PATH_PREFIXES,
+  SLUG_LABEL_REGEX,
+  IPV4_REGEX,
+} from '@/constants';
 
-/**
- * Subdomains the platform itself serves (admin app, API, CDN…), never a tenant.
- * Deliberately small: a restaurant may already own a slug such as `shop` or
- * `demo`, and listing it here would take their site offline. The backend's
- * RESERVED_PUBLIC_SLUGS (qr-backend/.../constants/reservedSlugs.constants.ts)
- * is a superset that stops new tenants from claiming any of these.
- */
-export const PLATFORM_SUBDOMAINS: ReadonlySet<string> = new Set([
-  'www', 'app', 'api', 'apigateway', 'admin', 'superadmin',
-  'cdn', 'static', 'assets', 'media', 'mail',
-]);
+export { PLATFORM_SUBDOMAINS, ADMIN_PATH_PREFIXES };
+export type { HostKind };
 
-/** One DNS label in the shape the backend allows for a public slug. */
-const SLUG_LABEL = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
+const SLUG_LABEL = SLUG_LABEL_REGEX;
 
 function normaliseHostname(host: string): string {
   // Drop the port and any trailing dot ("vimal.mynagaram.com." is the same host).
@@ -135,7 +133,7 @@ export function buildPublicTenantUrlServer(
  * domain: deploy previews and the like. Extend with NEXT_PUBLIC_PLATFORM_HOSTS
  * (comma-separated hostnames or ".suffix" entries).
  */
-const PLATFORM_HOST_SUFFIXES = ['.amplifyapp.com', '.vercel.app', '.cloudfront.net'];
+
 
 function extraPlatformHosts(): string[] {
   return (process.env.NEXT_PUBLIC_PLATFORM_HOSTS ?? '')
@@ -144,13 +142,7 @@ function extraPlatformHosts(): string[] {
     .filter(Boolean);
 }
 
-const IPV4 = /^\d{1,3}(\.\d{1,3}){3}$/;
-
-export type HostKind =
-  | { kind: 'platform' }
-  | { kind: 'tenant'; slug: string }
-  /** Not ours: a restaurant's own domain, looked up via the API. */
-  | { kind: 'custom'; domain: string };
+const IPV4 = IPV4_REGEX;
 
 /** Classify a request host. Never trusts anything but the host string itself. */
 export function classifyHost(host: string, rootDomain: string = TENANT_ROOT_DOMAIN): HostKind {
@@ -170,8 +162,7 @@ export function classifyHost(host: string, rootDomain: string = TENANT_ROOT_DOMA
   return { kind: 'custom', domain: h };
 }
 
-/** Pages that belong to the admin app, never to a restaurant's public host. */
-export const ADMIN_PATH_PREFIXES = ['/admin', '/superadmin', '/login', '/register', '/forgot-password'];
+
 
 export function isAdminPath(pathname: string): boolean {
   return ADMIN_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));

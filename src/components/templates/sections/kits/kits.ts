@@ -1,4 +1,4 @@
-import type { WorkspaceSettingsFormValues } from "@/types/workspace.types";
+import type { WorkspaceSettingsFormValues } from "@/types/admin/workspace/workspace.types";
 import type { SectionInstance } from "../types";
 import { getBusinessType, KIT_BUSINESS_TYPE, resolveBusinessType } from "@/components/site-system/business-types";
 import { getSkin } from "@/components/site-system/skins";

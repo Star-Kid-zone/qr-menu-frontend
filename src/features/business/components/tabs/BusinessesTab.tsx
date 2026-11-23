@@ -8,7 +8,7 @@ import {
   editBusinessFormId,
   type BusinessSchemaValues,
 } from "../BusinessForm";
-import type { WorkspaceBusiness } from "@/types/workspace.types";
+import type { WorkspaceBusiness } from "@/types/admin/workspace/workspace.types";
 
 interface BusinessesTabProps {
   businesses: WorkspaceBusiness[];

@@ -1,5 +1,5 @@
-import type { StaffRole } from '@/constants/permissions';
-import type { StaffMember } from '@/services/staff.service';
+import type { StaffRole } from '@/constants';
+import type { StaffMember } from '@/types';
 
 export interface StaffFormState {
   id: string | null;

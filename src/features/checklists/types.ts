@@ -1,4 +1,4 @@
-import type { ChecklistItem, ChecklistTemplateType } from '@/services/checklist.service';
+import type { ChecklistItem, ChecklistTemplateType } from '@/types';
 
 export interface TemplateFormState {
   id: string | null;

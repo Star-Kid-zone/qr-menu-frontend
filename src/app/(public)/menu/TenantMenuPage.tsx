@@ -4,7 +4,7 @@ import { ComponentType, Suspense } from "react";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { menuTemplates } from "@/components/templates/core/menuRegistry";
 import { MENU_STRUCTURE_MAP, resolveMenuStructure } from "@/components/templates/menu/structureRegistry";
-import type { PublicMenuPayload } from "@/types/public-site";
+import type { PublicMenuPayload } from "@/types/public/publicSite.types";
 import { SiteStatusBanner } from "@/components/templates/sections/SiteStatusBanner";
 import { MenuCurrencyContext } from "@/components/templates/menu/_shared/structures/DietaryBadges";
 import { MenuOccasionBanner } from "@/components/site-system/occasions/MenuOccasionBanner";

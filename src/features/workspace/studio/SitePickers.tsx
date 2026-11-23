@@ -8,6 +8,7 @@ import { BUSINESS_TYPES, businessTypesByFamily, getBusinessType } from "@/compon
 import { skinsByFamily, getSkin } from "@/components/site-system/skins";
 import { LAYOUTS } from "@/components/templates/sections/layouts/registry";
 import { BUSINESS_FAMILIES, SKIN_FAMILIES, type BusinessFamily, type Palette, type SkinDefinition, type SkinFamily } from "@/components/site-system/types";
+import { BUSINESS_FAMILY_LABELS, SKIN_FAMILY_LABELS } from "@/constants/site.constants";
 
 /**
  * Studio pickers for the site system (PLAN Step 8): business type, layout and
@@ -15,29 +16,9 @@ import { BUSINESS_FAMILIES, SKIN_FAMILIES, type BusinessFamily, type Palette, ty
  * live preview updates as the owner clicks.
  */
 
-const FAMILY_LABEL: Record<BusinessFamily, string> = {
-  restaurants: "Restaurants",
-  "quick-casual": "Quick and casual",
-  "cafes-sweets": "Cafés and sweets",
-  "bars-lounges": "Bars and lounges",
-  shops: "Shops",
-  other: "Other",
-};
+const FAMILY_LABEL: Record<BusinessFamily, string> = BUSINESS_FAMILY_LABELS as unknown as Record<BusinessFamily, string>;
 
-const SKIN_FAMILY_LABEL: Record<SkinFamily, string> = {
-  "royal-classic": "Royal and classic",
-  "luxury-minimal": "Quiet luxury",
-  "modern-minimal": "Modern and clean",
-  editorial: "Editorial",
-  "warm-rustic": "Warm and rustic",
-  botanical: "Botanical",
-  "bold-pop": "Bold and playful",
-  "retro-vintage": "Retro",
-  "neon-night": "Neon night",
-  futurist: "Futurist",
-  "soft-glass-clay": "Soft and rounded",
-  "pixel-90s": "Pixel",
-};
+const SKIN_FAMILY_LABEL: Record<SkinFamily, string> = SKIN_FAMILY_LABELS as unknown as Record<SkinFamily, string>;
 
 /* ───────────────────────── business type ───────────────────────── */
 

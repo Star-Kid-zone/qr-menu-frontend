@@ -5,7 +5,7 @@ import { STRUCTURE_MAP } from "@/components/templates/sections/layouts/structure
 import { SiteStatusBanner } from "@/components/templates/sections/SiteStatusBanner";
 import { Spinner } from "@/components/ui";
 import { landingTemplates } from "@/components/templates/core/landingRegistry";
-import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
+import type { RawPublicSiteData } from "@/types/public/templates/rawPublicSiteData.types";
 import { DEFAULT_TEMPLATE_SLUG } from "@/components/templates/core/defaultTemplate";
 
 // Mirrors the resolution logic in `src/app/(public)/TenantLandingPage.tsx` so the

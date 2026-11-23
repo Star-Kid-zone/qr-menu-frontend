@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import { Card, Badge, EmptyState } from "@/components/ui";
 import {
   PiStarBold,

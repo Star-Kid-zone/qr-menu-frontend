@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import { useState, type ReactNode } from "react";
 import { PiListBold, PiStarFill, PiXBold } from "react-icons/pi";
 import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/templates/core/socialPlatforms";

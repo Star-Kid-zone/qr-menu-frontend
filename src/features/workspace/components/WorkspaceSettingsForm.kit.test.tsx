@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { getDefaultWorkspaceSettings } from "@/utils/workspace.utils";
 import { kitRecipe, RESTAURANT_KIT_MAP } from "@/components/templates/sections/kits/kits";
 import { getSkin } from "@/components/site-system/skins";
-import type { WorkspaceSettingsFormValues } from "@/types/workspace.types";
+import type { WorkspaceSettingsFormValues } from "@/types/admin/workspace/workspace.types";
 import { WorkspaceSettingsForm } from "./WorkspaceSettingsForm";
 
 /**

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import Link from "next/link";
-import { BUSINESS_TYPE_HREF } from "@/features/business/constants";
+import { BUSINESS_TYPE_HREF } from "@/constants/site.constants";
 import { useRouter } from "next/navigation";
 import {
   AdminFormPage,

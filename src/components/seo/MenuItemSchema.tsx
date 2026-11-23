@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Menu } from '@/types';
+import { DIET_SCHEMA_MAP } from '@/constants/dietary.constants';
 
 /**
  * schema.org `Menu` JSON-LD for the guest-facing menu page — one `MenuItem`
@@ -67,10 +68,4 @@ export function MenuItemSchema({
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: json }} />;
 }
 
-/** Maps our internal dietary-tag vocabulary to schema.org's RestrictedDiet enum where a direct match exists. */
-const DIET_SCHEMA_MAP: Record<string, string> = {
-  vegetarian: 'https://schema.org/VegetarianDiet',
-  vegan: 'https://schema.org/VeganDiet',
-  gluten_free: 'https://schema.org/GlutenFreeDiet',
-  halal: 'https://schema.org/HalalDiet',
-};
+

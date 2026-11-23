@@ -1,11 +1,8 @@
 import React from 'react';
 import { cn } from '@/utils/cn';
+import type { RestaurantLoaderIconProps } from '@/types/ui/RestaurantLoaderIcon.types';
 
-export interface RestaurantLoaderIconProps {
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  className?: string;
-  accentColor?: string;
-}
+export type { RestaurantLoaderIconProps };
 
 const SIZE_MAP = {
   sm: 'size-9',

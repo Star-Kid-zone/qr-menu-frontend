@@ -4,24 +4,9 @@ import { useMemo, useState } from "react";
 import { Button, FormField, Select, toast } from "@/components/ui";
 import { workspaceService } from "@/services/workspace.service";
 import { getApiErrorMessage } from "@/utils/errors";
+import { MODERN_TIMEZONE_NAMES } from "@/constants/app.constants";
 
-/**
- * ICU (browsers, Node) still lists — and reports the device as — several
- * zones by their legacy names. Owners look for their city's current name, so
- * show and store the modern spelling; both resolve identically in Intl.
- */
-const MODERN_ZONE_NAMES: Readonly<Record<string, string>> = {
-  "Asia/Calcutta": "Asia/Kolkata",
-  "Asia/Katmandu": "Asia/Kathmandu",
-  "Asia/Rangoon": "Asia/Yangon",
-  "Asia/Saigon": "Asia/Ho_Chi_Minh",
-  "Europe/Kiev": "Europe/Kyiv",
-  "Atlantic/Faeroe": "Atlantic/Faroe",
-  "America/Godthab": "America/Nuuk",
-  "Pacific/Truk": "Pacific/Chuuk",
-  "Pacific/Ponape": "Pacific/Pohnpei",
-  "Pacific/Enderbury": "Pacific/Kanton",
-};
+const MODERN_ZONE_NAMES: Readonly<Record<string, string>> = MODERN_TIMEZONE_NAMES;
 
 export const modernZone = (zone: string): string => MODERN_ZONE_NAMES[zone] ?? zone;
 

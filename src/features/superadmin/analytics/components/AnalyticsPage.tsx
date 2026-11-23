@@ -20,7 +20,7 @@ import {
   PiEyeBold,
 } from 'react-icons/pi';
 import { fadeIn, fadeInUp, staggerContainer } from '@/lib/motion';
-import { TAB_OPTIONS } from '../constants';
+import { TAB_OPTIONS } from '@/constants/analytics.constants';
 import type { TabId } from '../types';
 import { MetricCard } from './MetricCard';
 import { TrafficFunnelTab } from './TrafficFunnelTab';

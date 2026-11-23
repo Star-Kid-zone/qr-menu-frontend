@@ -1,8 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import type { ComponentType } from "react";
 import { describe, expect, it } from "vitest";
-import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
-import type { PublicMenuPayload } from "@/types/public-site";
+import type { RawPublicSiteData } from "@/types/public/templates/rawPublicSiteData.types";
+import type { PublicMenuPayload } from "@/types/public/publicSite.types";
 import type { Menu } from "@/types";
 import { mapPublicUserDetailsFromApi } from "@/components/templates/core/mapPublicUserDetails";
 import { resolveMenuStructure, MENU_STRUCTURE_KEYS } from "@/components/templates/menu/structureRegistry";

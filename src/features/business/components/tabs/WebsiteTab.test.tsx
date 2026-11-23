@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { INLINE_WORKSPACE_FORM_ID } from "../../types";
+import { INLINE_WORKSPACE_FORM_ID } from "@/constants/site.constants";
 
 const submitted = vi.hoisted(() => vi.fn());
 

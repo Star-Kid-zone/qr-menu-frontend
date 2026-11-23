@@ -15,6 +15,8 @@ import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { getApiErrorMessage } from "@/utils/errors";
 import { datetimeLocalToIso, isoToDatetimeLocal } from "@/utils/workspace.utils";
 import { menuService } from "@/services/menu.service";
+import { WORKSPACE_CURATED_PICKS } from "@/constants/workspace.constants";
+import { SITE_CONTENT_TABS } from "@/constants/site.constants";
 import {
   siteContentService,
   type Amenity,
@@ -38,13 +40,7 @@ import { SiteIcon } from "@/components/site-system/icons/SiteIcon";
  */
 
 type Tab = "awards" | "team" | "events" | "amenities" | "picks";
-const TABS: Array<{ id: Tab; label: string }> = [
-  { id: "awards", label: "Awards and press" },
-  { id: "team", label: "Team" },
-  { id: "events", label: "Events" },
-  { id: "amenities", label: "Amenities" },
-  { id: "picks", label: "Hand-picked list" },
-];
+const TABS: Array<{ id: Tab; label: string }> = SITE_CONTENT_TABS as unknown as Array<{ id: Tab; label: string }>;
 
 export function SiteContentPanel({ value, disabled, onChange }: { value: SiteDocument | null; disabled: boolean; onChange: (doc: SiteDocument) => void }) {
   const [tab, setTab] = useState<Tab>("awards");
@@ -558,8 +554,8 @@ function AmenitiesEditor({ disabled }: { disabled: boolean }) {
 
 /* ───────────────────────── hand-picked list ───────────────────────── */
 
-const PICKS_TYPE = "curated-list";
-const MAX_PICKS = 12;
+const PICKS_TYPE = WORKSPACE_CURATED_PICKS.TYPE;
+const MAX_PICKS = WORKSPACE_CURATED_PICKS.MAX;
 
 interface MenuRow {
   id: number | string;

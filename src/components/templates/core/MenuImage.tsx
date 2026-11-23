@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, type CSSProperties } from 'react';
-import Image from 'next/image';
+import Image from '@/components/ui/Image';
 import { resolvePublicImageUrl } from './publicMedia';
-import type { MenuImageProps } from "@/types/components/templates/MenuImage.types";
+import type { MenuImageProps } from "@/types/public/templates/MenuImage.types";
 
 /**
  * A dish photo, or — when there isn't one (or it fails to load) — a quiet

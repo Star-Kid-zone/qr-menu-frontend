@@ -10,6 +10,11 @@ import {
   PiHouseBold,
 } from "react-icons/pi";
 import { cn } from "@/utils/cn";
+import {
+  PHONE_PREVIEW_DEVICES,
+  PHONE_BEZEL_BORDER,
+  PHONE_CONTAINER_WIDTH,
+} from "@/constants/workspace.constants";
 
 type PreviewView = "landing" | "menu";
 
@@ -27,14 +32,10 @@ interface DevicePreset {
 // would on that actual phone. The whole mockup (bezel + content) is then
 // visually scaled down as one unit to fit the sidebar, so switching devices
 // shows a genuinely smaller/bigger phone, not just a resized viewport.
-const DEVICES: DevicePreset[] = [
-  { id: "sm", label: "S", name: "iPhone SE", width: 375, height: 667 },
-  { id: "md", label: "M", name: "iPhone 14", width: 390, height: 844 },
-  { id: "lg", label: "L", name: "iPhone 14 Pro Max", width: 430, height: 932 },
-];
+const DEVICES: DevicePreset[] = PHONE_PREVIEW_DEVICES as unknown as DevicePreset[];
 
-const BEZEL_BORDER = 10;
-const CONTAINER_WIDTH = 260; // available width budget inside the sidebar column
+const BEZEL_BORDER = PHONE_BEZEL_BORDER;
+const CONTAINER_WIDTH = PHONE_CONTAINER_WIDTH; // available width budget inside the sidebar column
 const largestDevice = DEVICES[DEVICES.length - 1];
 const GLOBAL_SCALE = CONTAINER_WIDTH / (largestDevice.width + BEZEL_BORDER * 2);
 

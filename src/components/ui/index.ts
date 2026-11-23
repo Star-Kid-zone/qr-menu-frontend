@@ -1,3 +1,4 @@
+export * from './ActionMenu';
 export * from './AdminFormPage';
 export * from './Tooltip';
 export * from './MediaRemoveButton';

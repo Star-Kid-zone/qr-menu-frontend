@@ -1,7 +1,8 @@
 import React from 'react';
-import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
+import type { RawPublicSiteData } from "@/types/public/templates/rawPublicSiteData.types";
 import { getTenantCanonicalUrl } from "@/config/app.constants";
 import { readBusinessSeo } from "@/utils/public-seo";
+import { DAY_TO_SCHEMA_CODE } from "@/constants/schedule.constants";
 
 /** Converts a raw `HH:mm`/`H:mm AM|PM`-ish time string into schema.org's `HH:MM` 24h format. Returns null if unparsable. */
 function toSchemaTime(raw: unknown): string | null {
@@ -17,12 +18,6 @@ function toSchemaTime(raw: unknown): string | null {
   if (hour < 0 || hour > 23) return null;
   return `${String(hour).padStart(2, '0')}:${minute}`;
 }
-
-const DAY_TO_SCHEMA_CODE: Record<string, string> = {
-  monday: 'Mo', tuesday: 'Tu', wednesday: 'We', thursday: 'Th',
-  friday: 'Fr', saturday: 'Sa', sunday: 'Su',
-  mon: 'Mo', tue: 'Tu', wed: 'We', thu: 'Th', fri: 'Fr', sat: 'Sa', sun: 'Su',
-};
 
 /** Builds schema.org `openingHours` strings (e.g. `"Mo 09:00-21:00"`) from `businesses.availability`. */
 function buildOpeningHours(availability: unknown): string[] {

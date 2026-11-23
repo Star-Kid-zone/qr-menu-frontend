@@ -1,4 +1,4 @@
-import type { MenuBlueprint } from '@/services/superadmin.service';
+import type { MenuBlueprint } from '@/types';
 
 export type PreviewTab = 'dishes' | 'branding' | 'story' | 'offers' | 'gallery_faqs';
 

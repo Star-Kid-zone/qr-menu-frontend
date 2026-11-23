@@ -7,10 +7,12 @@ import { workspaceService, type WorkspaceData } from "@/services/workspace.servi
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { getApiErrorMessage } from "@/utils";
 import { getRawStorageItem, setRawStorageItem } from "@/utils/storage";
+import { STORAGE_KEYS } from "@/constants/storage.constants";
+import { BULK_DELETE_MAX } from "@/constants/menu.constants";
 import type { MenuItem } from "../types";
 import { getItemDisplayName } from "../utils";
 
-const ONBOARDING_DISMISSED_KEY = "qr_menu_onboarding_dismissed";
+const ONBOARDING_DISMISSED_KEY = STORAGE_KEYS.menuOnboardingDismissed;
 
 function subscribeToStorage(onChange: () => void) {
   window.addEventListener("storage", onChange);
@@ -19,8 +21,6 @@ function subscribeToStorage(onChange: () => void) {
 
 const getOnboardingNotDismissedSnapshot = () => !getRawStorageItem(ONBOARDING_DISMISSED_KEY);
 const getOnboardingServerSnapshot = () => false;
-
-const BULK_DELETE_MAX = 200;
 
 /** Runs `task` over `items` a few at a time so a big selection doesn't fire dozens of requests at once. */
 async function settleInBatches<T>(items: T[], task: (item: T) => Promise<unknown>, size = 4) {

@@ -1,7 +1,7 @@
 import { Children, cloneElement, isValidElement, type ReactElement } from "react";
 import { PiWarningCircle } from "react-icons/pi";
 import { cn } from "@/utils/cn";
-import { FormFieldProps } from "@/types/components/ui/FormField.types";
+import { FormFieldProps } from "@/types/ui/FormField.types";
 
 export function FormField({
   label,

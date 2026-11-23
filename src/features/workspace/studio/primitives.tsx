@@ -5,8 +5,13 @@ import { PiArrowCounterClockwiseBold, PiCursorClickBold, PiPlusBold } from "reac
 import type { UseFormRegister } from "react-hook-form";
 import { Input } from "@/components/ui";
 import { cn } from "@/utils/cn";
-import { CARD_STYLE_OPTIONS, CUSTOM_OPTION_VALUE, FONT_FAMILY_OPTIONS } from "@/constants/workspace.constants";
-import type { WorkspaceSettingsFormValues } from "@/types/workspace.types";
+import {
+  CARD_STYLE_OPTIONS,
+  CUSTOM_OPTION_VALUE,
+  FONT_FAMILY_OPTIONS,
+  WORKSPACE_FONTS_SHOWN,
+} from "@/constants/workspace.constants";
+import type { WorkspaceSettingsFormValues } from "@/types/admin/workspace/workspace.types";
 import {
   MENU_COLOUR_THEMES,
   findActiveTheme,
@@ -300,7 +305,7 @@ export function ShapeControl({
 /* ── Typeface ─────────────────────────────────────────────────────────────── */
 
 const FONT_PRESETS = FONT_FAMILY_OPTIONS.filter((o) => o.value !== CUSTOM_OPTION_VALUE);
-const FONTS_SHOWN = 6;
+const FONTS_SHOWN = WORKSPACE_FONTS_SHOWN;
 
 export function FontControl({
   value,

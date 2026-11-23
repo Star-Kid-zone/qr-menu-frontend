@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { cn } from "@/utils/cn";
-import { TextareaProps } from "@/types/components/ui/Textarea.types";
+import { TextareaProps } from "@/types/ui/Textarea.types";
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, fullWidth = true, invalid, ...props }, ref) => {

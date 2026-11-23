@@ -1,5 +1,5 @@
 import type { Menu } from "@/types";
-import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
+import type { RawPublicSiteData } from "@/types/public/templates/rawPublicSiteData.types";
 import { toSafeExternalUrl } from "@/utils/url";
 import { AMENITY_IDS, type AmenityId, type PublicAward, type PublicSiteEvent, type PublicTeamMember } from "../types";
 

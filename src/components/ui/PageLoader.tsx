@@ -1,5 +1,5 @@
 import { LoadingScreen } from '@/components/LoadingScreens';
-import type { PageLoaderProps } from '@/types/ui.interface';
+import type { PageLoaderProps } from '@/types/ui/ui.types';
 
 export function PageLoader({
   label = 'Loading...',

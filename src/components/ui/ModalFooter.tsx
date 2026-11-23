@@ -1,5 +1,5 @@
 import { cn } from '@/utils/cn';
-import { ModalFooterProps } from "@/types/components/ui/ModalFooter.types";
+import { ModalFooterProps } from "@/types/ui/ModalFooter.types";
 
 export function ModalFooter({ children, className }: ModalFooterProps) {
   return (

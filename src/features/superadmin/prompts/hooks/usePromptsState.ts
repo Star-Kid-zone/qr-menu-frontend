@@ -10,34 +10,8 @@ import {
 } from "@/services/superadmin.service";
 import { routes } from "@/config/routes";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
-import type { PromptFormData } from "../types";
-
-const INITIAL_FORM: PromptFormData = {
-  title: "",
-  prompt: "",
-  negativePrompt: "",
-  category: "Biryani & Rice",
-  mediaType: "image",
-  aspectRatio: "1:1",
-  recommendedModel: "Ideogram 2.0 (Typography & Posters)",
-  stylePreset: "Commercial Food Photography",
-  referenceImages: [],
-  tags: [],
-  cameraNotes: "",
-  isFavorite: false,
-};
-
-interface PromptLibrary {
-  prompts: PlatformPrompt[];
-  categories: PromptCategorySummary[];
-}
-
-interface PromptFilters {
-  selectedCategory: string;
-  selectedMediaType: string;
-  favoritesOnly: boolean;
-  searchQuery: string;
-}
+import { DEFAULT_PROMPT_FORM } from "@/constants";
+import type { PromptFormData, PromptLibrary, PromptFilters } from "@/types";
 
 // The prompts endpoint has answered with a bare array, `{ data }` or `{ prompts }`; accept each.
 function readPromptList(res: unknown): PlatformPrompt[] {
@@ -124,7 +98,7 @@ export function usePromptsState() {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<PlatformPrompt | null>(null);
-  const [modalForm, setModalForm] = useState<PromptFormData>(INITIAL_FORM);
+  const [modalForm, setModalForm] = useState<PromptFormData>(DEFAULT_PROMPT_FORM);
   const [uploadingRefImage, setUploadingRefImage] = useState(false);
 
   const applyLibrary = useCallback((library: PromptLibrary) => {
@@ -172,7 +146,7 @@ export function usePromptsState() {
       .then(applyLibrary)
       .catch(handleLoadError)
       .finally(() => setLoading(false));
-    // searchQuery is read but not a trigger: the debounced effect below reloads on typing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- searchQuery is debounced in the effect below
   }, [selectedCategory, selectedMediaType, favoritesOnly, applyLibrary, handleLoadError]);
 
   // Debounced search
@@ -181,7 +155,7 @@ export function usePromptsState() {
       loadPrompts();
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, loadPrompts]);
 
   // Derived Metrics
   const metrics = useMemo(() => {
@@ -259,7 +233,7 @@ export function usePromptsState() {
   // Open Create Modal
   const handleOpenCreateModal = () => {
     setEditingPrompt(null);
-    setModalForm(INITIAL_FORM);
+    setModalForm(DEFAULT_PROMPT_FORM);
     setIsModalOpen(true);
   };
 

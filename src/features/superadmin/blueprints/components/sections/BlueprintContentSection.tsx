@@ -4,9 +4,10 @@ import React from 'react';
 import { PiPlusBold, PiTrashBold } from 'react-icons/pi';
 import { Button } from '@/components/ui';
 import { AMENITY_LABELS } from '@/components/site-system/kit/content';
+import { EMPTY_BLUEPRINT_CONTENT } from '@/constants/blueprint.constants';
 import type { BlueprintContent, MenuBlueprint } from '@/services/superadmin.service';
 
-const EMPTY: BlueprintContent = { amenities: [], awards: [], team: [], events: [] };
+const EMPTY: BlueprintContent = EMPTY_BLUEPRINT_CONTENT;
 const INPUT = 'w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary';
 
 /**
@@ -276,7 +277,7 @@ export function BlueprintContentSection({
           <div>
             <h3 className="text-xs font-bold text-muted-foreground">Upcoming Events</h3>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Preloaded tasting menus, live music, or workshops. Dated relative to the tenant's registration day at 7 pm.
+              Preloaded tasting menus, live music, or workshops. Dated relative to the tenant&apos;s registration day at 7 pm.
             </p>
           </div>
           <Button

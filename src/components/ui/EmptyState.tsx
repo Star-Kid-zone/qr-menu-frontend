@@ -1,5 +1,5 @@
 import { cn } from '@/utils/cn';
-import { EmptyStateProps } from "@/types/components/ui/EmptyState.types";
+import { EmptyStateProps } from "@/types/ui/EmptyState.types";
 
 export function EmptyState({ icon, title, description, action, className }: EmptyStateProps) {
   return (

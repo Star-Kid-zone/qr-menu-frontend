@@ -107,7 +107,11 @@ function ListReviewPageContent() {
 
   // Google Business OAuth + auto-reply state
   const [googleStatus, setGoogleStatus] = useState<GoogleBusinessStatus | null>(null);
-  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [showSettingsPanel, setShowSettingsPanel] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const params = new URLSearchParams(window.location.search);
+    return params.get("googleConnected") === "true" || Boolean(params.get("googleError"));
+  });
   const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
@@ -184,11 +188,9 @@ function ListReviewPageContent() {
             ? `Google Business connected: ${account}`
             : "Google Business Profile connected!"
         );
-        setShowSettingsPanel(true);
         window.history.replaceState({}, "", window.location.pathname);
       } else if (params.get("googleError")) {
         toast.error(`Google connection error: ${params.get("googleError")}`);
-        setShowSettingsPanel(true);
         window.history.replaceState({}, "", window.location.pathname);
       }
     }

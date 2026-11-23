@@ -5,7 +5,7 @@ import type { FieldErrors, UseFormRegister, UseFormSetValue } from "react-hook-f
 import { FormField, Select, ToggleCard } from "@/components/ui";
 import { MENU_LAYOUT_OPTIONS, MENU_STRUCTURE_OPTIONS, WORKSPACE_TOGGLE_OPTIONS } from "@/constants/workspace.constants";
 import { getTemplatePalette } from "@/constants/templatePalettes";
-import type { WorkspaceSettingsFormValues, WorkspaceToggleKey } from "@/types/workspace.types";
+import type { WorkspaceSettingsFormValues, WorkspaceToggleKey } from "@/types/admin/workspace/workspace.types";
 import { MENU_PARTS, getMenuPart, isPartCustomised, type MenuPartId } from "../menuParts";
 import { MENU_COLOUR_THEMES, ROLE_FIELD, themeToValues, type ColourRole } from "../menuThemes";
 import { MenuCategoriesPanel } from "./MenuCategoriesPanel";

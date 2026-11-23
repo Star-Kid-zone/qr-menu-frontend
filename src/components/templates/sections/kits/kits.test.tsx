@@ -16,7 +16,7 @@ import { workspaceSettingsSchema } from "@/schemas/workspace.schema";
 import { getDefaultWorkspaceSettings } from "@/utils/workspace.utils";
 import BaseTemplate from "@/components/templates/landing/_shared/BaseTemplate";
 import { LANDING_THEME_DATA } from "@/components/templates/landing/_shared/themeData";
-import type { LandingTemplateProps } from "@/types/components/templates/rawPublicSiteData.types";
+import type { LandingTemplateProps } from "@/types/public/templates/rawPublicSiteData.types";
 import { KitPicker } from "@/features/workspace/components/KitPicker";
 import { LANDING_SECTION_MAP } from "../landing/registry";
 import { ART_MOTIF_MAP } from "../art/motifs";

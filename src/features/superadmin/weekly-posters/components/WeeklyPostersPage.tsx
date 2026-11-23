@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button, Card, CardContent, Input, PageHeader, toast } from '@/components/ui';
+import Image from '@/components/ui/Image';
+import { Button, Card, Input, PageHeader, toast } from '@/components/ui';
 import { getApiErrorMessage } from '@/utils/errors';
 import { socialService, type WeeklyPoster } from '@/services/social.service';
 import { PiPaperPlaneTiltBold } from 'react-icons/pi';
@@ -79,11 +80,15 @@ export function WeeklyPostersPage() {
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {posters.map((poster) => (
             <div key={poster.id} className="overflow-hidden rounded-xl border border-border bg-card shadow-xs transition hover:shadow-sm">
-              <img
-                src={poster.thumbnailUrl ?? poster.imageUrl}
-                alt={poster.title}
-                className="aspect-square w-full object-cover"
-              />
+              <div className="relative aspect-square w-full">
+                <Image
+                  src={poster.thumbnailUrl ?? poster.imageUrl}
+                  alt={poster.title}
+                  fill
+                  sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+                  className="object-cover"
+                />
+              </div>
               <div className="p-3 text-caption">
                 <p className="font-semibold text-foreground text-sm truncate">{poster.title}</p>
                 <p className="text-muted-foreground mt-0.5">Week of {poster.weekStart}</p>

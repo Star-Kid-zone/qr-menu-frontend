@@ -1,6 +1,6 @@
 import { PiCheckCircle, PiInfo, PiWarning, PiWarningCircle } from 'react-icons/pi';
 import { cn } from '@/utils/cn';
-import { NoticeProps, NoticeTone } from "@/types/components/ui/Notice.types";
+import { NoticeProps, NoticeTone } from "@/types/ui/Notice.types";
 
 // Tone lives in the icon and the left rule; the message itself stays in the
 // body colour so it always meets contrast (amber text on amber did not).

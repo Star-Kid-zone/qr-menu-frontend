@@ -18,6 +18,7 @@ import { googleService } from "@/services/google.service";
 import { getApiErrorMessage } from "@/utils/errors";
 import { PermissionGuard } from "@/components/auth/PermissionGuard";
 import { cn } from "@/utils/cn";
+import { ADD_REVIEW_STEPS } from "@/constants/reviews.constants";
 import {
   PiArrowRightBold,
   PiCheckBold,
@@ -29,11 +30,7 @@ import {
 
 type Step = "find" | "confirm" | "import" | "done";
 
-const STEPS: { id: Step; label: string }[] = [
-  { id: "find", label: "Find" },
-  { id: "confirm", label: "Confirm" },
-  { id: "import", label: "Import" },
-];
+const STEPS: { id: Step; label: string }[] = ADD_REVIEW_STEPS as unknown as { id: Step; label: string }[];
 
 function stepIndex(step: Step) {
   return step === "done" ? STEPS.length : STEPS.findIndex((s) => s.id === step);

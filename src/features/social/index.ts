@@ -6,4 +6,3 @@ export * from './components/HistoryTab';
 export * from './components/AccountsTab';
 export * from './components/SocialPostPreview';
 export * from './types';
-export * from './constants';

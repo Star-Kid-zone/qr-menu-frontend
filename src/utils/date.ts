@@ -3,7 +3,9 @@
  * default (`toLocaleDateString(undefined, …)`) gives "2 Nov" on the server and
  * "Nov 2" in some browsers, which breaks hydration. Always format through here.
  */
-export const APP_LOCALE = "en-IN";
+import { APP_LOCALE } from "@/constants/app.constants";
+
+export { APP_LOCALE };
 
 export function formatDate(value: Date | string | number, options: Intl.DateTimeFormatOptions = { day: "numeric", month: "short", year: "numeric" }) {
   const date = value instanceof Date ? value : new Date(value);

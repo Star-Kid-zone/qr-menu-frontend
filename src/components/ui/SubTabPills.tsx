@@ -2,6 +2,9 @@
 
 import { ScrollableTabRow } from "./ScrollableTabRow";
 import { cn } from "@/utils/cn";
+import type { SubTabOption, SubTabPillsProps } from "@/types/ui/SubTabPills.types";
+
+export type { SubTabOption, SubTabPillsProps };
 
 /**
  * Secondary switch inside a section (e.g. Content: Announcement bar / Our story / …).
@@ -11,11 +14,7 @@ export function SubTabPills<T extends string>({
   options,
   active,
   onChange,
-}: {
-  options: { id: T; label: string }[];
-  active: T;
-  onChange: (id: T) => void;
-}) {
+}: SubTabPillsProps<T>) {
   return (
     <div className="inline-flex max-w-full shrink-0 items-center rounded-md border border-input bg-card p-0.5" role="tablist">
       <ScrollableTabRow activeKey={active} scrollContainerClassName="gap-0.5">

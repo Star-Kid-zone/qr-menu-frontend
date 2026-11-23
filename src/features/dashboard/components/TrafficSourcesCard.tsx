@@ -3,13 +3,9 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { DashboardData } from '@/services/analytics.service';
+import { ANALYTICS_TAP_LABELS } from '@/constants/analytics.constants';
 
-const tapLabels: Record<string, string> = {
-  menu_views: 'Opened a dish',
-  whatsapp_clicks: 'WhatsApp / Call',
-  google_review_clicks: 'Google reviews',
-  payment_clicks: 'Pay bill',
-};
+const tapLabels: Record<string, string> = ANALYTICS_TAP_LABELS;
 
 function sourceLabel(source: string): string {
   if (source === 'direct') return 'QR scan or direct link';

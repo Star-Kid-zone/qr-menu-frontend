@@ -1,84 +1,24 @@
 import api from './api.service';
-import type { PlatformMarketingAsset } from './superadmin.service';
+import type { PlatformMarketingAsset } from '@/types';
 
-export type SocialPlatform = 'facebook' | 'instagram' | 'twitter' | 'linkedin' | 'tiktok';
+import type {
+  SocialPlatform,
+  SocialAccount,
+  SocialAsset,
+  WeeklyPoster,
+  PostDestinationInput,
+  SocialPost,
+  CreatePostInput,
+} from '@/types/admin/social/social.types';
 
-export type SocialAccount = {
-  id: string;
-  platform: SocialPlatform;
-  displayName: string;
-  username?: string | null;
-  profileImageUrl?: string | null;
-  status: 'connected' | 'expired' | 'revoked' | 'error';
-  tokenExpiresAt?: string | null;
-  tokenRefreshedAt?: string | null;
-};
-
-export type SocialAsset = {
-  id: string;
-  originalFilename: string;
-  publishingUrl: string;
-  thumbnailUrl?: string | null;
-  mimeType: string;
-  mediaType: 'image' | 'video' | 'reel' | 'short';
-  fileSizeBytes: number;
-  createdAt: string;
-};
-
-export type WeeklyPoster = {
-  id: string;
-  weekStart: string;
-  title: string;
-  imageUrl: string;
-  thumbnailUrl?: string | null;
-  originalFilename: string;
-};
-
-export type PostDestinationInput = {
-  accountId: string;
-  caption: string;
-  linkUrl?: string | null;
-  platformOptions?: {
-    firstComment?: string;
-    altText?: string;
-    replySettings?: 'everyone' | 'mentionedUsers' | 'subscribers';
-    visibility?: 'PUBLIC' | 'CONNECTIONS';
-    shareToFeed?: boolean;
-  } | null;
-};
-
-export type SocialPost = {
-  id: string;
-  title?: string | null;
-  lifecycleStatus: string;
-  approvalStatus: string;
-  scheduledAtUtc?: string | null;
-  recurrenceRule?: 'daily' | 'weekly' | 'biweekly' | 'monthly' | null;
-  recurrenceEndDate?: string | null;
-  parentPostId?: string | null;
-  destinations?: Array<{
-    id: string;
-    socialAccountId: string;
-    caption: string;
-    status: string;
-    permalink?: string | null;
-    externalPostId?: string | null;
-    publishedAt?: string | null;
-    lastErrorMessage?: string | null;
-    platformOptionsJson?: Record<string, unknown> | null;
-  }>;
-};
-
-export type CreatePostInput = {
-  assetId?: string;
-  weeklyPosterId?: string;
-  platformAssetId?: string;
-  title?: string;
-  displayTimezone?: string;
-  scheduledAt?: string;
-  recurrenceRule?: 'daily' | 'weekly' | 'biweekly' | 'monthly' | null;
-  recurrenceEndDate?: string | null;
-  destinations: PostDestinationInput[];
+export type {
+  SocialPlatform,
+  SocialAccount,
+  SocialAsset,
+  WeeklyPoster,
+  PostDestinationInput,
+  SocialPost,
+  CreatePostInput,
 };
 
 export const socialService = {
@@ -148,61 +88,9 @@ export const socialService = {
 
 // ─── Platform metadata ─────────────────────────────────────────────────────────
 
-export const PLATFORM_META: Record<SocialPlatform, {
-  label: string;
-  color: string;
-  bgColor: string;
-  icon: string;
-  maxCaptionLength: number;
-  supportsVideo: boolean;
-  characterCounter: boolean;
-}> = {
-  facebook: {
-    label: 'Facebook',
-    color: '#1877F2',
-    bgColor: '#E7F3FF',
-    icon: 'F',
-    maxCaptionLength: 63206,
-    supportsVideo: true,
-    characterCounter: false,
-  },
-  instagram: {
-    label: 'Instagram',
-    color: '#E1306C',
-    bgColor: '#FFEEF4',
-    icon: 'IG',
-    maxCaptionLength: 2200,
-    supportsVideo: true,
-    characterCounter: true,
-  },
-  twitter: {
-    label: 'Twitter / X',
-    color: '#000000',
-    bgColor: '#F0F0F0',
-    icon: 'X',
-    maxCaptionLength: 280,
-    supportsVideo: true,
-    characterCounter: true,
-  },
-  linkedin: {
-    label: 'LinkedIn',
-    color: '#0A66C2',
-    bgColor: '#E8F0FB',
-    icon: 'in',
-    maxCaptionLength: 3000,
-    supportsVideo: false,
-    characterCounter: true,
-  },
-  tiktok: {
-    label: 'TikTok',
-    color: '#FF0050',
-    bgColor: '#FFF0F5',
-    icon: 'TT',
-    maxCaptionLength: 2200,
-    supportsVideo: true,
-    characterCounter: false,
-  },
-};
+import { PLATFORM_META } from '@/constants/social.constants';
+
+export { PLATFORM_META };
 
 /** Days until a token expires (null if no expiry stored) */
 export function tokenDaysLeft(account: SocialAccount): number | null {

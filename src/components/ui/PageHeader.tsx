@@ -1,6 +1,6 @@
 import { PiArrowLeft } from "react-icons/pi";
 import { cn } from "@/utils/cn";
-import { PageHeaderProps } from "@/types/components/ui/PageHeader.types";
+import { PageHeaderProps } from "@/types/ui/PageHeader.types";
 
 /**
  * The single page heading: the page's only <h1>, one sentence of context and

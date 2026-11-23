@@ -1,4 +1,9 @@
 import * as z from 'zod';
+import {
+  LOGIN_DEFAULT_VALUES,
+  REGISTER_DEFAULT_VALUES,
+  FORGOT_PASSWORD_DEFAULT_VALUES,
+} from '@/constants/auth.constants';
 
 const emailField = z
   .string()
@@ -27,11 +32,7 @@ export const loginSchema = z.object({
 
 export type LoginSchemaValues = z.infer<typeof loginSchema>;
 
-export const loginDefaultValues: LoginSchemaValues = {
-  identifier: '',
-  password: '',
-  remember: false,
-};
+export const loginDefaultValues: LoginSchemaValues = LOGIN_DEFAULT_VALUES;
 
 /** Maps the email input onto the API payload. */
 export function toLoginPayload(values: LoginSchemaValues): { email: string; password: string } {
@@ -47,11 +48,7 @@ export const registerSchema = z.object({
 
 export type RegisterSchemaValues = z.infer<typeof registerSchema>;
 
-export const registerDefaultValues: RegisterSchemaValues = {
-  businessName: '',
-  email: '',
-  password: '',
-};
+export const registerDefaultValues: RegisterSchemaValues = REGISTER_DEFAULT_VALUES;
 
 // Forgot Password Schema
 export const forgotPasswordSchema = z.object({
@@ -60,9 +57,7 @@ export const forgotPasswordSchema = z.object({
 
 export type ForgotPasswordSchemaValues = z.infer<typeof forgotPasswordSchema>;
 
-export const forgotPasswordDefaultValues: ForgotPasswordSchemaValues = {
-  email: '',
-};
+export const forgotPasswordDefaultValues: ForgotPasswordSchemaValues = FORGOT_PASSWORD_DEFAULT_VALUES;
 
 // Reset Password Schema (step 2 of forgot password)
 export const resetPasswordSchema = z

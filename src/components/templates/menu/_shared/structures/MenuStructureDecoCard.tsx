@@ -1,6 +1,6 @@
 "use client";
 
-import type { PublicMenuPayload } from "@/types/public-site";
+import type { PublicMenuPayload } from "@/types/public/publicSite.types";
 import type { Menu } from "@/types";
 import { displayStyle, fluid, focusRing, mixv, tv } from "@/components/site-system/kit/tokens";
 import { catId, ItemTags, MenuColumns, MenuFilters, MenuShell, MenuTopLinks, openable, priceText, useCategorySpy, useMenuSystem, type MenuSystem } from "@/components/site-system/menu-kit/MenuKit";

@@ -1,12 +1,10 @@
-export interface AutoReplyToneOption {
-  id: string;
-  label: string;
-  icon: string;
-}
-
-export const AUTO_REPLY_TONE_OPTIONS: AutoReplyToneOption[] = [
-  { id: "warm_professional", label: "Warm & Professional", icon: "✨" },
-  { id: "friendly", label: "Friendly & Casual", icon: "👋" },
-  { id: "enthusiastic", label: "Enthusiastic & Grateful", icon: "🎉" },
-  { id: "concise", label: "Concise & Direct", icon: "🎯" },
-];
+/**
+ * Canonical location for review types: src/types/admin/reviews/reviews.types.ts
+ * Canonical location for review constants: src/constants/reviews.constants.ts
+ */
+export type {
+  GoogleReviewRecord,
+  AutoReplyToneOption,
+  ReviewFilterStatus,
+  ReviewSortOption,
+} from '@/types';

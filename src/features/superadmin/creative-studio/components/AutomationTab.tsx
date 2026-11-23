@@ -15,7 +15,7 @@ import {
   PiLightningBold,
 } from "react-icons/pi";
 import { cn } from "@/utils/cn";
-import { AUTOMATION_SCRIPTS, PRESET_IMAGE_PROMPTS } from "../constants";
+import { AUTOMATION_SCRIPTS, PRESET_IMAGE_PROMPTS } from "@/constants/studio.constants";
 import type { PlatformMarketingAsset, ScriptDownloadItem } from "../types";
 import { formatTime } from "@/utils/date";
 

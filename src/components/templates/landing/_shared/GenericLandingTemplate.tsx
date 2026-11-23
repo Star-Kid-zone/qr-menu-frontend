@@ -1,5 +1,5 @@
 'use client';
-import type { LandingTemplateProps } from '@/types/components/templates/rawPublicSiteData.types';
+import type { LandingTemplateProps } from '@/types/public/templates/rawPublicSiteData.types';
 import BaseTemplate from './BaseTemplate';
 import { LANDING_THEME_DATA } from './themeData';
 

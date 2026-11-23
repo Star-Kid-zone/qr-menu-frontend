@@ -1,7 +1,8 @@
 'use client';
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import Image from 'next/image';
+import Image from '@/components/ui/Image';
 import { workspaceService, type WorkspaceGalleryItem } from '@/services/workspace.service';
+import { compressImageFile } from '@/utils/imageCompressor';
 import { toast } from "@/components/ui/toast";
 import { Modal } from '@/components/Modal';
 import {
@@ -62,11 +63,11 @@ export const ListGallery = forwardRef<ListGalleryHandle, ListGalleryProps>(({
       return;
     }
 
-    const formData = new FormData();
-    formData.append('image', file as Blob);
-
     try {
       setUploading(true);
+      const fileToUpload = await compressImageFile(file);
+      const formData = new FormData();
+      formData.append('image', fileToUpload as Blob);
       await workspaceService.addGalleryItem(formData);
       toast.success('Image uploaded successfully!');
       await refresh();

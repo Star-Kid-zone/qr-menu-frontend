@@ -1,16 +1,7 @@
 import api from './api.service';
+import type { ScannedItem, ScanResponse } from '@/types/admin/menu/menu.types';
 
-export interface ScannedItem {
-  item: string;
-  price: string;
-  description: string;
-}
-
-export interface ScanResponse {
-  items: ScannedItem[];
-  tokensUsed?: number;
-  message?: string;
-}
+export type { ScannedItem, ScanResponse };
 
 export const menuScanService = {
   /**

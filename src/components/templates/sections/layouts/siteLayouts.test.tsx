@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { LandingTemplateProps, RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
+import type { LandingTemplateProps, RawPublicSiteData } from "@/types/public/templates/rawPublicSiteData.types";
 import { FULL_SITE, SPARSE_SITE } from "@/components/site-system/fixtures";
 import { LANDING_SECTIONS } from "../landing/registry";
 import { LayoutPage } from "./LayoutPage";

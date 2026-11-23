@@ -4,7 +4,7 @@ import React, { lazy, Suspense } from "react";
 import { Button, PageHeader, Spinner } from "@/components/ui";
 import { PiPlusBold } from "react-icons/pi";
 import type { WorkspaceOfferItem } from "@/services/workspace.service";
-import type { WorkspaceSetting } from "@/types/workspace.types";
+import type { WorkspaceSetting } from "@/types/admin/workspace/workspace.types";
 import type { ListOffersHandle } from "@/features/workspace";
 
 const ListOffers = lazy(() =>

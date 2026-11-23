@@ -1,16 +1,18 @@
-import { LANDING_THEME_OPTIONS } from "@/components/templates/landing/constants";
-import { MENU_THEME_OPTIONS } from "@/components/templates/menu/constants";
+import { LANDING_THEME_OPTIONS, MENU_THEME_OPTIONS } from "./theme.constants";
+export { LANDING_THEME_OPTIONS, MENU_THEME_OPTIONS };
+export * from "./templatePalettes.constants";
 import type {
   WorkspaceColorField,
   WorkspaceLayoutOption,
   MenuColorKey,
   WorkspaceToggleOption,
-} from "@/types/workspace.types";
+  MenuColorField,
+  ColourRole,
+  ColourSet,
+  MenuColourTheme,
+} from "@/types/admin/workspace/workspace.types";
 
-export interface MenuColorField {
-  name: MenuColorKey;
-  label: string;
-}
+export type { MenuColorField, ColourRole, ColourSet, MenuColourTheme };
 
 export const WORKSPACE_COLOR_FIELDS: WorkspaceColorField[] = [
   { name: "primary_color",        label: "Primary (buttons/highlights)" },
@@ -267,4 +269,200 @@ export const WORKSPACE_TOGGLE_OPTIONS: WorkspaceToggleOption[] = [
     description: "Display a short message on the landing page",
   },
 ];
+
+export const ADD_WORKSPACE_FORM_ID = 'add-workspace-form';
+
+export const STOCK_HERO_PHOTOS: readonly { url: string; label: string }[] = [
+  { url: "/landing/fine-dining/hero.jpg", label: "Fine dining" },
+  { url: "/landing/casual-bistro/hero.jpg", label: "Bistro" },
+  { url: "/landing/pasta-italian/hero.jpg", label: "Italian" },
+  { url: "/landing/street-food/hero.jpg", label: "Street food" },
+  { url: "/landing/japanese-fusion/hero.jpg", label: "Night market" },
+  { url: "/landing/industrial-grill/hero.jpg", label: "Grill" },
+  { url: "/landing/cafe-bakery/hero.jpg", label: "Café" },
+  { url: "/landing/colorful-brunch/hero.jpg", label: "Brunch" },
+  { url: "/landing/garden-outdoor/hero.jpg", label: "Garden" },
+  { url: "/landing/cocktail-bar/hero.jpg", label: "Bar" },
+  { url: "/landing/vintage-diner/hero.jpg", label: "Diner" },
+] as const;
+
+export const ROLE_FIELD: Record<ColourRole, MenuColorKey> = {
+  primary: "menu_primary_color",
+  secondary: "menu_secondary_color",
+  accent: "menu_accent_color",
+  textPrimary: "menu_text_primary_color",
+  textSecondary: "menu_text_secondary_color",
+  accentText: "menu_accent_text_color",
+  borderColor: "menu_border_color",
+  footerBg: "menu_footer_bg_color",
+  sectionBg: "menu_section_bg_color",
+};
+
+export const LANDING_ROLE_FIELD: Record<ColourRole, string> = {
+  primary: "primary_color",
+  secondary: "secondary_color",
+  accent: "accent_color",
+  textPrimary: "text_primary_color",
+  textSecondary: "text_secondary_color",
+  accentText: "accent_text_color",
+  borderColor: "border_color",
+  footerBg: "footer_bg_color",
+  sectionBg: "section_bg_color",
+};
+
+export const MENU_COLOUR_THEMES: MenuColourTheme[] = [
+  { id: "warm-cream", name: "Warm Cream", colors: { accent: "#fdf6e9", secondary: "#ffffff", sectionBg: "#f6ead2", primary: "#c2410c", textPrimary: "#2b1d0e", textSecondary: "#6b5844", accentText: "#ffffff", borderColor: "#e8d9bd", footerBg: "#2b1d0e" } },
+  { id: "fresh-green", name: "Fresh Green", colors: { accent: "#f3f8f1", secondary: "#ffffff", sectionBg: "#e4efe0", primary: "#2f7d4f", textPrimary: "#14301f", textSecondary: "#4c6b57", accentText: "#ffffff", borderColor: "#cfe0d3", footerBg: "#14301f" } },
+  { id: "ocean-blue", name: "Ocean Blue", colors: { accent: "#f1f6fb", secondary: "#ffffff", sectionBg: "#e1ecf7", primary: "#1d5fb4", textPrimary: "#0f2540", textSecondary: "#4a6280", accentText: "#ffffff", borderColor: "#cbdcee", footerBg: "#0f2540" } },
+  { id: "sunset", name: "Sunset", colors: { accent: "#fff7f0", secondary: "#ffffff", sectionBg: "#ffe8d6", primary: "#e8590c", textPrimary: "#3b1d0a", textSecondary: "#7c5538", accentText: "#ffffff", borderColor: "#f6d5bb", footerBg: "#3b1d0a" } },
+  { id: "berry", name: "Berry", colors: { accent: "#fbf3f7", secondary: "#ffffff", sectionBg: "#f5e1ea", primary: "#a3194f", textPrimary: "#34101f", textSecondary: "#7a4a5c", accentText: "#ffffff", borderColor: "#ecd0db", footerBg: "#34101f" } },
+  { id: "lavender", name: "Lavender", colors: { accent: "#f6f4fc", secondary: "#ffffff", sectionBg: "#e9e4f8", primary: "#6d4ac7", textPrimary: "#201438", textSecondary: "#62577e", accentText: "#ffffff", borderColor: "#d9d1f0", footerBg: "#201438" } },
+  { id: "clean-slate", name: "Clean Slate", colors: { accent: "#f6f7f9", secondary: "#ffffff", sectionBg: "#eceef2", primary: "#111827", textPrimary: "#111827", textSecondary: "#5b6472", accentText: "#ffffff", borderColor: "#dde0e6", footerBg: "#111827" } },
+  { id: "midnight", name: "Midnight", colors: { accent: "#0f172a", secondary: "#1e293b", sectionBg: "#182236", primary: "#38bdf8", textPrimary: "#f1f5f9", textSecondary: "#a3b1c6", accentText: "#0b1220", borderColor: "#2b3a52", footerBg: "#020617" } },
+  { id: "charcoal-gold", name: "Charcoal & Gold", colors: { accent: "#16130e", secondary: "#231e16", sectionBg: "#2d261b", primary: "#d4a853", textPrimary: "#f5ecd9", textSecondary: "#bfb299", accentText: "#16130e", borderColor: "#43392a", footerBg: "#0c0a07" } },
+  { id: "forest-night", name: "Forest Night", colors: { accent: "#0f1a14", secondary: "#17261d", sectionBg: "#1e3226", primary: "#5fbf8a", textPrimary: "#e8f5ec", textSecondary: "#a2c2ae", accentText: "#0a140e", borderColor: "#2e4a39", footerBg: "#08110b" } },
+] as const;
+
+export const LANDING_PARTS = [
+  {
+    id: "page",
+    label: "Page & footer",
+    summary: "The background behind everything, the bands between sections, and the footer.",
+    controls: [
+      { kind: "color", name: "accent_color", label: "Page background", hint: "Behind everything", paletteKey: "accent" },
+      { kind: "color", name: "section_bg_color", label: "Section bands", hint: "Alternating section backgrounds", paletteKey: "sectionBg" },
+      { kind: "color", name: "footer_bg_color", label: "Footer background", hint: "Bottom of the page", paletteKey: "footerBg" },
+    ],
+  },
+  {
+    id: "cards",
+    label: "Cards",
+    summary: "The cards that hold offers, reviews and other content.",
+    controls: [
+      { kind: "color", name: "secondary_color", label: "Card background", hint: "Cards and surfaces", paletteKey: "secondary" },
+      { kind: "color", name: "border_color", label: "Lines", hint: "Borders and dividers", paletteKey: "borderColor" },
+      { kind: "shape", name: "card_style", label: "Card shape", paletteKey: "cardStyle" },
+    ],
+  },
+  {
+    id: "text",
+    label: "Text",
+    summary: "The typeface, heading style and text colours.",
+    controls: [
+      { kind: "font", name: "font_family", label: "Typeface", paletteKey: "fontFamily" },
+      { kind: "heading", name: "heading_class", label: "Heading style", paletteKey: "headingClass" },
+      { kind: "color", name: "text_primary_color", label: "Headings & body", hint: "Main text", paletteKey: "textPrimary" },
+      { kind: "color", name: "text_secondary_color", label: "Supporting text", hint: "Descriptions and captions", paletteKey: "textSecondary" },
+    ],
+  },
+  {
+    id: "accent",
+    label: "Buttons & highlights",
+    summary: "The colour that draws the eye: buttons, links and highlights.",
+    controls: [
+      { kind: "color", name: "primary_color", label: "Highlight colour", hint: "Buttons, links, highlights", paletteKey: "primary" },
+      { kind: "color", name: "accent_text_color", label: "Text on buttons", hint: "Label inside buttons", paletteKey: "accentText" },
+    ],
+  },
+  {
+    id: "hero",
+    label: "Hero image",
+    summary: "The big photo at the top of your page, and the tint laid over it.",
+    controls: [{ kind: "overlay", name: "hero_overlay", label: "Photo tint", paletteKey: "heroOverlay" }],
+  },
+  {
+    id: "words",
+    label: "Wording",
+    summary: "The short lines guests read at the top of your page.",
+    controls: [
+      { kind: "text", name: "hero_tagline", label: "Tagline", hint: "Under your name in the hero", placeholder: "Fresh flavours, made with care", paletteKey: "heroTagline" },
+      { kind: "text", name: "theme_badge", label: "Badge", hint: "Small label above the tagline", placeholder: "Curated · Modern · Delicious", paletteKey: "badge" },
+      { kind: "text", name: "theme_marquee", label: "Scrolling strip", hint: "Text that scrolls across the page", placeholder: "Modern Dining · Fresh Daily", paletteKey: "marqueeText" },
+    ],
+  },
+  {
+    id: "show",
+    label: "What guests see",
+    summary: "Choose which buttons and sections appear on your page.",
+    controls: [],
+  },
+] as const;
+
+export const OCCASION_REGION_LABELS = {
+  india: 'India',
+  gulf: 'Gulf',
+  western: 'Western',
+  general: 'Any time',
+} as const;
+
+export const HERO_IMAGE_UPLOAD = {
+  ACCEPT: 'image/jpeg,image/png,image/webp',
+  MAX_MB: 8,
+} as const;
+
+export const PHONE_PREVIEW_DEVICES = [
+  { id: 'sm', label: 'S', name: 'iPhone SE', width: 375, height: 667 },
+  { id: 'md', label: 'M', name: 'iPhone 14', width: 390, height: 844 },
+  { id: 'lg', label: 'L', name: 'iPhone 14 Pro Max', width: 430, height: 932 },
+] as const;
+
+export const PHONE_BEZEL_BORDER = 10;
+export const PHONE_CONTAINER_WIDTH = 260;
+
+export const WORKSPACE_CURATED_PICKS = {
+  TYPE: 'curated-list',
+  MAX: 12,
+} as const;
+
+export const WORKSPACE_FONTS_SHOWN = 6;
+
+export const MENU_PARTS = [
+  {
+    id: "page",
+    label: "Page",
+    summary: "The background guests scroll over, and the footer.",
+    controls: [
+      { kind: "color", name: "menu_accent_color", label: "Page background", hint: "Behind everything", paletteKey: "accent" },
+      { kind: "color", name: "menu_footer_bg_color", label: "Footer background", hint: "Bottom of the page", paletteKey: "footerBg" },
+    ],
+  },
+  {
+    id: "header",
+    label: "Bars & headers",
+    summary: "The top bar, category headers and the lines between things.",
+    controls: [
+      { kind: "color", name: "menu_secondary_color", label: "Bar background", hint: "Header and category bars", paletteKey: "secondary" },
+      { kind: "color", name: "menu_border_color", label: "Lines", hint: "Borders and dividers", paletteKey: "borderColor" },
+    ],
+  },
+  {
+    id: "card",
+    label: "Dish cards",
+    summary: "The card each dish sits on.",
+    controls: [
+      { kind: "color", name: "menu_section_bg_color", label: "Card background", hint: "Behind each dish", paletteKey: "sectionBg" },
+      { kind: "shape", name: "menu_card_style", label: "Card shape", hint: "Corners and shadow", paletteKey: "cardStyle" },
+    ],
+  },
+  {
+    id: "text",
+    label: "Text",
+    summary: "The typeface and the colours of dish names and descriptions.",
+    controls: [
+      { kind: "font", name: "menu_font_family", label: "Typeface", hint: "Used across the whole menu", paletteKey: "fontFamily" },
+      { kind: "color", name: "menu_text_primary_color", label: "Dish names", hint: "Main text", paletteKey: "textPrimary" },
+      { kind: "color", name: "menu_text_secondary_color", label: "Descriptions", hint: "Supporting text", paletteKey: "textSecondary" },
+    ],
+  },
+  {
+    id: "accent",
+    label: "Prices & buttons",
+    summary: "The colour that draws the eye: prices, highlights and the Pay bill button.",
+    controls: [
+      { kind: "color", name: "menu_primary_color", label: "Highlight colour", hint: "Prices, category titles, buttons", paletteKey: "primary" },
+      { kind: "color", name: "menu_accent_text_color", label: "Text on buttons", hint: "Label inside the Pay bill button", paletteKey: "accentText" },
+    ],
+  },
+] as const;
+
 

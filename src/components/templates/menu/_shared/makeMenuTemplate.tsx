@@ -6,7 +6,7 @@ import { useMenuTemplateData } from '@/components/templates/core/useTemplateData
 import { DishDetailSheet } from './structures/MenuItemDetailModal';
 import { DietaryBadges } from './structures/DietaryBadges';
 import { MenuChrome } from '@/components/site-system/menu-kit/chrome';
-import type { PublicMenuPayload } from '@/types/public-site';
+import type { PublicMenuPayload } from '@/types/public/publicSite.types';
 import type { Menu } from '@/types';
 
 export interface MenuTheme {

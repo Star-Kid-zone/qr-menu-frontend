@@ -1,4 +1,4 @@
-import type { RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
+import type { RawPublicSiteData } from "@/types/public/templates/rawPublicSiteData.types";
 
 const IMG = (set: string, f: string) => `/landing/${set}/${f}`;
 

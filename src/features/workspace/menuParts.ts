@@ -1,6 +1,7 @@
 import { ROLE_FIELD } from "./menuThemes";
 import { resolvePartByColour } from "./studio/resolvePart";
-import type { MenuColorKey, WorkspacePalette } from "@/types/workspace.types";
+import { MENU_PARTS as CONST_MENU_PARTS } from "@/constants/workspace.constants";
+import type { MenuColorKey, WorkspacePalette } from "@/types/admin/workspace/workspace.types";
 
 /** The parts of the guest menu page an owner can tap in the preview and restyle. */
 export type MenuPartId = "page" | "header" | "card" | "text" | "accent";
@@ -17,54 +18,7 @@ export interface MenuPartConfig {
   controls: MenuControl[];
 }
 
-export const MENU_PARTS: MenuPartConfig[] = [
-  {
-    id: "page",
-    label: "Page",
-    summary: "The background guests scroll over, and the footer.",
-    controls: [
-      { kind: "color", name: "menu_accent_color", label: "Page background", hint: "Behind everything", paletteKey: "accent" },
-      { kind: "color", name: "menu_footer_bg_color", label: "Footer background", hint: "Bottom of the page", paletteKey: "footerBg" },
-    ],
-  },
-  {
-    id: "header",
-    label: "Bars & headers",
-    summary: "The top bar, category headers and the lines between things.",
-    controls: [
-      { kind: "color", name: "menu_secondary_color", label: "Bar background", hint: "Header and category bars", paletteKey: "secondary" },
-      { kind: "color", name: "menu_border_color", label: "Lines", hint: "Borders and dividers", paletteKey: "borderColor" },
-    ],
-  },
-  {
-    id: "card",
-    label: "Dish cards",
-    summary: "The card each dish sits on.",
-    controls: [
-      { kind: "color", name: "menu_section_bg_color", label: "Card background", hint: "Behind each dish", paletteKey: "sectionBg" },
-      { kind: "shape", name: "menu_card_style", label: "Card shape", hint: "Corners and shadow", paletteKey: "cardStyle" },
-    ],
-  },
-  {
-    id: "text",
-    label: "Text",
-    summary: "The typeface and the colours of dish names and descriptions.",
-    controls: [
-      { kind: "font", name: "menu_font_family", label: "Typeface", hint: "Used across the whole menu", paletteKey: "fontFamily" },
-      { kind: "color", name: "menu_text_primary_color", label: "Dish names", hint: "Main text", paletteKey: "textPrimary" },
-      { kind: "color", name: "menu_text_secondary_color", label: "Descriptions", hint: "Supporting text", paletteKey: "textSecondary" },
-    ],
-  },
-  {
-    id: "accent",
-    label: "Prices & buttons",
-    summary: "The colour that draws the eye: prices, highlights and the Pay bill button.",
-    controls: [
-      { kind: "color", name: "menu_primary_color", label: "Highlight colour", hint: "Prices, category titles, buttons", paletteKey: "primary" },
-      { kind: "color", name: "menu_accent_text_color", label: "Text on buttons", hint: "Label inside the Pay bill button", paletteKey: "accentText" },
-    ],
-  },
-];
+export const MENU_PARTS: MenuPartConfig[] = CONST_MENU_PARTS as unknown as MenuPartConfig[];
 
 export function getMenuPart(id: MenuPartId): MenuPartConfig {
   return MENU_PARTS.find((p) => p.id === id) ?? MENU_PARTS[0];

@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import BaseTemplate from "@/components/templates/landing/_shared/BaseTemplate";
 import { LANDING_THEME_DATA } from "@/components/templates/landing/_shared/themeData";
-import type { LandingTemplateProps, RawPublicSiteData } from "@/types/components/templates/rawPublicSiteData.types";
+import type { LandingTemplateProps, RawPublicSiteData } from "@/types/public/templates/rawPublicSiteData.types";
 import { LANDING_SECTIONS } from "./registry";
 
 const Link: LandingTemplateProps["LinkComponent"] = ({ to, children }) => <a href={to}>{children}</a>;

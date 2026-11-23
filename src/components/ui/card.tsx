@@ -1,6 +1,6 @@
 import type { HTMLAttributes } from "react";
 import { cn } from "@/utils/cn";
-import { CardProps, CardTone } from "@/types/components/ui/Card.types";
+import { CardProps, CardTone } from "@/types/ui/Card.types";
 
 const toneClasses: Record<CardTone, string> = {
   default: "rounded-xl border border-border bg-card shadow-sm",

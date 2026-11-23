@@ -7,7 +7,7 @@ import { ModalFooter } from "@/components/ui/ModalFooter";
 import { type GoogleBusinessStatus } from "@/services/google.service";
 import { cn } from "@/utils/cn";
 import { PiCheckCircleFill, PiGoogleLogoBold, PiSparkleBold, PiXBold } from "react-icons/pi";
-import { AUTO_REPLY_TONE_OPTIONS } from "../types";
+import { AUTO_REPLY_TONE_OPTIONS } from "@/constants/reviews.constants";
 
 interface AutoReplySettingsModalProps {
   isOpen: boolean;

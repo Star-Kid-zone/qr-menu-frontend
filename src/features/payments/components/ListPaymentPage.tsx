@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";

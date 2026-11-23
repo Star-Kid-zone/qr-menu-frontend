@@ -1,6 +1,6 @@
 "use client";
 
-import type { PublicMenuPayload } from "@/types/public-site";
+import type { PublicMenuPayload } from "@/types/public/publicSite.types";
 import { MotifBand } from "@/components/site-system/kit/blocks";
 import { displayStyle, fluid, focusRing, mixv, tv } from "@/components/site-system/kit/tokens";
 import { catId, ItemTags, MenuColumns, MenuFilters, MenuShell, MenuTopLinks, openable, Price, useCategorySpy, useMenuSystem } from "@/components/site-system/menu-kit/MenuKit";

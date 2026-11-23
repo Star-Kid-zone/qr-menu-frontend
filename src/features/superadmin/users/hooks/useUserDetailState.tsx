@@ -13,9 +13,8 @@ import {
 import { routes } from '@/config/routes';
 import { toast } from '@/components/ui';
 import { setStoredUserRole, setImpersonationSession } from '@/utils/storage';
+import { INVALID_USER_ERROR } from '@/constants/auth.constants';
 import type { UserDetailTabId, BusinessFormData, PaymentFormData, WorkspaceFormData } from '../types';
-
-const INVALID_USER_ERROR = 'Invalid user identification token.';
 
 interface UseUserDetailStateProps {
   userId: number;

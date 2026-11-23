@@ -5,7 +5,7 @@ import { Modal } from '@/components/Modal';
 import { Button } from './button';
 import { Input } from './input';
 import { ModalFooter } from './ModalFooter';
-import { PromptDialogProps } from '@/types/components/ui/PromptDialog.types';
+import { PromptDialogProps } from '@/types/ui/PromptDialog.types';
 
 export function PromptDialog({
   isOpen,

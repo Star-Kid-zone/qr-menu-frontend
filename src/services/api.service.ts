@@ -1,10 +1,12 @@
 import axios, { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 import { API_BASE_URL } from '@/config/app.constants';
+import { HTTP_STATUS, MUTATING_METHODS } from '@/constants';
 import { routes } from '@/config/routes';
 import { getCsrfToken, getActiveWorkspaceId, isAuthenticated, clearStorage } from '@/utils/storage';
 import { startGlobalLoading, endGlobalLoading } from '@/utils/globalLoading.store';
+import type { ApiEnvelopeFields, RetryableRequestConfig } from '@/types/shared/api.types';
 
-const MUTATING_METHODS = new Set(['post', 'put', 'patch', 'delete']);
+export type { ApiEnvelopeFields };
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -53,15 +55,6 @@ function refreshAccessToken(): Promise<void> {
   return refreshPromise;
 }
 
-type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean };
-
-/** Envelope fields the response interceptor copies onto the Axios response before unwrapping `data`. */
-export type ApiEnvelopeFields = {
-  meta?: unknown;
-  message?: string;
-  requestId?: string;
-};
-
 api.interceptors.response.use(
   (response) => {
     endGlobalLoading();
@@ -85,7 +78,7 @@ api.interceptors.response.use(
     endGlobalLoading();
     const originalRequest = error.config as RetryableRequestConfig | undefined;
 
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+    if (error.response?.status === HTTP_STATUS.UNAUTHORIZED && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
 
       if (

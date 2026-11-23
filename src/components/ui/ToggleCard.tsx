@@ -1,5 +1,5 @@
 import { cn } from '@/utils/cn';
-import { ToggleCardProps } from "@/types/components/ui/ToggleCard.types";
+import { ToggleCardProps } from "@/types/ui/ToggleCard.types";
 
 export function ToggleCard({
   checked,

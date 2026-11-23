@@ -1,6 +1,6 @@
 "use client";
 
-import type { PublicMenuPayload } from "@/types/public-site";
+import type { PublicMenuPayload } from "@/types/public/publicSite.types";
 import type { Menu } from "@/types";
 import { MenuItemImage } from "@/components/templates/core/MenuImage";
 import { itemImage } from "@/components/site-system/kit/content";

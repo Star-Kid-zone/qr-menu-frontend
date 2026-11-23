@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import type { PublicMenuPayload } from "@/types/public-site";
+import type { PublicMenuPayload } from "@/types/public/publicSite.types";
 import { MenuItemImage } from "@/components/templates/core/MenuImage";
 import { SiteIcon } from "@/components/site-system/icons/SiteIcon";
 import { iconForCategory } from "@/components/site-system/business-types";

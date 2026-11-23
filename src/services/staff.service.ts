@@ -1,15 +1,8 @@
 import api from './api.service';
-import type { StaffRole } from '@/constants/permissions';
+import type { StaffRole } from '@/constants';
+import type { StaffMember } from '@/types';
 
-export interface StaffMember {
-  id: string;
-  name: string;
-  /** Sign-in identifier. */
-  email: string;
-  role: StaffRole;
-  active: boolean;
-  createdAt: string;
-}
+export type { StaffMember };
 
 export const staffService = {
   list: () => api.get<{ staff: StaffMember[] }>('/staff'),

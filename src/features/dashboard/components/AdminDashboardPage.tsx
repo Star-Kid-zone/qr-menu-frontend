@@ -34,12 +34,9 @@ import { TrafficSourcesCard } from './TrafficSourcesCard';
 import { BusiestHoursCard } from './BusiestHoursCard';
 import { TodayPanel } from './TodayPanel';
 import { FirstScansGuide } from './FirstScansGuide';
+import { DASHBOARD_RANGE_LABELS } from '@/constants/analytics.constants';
 
-const rangeLabels: Record<RangeKey, string> = {
-  '7d': 'Last 7 days',
-  '30d': 'Last 30 days',
-  'all': 'All time',
-};
+const rangeLabels: Record<RangeKey, string> = DASHBOARD_RANGE_LABELS;
 
 export function AdminDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);

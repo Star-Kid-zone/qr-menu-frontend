@@ -18,8 +18,9 @@ import {
   type ResetPasswordSchemaValues,
 } from "@/schemas/auth.schema";
 import { getApiErrorMessage } from "@/utils/errors";
+import { OTP_RESEND_SECONDS } from "@/constants/auth.constants";
 
-const RESEND_SECONDS = 60;
+const RESEND_SECONDS = OTP_RESEND_SECONDS;
 
 function maskEmail(email: string) {
   const [local, domain] = email.split("@");

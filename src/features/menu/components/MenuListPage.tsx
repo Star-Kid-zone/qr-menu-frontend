@@ -28,7 +28,7 @@ import {
 } from "./sections";
 import { getItemDisplayName } from "../utils";
 import { Notice } from "@/components/ui/Notice";
-import { BUSINESS_TYPE_HREF } from "@/features/business/constants";
+import { BUSINESS_TYPE_HREF } from "@/constants/site.constants";
 import { usePermissions } from "@/hooks/usePermissions";
 
 export function MenuListPage() {

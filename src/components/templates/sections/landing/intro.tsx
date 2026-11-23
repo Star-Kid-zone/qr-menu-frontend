@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { ThemedLottie } from "../art/ThemedLottie";
 import { STEAM_ANIMATION } from "../art/lottie/steam";

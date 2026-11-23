@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, type CSSProperties } from "react";
-import type { LandingTemplateProps } from "@/types/components/templates/rawPublicSiteData.types";
+import type { LandingTemplateProps } from "@/types/public/templates/rawPublicSiteData.types";
 import { buildLandingContext } from "@/components/templates/landing/_shared/BaseTemplate";
 import { LANDING_THEME_DATA } from "@/components/templates/landing/_shared/themeData";
 import { SiteLookProvider } from "@/components/site-system/SiteLookContext";

@@ -1,20 +1,8 @@
-import type { ReactNode } from "react";
 import { PageHeader } from "./PageHeader";
 import { Button } from "./button";
+import type { AdminFormPageProps } from "@/types/ui/AdminFormPage.types";
 
-interface AdminFormPageProps {
-  title: string;
-  description?: string;
-  onBack: () => void;
-  backLabel?: string;
-  onCancel: () => void;
-  onSubmit: () => void;
-  submitLabel: string;
-  submitting?: boolean;
-  /** Optional extra element rendered to the left of the Cancel/Submit buttons */
-  headerExtra?: ReactNode;
-  children: ReactNode;
-}
+export type { AdminFormPageProps };
 
 /**
  * Shared scaffold for admin create/edit pages: PageHeader with a back button

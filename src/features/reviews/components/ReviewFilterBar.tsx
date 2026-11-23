@@ -4,6 +4,7 @@ import React from "react";
 import { PiXBold } from "react-icons/pi";
 import { cn } from "@/utils/cn";
 import { SearchInput } from "@/components/ui/SearchInput";
+import { REVIEW_FILTER_CHIPS, REVIEW_SORT_OPTIONS } from "@/constants/reviews.constants";
 import type { ReviewFilter, ReviewSort } from "../reviewFilters";
 
 interface ReviewFilterBarProps {
@@ -18,20 +19,9 @@ interface ReviewFilterBarProps {
   onClearRating: () => void;
 }
 
-const CHIPS: { id: ReviewFilter; label: string }[] = [
-  { id: "needs_reply", label: "Needs reply" },
-  { id: "low", label: "Low ratings" },
-  { id: "featured", label: "On website" },
-  { id: "all", label: "All" },
-];
+const CHIPS: { id: ReviewFilter; label: string }[] = REVIEW_FILTER_CHIPS as unknown as { id: ReviewFilter; label: string }[];
 
-const SORTS: { id: ReviewSort; label: string }[] = [
-  { id: "urgent", label: "Most urgent" },
-  { id: "newest", label: "Newest" },
-  { id: "oldest", label: "Oldest" },
-  { id: "highest", label: "Highest rating" },
-  { id: "lowest", label: "Lowest rating" },
-];
+const SORTS: { id: ReviewSort; label: string }[] = REVIEW_SORT_OPTIONS as unknown as { id: ReviewSort; label: string }[];
 
 export function ReviewFilterBar({
   filter,

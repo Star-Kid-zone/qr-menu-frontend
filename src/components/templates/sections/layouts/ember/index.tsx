@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/Image";
 import { useState, type CSSProperties } from "react";
 import type { LandingSectionContext, LandingSectionProps } from "../../types";
 import type { LayoutDefinition, LayoutFrameProps } from "../types";
