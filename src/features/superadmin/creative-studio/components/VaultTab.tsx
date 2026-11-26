@@ -53,13 +53,13 @@ interface VaultTabProps {
   setTargetWorkspaceIds: (ids: string) => void;
   publishing: boolean;
   handlePublishAsset: () => Promise<void>;
-  handleDeleteAsset: (id: string | number) => Promise<void>;
+  handleDeleteAsset: (id: string) => Promise<void>;
   industries: IndustryItem[];
 }
 
 const TYPE_LABELS: Record<string, string> = VAULT_TYPE_LABELS;
 
-const TARGET_OPTIONS: { value: "all" | "industry" | "selected_tenants"; label: string }[] = VAULT_TARGET_OPTIONS as unknown as { value: "all" | "industry" | "selected_tenants"; label: string }[];
+const TARGET_OPTIONS: readonly { value: "all" | "industry" | "selected_tenants"; label: string }[] = VAULT_TARGET_OPTIONS;
 
 export function VaultTab({
   vaultStats,
@@ -206,7 +206,6 @@ export function VaultTab({
                     onMouseOut={(e) => (e.target as HTMLVideoElement).pause()}
                   />
                 ) : (
-                  // eslint-disable-next-line @next/next/no-img-element -- arbitrary asset URLs
                   <img
                     src={asset.thumbnailUrl || asset.mediaUrl}
                     alt={asset.title}
@@ -333,7 +332,6 @@ export function VaultTab({
               {previewAsset.type === "video" ? (
                 <video src={previewAsset.mediaUrl} controls className="h-full max-h-96 w-full object-contain" />
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element -- arbitrary asset URLs
                 <img src={previewAsset.mediaUrl} alt={previewAsset.title} className="h-full max-h-96 w-full object-contain" />
               )}
             </div>

@@ -1,6 +1,5 @@
 "use client";
 
-import type { SVGProps } from "react";
 import { LuUtensilsCrossed } from "react-icons/lu";
 
 export interface NoImagePlaceholderProps {
@@ -61,4 +60,3 @@ export function NoImagePlaceholder({
   );
 }
 
-export default NoImagePlaceholder;

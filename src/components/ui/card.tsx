@@ -29,16 +29,7 @@ export const CardTitle = ({ className, ...props }: HTMLAttributes<HTMLHeadingEle
   <h3 className={cn("text-h3 text-foreground leading-none tracking-tight", className)} {...props} />
 );
 
-export const CardDescription = ({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) => (
-  <p className={cn("text-caption text-muted-foreground", className)} {...props} />
-);
-
 export const CardContent = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (
   <div className={cn("p-6 pt-0 sm:p-6 sm:pt-0", className)} {...props} />
 );
 
-export const CardFooter = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("flex items-center gap-2 p-6 pt-0 sm:p-6 sm:pt-0", className)} {...props} />
-);
-
-export default Card;

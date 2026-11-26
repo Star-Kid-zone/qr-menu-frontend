@@ -1,5 +1,6 @@
 'use client';
 
+import { loadWorkspace } from '@/hooks/useWorkspace';
 import { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { PageContainer } from '@/components/ui/PageContainer';
@@ -7,7 +8,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Notice } from '@/components/ui/Notice';
 import { SetupChecklist, SiteStatusCard } from './HomeStatus';
 import { analyticsService, type DashboardData } from '@/services/analytics.service';
-import { workspaceService, type WorkspaceData } from '@/services/workspace.service';
+import type { WorkspaceData } from '@/services/workspace.service';
 import { menuService, type MenuStats } from '@/services/menu.service';
 import { deriveAnalyticsMetrics } from '@/utils/analyticsMetrics';
 import { pctChange } from '@/utils/dashboardInsights';
@@ -57,14 +58,14 @@ export function AdminDashboardPage() {
     async function loadContext() {
       setMenuStatsLoading(true);
       const [wsResult, menuResult] = await Promise.allSettled([
-        workspaceService.getWorkspace(),
+        loadWorkspace(),
         menuService.getStats(),
       ]);
 
       if (!mounted) return;
 
       if (wsResult.status === 'fulfilled') {
-        setWorkspace(wsResult.value.data);
+        setWorkspace(wsResult.value);
       } else {
         console.warn('Non-blocking: Failed to load workspace data', wsResult.reason);
       }
@@ -113,13 +114,20 @@ export function AdminDashboardPage() {
   const derived = useMemo(() => deriveAnalyticsMetrics(data), [data]);
 
   const prev = data?.previous ?? null;
-  const deltaLabel = range === '7d' ? 'vs previous 7 days' : 'vs previous 30 days';
+  const deltaLabel = range === '7d' ? 'vs prev 7d' : 'vs prev 30d';
   const mkDelta = (cur: number | undefined, before: number | undefined) => {
     if (!prev || cur == null) return null;
+    if (cur === 0 && (before ?? 0) === 0) return null;
     const pct = pctChange(cur, before);
     return pct == null ? null : { pct, label: deltaLabel };
   };
-  const hasNoVisitsEver = !loading && !error && data !== null && range === 'all' && data.summary.totalVisits === 0;
+  const hasNoActivity =
+    !loading &&
+    !error &&
+    data !== null &&
+    data.summary.totalVisits === 0 &&
+    data.summary.totalClicks === 0 &&
+    data.summary.totalSearches === 0;
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
@@ -135,7 +143,7 @@ export function AdminDashboardPage() {
     {
       label: 'Guests',
       value: data?.summary.uniqueVisitors.toLocaleString() || '0',
-      subtext: data?.today.newVisitors ? `+${data.today.newVisitors} new today` : 'Different people (devices)',
+      subtext: data?.today.newVisitors ? `+${data.today.newVisitors} new today` : 'Unique devices',
       delta: mkDelta(data?.summary.uniqueVisitors, prev?.visitors),
       icon: <PiQrCodeBold size={18} />,
       color: 'text-info bg-info/10 dark:text-info dark:bg-info/50',
@@ -143,7 +151,7 @@ export function AdminDashboardPage() {
     {
       label: 'Button taps',
       value: data?.summary.totalClicks.toLocaleString() || '0',
-      subtext: data?.today.clicks ? `+${data.today.clicks} today` : 'Taps on Pay, Call, Directions and other buttons',
+      subtext: data?.today.clicks ? `+${data.today.clicks} today` : 'Pay, Call & Directions',
       delta: mkDelta(data?.summary.totalClicks, prev?.clicks),
       icon: <PiCursorClickBold size={18} />,
       color: 'text-primary bg-primary/10 dark:text-primary dark:bg-primary/50',
@@ -151,7 +159,7 @@ export function AdminDashboardPage() {
     {
       label: 'Menu searches',
       value: data?.summary.totalSearches.toLocaleString() || '0',
-      subtext: data?.today.searches ? `+${data.today.searches} today` : 'Searches on your menu',
+      subtext: data?.today.searches ? `+${data.today.searches} today` : 'On your menu',
       delta: mkDelta(data?.summary.totalSearches, prev?.searches),
       icon: <PiMagnifyingGlassBold size={18} />,
       color: 'text-warning-foreground bg-warning/10 dark:text-warning dark:bg-warning/50',
@@ -159,27 +167,29 @@ export function AdminDashboardPage() {
     {
       label: 'Visits with a tap',
       value: `${derived.conversionRate}%`,
-      subtext: 'Taps on Call, Pay, Directions per visit',
+      subtext: 'Taps per visit',
       icon: <PiTrendUpBold size={18} />,
       color: 'text-success bg-success/10 dark:text-success dark:bg-success/50',
     },
   ];
 
+  const headerDescription =
+    data && !loading && data.summary.uniqueVisitors > 0 && range !== 'all'
+      ? `${greeting}. ${data.summary.uniqueVisitors.toLocaleString()} ${data.summary.uniqueVisitors === 1 ? 'guest' : 'guests'} visited in the ${rangeLabels[range].toLowerCase()}.`
+      : data && !loading && data.summary.uniqueVisitors === 0
+        ? `${greeting}. Your menu is ready for guests.`
+        : `${greeting}. Here is how your website is doing.`;
+
   return (
     <PageContainer>
       <PageHeader
         title={workspace?.business?.name || "Home"}
-        description={
-          data && !loading && range !== 'all'
-            ? `${greeting}. ${data.summary.uniqueVisitors.toLocaleString()} ${data.summary.uniqueVisitors === 1 ? 'guest' : 'guests'} visited in the ${rangeLabels[range].toLowerCase()}.`
-            : `${greeting}. Here is how your website is doing.`
-        }
+        description={headerDescription}
       />
 
       <SiteStatusCard workspace={workspace} />
       <SetupChecklist workspace={workspace} menuStats={menuStats} />
       <TodayPanel data={data} menuStats={menuStats} />
-      {hasNoVisitsEver ? <FirstScansGuide /> : null}
 
       {/* Visits: the date filter sits with the numbers it controls. */}
       <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-end sm:justify-between">
@@ -204,18 +214,20 @@ export function AdminDashboardPage() {
               </button>
             ))}
           </div>
-          <Button
-            type="button"
-            variant="secondary"
-            leftIcon={<PiDownloadSimpleBold size={16} />}
-            onClick={() =>
-              downloadCsv('/analytics/visitors/export.csv', 'visitors-analytics.csv').catch(() =>
-                toast.error("Couldn't download the file. Try again."),
-              )
-            }
-          >
-            Export
-          </Button>
+          {!hasNoActivity ? (
+            <Button
+              type="button"
+              variant="secondary"
+              leftIcon={<PiDownloadSimpleBold size={16} />}
+              onClick={() =>
+                downloadCsv('/analytics/visitors/export.csv', 'visitors-analytics.csv').catch(() =>
+                  toast.error("Couldn't download the file. Try again."),
+                )
+              }
+            >
+              Export
+            </Button>
+          ) : null}
         </div>
       </div>
 
@@ -232,41 +244,54 @@ export function AdminDashboardPage() {
           {error}
         </Notice>
       ) : null}
-      {/* ─── 5 Primary KPI Cards ────────────────────────────────────────── */}
-      <AdminDashboardKpis statCards={statCards} loading={loading} />
 
-      {/* ─── Main Grid: Visit Trends ───────────────────────────────────── */}
-      <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
-        <TrafficTrendsCard
-          data={data}
-          loading={loading}
-          rangeLabel={rangeLabels[range]}
-          derived={derived}
-        />
-        <VisitorRetentionCard
-          data={data}
-          loading={loading}
-        />
-      </div>
+      {hasNoActivity ? (
+        <>
+          <FirstScansGuide
+            range={range}
+            onShowAllTime={range !== 'all' ? () => setRange('all') : undefined}
+          />
+          <MenuCatalogCard menuStats={menuStats} loading={menuStatsLoading} />
+        </>
+      ) : (
+        <>
+          {/* ─── 5 Primary KPI Cards ────────────────────────────────────────── */}
+          <AdminDashboardKpis statCards={statCards} loading={loading} />
 
-      <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
-        <MostViewedDishesCard data={data} loading={loading} />
-        <BusiestHoursCard data={data} loading={loading} />
-      </div>
+          {/* ─── Main Grid: Visit Trends ───────────────────────────────────── */}
+          <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
+            <TrafficTrendsCard
+              data={data}
+              loading={loading}
+              rangeLabel={rangeLabels[range]}
+              derived={derived}
+            />
+            <VisitorRetentionCard
+              data={data}
+              loading={loading}
+            />
+          </div>
 
-      <TrafficSourcesCard data={data} loading={loading} />
+          <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
+            <MostViewedDishesCard data={data} loading={loading} />
+            <BusiestHoursCard data={data} loading={loading} />
+          </div>
 
-      {/* ─── Secondary Section: Search Intelligence & Menu Health ─────── */}
-      <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
-        <SearchIntelligenceCard
-          data={data}
-          loading={loading}
-        />
-        <MenuCatalogCard
-          menuStats={menuStats}
-          loading={menuStatsLoading}
-        />
-      </div>
+          <TrafficSourcesCard data={data} loading={loading} />
+
+          {/* ─── Secondary Section: Search Intelligence & Menu Health ─────── */}
+          <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
+            <SearchIntelligenceCard
+              data={data}
+              loading={loading}
+            />
+            <MenuCatalogCard
+              menuStats={menuStats}
+              loading={menuStatsLoading}
+            />
+          </div>
+        </>
+      )}
     </PageContainer>
   );
 }

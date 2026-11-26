@@ -1,5 +1,6 @@
 'use client';
 
+import { sessionChanged } from '@/services/workspaceEvents';
 import { useMemo, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -48,12 +49,14 @@ export function ImpersonationBanner() {
       const targetId = session.targetUserId;
       clearImpersonationSession();
       setStoredUserRole('superadmin');
+      sessionChanged();
       toast.success('Superadmin session restored.');
       router.replace(routes.superadmin.userDetail(targetId));
     } catch {
       // Fallback: clear and route back to superadmin
       clearImpersonationSession();
       setStoredUserRole('superadmin');
+      sessionChanged();
       router.replace(routes.superadmin.users);
     } finally {
       setLoading(false);

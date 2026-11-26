@@ -27,7 +27,7 @@ export interface SiteIconProps {
 const STROKE = { fill: "none", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round" } as const;
 
 /** A drawing's SVG body for one style (no outer <svg>). `uid` keeps filter/pattern ids unique on the page. */
-export function renderGlyph(g: Glyph, style: IconStyle, uid: string) {
+function renderGlyph(g: Glyph, style: IconStyle, uid: string) {
   const area = g.f ?? g.o;
   const solid = g.s ? <path d={g.s} fill="currentColor" stroke="none" /> : null;
   // Outline-only drawings (wifi, arrows, a cross) have no closed area to fill.

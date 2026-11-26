@@ -1,7 +1,7 @@
 'use client';
 
 import { PageHeader } from '@/components/ui/PageHeader';
-import { useCallback, useEffect, useState } from 'react';
+import { useAsyncData } from '@/hooks/useAsyncData';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
@@ -15,53 +15,34 @@ import {
   superadminService,
   type PlatformOverview,
 } from '@/services/superadmin.service';
-import { Button, buttonVariants } from '@/components/ui';
+import { Button, Notice, buttonVariants } from '@/components/ui';
 import { routes } from '@/config/routes';
 import { fadeIn, fadeInUp, staggerContainer } from '@/lib/motion';
-import { getApiErrorMessage } from '@/utils/errors';
 import { PlatformMetric } from './PlatformMetric';
 import { QuickActionCard } from './QuickActionCard';
 
 export function SuperadminDashboardPage() {
-  const [data, setData] = useState<PlatformOverview | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, loading, error, refetch: fetchData } = useAsyncData<PlatformOverview>(
+    () => superadminService.getOverview(),
+    [],
+    'Failed to load platform overview',
+  );
   const reduceMotion = useReducedMotion();
-
-  const handleLoadError = useCallback((err: unknown) => {
-    setError(getApiErrorMessage(err, 'Failed to load platform overview'));
-  }, []);
-
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await superadminService.getOverview();
-      setData(res);
-    } catch (err) {
-      handleLoadError(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [handleLoadError]);
-
-  // Initial load (`loading` starts true, `error` null); fetchData handles "Try again".
-  useEffect(() => {
-    superadminService
-      .getOverview()
-      .then(setData)
-      .catch(handleLoadError)
-      .finally(() => setLoading(false));
-  }, [handleLoadError]);
 
   if (loading) return null;
   if (error || !data) {
     return (
-      <div className="flex flex-col items-center gap-4 p-8 text-center">
-        <p className="text-body font-semibold text-destructive">{error || 'Unknown error'}</p>
-        <Button variant="secondary" size="sm" onClick={fetchData}>
-          Try again
-        </Button>
+      <div className="p-8">
+        <Notice
+          tone="error"
+          action={
+            <Button variant="secondary" size="sm" onClick={fetchData}>
+              Try again
+            </Button>
+          }
+        >
+          {error || 'The dashboard could not be loaded.'}
+        </Notice>
       </div>
     );
   }

@@ -143,7 +143,7 @@ export function useCreativeVaultState() {
   };
 
   // Handle Delete Asset
-  const handleDeleteAsset = async (id: string | number) => {
+  const handleDeleteAsset = async (id: string) => {
     const confirmed = await confirm({
       title: 'Remove asset?',
       description: 'Are you sure you want to remove this asset from the Vault?',
@@ -157,7 +157,7 @@ export function useCreativeVaultState() {
       if (previewAsset?.id === id) setPreviewAsset(null);
     } catch (err: unknown) {
       console.error(err);
-      toast.error('Failed to delete asset');
+      toast.error(getApiErrorMessage(err, 'Failed to delete asset'));
     }
   };
 

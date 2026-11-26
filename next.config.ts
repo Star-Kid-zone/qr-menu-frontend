@@ -55,6 +55,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Optional separate build folder (e.g. NEXT_DIST_DIR=.next-measure) so a production build can run
+  // while an editor or dev server has .next open. Unset = the default .next.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

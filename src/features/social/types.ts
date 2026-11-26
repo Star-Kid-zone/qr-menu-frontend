@@ -1,11 +1,4 @@
-import type {
-  SocialAccount,
-  SocialAsset,
-  SocialPlatform,
-  SocialPost,
-  WeeklyPoster,
-  PlatformMarketingAsset,
-} from '@/types';
+import type { SocialAsset, SocialPost, WeeklyPoster, PlatformMarketingAsset } from '@/types';
 
 export type SocialTabId = 'compose' | 'library' | 'history' | 'accounts';
 export type LibraryFilter = 'all' | 'platform' | 'uploads' | 'videos' | 'weekly';
@@ -21,11 +14,4 @@ export interface ActivePosterInfo {
   badge?: string;
 }
 
-export type {
-  SocialAccount,
-  SocialAsset,
-  SocialPlatform,
-  SocialPost,
-  WeeklyPoster,
-  PlatformMarketingAsset,
-};
+export type { SocialAsset, SocialPost, WeeklyPoster, PlatformMarketingAsset };

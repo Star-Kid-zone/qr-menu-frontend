@@ -16,7 +16,7 @@ import { SAMPLE_DECODER_CONTEXTS } from "@/constants/studio.constants";
 
 /** One layout layer in a decoded poster spec, as returned by the decode endpoint. */
 interface DecodedLayer {
-  id?: string | number;
+  id?: string;
   role?: string;
   fontFamily?: string;
   fontSize?: number;

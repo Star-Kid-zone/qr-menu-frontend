@@ -92,7 +92,7 @@ export const DASHBOARD_AREAS = [
 ] as const;
 
 export const STEPS = [
-  { title: "Create your account", body: "Sign up with your mobile number and the code we text you." },
+  { title: "Create your account", body: "Sign up with your email and the code we send to it." },
   { title: "Add your dishes", body: "Type them in, import a CSV file, or scan a printed menu." },
   { title: "Choose how it looks", body: "Pick a look and colours, then check it on the phone preview." },
   { title: "Put the QR code on your tables", body: "Download it and print it for tables, the counter and the door." },
@@ -126,7 +126,7 @@ export const FAQS = [
   {
     question: "Can my staff use it too?",
     answer:
-      "Yes. Add managers and staff with their phone numbers. Staff can look after the menu, shifts and checklists without being able to change your website or settings.",
+      "Yes. Add managers and staff with their own email and password. Staff can look after the menu, shifts and checklists without being able to change your website or settings.",
   },
   {
     question: "Can we use our own domain?",

@@ -1,48 +1,8 @@
-import { LANDING_THEME_OPTIONS, MENU_THEME_OPTIONS } from "./theme.constants";
-export { LANDING_THEME_OPTIONS, MENU_THEME_OPTIONS };
+import { MENU_THEME_OPTIONS } from "./theme.constants";
 export * from "./templatePalettes.constants";
-import type {
-  WorkspaceColorField,
-  WorkspaceLayoutOption,
-  MenuColorKey,
-  WorkspaceToggleOption,
-  MenuColorField,
-  ColourRole,
-  ColourSet,
-  MenuColourTheme,
-} from "@/types/admin/workspace/workspace.types";
+import type { WorkspaceLayoutOption, MenuColorKey, WorkspaceToggleOption, MenuColorField, ColourRole, ColourSet, MenuColourTheme } from "@/types/admin/workspace/workspace.types";
 
 export type { MenuColorField, ColourRole, ColourSet, MenuColourTheme };
-
-export const WORKSPACE_COLOR_FIELDS: WorkspaceColorField[] = [
-  { name: "primary_color",        label: "Primary (buttons/highlights)" },
-  { name: "secondary_color",      label: "Secondary (cards/surfaces)" },
-  { name: "accent_color",         label: "Accent (page background)" },
-];
-
-export const WORKSPACE_EXTENDED_COLOR_FIELDS: WorkspaceColorField[] = [
-  { name: "text_primary_color",   label: "Text primary" },
-  { name: "text_secondary_color", label: "Text secondary" },
-  { name: "accent_text_color",    label: "Text on buttons" },
-  { name: "border_color",         label: "Borders" },
-  { name: "footer_bg_color",      label: "Footer background" },
-  { name: "section_bg_color",     label: "Section background" },
-];
-
-export const MENU_COLOR_FIELDS: MenuColorField[] = [
-  { name: "menu_primary_color",   label: "Primary (buttons/highlights)" },
-  { name: "menu_secondary_color", label: "Secondary (cards/surfaces)" },
-  { name: "menu_accent_color",    label: "Accent (page background)" },
-];
-
-export const MENU_EXTENDED_COLOR_FIELDS: MenuColorField[] = [
-  { name: "menu_text_primary_color",   label: "Text primary" },
-  { name: "menu_text_secondary_color", label: "Text secondary" },
-  { name: "menu_accent_text_color",    label: "Text on buttons" },
-  { name: "menu_border_color",         label: "Borders" },
-  { name: "menu_footer_bg_color",      label: "Footer background" },
-  { name: "menu_section_bg_color",     label: "Section background" },
-];
 
 /** Sentinel selected to reveal the free-text fallback input in DropdownWithCustomInput. */
 export const CUSTOM_OPTION_VALUE = "__custom__";
@@ -195,25 +155,8 @@ export const HERO_TAGLINE_OPTIONS = [
 
 export const MENU_LAYOUT_OPTIONS: WorkspaceLayoutOption[] = MENU_THEME_OPTIONS;
 
-export const LANDING_LAYOUT_OPTIONS: WorkspaceLayoutOption[] =
-  LANDING_THEME_OPTIONS;
-
 // Keys are stored per site (`landing_structure`) and kept stable; the designs behind them were
 // rebuilt as full layouts (components/templates/sections/layouts) that each show every section.
-export const LANDING_STRUCTURE_OPTIONS = [
-  { value: '',                 label: 'Default — clean and simple (follows the style template)' },
-  { value: 'split',            label: 'Royal Luxe — opulent dark-and-gold hotel dining' },
-  { value: 'minimal',          label: 'Odyssey Classic — calm Italian editorial, full-bleed photos' },
-  { value: 'magazine',         label: 'Trattoria — classic printed-menu look with ornament bands' },
-  { value: 'cards',            label: 'Legend — huge headlines, warm colour blocks, round photos' },
-  { value: 'dashboard',        label: 'Bento — modern tile grid' },
-  { value: 'tabs',             label: 'Street Pop — loud stickers, coupons, zigzag edges' },
-  { value: 'story',            label: "Chef's Journal — numbered chapters, tasting-menu courses" },
-  { value: 'sidebar-right',    label: 'Café Notebook — paper, doodles, polaroids, sticky info card' },
-  { value: 'compact',          label: 'Link Card — mobile-first link-in-bio storefront' },
-  { value: 'horizontal-split', label: 'Zen Grid — minimal hairlines, numbered sections' },
-] as const;
-
 export const MENU_STRUCTURE_OPTIONS = [
   // '' = "Match my layout": the menu designed for the chosen page layout (or the template's menu for the original layouts).
   { value: '',          label: 'Match my layout — the menu designed for your page layout' },

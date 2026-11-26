@@ -31,7 +31,7 @@ export type WeeklyPoster = {
   originalFilename: string;
 };
 
-export type PostDestinationInput = {
+type PostDestinationInput = {
   accountId: string;
   caption: string;
   linkUrl?: string | null;

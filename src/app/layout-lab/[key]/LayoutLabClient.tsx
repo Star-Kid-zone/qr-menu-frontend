@@ -9,7 +9,7 @@ const IMG = (set: string, f: string) => `/landing/${set}/${f}`;
 
 /** A realistic, fully-populated restaurant so every section has something to show. */
 const SAMPLE: RawPublicSiteData = {
-  user_id: 1,
+  user_id: '1',
   settings: {
     public_slug: "lab",
     logo_url: IMG("pasta-italian", "dish.jpg"),
@@ -87,12 +87,12 @@ const SAMPLE: RawPublicSiteData = {
     { title: "Birthday dessert", description: "A dessert on us when you celebrate here." , badge_text: "Free" },
   ],
   menuItems: [
-    { id: 1, item: "Tagliatelle al ragù", description: "Hand-cut egg pasta, eight-hour beef ragù.", price: "640", popular: true, image_url: IMG("pasta-italian", "dish.jpg"), category: "Pasta" },
-    { id: 2, item: "Margherita DOP", description: "San Marzano, fior di latte, basil.", price: "520", popular: true, image_url: IMG("street-food", "dish.jpg"), category: "Pizza" },
-    { id: 3, item: "Burrata & heirloom tomato", description: "Creamy burrata, basil oil, sea salt.", price: "580", popular: false, image_url: IMG("garden-outdoor", "dish.jpg"), category: "Starters" },
-    { id: 4, item: "Tiramisù della casa", description: "Mascarpone, espresso, cocoa.", price: "360", popular: true, image_url: IMG("cafe-bakery", "dish.jpg"), category: "Dessert" },
-    { id: 5, item: "Risotto ai funghi", description: "Carnaroli, porcini, aged parmesan.", price: "690", popular: false, image_url: IMG("fine-dining", "dish.jpg"), category: "Mains" },
-    { id: 6, item: "Grilled branzino", description: "Lemon, capers, charred greens.", price: "980", popular: true, image_url: IMG("seafood-coastal", "dish.jpg"), category: "Mains" },
+    { id: '1', item: "Tagliatelle al ragù", description: "Hand-cut egg pasta, eight-hour beef ragù.", price: "640", popular: true, image_url: IMG("pasta-italian", "dish.jpg"), category: "Pasta" },
+    { id: '2', item: "Margherita DOP", description: "San Marzano, fior di latte, basil.", price: "520", popular: true, image_url: IMG("street-food", "dish.jpg"), category: "Pizza" },
+    { id: '3', item: "Burrata & heirloom tomato", description: "Creamy burrata, basil oil, sea salt.", price: "580", popular: false, image_url: IMG("garden-outdoor", "dish.jpg"), category: "Starters" },
+    { id: '4', item: "Tiramisù della casa", description: "Mascarpone, espresso, cocoa.", price: "360", popular: true, image_url: IMG("cafe-bakery", "dish.jpg"), category: "Dessert" },
+    { id: '5', item: "Risotto ai funghi", description: "Carnaroli, porcini, aged parmesan.", price: "690", popular: false, image_url: IMG("fine-dining", "dish.jpg"), category: "Mains" },
+    { id: '6', item: "Grilled branzino", description: "Lemon, capers, charred greens.", price: "980", popular: true, image_url: IMG("seafood-coastal", "dish.jpg"), category: "Mains" },
   ] as unknown as RawPublicSiteData["menuItems"],
   faqs: [
     { question: "Do you take reservations?", answer: "Yes — call or WhatsApp us; walk-ins are welcome too." },
@@ -100,9 +100,9 @@ const SAMPLE: RawPublicSiteData = {
     { question: "Do you have vegetarian options?", answer: "Around half our menu is vegetarian, and pasta can be made vegan." },
   ],
   googleReviews: [
-    { id: 1, authorName: "Ananya R.", authorPhotoUrl: null, rating: 5, text: "Best fresh pasta in the city. The ragù tastes like a Sunday at home.", relativePublishDescription: "2 weeks ago" },
-    { id: 2, authorName: "Marco D.", authorPhotoUrl: null, rating: 5, text: "Proper wood-fired pizza and lovely staff. We'll be back.", relativePublishDescription: "a month ago" },
-    { id: 3, authorName: "Priya S.", authorPhotoUrl: null, rating: 4, text: "Cozy room, generous portions, great tiramisù.", relativePublishDescription: "3 months ago" },
+    { id: '1', authorName: "Ananya R.", authorPhotoUrl: null, rating: 5, text: "Best fresh pasta in the city. The ragù tastes like a Sunday at home.", relativePublishDescription: "2 weeks ago" },
+    { id: '2', authorName: "Marco D.", authorPhotoUrl: null, rating: 5, text: "Proper wood-fired pizza and lovely staff. We'll be back.", relativePublishDescription: "a month ago" },
+    { id: '3', authorName: "Priya S.", authorPhotoUrl: null, rating: 4, text: "Cozy room, generous portions, great tiramisù.", relativePublishDescription: "3 months ago" },
   ],
   currency: { symbol: "₹" },
   awards: [

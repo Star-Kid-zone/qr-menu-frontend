@@ -34,3 +34,6 @@ export const ANALYTICS_TAP_LABELS: Record<string, string> = {
   google_review_clicks: 'Google reviews',
   payment_clicks: 'Pay bill',
 };
+
+/** A second "visit" for the same page within this window is the same page view (re-render, dev double-effect). */
+export const ANALYTICS_VISIT_DEDUPE_MS = 2000;

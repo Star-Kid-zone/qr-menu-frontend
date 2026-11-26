@@ -79,7 +79,7 @@ describe('API Service (Axios Client & Interceptors)', () => {
     expect(result.headers['X-CSRF-Token']).toBeUndefined();
   });
 
-  it('attaches X-Workspace-Id header when an active workspace is selected', () => {
+  it('never sends X-Workspace-Id: the backend resolves the workspace from the logged-in user', () => {
     vi.spyOn(storage, 'getActiveWorkspaceId').mockReturnValue('999');
 
     const config: InternalAxiosRequestConfig = {
@@ -89,7 +89,7 @@ describe('API Service (Axios Client & Interceptors)', () => {
 
     const interceptor = requestHandlers()[0]?.fulfilled;
     const result = interceptor(config);
-    expect(result.headers['X-Workspace-Id']).toBe('999');
+    expect(result.headers['X-Workspace-Id']).toBeUndefined();
   });
 
   describe('401 handling and token refresh', () => {

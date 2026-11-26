@@ -21,7 +21,7 @@ const pending = {
   verified: false,
   verifiedAt: null,
   lastCheckedAt: null,
-  dns: { txt: { name: "_qrmenu-verify.www.pizzaroma.com", value: "qrmenu-abc" }, cname: { name: "www.pizzaroma.com", target: "sites.mynagaram.com" } },
+  dns: { txt: { name: "_feastowl-verify.www.pizzaroma.com", value: "feastowl-abc" }, cname: { name: "www.pizzaroma.com", target: "sites.feastowl.com" } },
 };
 
 describe("CustomDomainsCard", () => {
@@ -33,15 +33,15 @@ describe("CustomDomainsCard", () => {
     expect(screen.getByRole("link", { name: /vimal\./ })).toBeInTheDocument();
     const row = within(await screen.findByRole("list", { name: "Your domains" })).getByRole("listitem");
     expect(within(row).getByText("Waiting for DNS")).toBeInTheDocument();
-    expect(within(row).getByText("qrmenu-abc")).toBeInTheDocument();
-    expect(within(row).getByText("sites.mynagaram.com")).toBeInTheDocument();
+    expect(within(row).getByText("feastowl-abc")).toBeInTheDocument();
+    expect(within(row).getByText("sites.feastowl.com")).toBeInTheDocument();
   });
 
   it("adds a domain and shows the server's error when it's refused", async () => {
     svc.listDomains.mockResolvedValue({ data: [] });
     svc.addDomain.mockRejectedValueOnce({ response: { data: { error: "That address belongs to the platform." } } });
     render(<CustomDomainsCard publicSlug="vimal" />);
-    fireEvent.change(screen.getByLabelText("Your domain"), { target: { value: "vimal.mynagaram.com" } });
+    fireEvent.change(screen.getByLabelText("Your domain"), { target: { value: "vimal.feastowl.com" } });
     fireEvent.click(screen.getByRole("button", { name: "Add domain" }));
     expect(await screen.findByText(/belongs to the platform|Couldn't add/)).toBeInTheDocument();
 

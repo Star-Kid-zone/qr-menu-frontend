@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useAsyncData } from "@/hooks/useAsyncData";
+import { LoadErrorNotice } from "@/components/feedback/LoadErrorNotice";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { superadminService, type UserListRow } from "@/services/superadmin.service";
@@ -23,7 +25,6 @@ import {
   TableHead,
   TableCell,
   Pagination,
-  toast,
 } from "@/components/ui";
 import {
   PiUsersBold,
@@ -36,15 +37,12 @@ import { downloadCsv } from "@/utils/downloadCsv";
 import { fadeIn } from "@/lib/motion";
 
 export function UserListPage() {
-  const [rows, setRows] = useState<UserListRow[]>([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [role, setRole] = useState<"admin" | "superadmin" | "">("");
   const [activeFilter, setActiveFilter] = useState<"all" | "true" | "false">("all");
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const t = window.setTimeout(
@@ -54,41 +52,21 @@ export function UserListPage() {
     return () => window.clearTimeout(t);
   }, [search]);
 
-  // A new query shows the loading state again (adjusted during render);
-  // the effect below then fetches it. `loading` starts true for the first query.
-  const [loadedQuery, setLoadedQuery] = useState({ page, debouncedSearch, role, activeFilter });
-  if (
-    loadedQuery.page !== page ||
-    loadedQuery.debouncedSearch !== debouncedSearch ||
-    loadedQuery.role !== role ||
-    loadedQuery.activeFilter !== activeFilter
-  ) {
-    setLoadedQuery({ page, debouncedSearch, role, activeFilter });
-    setLoading(true);
-  }
-
-  useEffect(() => {
-    superadminService
-      .listUsers({
+  // Refetches whenever the page or a filter changes.
+  const { data, loading, error: loadError, refetch } = useAsyncData(
+    () =>
+      superadminService.listUsers({
         page,
         page_size: pageSize,
         search: debouncedSearch || undefined,
         role: role || undefined,
-        active:
-          activeFilter === "all"
-            ? undefined
-            : activeFilter === "true",
-      })
-      .then((res) => {
-        setRows(res.users);
-        setTotal(res.total);
-      })
-      .catch((e: unknown) => {
-        console.error(e);
-        toast.error("Failed to load users.");
-      })
-      .finally(() => setLoading(false));
-  }, [page, pageSize, debouncedSearch, role, activeFilter]);
+        active: activeFilter === "all" ? undefined : activeFilter === "true",
+      }),
+    [page, pageSize, debouncedSearch, role, activeFilter],
+    "Failed to load users.",
+  );
+  const rows: UserListRow[] = data?.users ?? [];
+  const total = data?.total ?? 0;
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const reduceMotion = useReducedMotion();
@@ -201,6 +179,12 @@ export function UserListPage() {
                 <TableRow>
                   <TableCell colSpan={5} className="h-48 text-center text-muted-foreground">
                     Loading user accounts...
+                  </TableCell>
+                </TableRow>
+              ) : loadError ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="px-6 py-8">
+                    <LoadErrorNotice title="We couldn't load the user accounts" message={loadError} onRetry={refetch} />
                   </TableCell>
                 </TableRow>
               ) : rows.length === 0 ? (

@@ -28,8 +28,6 @@ export interface CreateAnnouncementModalProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
-const TYPE_OPTIONS: { value: AnnouncementFormData['type']; label: string }[] = ANNOUNCEMENT_TYPE_OPTIONS as unknown as { value: AnnouncementFormData['type']; label: string }[];
-
 export function CreateAnnouncementModal({
   isOpen,
   form,
@@ -65,7 +63,7 @@ export function CreateAnnouncementModal({
               id={fieldId('type')}
               value={form.type}
               onChange={(e) => setForm({ ...form, type: e.target.value as AnnouncementFormData['type'] })}
-              options={TYPE_OPTIONS}
+              options={[...ANNOUNCEMENT_TYPE_OPTIONS]}
             />
           </FormField>
 

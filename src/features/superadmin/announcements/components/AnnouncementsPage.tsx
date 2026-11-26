@@ -1,7 +1,9 @@
 'use client';
 
 import { PageHeader } from '@/components/ui/PageHeader';
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo, type SetStateAction } from 'react';
+import { useAsyncData } from '@/hooks/useAsyncData';
+import { LoadErrorNotice } from '@/components/feedback/LoadErrorNotice';
 import { motion, useReducedMotion } from 'framer-motion';
 import { PiMegaphoneBold, PiPlusBold } from 'react-icons/pi';
 import {
@@ -13,12 +15,22 @@ import { fadeIn, staggerContainer } from '@/lib/motion';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { AnnouncementCard } from './AnnouncementCard';
 import { CreateAnnouncementModal, type AnnouncementFormData } from './CreateAnnouncementModal';
+import { getApiErrorMessage } from "@/utils/errors";
 
 export function AnnouncementsPage() {
   const reduceMotion = useReducedMotion();
   const { confirm, confirmDialog } = useConfirmDialog();
-  const [announcements, setAnnouncements] = useState<PlatformAnnouncement[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading, error: loadError, refetch, setData } = useAsyncData(
+    async () => {
+      const list = await superadminService.getAnnouncements();
+      return Array.isArray(list) ? list : [];
+    },
+    [],
+    'Failed to load announcements',
+  );
+  const announcements: PlatformAnnouncement[] = useMemo(() => data ?? [], [data]);
+  const setAnnouncements = (update: SetStateAction<PlatformAnnouncement[]>) =>
+    setData((prev) => (typeof update === 'function' ? update(prev ?? []) : update));
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -32,18 +44,6 @@ export function AnnouncementsPage() {
     actionText: '',
     isActive: true,
   });
-
-  // Load once on mount (`loading` starts true).
-  useEffect(() => {
-    superadminService
-      .getAnnouncements()
-      .then((list) => setAnnouncements(Array.isArray(list) ? list : []))
-      .catch((err: unknown) => {
-        console.error(err);
-        toast.error('Failed to load announcements');
-      })
-      .finally(() => setLoading(false));
-  }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +69,7 @@ export function AnnouncementsPage() {
       });
     } catch (err) {
       console.error(err);
-      toast.error('Failed to publish broadcast');
+      toast.error(getApiErrorMessage(err, 'Failed to publish broadcast'));
     } finally {
       setSubmitting(false);
     }
@@ -85,7 +85,7 @@ export function AnnouncementsPage() {
       toast.success(`Announcement ${newState ? 'activated' : 'deactivated'}.`);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to toggle status');
+      toast.error(getApiErrorMessage(err, 'Failed to toggle status'));
     }
   };
 
@@ -102,7 +102,7 @@ export function AnnouncementsPage() {
       toast.success('Announcement deleted.');
     } catch (err) {
       console.error(err);
-      toast.error('Failed to delete announcement');
+      toast.error(getApiErrorMessage(err, 'Failed to delete announcement'));
     }
   };
 
@@ -132,7 +132,9 @@ export function AnnouncementsPage() {
         }
       />
       {/* Announcements List */}
-      {loading ? (
+      {loadError && !loading ? (
+        <LoadErrorNotice title="We couldn't load the announcements" message={loadError} onRetry={refetch} />
+      ) : loading ? (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-32 animate-pulse rounded-2xl border border-border bg-card/60" />

@@ -134,15 +134,22 @@ export function EmptyResults({ p, t }: { p: PublicMenuTemplateProps; t: MenuStru
 
 const slug = (s: string) => `cat-${s.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 
-/** List: the whole menu in one scroll, like a printed card. A sticky chip bar
- * follows the section you're reading and jumps to any other. */
-export default function MenuStructureList({ payload, routeSlug }: { payload: PublicMenuPayload; routeSlug: string | null }) {
-  const p = useMenuTemplateData(payload, routeSlug);
-  const t = buildMenuTheme(p);
-  const filtersActive = p.popularOnly || !!p.activeCategory || !!p.activeType || !!p.activeDietaryTag || !!p.searchQuery;
-  const cats = p.grouped.map(([cat]) => cat);
+/**
+ * The sticky category chips. It owns the scroll-spy state (which section is on screen), so reading
+ * down the menu re-renders these few buttons only, not every dish in the list.
+ */
+function CategoryChipBar({
+  p,
+  t,
+  cats,
+  filtersActive,
+}: {
+  p: PublicMenuTemplateProps;
+  t: MenuStructureTheme;
+  cats: string[];
+  filtersActive: boolean;
+}) {
   const [current, setCurrent] = useState<string | null>(null);
-  const [showTop, setShowTop] = useState(false);
   const chipBar = useRef<HTMLDivElement>(null);
   const catsKey = cats.join("|");
 
@@ -158,11 +165,8 @@ export default function MenuStructureList({ payload, routeSlug }: { payload: Pub
       { rootMargin: "-160px 0px -60% 0px" },
     );
     els.forEach((e) => io.observe(e));
-    const onScroll = () => setShowTop(window.scrollY > 900);
-    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       io.disconnect();
-      window.removeEventListener("scroll", onScroll);
     };
   }, [catsKey]);
 
@@ -185,6 +189,61 @@ export default function MenuStructureList({ payload, routeSlug }: { payload: Pub
   const chipCls = "shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2";
 
   return (
+    <>
+            <div
+              ref={chipBar}
+              className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 py-0.5"
+              style={{ maskImage: "linear-gradient(to right, transparent 0, #000 8px, #000 calc(100% - 24px), transparent)" }}
+            >
+              {p.hasPopular ? (
+                <button type="button" aria-pressed={p.popularOnly} onClick={() => p.setPopularOnly(!p.popularOnly)} style={chip(p.popularOnly)} className={chipCls}>
+                  Popular only
+                </button>
+              ) : null}
+              {(p.filterCategories.length > 1 ? p.filterCategories : cats).map((cat) => {
+                const inView = cats.includes(cat);
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    data-chip={cat}
+                    aria-current={current === cat ? "true" : undefined}
+                    disabled={!inView}
+                    onClick={() => jump(cat)}
+                    style={{ ...chip(current === cat), opacity: inView ? 1 : 0.4 }}
+                    className={chipCls}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
+              {filtersActive ? (
+                <button type="button" onClick={() => clearAll(p)} style={{ color: t.accent }} className="shrink-0 whitespace-nowrap px-2 text-[13px] font-medium underline underline-offset-4 focus-visible:outline-2">
+                  Clear filters
+                </button>
+              ) : null}
+            </div>
+    </>
+  );
+}
+
+/** List: the whole menu in one scroll, like a printed card. A sticky chip bar
+ * follows the section you're reading and jumps to any other. */
+export default function MenuStructureList({ payload, routeSlug }: { payload: PublicMenuPayload; routeSlug: string | null }) {
+  const p = useMenuTemplateData(payload, routeSlug);
+  const t = buildMenuTheme(p);
+  const filtersActive = p.popularOnly || !!p.activeCategory || !!p.activeType || !!p.activeDietaryTag || !!p.searchQuery;
+  const cats = p.grouped.map(([cat]) => cat);
+  const [showTop, setShowTop] = useState(false);
+
+  // Only toggles at the threshold, so scrolling does not re-render the list.
+  useEffect(() => {
+    const onScroll = () => setShowTop(window.scrollY > 900);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
     <div style={{ background: t.bg, fontFamily: t.fontFamily, color: t.textPrimary }} className="min-h-dvh overflow-x-clip pb-32">
       <header style={{ background: t.surface, borderColor: t.border }} className="border-b px-4 pb-4 pt-5 sm:px-6">
         <div className="mx-auto max-w-6xl space-y-4">
@@ -199,39 +258,7 @@ export default function MenuStructureList({ payload, routeSlug }: { payload: Pub
         className="sticky top-0 z-20 border-b backdrop-blur-md"
       >
         <div className="mx-auto max-w-6xl space-y-2 px-4 py-2.5 sm:px-6">
-          <div
-            ref={chipBar}
-            className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 py-0.5"
-            style={{ maskImage: "linear-gradient(to right, transparent 0, #000 8px, #000 calc(100% - 24px), transparent)" }}
-          >
-            {p.hasPopular ? (
-              <button type="button" aria-pressed={p.popularOnly} onClick={() => p.setPopularOnly(!p.popularOnly)} style={chip(p.popularOnly)} className={chipCls}>
-                Popular only
-              </button>
-            ) : null}
-            {(p.filterCategories.length > 1 ? p.filterCategories : cats).map((cat) => {
-              const inView = cats.includes(cat);
-              return (
-                <button
-                  key={cat}
-                  type="button"
-                  data-chip={cat}
-                  aria-current={current === cat ? "true" : undefined}
-                  disabled={!inView}
-                  onClick={() => jump(cat)}
-                  style={{ ...chip(current === cat), opacity: inView ? 1 : 0.4 }}
-                  className={chipCls}
-                >
-                  {cat}
-                </button>
-              );
-            })}
-            {filtersActive ? (
-              <button type="button" onClick={() => clearAll(p)} style={{ color: t.accent }} className="shrink-0 whitespace-nowrap px-2 text-[13px] font-medium underline underline-offset-4 focus-visible:outline-2">
-                Clear filters
-              </button>
-            ) : null}
-          </div>
+          <CategoryChipBar p={p} t={t} cats={cats} filtersActive={filtersActive} />
           <DietaryFilterPills p={p} t={t} />
         </div>
       </nav>

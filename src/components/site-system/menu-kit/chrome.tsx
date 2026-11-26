@@ -2,7 +2,8 @@
 
 import type { CSSProperties } from "react";
 import type { PublicMenuTemplateProps } from "@/components/templates/core/types";
-import { APP_NAME } from "@/config/app.constants";
+import { APP_BASE_URL, APP_NAME } from "@/config/app.constants";
+import { OwlMark } from "@/components/brand";
 import { SiteIcon } from "../icons/SiteIcon";
 import { siteLookCssVars } from "../tokens";
 import type { SiteLook } from "../types";
@@ -42,7 +43,10 @@ export function MenuFooter({ p }: { p: PublicMenuTemplateProps }) {
         </div>
         <div className="text-xs">
           <p>© {new Date().getFullYear()} {p.businessName}</p>
-          <p className="mt-1">Digital menu by {APP_NAME}</p>
+          <a href={APP_BASE_URL} target="_blank" rel="noopener" className="mt-1 inline-flex items-center gap-1.5 hover:underline">
+            <OwlMark variant="mono" className="size-4" />
+            Digital menu by {APP_NAME}
+          </a>
         </div>
       </div>
     </footer>

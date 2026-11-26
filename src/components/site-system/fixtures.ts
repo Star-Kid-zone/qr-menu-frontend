@@ -16,7 +16,7 @@ type Item = Omit<Menu, 'image_url'> & { image_url: string | null };
 
 function item(id: number, name: string, category: string, price: string, extra: Partial<Item> = {}): Item {
   return {
-    id, item: name, description: `${name}, made to order.`, price, category, type: 'Veg',
+    id: String(id), item: name, description: `${name}, made to order.`, price, category, type: 'Veg',
     popular: false, availability: true, image_url: IMG(id), images: [], videos: [],
     dietaryTags: [], allergens: [], spiceLevel: null, calories: null, attributes: {}, priceOptions: [],
     ...extra,
@@ -25,8 +25,8 @@ function item(id: number, name: string, category: string, price: string, extra: 
 
 function base(businessName: string, settings: Record<string, unknown>, menuItems: Item[]): RawPublicSiteData {
   return {
-    user_id: 1,
-    settings: { id: 1, public_slug: 'fixture', landing_theme: 'serif-elegance', menu_theme: 'serif-elegance', timezone: 'Asia/Kolkata', ...settings },
+    user_id: '1',
+    settings: { id: '1', public_slug: 'fixture', landing_theme: 'serif-elegance', menu_theme: 'serif-elegance', timezone: 'Asia/Kolkata', ...settings },
     business: { business_name: businessName },
     payment: null,
     review: null,
@@ -89,10 +89,10 @@ export const FULL_SITE: RawPublicSiteData = {
   },
   payment: { payment_type: 'url', payment_link: 'https://pay.example.test/fixture' },
   review: { review_link: 'https://review.example.test/fixture' },
-  gallery: [{ id: 1, image_url: IMG(201) }, { id: 2, image_url: IMG(202) }, { id: 3, image_url: IMG(203) }, { id: 4, image_url: IMG(204) }],
-  offers: [{ id: 1, title: 'Fixture offer title', description: 'Fixture offer description', offer_value: '20%', image_url: IMG(301) }],
-  faqs: [{ id: 1, question: 'Fixture question?', answer: 'Fixture answer.' }],
-  googleReviews: [{ id: 1, authorName: 'Fixture Reviewer', authorPhotoUrl: null, rating: 5, text: 'Fixture review text.', relativePublishDescription: 'a week ago' }],
+  gallery: [{ id: '1', image_url: IMG(201) }, { id: '2', image_url: IMG(202) }, { id: '3', image_url: IMG(203) }, { id: '4', image_url: IMG(204) }],
+  offers: [{ id: '1', title: 'Fixture offer title', description: 'Fixture offer description', offer_value: '20%', image_url: IMG(301) }],
+  faqs: [{ id: '1', question: 'Fixture question?', answer: 'Fixture answer.' }],
+  googleReviews: [{ id: '1', authorName: 'Fixture Reviewer', authorPhotoUrl: null, rating: 5, text: 'Fixture review text.', relativePublishDescription: 'a week ago' }],
   awards: [{ id: '1', title: 'Fixture award title', publisher: 'Fixture publisher', year: 2025, url: null, logoUrl: null }],
   team: [{ id: '1', name: 'Fixture Chef Name', role: 'Fixture head chef', bio: 'Fixture chef bio.', photoUrl: IMG(401) }],
   events: [{ id: '1', title: 'Fixture event title', description: 'Fixture event description.', startsAt: '2099-01-01T19:00:00.000Z', endsAt: null, imageUrl: null, linkUrl: null }],
@@ -122,7 +122,7 @@ export const CHEESE_DELI_SITE = base('Fixture Deli', { business_type: 'cheese-de
   }),
 ]);
 
-export const SUSHI_BAR_SITE = base('Fixture Sushi', { business_type: 'sushi-bar' }, [
+const SUSHI_BAR_SITE = base('Fixture Sushi', { business_type: 'sushi-bar' }, [
   item(1, 'Fixture Salmon Nigiri', 'Nigiri', '360.00', { type: 'Non-Veg', attributes: { japanese: { pieces: 2, preparation: 'raw', fish: 'Salmon' } } }),
 ]);
 

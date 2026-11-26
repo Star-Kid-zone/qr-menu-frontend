@@ -1,6 +1,7 @@
 export * from './components/MenuListPage';
 export * from './components/AddMenuPage';
 export * from './components/EditMenuPage';
+export * from './components/MenuItemForm';
 export * from './components/sections';
 export * from './hooks';
 export * from './components/BulkPriceAdjustModal';

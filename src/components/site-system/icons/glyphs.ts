@@ -171,7 +171,7 @@ const DIETARY: Record<string, Glyph> = {
 export const GLYPHS: Readonly<Record<string, Glyph>> = { ...UI, ...AMENITIES, ...DIETARY, ...FOOD, ...DRINKS, ...SHOP, ...FESTIVAL };
 
 /** Other names that should draw an existing icon (stored allergen ids, synonyms). */
-export const GLYPH_ALIASES: Readonly<Record<string, string>> = {
+const GLYPH_ALIASES: Readonly<Record<string, string>> = {
   eggs: 'egg',
   halal: 'halal-certified',
   vegetarian: 'veg',

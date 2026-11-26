@@ -28,7 +28,7 @@ export function getRawStorageItem(key: string): string | null {
   }
 }
 
-export function getStorageItem<T>(key: string, fallback: T | null = null): T | null {
+function getStorageItem<T>(key: string, fallback: T | null = null): T | null {
   const item = getRawStorageItem(key);
 
   if (item === null) {
@@ -58,7 +58,7 @@ export function setRawStorageItem(key: string, value: string): void {
   }
 }
 
-export function setStorageItem<T>(key: string, value: T): void {
+function setStorageItem<T>(key: string, value: T): void {
   if (!isBrowser) {
     return;
   }
@@ -74,7 +74,7 @@ export function setJsonStorageItem<T>(key: string, value: T): void {
   setStorageItem(key, value);
 }
 
-export function removeStorageItem(key: string): void {
+function removeStorageItem(key: string): void {
   if (!isBrowser) {
     return;
   }

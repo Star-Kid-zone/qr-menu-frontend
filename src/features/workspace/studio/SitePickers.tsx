@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { cn } from "@/utils/cn";
 import { SearchInput } from "@/components/ui";
 import { SiteIcon } from "@/components/site-system/icons/SiteIcon";
-import { BUSINESS_TYPES, businessTypesByFamily, getBusinessType } from "@/components/site-system/business-types";
+import { businessTypesByFamily } from "@/components/site-system/business-types";
 import { skinsByFamily, getSkin } from "@/components/site-system/skins";
 import { LAYOUTS } from "@/components/templates/sections/layouts/registry";
 import { BUSINESS_FAMILIES, SKIN_FAMILIES, type BusinessFamily, type Palette, type SkinDefinition, type SkinFamily } from "@/components/site-system/types";
@@ -16,9 +16,9 @@ import { BUSINESS_FAMILY_LABELS, SKIN_FAMILY_LABELS } from "@/constants/site.con
  * live preview updates as the owner clicks.
  */
 
-const FAMILY_LABEL: Record<BusinessFamily, string> = BUSINESS_FAMILY_LABELS as unknown as Record<BusinessFamily, string>;
+const FAMILY_LABEL: Readonly<Record<BusinessFamily, string>> = BUSINESS_FAMILY_LABELS;
 
-const SKIN_FAMILY_LABEL: Record<SkinFamily, string> = SKIN_FAMILY_LABELS as unknown as Record<SkinFamily, string>;
+const SKIN_FAMILY_LABEL: Readonly<Record<SkinFamily, string>> = SKIN_FAMILY_LABELS;
 
 /* ───────────────────────── business type ───────────────────────── */
 
@@ -256,4 +256,3 @@ export function StyleGallery({
 }
 
 export { skinFormValues } from "@/components/site-system/skins/formValues";
-export { BUSINESS_TYPES, getBusinessType };

@@ -1,115 +1,14 @@
 import api from './api.service';
 import { API_BASE_URL } from '@/config/app.constants';
 import { getCsrfToken } from '@/utils/storage';
-import type { DashboardData } from '@/types';
 
-import type {
-  DateRange,
-  PlatformOverview,
-  UserListRow,
-  UsersListResponse,
-  BlueprintMenuItem,
-  OccasionPackWording,
-  BlueprintContent,
-  BlueprintSite,
-  BlueprintTheme,
-  BlueprintStory,
-  BlueprintBusiness,
-  BlueprintOffer,
-  BlueprintGalleryItem,
-  BlueprintFaq,
-  MenuBlueprint,
-  OnboardingTemplateConfigResponse,
-  TenantMenuItem,
-  TenantStaffMember,
-  UserDetailResponse,
-  PlatformTimelinePoint,
-  PlatformClickTarget,
-  PlatformSearchQuery,
-  PlatformTopDish,
-  PlatformHourlyPoint,
-  PlatformWeekdayPoint,
-  PlatformFunnelStep,
-  PlatformAnalyticsOverview,
-  AnalyticsTenantRow,
-  AnalyticsByUserResponse,
-  TenantAnalyticsData,
-  PlatformPrompt,
-  PromptCategorySummary,
-  PlatformMarketingAsset,
-  TenantRedirect,
-  CreateTenantRedirectInput,
-  PlatformAnnouncement,
-  QueueJob,
-  SocialAccountHealth,
-  JobsAndQueueResponse,
-  TenantWorkspaceSettings,
-} from '@/types/superadmin/superadmin.types';
+import type { DateRange, PlatformOverview, UserListRow, UsersListResponse, BlueprintMenuItem, OccasionPackWording, BlueprintContent, BlueprintSite, BlueprintTheme, BlueprintStory, BlueprintOffer, BlueprintGalleryItem, BlueprintFaq, MenuBlueprint, OnboardingTemplateConfigResponse, TenantMenuItem, UserDetailResponse, PlatformAnalyticsOverview, AnalyticsByUserResponse, TenantAnalyticsData, PlatformPrompt, PromptCategorySummary, PlatformMarketingAsset, TenantRedirect, CreateTenantRedirectInput, PlatformAnnouncement, QueueJob, JobsAndQueueResponse, TenantWorkspaceSettings } from '@/types/superadmin/superadmin.types';
 
-export type {
-  DateRange,
-  PlatformOverview,
-  UserListRow,
-  UsersListResponse,
-  BlueprintMenuItem,
-  OccasionPackWording,
-  BlueprintContent,
-  BlueprintSite,
-  BlueprintTheme,
-  BlueprintStory,
-  BlueprintBusiness,
-  BlueprintOffer,
-  BlueprintGalleryItem,
-  BlueprintFaq,
-  MenuBlueprint,
-  OnboardingTemplateConfigResponse,
-  TenantMenuItem,
-  TenantStaffMember,
-  UserDetailResponse,
-  PlatformTimelinePoint,
-  PlatformClickTarget,
-  PlatformSearchQuery,
-  PlatformTopDish,
-  PlatformHourlyPoint,
-  PlatformWeekdayPoint,
-  PlatformFunnelStep,
-  PlatformAnalyticsOverview,
-  AnalyticsTenantRow,
-  AnalyticsByUserResponse,
-  TenantAnalyticsData,
-  PlatformPrompt,
-  PromptCategorySummary,
-  PlatformMarketingAsset,
-  TenantRedirect,
-  CreateTenantRedirectInput,
-  PlatformAnnouncement,
-  QueueJob,
-  SocialAccountHealth,
-  JobsAndQueueResponse,
-  TenantWorkspaceSettings,
-};
-
-async function unwrap<T>(p: Promise<{ data?: unknown } | null | undefined>): Promise<T> {
-  const res = await p;
-  if (res && res.data !== undefined) {
-    const body = res.data;
-    if (
-      body &&
-      typeof body === 'object' &&
-      !Array.isArray(body) &&
-      'data' in body &&
-      body.data !== undefined
-    ) {
-      return body.data as T;
-    }
-    return body as T;
-  }
-  return res as T;
-}
+export type { DateRange, PlatformOverview, UserListRow, UsersListResponse, BlueprintMenuItem, OccasionPackWording, BlueprintContent, BlueprintSite, BlueprintTheme, BlueprintStory, BlueprintOffer, BlueprintGalleryItem, BlueprintFaq, MenuBlueprint, OnboardingTemplateConfigResponse, TenantMenuItem, UserDetailResponse, PlatformAnalyticsOverview, AnalyticsByUserResponse, TenantAnalyticsData, PlatformPrompt, PromptCategorySummary, PlatformMarketingAsset, TenantRedirect, CreateTenantRedirectInput, PlatformAnnouncement, QueueJob, JobsAndQueueResponse, TenantWorkspaceSettings };
 
 export const superadminService = {
   getOverview(range?: DateRange) {
-    return unwrap<PlatformOverview>(api.get('/superadmin/overview', { params: { range } }));
+    return api.get<PlatformOverview>('/superadmin/overview', { params: { range } }).then((res) => res.data);
   },
 
   listUsers(params: {
@@ -119,51 +18,47 @@ export const superadminService = {
     role?: 'admin' | 'superadmin';
     active?: boolean;
   }) {
-    return unwrap<UsersListResponse>(api.get('/superadmin/users', { params }));
+    return api.get<UsersListResponse>('/superadmin/users', { params }).then((res) => res.data);
   },
 
-  getUser(id: number) {
-    return unwrap<UserDetailResponse>(api.get(`/superadmin/users/${id}`));
+  getUser(id: string) {
+    return api.get<UserDetailResponse>(`/superadmin/users/${id}`).then((res) => res.data);
   },
 
-  toggleUserStatus(id: number, active: boolean) {
+  toggleUserStatus(id: string, active: boolean) {
     return api.put(`/superadmin/users/${id}/status`, { active });
   },
 
-  updateTenantMenu(userId: number, menuId: number, data: Partial<TenantMenuItem>) {
+  updateTenantMenu(userId: string, menuId: string, data: Partial<TenantMenuItem>) {
     return api.put(`/superadmin/users/${userId}/menus/${menuId}`, data);
   },
 
-  toggleTenantMenuAvailability(userId: number, menuId: number, availability: boolean) {
+  toggleTenantMenuAvailability(userId: string, menuId: string, availability: boolean) {
     return api.patch(`/superadmin/users/${userId}/menus/${menuId}/availability`, { availability });
   },
 
-  updateTenantPaymentReview(userId: number, data: { paymentType?: string; paymentLink?: string | null; reviewLink?: string | null }) {
+  updateTenantPaymentReview(userId: string, data: { paymentType?: string; paymentLink?: string | null; reviewLink?: string | null }) {
     return api.put(`/superadmin/users/${userId}/payment-review`, data);
   },
 
-  updateTenantBusiness(userId: number, data: Record<string, unknown>) {
+  updateTenantBusiness(userId: string, data: Record<string, unknown>) {
     return api.put(`/superadmin/users/${userId}/business`, data);
   },
 
   getPlatformAnalytics(range?: DateRange) {
-    return unwrap<PlatformAnalyticsOverview>(api.get('/superadmin/analytics/overview', { params: { range } }));
+    return api.get<PlatformAnalyticsOverview>('/superadmin/analytics/overview', { params: { range } }).then((res) => res.data);
   },
 
   getAnalyticsByUser(range?: DateRange, limit?: number) {
-    return unwrap<AnalyticsByUserResponse>(
-      api.get('/superadmin/analytics/by-user', { params: { range, limit } })
-    );
+    return api.get<AnalyticsByUserResponse>('/superadmin/analytics/by-user', { params: { range, limit } }).then((res) => res.data);
   },
 
-  getTenantAnalytics(userId: number, range?: DateRange, page?: number) {
-    return unwrap<TenantAnalyticsData>(
-      api.get(`/superadmin/analytics/tenants/${userId}`, { params: { range, page } })
-    );
+  getTenantAnalytics(userId: string, range?: DateRange, page?: number) {
+    return api.get<TenantAnalyticsData>(`/superadmin/analytics/tenants/${userId}`, { params: { range, page } }).then((res) => res.data);
   },
 
-  impersonateTenant(userId: number) {
-    return unwrap<{
+  impersonateTenant(userId: string) {
+    return api.post<{
       message: string;
       targetUser: { id: string; name: string; email?: string | null; role: string };
       impersonation: {
@@ -172,62 +67,62 @@ export const superadminService = {
         targetUserId: string;
         targetUserName: string;
       };
-    }>(api.post(`/superadmin/users/${userId}/impersonate`));
+    }>(`/superadmin/users/${userId}/impersonate`).then((res) => res.data);
   },
 
   getOnboardingTemplateConfig() {
-    return unwrap<OnboardingTemplateConfigResponse>(api.get('/superadmin/onboarding-template'));
+    return api.get<OnboardingTemplateConfigResponse>('/superadmin/onboarding-template').then((res) => res.data);
   },
 
   updateOnboardingTemplateConfig(data: { autoSeedEnabled?: boolean; defaultBlueprintId?: string }) {
-    return unwrap<{
+    return api.put<{
       message: string;
       autoSeedEnabled: boolean;
       defaultBlueprintId: string;
-    }>(api.put('/superadmin/onboarding-template', data));
+    }>('/superadmin/onboarding-template', data).then((res) => res.data);
   },
 
   getBlueprints() {
-    return unwrap<MenuBlueprint[]>(api.get('/superadmin/blueprints'));
+    return api.get<MenuBlueprint[]>('/superadmin/blueprints').then((res) => res.data);
   },
 
   createBlueprint(data: Partial<MenuBlueprint>) {
-    return unwrap<{ message: string; blueprint: MenuBlueprint }>(api.post('/superadmin/blueprints', data));
+    return api.post<{ message: string; blueprint: MenuBlueprint }>('/superadmin/blueprints', data).then((res) => res.data);
   },
 
   updateBlueprint(id: string, data: Partial<MenuBlueprint>) {
-    return unwrap<{ message: string; blueprint: MenuBlueprint }>(api.put(`/superadmin/blueprints/${id}`, data));
+    return api.put<{ message: string; blueprint: MenuBlueprint }>(`/superadmin/blueprints/${id}`, data).then((res) => res.data);
   },
 
   deleteBlueprint(id: string) {
-    return unwrap<{ message: string }>(api.delete(`/superadmin/blueprints/${id}`));
+    return api.delete<{ message: string }>(`/superadmin/blueprints/${id}`).then((res) => res.data);
   },
 
   resetBlueprint(id: string) {
-    return unwrap<{ message: string; blueprint: MenuBlueprint }>(api.post(`/superadmin/blueprints/${id}/reset`));
+    return api.post<{ message: string; blueprint: MenuBlueprint }>(`/superadmin/blueprints/${id}/reset`).then((res) => res.data);
   },
 
-  applyBlueprint(userId: number, blueprintId: string, mode: 'append' | 'replace' = 'append') {
-    return unwrap<{
+  applyBlueprint(userId: string, blueprintId: string, mode: 'append' | 'replace' = 'append') {
+    return api.post<{
       message: string;
       blueprintName: string;
       itemsAdded: number;
       mode: string;
-    }>(api.post(`/superadmin/users/${userId}/apply-blueprint`, { blueprintId, mode }));
+    }>(`/superadmin/users/${userId}/apply-blueprint`, { blueprintId, mode }).then((res) => res.data);
   },
 
   /** Corrections to the occasion date table, keyed "occasion-id:year". */
   /** Superadmin wording for the occasion packs (suggested banner / specials category). */
   getOccasionPacks() {
-    return unwrap<Record<string, OccasionPackWording>>(api.get('/superadmin/occasion-packs'));
+    return api.get<Record<string, OccasionPackWording>>('/superadmin/occasion-packs').then((res) => res.data);
   },
 
   saveOccasionPacks(packs: Record<string, OccasionPackWording>) {
-    return unwrap<Record<string, OccasionPackWording>>(api.put('/superadmin/occasion-packs', { packs }));
+    return api.put<Record<string, OccasionPackWording>>('/superadmin/occasion-packs', { packs }).then((res) => res.data);
   },
 
   getAnnouncements() {
-    return unwrap<PlatformAnnouncement[]>(api.get('/superadmin/announcements'));
+    return api.get<PlatformAnnouncement[]>('/superadmin/announcements').then((res) => res.data);
   },
 
   createAnnouncement(data: {
@@ -239,106 +134,102 @@ export const superadminService = {
     actionText?: string;
     isActive?: boolean;
   }) {
-    return unwrap<PlatformAnnouncement>(api.post('/superadmin/announcements', data));
+    return api.post<PlatformAnnouncement>('/superadmin/announcements', data).then((res) => res.data);
   },
 
-  toggleAnnouncement(id: string | number, isActive: boolean) {
-    return unwrap<PlatformAnnouncement>(api.patch(`/superadmin/announcements/${id}/status`, { isActive }));
+  toggleAnnouncement(id: string, isActive: boolean) {
+    return api.patch<PlatformAnnouncement>(`/superadmin/announcements/${id}/status`, { isActive }).then((res) => res.data);
   },
 
-  deleteAnnouncement(id: string | number) {
-    return unwrap<{ message: string }>(api.delete(`/superadmin/announcements/${id}`));
+  deleteAnnouncement(id: string) {
+    return api.delete<{ message: string }>(`/superadmin/announcements/${id}`).then((res) => res.data);
   },
 
   getActiveAnnouncements() {
-    return unwrap<PlatformAnnouncement[]>(api.get('/public/announcements'));
+    return api.get<PlatformAnnouncement[]>('/public/announcements').then((res) => res.data);
   },
 
-  dismissAnnouncement(id: string | number) {
-    return unwrap<{ success: boolean; message: string }>(api.post(`/public/announcements/${id}/dismiss`));
+  dismissAnnouncement(id: string) {
+    return api.post<{ success: boolean; message: string }>(`/public/announcements/${id}/dismiss`).then((res) => res.data);
   },
 
   getJobsAndQueue() {
-    return unwrap<JobsAndQueueResponse>(api.get('/superadmin/jobs'));
+    return api.get<JobsAndQueueResponse>('/superadmin/jobs').then((res) => res.data);
   },
 
-  retryJob(id: string | number) {
-    return unwrap<{ message: string; job: QueueJob }>(api.post(`/superadmin/jobs/${id}/retry`));
+  retryJob(id: string) {
+    return api.post<{ message: string; job: QueueJob }>(`/superadmin/jobs/${id}/retry`).then((res) => res.data);
   },
 
-  cancelJob(id: string | number) {
-    return unwrap<{ message: string; job: QueueJob }>(api.post(`/superadmin/jobs/${id}/cancel`));
+  cancelJob(id: string) {
+    return api.post<{ message: string; job: QueueJob }>(`/superadmin/jobs/${id}/cancel`).then((res) => res.data);
   },
 
   triggerQueueRunner() {
-    return unwrap<{ message: string }>(api.post('/superadmin/jobs/trigger-runner'));
+    return api.post<{ message: string }>('/superadmin/jobs/trigger-runner').then((res) => res.data);
   },
 
-  updateTenantWorkspace(userId: string | number, data: TenantWorkspaceSettings) {
-    return unwrap<unknown>(api.patch(`/superadmin/users/${userId}/workspace`, data));
+  updateTenantWorkspace(userId: string, data: TenantWorkspaceSettings) {
+    return api.patch<unknown>(`/superadmin/users/${userId}/workspace`, data).then((res) => res.data);
   },
 
-  listTenantRedirects(userId: string | number) {
-    return unwrap<TenantRedirect[]>(api.get(`/superadmin/users/${userId}/redirects`));
+  listTenantRedirects(userId: string) {
+    return api.get<TenantRedirect[]>(`/superadmin/users/${userId}/redirects`).then((res) => res.data);
   },
 
-  createTenantRedirect(userId: string | number, data: CreateTenantRedirectInput) {
-    return unwrap<{ message: string; redirect: TenantRedirect }>(
-      api.post(`/superadmin/users/${userId}/redirects`, data)
-    );
+  createTenantRedirect(userId: string, data: CreateTenantRedirectInput) {
+    return api.post<{ message: string; redirect: TenantRedirect }>(`/superadmin/users/${userId}/redirects`, data).then((res) => res.data);
   },
 
-  deleteTenantRedirect(userId: string | number, redirectId: string | number) {
-    return unwrap<{ message: string }>(api.delete(`/superadmin/users/${userId}/redirects/${redirectId}`));
+  deleteTenantRedirect(userId: string, redirectId: string) {
+    return api.delete<{ message: string }>(`/superadmin/users/${userId}/redirects/${redirectId}`).then((res) => res.data);
   },
 
   /* ─── Creative Studio & Platform Marketing Assets (Modules C, D, E) ─── */
   listMarketingAssets(params?: { type?: string; isPublished?: boolean; industryGroup?: string }) {
-    return unwrap<{ data: PlatformMarketingAsset[] }>(api.get('/superadmin/marketing-assets', { params }));
+    return api.get<{ data: PlatformMarketingAsset[] }>('/superadmin/marketing-assets', { params }).then((res) => res.data);
   },
 
   createMarketingAsset(data: Partial<PlatformMarketingAsset>) {
-    return unwrap<{ asset: PlatformMarketingAsset }>(api.post('/superadmin/marketing-assets', data));
+    return api.post<{ asset: PlatformMarketingAsset }>('/superadmin/marketing-assets', data).then((res) => res.data);
   },
 
   deleteMarketingAsset(id: string) {
-    return unwrap<{ success: boolean }>(api.delete(`/superadmin/marketing-assets/${id}`));
+    return api.delete<{ success: boolean }>(`/superadmin/marketing-assets/${id}`).then((res) => res.data);
   },
 
   uploadMarketingAsset(file: File) {
     const form = new FormData();
     form.append('file', file);
-    return unwrap<{ url: string; filename: string; mimeType: string; size: number }>(
-      api.post('/superadmin/marketing-assets/upload', form, {
+    return api.post<{ url: string; filename: string; mimeType: string; size: number }>('/superadmin/marketing-assets/upload', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
-      })
-    );
+      }).then((res) => res.data);
   },
 
   decodePoster(data: { image: string; mode?: string; render?: string; spec?: Record<string, unknown>; model?: string; hint?: string; width?: number; height?: number }) {
-    return unwrap<{ spec: Record<string, unknown>; cost?: number }>(api.post('/superadmin/marketing-assets/decode', data));
+    return api.post<{ spec: Record<string, unknown>; cost?: number }>('/superadmin/marketing-assets/decode', data).then((res) => res.data);
   },
 
 
   generateAiImage(data: { prompt: string; provider?: string; model?: string; aspectRatio?: string; referenceImageUrl?: string }) {
-    return unwrap<{ url: string; cost?: number }>(api.post('/superadmin/marketing-assets/generate-image', data));
+    return api.post<{ url: string; cost?: number }>('/superadmin/marketing-assets/generate-image', data).then((res) => res.data);
   },
 
 
   generateAiVideo(data: { prompt: string; model?: string; duration?: number; aspectRatio?: string; firstFrameUrl?: string }) {
-    return unwrap<{ id: string; status: string }>(api.post('/superadmin/marketing-assets/generate-video', data));
+    return api.post<{ id: string; status: string }>('/superadmin/marketing-assets/generate-video', data).then((res) => res.data);
   },
 
   getVideoStatus(jobId: string) {
-    return unwrap<{ status: string; url?: string; cost?: number; error?: string }>(api.get(`/superadmin/marketing-assets/video/${jobId}`));
+    return api.get<{ status: string; url?: string; cost?: number; error?: string }>(`/superadmin/marketing-assets/video/${jobId}`).then((res) => res.data);
   },
 
   generateMarketingCopy(data: { restaurantName?: string; cuisine?: string; tone?: string; dishName?: string; price?: string | number; description?: string; goal?: string; languages?: string[]; count?: number }) {
-    return unwrap<{ variants: Array<{ caption?: string; hashtags?: string[] }>; cost?: number }>(api.post('/superadmin/marketing-assets/copy', data));
+    return api.post<{ variants: Array<{ caption?: string; hashtags?: string[] }>; cost?: number }>('/superadmin/marketing-assets/copy', data).then((res) => res.data);
   },
 
   publishAssetToTenants(id: string, data: { targetAudience: 'all' | 'industry' | 'selected_tenants'; targetIndustryId?: string; workspaceIds?: string[] }) {
-    return unwrap<{ success: boolean; asset: PlatformMarketingAsset }>(api.post(`/superadmin/marketing-assets/${id}/publish`, data));
+    return api.post<{ success: boolean; asset: PlatformMarketingAsset }>(`/superadmin/marketing-assets/${id}/publish`, data).then((res) => res.data);
   },
 
   async runAutomationScript(
@@ -362,8 +253,16 @@ export const superadminService = {
     });
 
     if (!res.ok || !res.body) {
-      const errText = await res.text().catch(() => 'Failed to run script');
-      throw new Error(errText || `Server error (${res.status})`);
+      // Errors before streaming starts come back as the standard JSON envelope: show its `error` text.
+      const errText = await res.text().catch(() => '');
+      let message = errText;
+      try {
+        const body = JSON.parse(errText) as { error?: unknown };
+        if (typeof body.error === 'string' && body.error) message = body.error;
+      } catch {
+        // Not JSON: keep the raw text.
+      }
+      throw new Error(message || `The script could not be started (${res.status}).`);
     }
 
     const reader = res.body.getReader();
@@ -392,15 +291,11 @@ export const superadminService = {
   },
 
   listScriptDownloads() {
-    return unwrap<{ files: Array<{ name: string; sizeBytes: number; mtime: number; kind: 'image' | 'video' }> }>(
-      api.get('/superadmin/marketing-assets/script-downloads')
-    );
+    return api.get<{ files: Array<{ name: string; sizeBytes: number; mtime: number; kind: 'image' | 'video' }> }>('/superadmin/marketing-assets/script-downloads').then((res) => res.data);
   },
 
   ingestScriptDownload(data: { filename: string; title?: string; caption?: string; hashtags?: string[] }) {
-    return unwrap<{ success: boolean; asset: PlatformMarketingAsset }>(
-      api.post('/superadmin/marketing-assets/ingest-download', data)
-    );
+    return api.post<{ success: boolean; asset: PlatformMarketingAsset }>('/superadmin/marketing-assets/ingest-download', data).then((res) => res.data);
   },
 
   // ─── AI Prompt Library & Visual References ────────────────────────────────
@@ -412,38 +307,34 @@ export const superadminService = {
     limit?: number;
     offset?: number;
   }) {
-    return unwrap<{ data: PlatformPrompt[]; categories: PromptCategorySummary[] }>(
-      api.get('/superadmin/prompts', { params })
-    );
+    return api.get<{ data: PlatformPrompt[]; categories: PromptCategorySummary[] }>('/superadmin/prompts', { params }).then((res) => res.data);
   },
 
   getPrompt(id: string) {
-    return unwrap<{ prompt: PlatformPrompt }>(api.get(`/superadmin/prompts/${id}`));
+    return api.get<{ prompt: PlatformPrompt }>(`/superadmin/prompts/${id}`).then((res) => res.data);
   },
 
   createPrompt(data: Partial<PlatformPrompt>) {
-    return unwrap<{ prompt: PlatformPrompt }>(api.post('/superadmin/prompts', data));
+    return api.post<{ prompt: PlatformPrompt }>('/superadmin/prompts', data).then((res) => res.data);
   },
 
   updatePrompt(id: string, data: Partial<PlatformPrompt>) {
-    return unwrap<{ prompt: PlatformPrompt }>(api.put(`/superadmin/prompts/${id}`, data));
+    return api.put<{ prompt: PlatformPrompt }>(`/superadmin/prompts/${id}`, data).then((res) => res.data);
   },
 
   deletePrompt(id: string) {
-    return unwrap<{ success: boolean; deletedId: string }>(api.delete(`/superadmin/prompts/${id}`));
+    return api.delete<{ success: boolean; deletedId: string }>(`/superadmin/prompts/${id}`).then((res) => res.data);
   },
 
   togglePromptFavorite(id: string) {
-    return unwrap<{ prompt: PlatformPrompt }>(api.post(`/superadmin/prompts/${id}/favorite`));
+    return api.post<{ prompt: PlatformPrompt }>(`/superadmin/prompts/${id}/favorite`).then((res) => res.data);
   },
 
   recordPromptUsage(id: string) {
-    return unwrap<{ prompt: PlatformPrompt }>(api.post(`/superadmin/prompts/${id}/use`));
+    return api.post<{ prompt: PlatformPrompt }>(`/superadmin/prompts/${id}/use`).then((res) => res.data);
   },
 
   seedDefaultPrompts(force?: boolean) {
-    return unwrap<{ message: string; count: number; data?: PlatformPrompt[] }>(
-      api.post('/superadmin/prompts/seed', { force })
-    );
+    return api.post<{ message: string; count: number; data?: PlatformPrompt[] }>('/superadmin/prompts/seed', { force }).then((res) => res.data);
   },
 };

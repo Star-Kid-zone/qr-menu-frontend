@@ -151,18 +151,6 @@ export const MENU_THEME_OPTIONS: ThemeOption[] = [
 
 export const DEFAULT_LOADING_SCREEN_THEME = 'circular';
 
-export const LOADING_SCREEN_GROUP_ORDER = [
-  'Default',
-  'Restaurant',
-  'Universal',
-  'Retail',
-  'Hospitality',
-  'Wellness',
-  'Technology',
-  'Beauty',
-  'Health',
-] as const;
-
 export const LOADING_SCREEN_OPTIONS = [
   { value: 'circular', label: 'Circular Default', group: 'Default', description: 'Keep the classic spinner fallback.', accent: '#0F766E' },
   { value: 'universal-orbit', label: 'Orbit Glow', group: 'Universal', description: 'A premium orbital ring for any brand.', accent: '#0EA5E9' },
@@ -194,3 +182,9 @@ export const LOADING_SCREEN_OPTIONS = [
   { value: 'restaurant-asian', label: 'Asian Flow', group: 'Restaurant', description: 'A balanced motion for broader Asian dining.', accent: '#14B8A6' },
   { value: 'restaurant-mediterranean', label: 'Mediterranean Sun', group: 'Restaurant', description: 'Bright and airy motion for Mediterranean concepts.', accent: '#0EA5E9' },
 ] as const;
+
+/** Default `sizes` for a menu card image that spans its grid column. */
+export const CARD_IMAGE_SIZES = "(max-width: 768px) 100vw, 33vw";
+/** Pixel width of one Tailwind spacing unit (size-16 = 64px) and of 1rem. */
+export const TAILWIND_UNIT_PX = 4;
+export const REM_PX = 16;

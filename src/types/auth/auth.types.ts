@@ -6,27 +6,6 @@ export type StaffRole = 'manager' | 'staff';
 
 export type UserRole = 'admin' | 'superadmin' | 'user';
 
-export type AppRole = UserRole | 'guest';
-
-export interface User {
-  id: number;
-  user_id: string;
-  name?: string;
-  email?: string | null;
-  role: UserRole;
-  active: boolean;
-  created_at?: string;
-  updated_at?: string;
-}
-
-export interface AuthResponse {
-  data: {
-    token: string;
-    user: User;
-    active: boolean;
-  };
-}
-
 export interface LoginFormValues {
   userId?: string;
   email?: string;
@@ -49,4 +28,46 @@ export interface ImpersonationSession {
   originalSuperadminId: string;
   targetUserId: string;
   targetUserName: string;
+}
+
+/** Which story the sign-in screens' scene tells. */
+export type AuthStageVariant = 'signin' | 'register' | 'reset';
+
+/** A product area shown on the sign-in screens. */
+export type AuthFeatureKey = 'menu' | 'website' | 'reviews' | 'social' | 'qr';
+
+/** What the register form shares with the scene beside it (live website preview). */
+export interface AuthPreviewState {
+  businessName: string;
+  setBusinessName: (name: string) => void;
+}
+
+/** Real address and starter menu returned by POST /auth/register, shown after the code is confirmed. */
+export interface RegisterResult {
+  slug: string | null;
+  businessName: string | null;
+  starterDishes: number | null;
+}
+
+/** The signed-in person returned by login, staff login, verify-code and profile. */
+interface SessionUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  role: UserRole;
+  /** Staff sessions only: the units the staff role may use (null/undefined = owner, full access). */
+  permissions?: PermissionUnit[] | null;
+  staffId?: string;
+  staffRole?: string;
+}
+
+/** Body of login / staff login / verify-code / profile responses. */
+export interface SessionResponse {
+  message?: string;
+  user: SessionUser;
+}
+
+/** Body of a plain action response (logout, password change, resend code...). */
+export interface MessageResponse {
+  message?: string;
 }

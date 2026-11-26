@@ -5,7 +5,7 @@ import { useMotionValueEvent, useScroll } from "framer-motion";
 import { useState } from "react";
 import { routes } from "@/config/routes";
 import { cn } from "@/utils/cn";
-import { BrandMark } from "./QrMark";
+import { FeastOwlLogo } from "@/components/brand";
 
 const NAV = [
   { href: "#guests", label: "For guests" },
@@ -29,9 +29,8 @@ export function SiteHeader({ brand }: { brand: string }) {
       )}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2.5 text-[1.0625rem] font-bold tracking-tight">
-          <BrandMark />
-          {brand}
+        <Link href="/" aria-label={`${brand} home`} className="flex items-center">
+          <FeastOwlLogo tone={solid ? "light" : "dark"} className="text-[1.375rem]" markClassName="size-9" />
         </Link>
         <nav aria-label="Page sections" className="hidden items-center gap-7 text-sm font-medium md:flex">
           {NAV.map((n) => (

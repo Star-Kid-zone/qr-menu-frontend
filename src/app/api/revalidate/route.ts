@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import crypto from 'node:crypto';
-import { HTTP_STATUS } from '@/constants';
+import { HTTP_STATUS, PORTAL_TAG_PREFIX, PUBLIC_MENU_PATH, TENANT_SITE_PREFIX } from '@/constants';
 
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
@@ -30,6 +30,13 @@ export async function POST(req: NextRequest) {
     // so the first guest after an owner's save still got the old page. `expire: 0`
     // expires it immediately — the next request renders the new content.
     revalidateTag(tag, { expire: 0 });
+    // A restaurant's guest pages are cached (ISR) under the tenant-site route; expire them too so
+    // the next guest gets the new page rather than one rendered from the old data.
+    const slug = tag.startsWith(PORTAL_TAG_PREFIX) ? tag.slice(PORTAL_TAG_PREFIX.length) : null;
+    if (slug) {
+      revalidatePath(`${TENANT_SITE_PREFIX}/${slug}`);
+      revalidatePath(`${TENANT_SITE_PREFIX}/${slug}${PUBLIC_MENU_PATH}`);
+    }
   }
 
   return NextResponse.json({ revalidated: true, tags });

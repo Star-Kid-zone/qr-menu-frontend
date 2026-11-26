@@ -12,6 +12,7 @@ import {
 } from 'react-icons/pi';
 import { usePagination } from '@/hooks/usePagination';
 import { Pagination } from '@/components/ui/Pagination';
+import { getApiErrorMessage } from "@/utils/errors";
 
 export interface ListGalleryHandle {
   openUpload: () => void;
@@ -71,8 +72,8 @@ export const ListGallery = forwardRef<ListGalleryHandle, ListGalleryProps>(({
       await workspaceService.addGalleryItem(formData);
       toast.success('Image uploaded successfully!');
       await refresh();
-    } catch {
-      toast.error('Failed to upload image.');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to upload image.'));
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -85,8 +86,8 @@ export const ListGallery = forwardRef<ListGalleryHandle, ListGalleryProps>(({
       toast.success('Image deleted.');
       setImageIdToDelete(null);
       await refresh();
-    } catch {
-      toast.error('Failed to delete image.');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to delete image.'));
     }
   };
 

@@ -1,7 +1,6 @@
 import type { GoogleReviewRecord } from "@/services/workspace.service";
 import { LOW_RATING_MAX } from "@/constants/reviews.constants";
 
-export { LOW_RATING_MAX };
 
 export type ReviewFilter = "all" | "needs_reply" | "low" | "featured";
 export type ReviewSort = "urgent" | "newest" | "oldest" | "highest" | "lowest";

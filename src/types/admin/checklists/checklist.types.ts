@@ -1,5 +1,5 @@
 export type ChecklistTemplateType = 'opening' | 'closing' | 'custom';
-export type ChecklistRunStatus = 'pending' | 'in_progress' | 'completed';
+type ChecklistRunStatus = 'pending' | 'in_progress' | 'completed';
 
 export interface ChecklistItem {
   id: string;
@@ -18,7 +18,7 @@ export interface ChecklistTemplate {
   updatedAt: string;
 }
 
-export interface ChecklistItemStatus {
+interface ChecklistItemStatus {
   itemId: string;
   completed: boolean;
   completedByStaffId: string | null;

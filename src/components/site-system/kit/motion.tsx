@@ -10,7 +10,9 @@ import {
   type ElementType,
   type ReactNode,
 } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { m, useScroll, useTransform } from "framer-motion";
+import { MotionRoot } from "@/components/motion/MotionRoot";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 /**
  * Motion kit (docs/site-system/PLAN.md §3 rule 6).
@@ -241,9 +243,11 @@ export function Parallax({ children, amount = 60, className, style }: { children
   const y = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [-amount / 2, amount / 2]);
   return (
     <div ref={ref} className={className} style={{ ...style, overflow: "hidden" }}>
-      <motion.div style={{ y, height: "100%", scale: reduce ? 1 : 1 + amount / 900 }} className="will-change-transform">
-        {children}
-      </motion.div>
+      <MotionRoot>
+        <m.div style={{ y, height: "100%", scale: reduce ? 1 : 1 + amount / 900 }} className="will-change-transform">
+          {children}
+        </m.div>
+      </MotionRoot>
     </div>
   );
 }
@@ -277,28 +281,3 @@ export function MarqueeTrack({ children, seconds = 48, className, style }: { chi
   );
 }
 
-/** Leans gently towards the pointer (fine pointers only). Wrap a button or link. */
-export function Magnetic({ children, strength = 8, className }: { children: ReactNode; strength?: number; className?: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const move = (e: React.PointerEvent) => {
-    const el = ref.current;
-    if (!el || e.pointerType !== "mouse" || motionBlocked(el)) return;
-    const r = el.getBoundingClientRect();
-    const dx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
-    const dy = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
-    el.style.transform = `translate(${(dx * strength).toFixed(1)}px, ${(dy * strength * 0.6).toFixed(1)}px)`;
-  };
-  const leave = () => {
-    if (ref.current) ref.current.style.transform = "";
-  };
-  return (
-    <span
-      ref={ref}
-      onPointerMove={move}
-      onPointerLeave={leave}
-      className={`inline-block transition-transform duration-300 ease-out ${className ?? ""}`}
-    >
-      {children}
-    </span>
-  );
-}

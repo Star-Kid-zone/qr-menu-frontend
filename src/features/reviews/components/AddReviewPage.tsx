@@ -1,5 +1,6 @@
 "use client";
 
+import { loadWorkspace as loadCachedWorkspace } from '@/hooks/useWorkspace';
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -30,7 +31,7 @@ import {
 
 type Step = "find" | "confirm" | "import" | "done";
 
-const STEPS: { id: Step; label: string }[] = ADD_REVIEW_STEPS as unknown as { id: Step; label: string }[];
+const STEPS: readonly { id: Step; label: string }[] = ADD_REVIEW_STEPS;
 
 function stepIndex(step: Step) {
   return step === "done" ? STEPS.length : STEPS.findIndex((s) => s.id === step);
@@ -84,13 +85,13 @@ function AddReviewPageContent() {
     let mounted = true;
     async function loadWorkspace() {
       try {
-        const res = await workspaceService.getWorkspace();
+        const ws = await loadCachedWorkspace();
         if (mounted) {
-          setReviewLink(res.data.review?.googleReviewLink || "");
+          setReviewLink(ws.review?.googleReviewLink || "");
         }
       } catch (error) {
         console.error(error);
-        toast.error("Failed to load review configuration.");
+        toast.error(getApiErrorMessage(error, "Failed to load review configuration."));
       }
     }
     loadWorkspace();
@@ -187,8 +188,8 @@ function AddReviewPageContent() {
       setCopied(true);
       toast.success("Review link copied");
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("Failed to copy review link");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to copy review link"));
     }
   };
 

@@ -1,32 +1,27 @@
 import 'server-only';
 
 import { cache } from 'react';
-import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
-import { SERVER_API_BASE_URL } from '@/config/app.constants';
+import { SERVER_API_BASE_URL, getTenantPublicUrl } from '@/config/app.constants';
 import { mapPublicUserDetailsFromApi } from '@/components/templates/core/mapPublicUserDetails';
 import { MappedPublicUserDetails } from '@/types/public/templates/mapPublicUserDetails.types';
 import type { RawPublicSiteData } from '@/types/public/templates/rawPublicSiteData.types';
 import type { Menu } from '@/types';
-import type { PublicAward, PublicTeamMember, PublicSiteEvent } from '@/components/site-system/types';
-import { normalizeMenuItems } from '@/utils/public-site.utils';
-import type { PublicMenuPayload, PublicSitemapSlug, PortalMenuItem, PortalResponse } from '@/types/public/publicSite.types';
+import type { PublicMenuPayload, PublicSitemapSlug, PortalResponse } from '@/types/public/publicSite.types';
 
 export type { PublicSitemapSlug };
-import { buildPublicTenantUrlServer, getTenantSlugFromHost, isLocalDevHost } from '@/utils/tenantHost';
 import { PUBLIC_LANDING_PATH, PUBLIC_MENU_PATH } from '@/components/templates/core/paths';
-import { TENANT_SLUG_HEADER } from '@/proxy';
 
 // Guest pages are cached for up to a minute and invalidated immediately on
 // any admin edit via on-demand revalidation (see revalidatePortal on the
 // backend + /api/revalidate below) — this restores real ISR/CDN caching
 // instead of re-fetching from the API on every single guest request.
 import { PUBLIC_REVALIDATE_SECONDS } from '@/constants/app.constants';
+import { PORTAL_TAG_PREFIX } from '@/constants/site.constants';
 
-export { PUBLIC_REVALIDATE_SECONDS };
 
 /** A non-2xx answer from the public API, keeping the status so callers can tell "no such site" from "backend down". */
-export class PublicApiError extends Error {
+class PublicApiError extends Error {
   constructor(readonly path: string, readonly status: number) {
     super(`Request failed for ${path}: ${status}`);
     this.name = 'PublicApiError';
@@ -78,7 +73,7 @@ function isPlainObject(v: unknown): boolean {
 export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<RawPublicSiteData> => {
   const normalizedSlug = slug.trim().toLowerCase();
   const portalResponse = await fetchJson(`/public/portal/${encodeURIComponent(slug.trim())}`, {
-    tags: [`portal:${normalizedSlug}`],
+    tags: [`${PORTAL_TAG_PREFIX}${normalizedSlug}`],
   });
   if (!portalResponse) throw new Error('Empty response');
   const portal = portalResponse as PortalResponse;
@@ -91,7 +86,7 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
     Object.keys(portalMenu).forEach(category => {
       portalMenu[category].forEach((item) => {
         menuItems.push({
-          id: Number(item.id),               // API returns string id — cast to number
+          id: String(item.id),
           item: item.item,
           description: item.description ?? '',
           price: String(item.price ?? '0'),
@@ -114,9 +109,9 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
   }
 
   return {
-    user_id: Number(portal.portalInfo.userId),
+    user_id: String(portal.portalInfo.userId),
     settings: {
-      id: Number(portal.portalInfo.workspaceId),
+      id: String(portal.portalInfo.workspaceId),
       public_slug: slug,
       landing_theme: portal.portalInfo.landingTheme,
       landing_structure: portal.portalInfo.landingStructure,
@@ -174,7 +169,7 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
     },
     business: {
       business_name: portal.portalInfo.businessName,
-      industry_id: portal.portalInfo.industryId != null ? Number(portal.portalInfo.industryId) : null,
+      industry_id: portal.portalInfo.industryId != null ? String(portal.portalInfo.industryId) : null,
       industry_name: portal.portalInfo.industryName ?? null,
       industry_group: portal.portalInfo.industryGroup ?? null,
       phone: portal.portalInfo.phone,
@@ -227,7 +222,7 @@ export const getRawLandingWithMenuBySlug = cache(async (slug: string): Promise<R
   } as RawPublicSiteData;
 });
 
-export const getLandingBySlug = cache(async (slug: string): Promise<MappedPublicUserDetails> => {
+const getLandingBySlug = cache(async (slug: string): Promise<MappedPublicUserDetails> => {
   const data = await getRawLandingWithMenuBySlug(slug);
   const mapped = mapPublicUserDetailsFromApi(data);
   if (!mapped.ok) {
@@ -236,7 +231,7 @@ export const getLandingBySlug = cache(async (slug: string): Promise<MappedPublic
   return mapped.value;
 });
 
-export const getMenuBySlug = cache(async (slug: string): Promise<PublicMenuPayload> => {
+const getMenuBySlug = cache(async (slug: string): Promise<PublicMenuPayload> => {
   const mapped = await getLandingBySlug(slug);
   const data = await getRawLandingWithMenuBySlug(slug);
   return {
@@ -246,48 +241,16 @@ export const getMenuBySlug = cache(async (slug: string): Promise<PublicMenuPaylo
   };
 });
 
-/** The host the guest asked for (the CDN/proxy sets x-forwarded-host). The single place pages read it from. */
-export async function getRequestHost(): Promise<string> {
-  const headerStore = await headers();
-  return headerStore.get('x-forwarded-host') || headerStore.get('host') || '';
-}
-
-export async function getRequestProto(): Promise<string> {
-  const headerStore = await headers();
-  const forwarded = headerStore.get('x-forwarded-proto');
-  if (forwarded) return forwarded;
-  return isLocalDevHost(await getRequestHost()) ? 'http' : 'https';
-}
-
 /**
- * The restaurant for this request: a verified custom domain resolved by
- * src/proxy.ts (which strips any client-sent copy of the header first), or a
- * `<slug>.<root>` subdomain.
+ * The tenant landing for a slug (from the tenant-site route the proxy rewrites guest hosts to).
+ * A slug that does not exist follows a stored redirect (renamed slug) or 404s.
  */
-export async function getTenantSlugFromRequestHost() {
-  const fromProxy = (await headers()).get(TENANT_SLUG_HEADER);
-  if (fromProxy) return fromProxy;
-  return getTenantSlugFromHost(await getRequestHost());
-}
-
-/**
- * The tenant landing for the current host, or null when the host is not a
- * tenant host (bare domain, app., localhost…), where the platform's own
- * marketing page belongs.
- *
- * A tenant-shaped host whose slug does not exist follows a stored redirect
- * (renamed slug) or 404s; it no longer falls back to the marketing page.
- */
-export async function resolveLandingFromRequestHost() {
-  const slug = await getTenantSlugFromRequestHost();
-  if (!slug) return null;
+export async function resolveLandingBySlug(slug: string) {
   return { slug, data: await requireRawLandingBySlug(slug) };
 }
 
-/** Same as resolveLandingFromRequestHost, for /menu. */
-export async function resolveMenuFromRequestHost() {
-  const slug = await getTenantSlugFromRequestHost();
-  if (!slug) return null;
+/** Same as resolveLandingBySlug, for /menu. */
+export async function resolveMenuBySlug(slug: string) {
   try {
     return await getMenuBySlug(slug);
   } catch (err) {
@@ -315,7 +278,8 @@ async function redirectOrNotFound(path: string, page: string = PUBLIC_LANDING_PA
       // An internal target is the restaurant's new slug: send the guest to that restaurant's own host.
       redirectTarget = targetType === 'external'
         ? target
-        : buildPublicTenantUrlServer(target, await getRequestHost(), await getRequestProto(), page);
+        // Built from config, not the request host, so cached guest pages never read headers().
+        : `${getTenantPublicUrl(target)}${page === PUBLIC_LANDING_PATH ? '' : page}`;
     }
   } catch {
     // No redirect for this path — fall through to notFound() below.
@@ -328,7 +292,7 @@ async function redirectOrNotFound(path: string, page: string = PUBLIC_LANDING_PA
   notFound();
 }
 
-export async function requireRawLandingBySlug(slug: string): Promise<RawPublicSiteData> {
+async function requireRawLandingBySlug(slug: string): Promise<RawPublicSiteData> {
   try {
     return await getRawLandingWithMenuBySlug(slug);
   } catch (err) {

@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { getTenantSlugFromHost, isLocalDevHost, PLATFORM_SUBDOMAINS } from "./tenantHost";
+import { buildTenantUrlForHost, getTenantSlugFromHost, isLocalDevHost, PLATFORM_SUBDOMAINS } from "./tenantHost";
 
-const ROOT = "mynagaram.com";
+const ROOT = "feastowl.com";
 
 describe("getTenantSlugFromHost", () => {
   it.each([
     ["vimalrestaurant.localhost:3000", "vimalrestaurant"],
     ["vimal.localhost", "vimal"],
     ["VIMAL.LOCALHOST:3000", "vimal"],
-    ["vimal.mynagaram.com", "vimal"],
-    ["vimal.mynagaram.com:443", "vimal"],
-    ["vimal.mynagaram.com.", "vimal"],
-    ["cafe-roma-42.mynagaram.com", "cafe-roma-42"],
+    ["vimal.feastowl.com", "vimal"],
+    ["vimal.feastowl.com:443", "vimal"],
+    ["vimal.feastowl.com.", "vimal"],
+    ["cafe-roma-42.feastowl.com", "cafe-roma-42"],
   ])("resolves tenant host %s -> %s", (host, slug) => {
     expect(getTenantSlugFromHost(host, ROOT)).toBe(slug);
   });
@@ -20,24 +20,24 @@ describe("getTenantSlugFromHost", () => {
     // platform hosts
     "localhost:3000",
     "127.0.0.1:3000",
-    "mynagaram.com",
-    "www.mynagaram.com",
-    "app.mynagaram.com",
-    "api.mynagaram.com",
-    "apigateway.mynagaram.com",
+    "feastowl.com",
+    "www.feastowl.com",
+    "app.feastowl.com",
+    "api.feastowl.com",
+    "apigateway.feastowl.com",
     "app.localhost:3000",
     // deeper than one label
-    "a.b.mynagaram.com",
+    "a.b.feastowl.com",
     "a.b.localhost",
     // unrelated domains must never be read as a tenant (custom domains go through a lookup instead)
     "menu.pizzaroma.com",
     "pizzaroma.co.uk",
     "www.pizzaroma.com",
-    "vimal.mynagaram.com.evil.com",
-    "evilmynagaram.com",
+    "vimal.feastowl.com.evil.com",
+    "evilfeastowl.com",
     // invalid labels
     "-vimal.localhost",
-    "vimal-.mynagaram.com",
+    "vimal-.feastowl.com",
     "vi_mal.localhost",
     "",
   ])("returns null for %s", (host) => {
@@ -45,7 +45,7 @@ describe("getTenantSlugFromHost", () => {
   });
 
   it("does not treat a root domain written with stray dots differently", () => {
-    expect(getTenantSlugFromHost("vimal.mynagaram.com", ".mynagaram.com.")).toBe("vimal");
+    expect(getTenantSlugFromHost("vimal.feastowl.com", ".feastowl.com.")).toBe("vimal");
   });
 
   it("never returns a platform subdomain", () => {
@@ -61,7 +61,30 @@ describe("isLocalDevHost", () => {
     expect(isLocalDevHost(h)).toBe(true);
   });
 
-  it.each(["mynagaram.com", "vimal.mynagaram.com", "localhost.evil.com", "notlocalhost"])("%s is not local", (h) => {
+  it.each(["feastowl.com", "vimal.feastowl.com", "localhost.evil.com", "notlocalhost"])("%s is not local", (h) => {
     expect(isLocalDevHost(h)).toBe(false);
+  });
+});
+
+describe("buildTenantUrlForHost", () => {
+  it.each([
+    ["localhost:3000", "http:", "http://vimal.localhost:3000/menu"],
+    ["127.0.0.1:3000", "http:", "http://vimal.localhost:3000/menu"],
+    ["app.localhost:3000", "http", "http://vimal.localhost:3000/menu"],
+    ["localhost", "http:", "http://vimal.localhost/menu"],
+  ])("keeps local dev on <slug>.localhost (%s)", (host, proto, expected) => {
+    expect(buildTenantUrlForHost("Vimal", host, proto, "/menu")).toBe(expected);
+  });
+
+  it.each(["feastowl.com", "www.feastowl.com", "app.feastowl.com", "main.d123.amplifyapp.com", "feastowl.com:443"])(
+    "uses the root domain in production, never the current host (%s)",
+    (host) => {
+      expect(buildTenantUrlForHost("vimal", host, "https:", "menu")).toBe("https://vimal.feastowl.com/menu");
+    },
+  );
+
+  it("returns an empty string without a slug", () => {
+    expect(buildTenantUrlForHost("  ", "localhost:3000")).toBe("");
+    expect(buildTenantUrlForHost(null, "feastowl.com")).toBe("");
   });
 });

@@ -10,3 +10,4 @@ export * from "./components/tabs/ContentTab";
 export * from "./components/tabs/FaqsTab";
 export * from "./components/tabs/ReviewsTab";
 export * from "./components/BusinessHubPage";
+export { useBusinessHubState } from "./hooks/useBusinessHubState";

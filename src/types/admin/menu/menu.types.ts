@@ -1,6 +1,6 @@
-export interface Menu {
-  id: string | number;
-  business_id?: string | number;
+﻿export interface Menu {
+  id: string;
+  business_id?: string;
   name?: string;
   item: string;
   description: string;
@@ -8,23 +8,23 @@ export interface Menu {
   image?: string;
   image_url?: string;
   imageUrl?: string;
-  /** Extra gallery photos beyond the cover `image_url`/`imageUrl` — stored as plain URL
+  /** Extra gallery photos beyond the cover `image_url`/`imageUrl` â€” stored as plain URL
    *  strings, though some legacy data may still hand back `{id, url}` objects. */
-  images?: (string | { id: string | number; url: string })[];
-  /** Extra promo videos for the item — plain URL strings. */
+  images?: (string | { id: string; url: string })[];
+  /** Extra promo videos for the item â€” plain URL strings. */
   videos?: string[];
   category: string;
   type: string;
   popular: boolean;
   availability: boolean;
   availability_time?: string;
-  /** e.g. ['vegetarian', 'gluten_free'] — see constants/dietary.constants.ts */
+  /** e.g. ['vegetarian', 'gluten_free'] â€” see constants/dietary.constants.ts */
   dietaryTags?: string[];
   allergens?: string[];
   /** 0 (not spicy) to 3 (hot); undefined/null = not specified */
   spiceLevel?: number | null;
   calories?: number | null;
-  /** Business-type details, display only: { [setId]: { [field]: value } } — see site-system/attributes.ts */
+  /** Business-type details, display only: { [setId]: { [field]: value } } â€” see site-system/attributes.ts */
   attributes?: Record<string, Record<string, unknown>>;
   /** Several prices for one item (e.g. Glass / Bottle). `price` is the lowest of them. */
   priceOptions?: Array<{ label: string; price: string }>;
@@ -75,7 +75,8 @@ export interface MenuItem {
   name?: string;
   item: string;
   category: string;
-  price: number;
+  /** Decimal string as the API returns it (e.g. "120.00"). */
+  price: string;
   availability: boolean;
   imageUrl?: string;
   type?: string;
@@ -87,4 +88,11 @@ export interface MenuItem {
   calories?: number | null;
 }
 
-export type MenuViewMode = 'grid' | 'list';
+/** One dish as GET /menu/:id returns it (the edit form's source). */
+export interface MenuItemDetail extends MenuItem {
+  availabilityTime?: string | null;
+  images?: string[] | null;
+  videos?: string[] | null;
+  attributes?: Record<string, Record<string, unknown>> | null;
+  priceOptions?: Array<{ label?: unknown; price?: unknown }> | null;
+}

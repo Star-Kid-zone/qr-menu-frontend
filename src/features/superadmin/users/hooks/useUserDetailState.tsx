@@ -1,5 +1,6 @@
 'use client';
 
+import { sessionChanged } from '@/services/workspaceEvents';
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -15,9 +16,10 @@ import { toast } from '@/components/ui';
 import { setStoredUserRole, setImpersonationSession } from '@/utils/storage';
 import { INVALID_USER_ERROR } from '@/constants/auth.constants';
 import type { UserDetailTabId, BusinessFormData, PaymentFormData, WorkspaceFormData } from '../types';
+import { getApiErrorMessage } from "@/utils/errors";
 
 interface UseUserDetailStateProps {
-  userId: number;
+  userId: string;
 }
 
 export function useUserDetailState({ userId }: UseUserDetailStateProps) {
@@ -234,7 +236,7 @@ export function useUserDetailState({ userId }: UseUserDetailStateProps) {
       );
     } catch (e) {
       console.error(e);
-      toast.error("Couldn't change the account status. Try again.");
+      toast.error(getApiErrorMessage(e, "Couldn't change the account status. Try again."));
     } finally {
       setStatusUpdating(false);
     }
@@ -248,11 +250,12 @@ export function useUserDetailState({ userId }: UseUserDetailStateProps) {
       const res = await superadminService.impersonateTenant(userId);
       setImpersonationSession(res.impersonation);
       setStoredUserRole('admin');
+      sessionChanged();
       toast.success(`Entering ${res.targetUser.name}'s workspace (Support Mode)...`);
       router.push(routes.admin.home);
     } catch (e) {
       console.error(e);
-      toast.error('Failed to start impersonation session.');
+      toast.error(getApiErrorMessage(e, 'Failed to start impersonation session.'));
       setImpersonating(false);
     }
   };
@@ -269,7 +272,7 @@ export function useUserDetailState({ userId }: UseUserDetailStateProps) {
       await loadDetail();
     } catch (err) {
       console.error(err);
-      toast.error('Failed to update workspace features.');
+      toast.error(getApiErrorMessage(err, 'Failed to update workspace features.'));
     } finally {
       setWorkspaceSaving(false);
     }
@@ -277,7 +280,7 @@ export function useUserDetailState({ userId }: UseUserDetailStateProps) {
 
   // Toggle menu availability
   const handleToggleMenuAvailability = async (
-    menuId: number,
+    menuId: string,
     currentAvailability: boolean
   ) => {
     const newAvailability = !currentAvailability;
@@ -302,7 +305,7 @@ export function useUserDetailState({ userId }: UseUserDetailStateProps) {
       );
     } catch (e) {
       console.error(e);
-      toast.error('Failed to update dish availability.');
+      toast.error(getApiErrorMessage(e, 'Failed to update dish availability.'));
     }
   };
 
@@ -340,7 +343,7 @@ export function useUserDetailState({ userId }: UseUserDetailStateProps) {
       setEditingItem(null);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to update menu item.');
+      toast.error(getApiErrorMessage(err, 'Failed to update menu item.'));
     } finally {
       setMenuSaving(false);
     }
@@ -369,7 +372,7 @@ export function useUserDetailState({ userId }: UseUserDetailStateProps) {
       await loadDetail();
     } catch (e) {
       console.error(e);
-      toast.error('Failed to apply blueprint.');
+      toast.error(getApiErrorMessage(e, 'Failed to apply blueprint.'));
     } finally {
       setApplyingBp(false);
     }
@@ -386,7 +389,7 @@ export function useUserDetailState({ userId }: UseUserDetailStateProps) {
       loadDetail();
     } catch (err) {
       console.error(err);
-      toast.error('Failed to save business settings.');
+      toast.error(getApiErrorMessage(err, 'Failed to save business settings.'));
     } finally {
       setBusinessSaving(false);
     }
@@ -402,7 +405,7 @@ export function useUserDetailState({ userId }: UseUserDetailStateProps) {
       loadDetail();
     } catch (err) {
       console.error(err);
-      toast.error('Failed to update payment/review settings.');
+      toast.error(getApiErrorMessage(err, 'Failed to update payment/review settings.'));
     } finally {
       setPaymentSaving(false);
     }

@@ -1,6 +1,6 @@
 import type { ReactNode, SelectHTMLAttributes } from "react";
 
-export interface SelectOption {
+interface SelectOption {
   label: string;
   value: string | number;
 }

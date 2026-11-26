@@ -23,3 +23,9 @@ export const STORAGE_EVENTS = {
 } as const;
 
 export const CSRF_COOKIE_NAME = 'csrfToken';
+
+/**
+ * Inline script that applies the saved dark mode before first paint (theme.context.tsx only runs
+ * after hydration), so dark-mode users never see a light flash.
+ */
+export const THEME_BOOT_SCRIPT = `try{if(localStorage.getItem(${JSON.stringify(STORAGE_KEYS.themeMode)})==="dark")document.documentElement.classList.add("dark")}catch(e){}`;

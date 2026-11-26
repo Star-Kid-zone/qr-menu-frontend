@@ -61,7 +61,7 @@ export const LEGACY_FAMILY: Record<string, SkinFamily> = {
 export const LEGACY_PREFIX = 'legacy-';
 
 /** Converts one style template to a skin; the palette and fonts are exactly the template's. */
-export function skinFromTheme(theme: ThemeConfig, family: SkinFamily): SkinDefinition {
+function skinFromTheme(theme: ThemeConfig, family: SkinFamily): SkinDefinition {
   const d = FAMILY_DEFAULTS[family];
   const label = theme.slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   return {

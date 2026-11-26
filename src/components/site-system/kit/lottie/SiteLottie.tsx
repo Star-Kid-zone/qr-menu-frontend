@@ -1,15 +1,14 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ThemedLottie } from "@/components/templates/sections/art/ThemedLottie";
-import { STEAM_ANIMATION } from "@/components/templates/sections/art/lottie/steam";
+import { CORE_LOTTIE_IDS, FESTIVE_STILL_ICON, LOTTIE_IDS, LOTTIE_PLAY_ONCE } from "@/constants/lottie.constants";
+import type { LottieId } from "@/types/shared/lottie.types";
 import { useOptionalSiteLook } from "../../SiteLookContext";
-import { CANDLE_ANIMATION, EMBER_ANIMATION, SPARKLE_ANIMATION, VINE_ANIMATION } from "./animations";
-import { FESTIVE_ANIMATIONS, FESTIVE_STILL_ICON } from "./animationsFestive";
 import { SiteIcon } from "../../icons/SiteIcon";
 
 /** Static drawings shown for reduced motion and while the player loads. */
-const STILLS: Record<CoreLottieId, ReactNode> = {
+const STILLS: Record<(typeof CORE_LOTTIE_IDS)[number], ReactNode> = {
   steam: (
     <svg viewBox="0 0 120 120" className="h-full w-full" aria-hidden>
       <g fill="none" stroke="currentColor" strokeWidth={3.5} strokeLinecap="round">
@@ -54,34 +53,15 @@ const STILLS: Record<CoreLottieId, ReactNode> = {
   ),
 };
 
-const CORE_LOTTIES = {
-  steam: STEAM_ANIMATION as unknown as Record<string, unknown>,
-  sparkle: SPARKLE_ANIMATION as unknown as Record<string, unknown>,
-  candle: CANDLE_ANIMATION as unknown as Record<string, unknown>,
-  vines: VINE_ANIMATION as unknown as Record<string, unknown>,
-  embers: EMBER_ANIMATION as unknown as Record<string, unknown>,
-} as const;
-
-type CoreLottieId = keyof typeof CORE_LOTTIES;
-
-/** Every animation in the kit: the layout set plus the festival set. */
-export const LOTTIES: Record<CoreLottieId | keyof typeof FESTIVE_ANIMATIONS, Record<string, unknown>> = {
-  ...CORE_LOTTIES,
-  ...(FESTIVE_ANIMATIONS as unknown as Record<keyof typeof FESTIVE_ANIMATIONS, Record<string, unknown>>),
-};
-
 /** The still for an animation: its drawing, or for festival ones the matching icon. */
 function stillFor(name: LottieId): ReactNode {
-  if (name in STILLS) return STILLS[name as CoreLottieId];
+  if (name in STILLS) return STILLS[name as (typeof CORE_LOTTIE_IDS)[number]];
   const icon = FESTIVE_STILL_ICON[name as keyof typeof FESTIVE_STILL_ICON];
   return <SiteIcon name={icon} size={120} iconStyle="line" className="h-full w-full" />;
 }
 
-/** Animations that complete a drawing: played once and held, not looped. */
-const PLAY_ONCE: ReadonlySet<string> = new Set(["vines", "rakhi"]);
-
-export type LottieId = keyof typeof LOTTIES;
-export const LOTTIE_IDS = Object.keys(LOTTIES) as LottieId[];
+export type { LottieId };
+export { LOTTIE_IDS };
 
 /**
  * A decorative animation from the kit, in the site's accent colour. Purely
@@ -92,6 +72,19 @@ export function SiteLottie({ name, className, color, live = true }: { name: Lott
   const look = useOptionalSiteLook();
   const accent = color ?? look?.palette.accent ?? "#C8A165";
   const still = <div className="h-full w-full" style={{ color: accent }}>{stillFor(name)}</div>;
-  if (look?.motion === "off") return <div className={className} aria-hidden>{still}</div>;
-  return <ThemedLottie animation={LOTTIES[name]} color={accent} fallback={still} className={className} freezeOffscreen={live} loop={!PLAY_ONCE.has(name)} />;
+  const motionOff = look?.motion === "off";
+  // The animation data (~45 KB) is fetched on first use, not shipped with every guest page.
+  const [animation, setAnimation] = useState<Record<string, unknown> | null>(null);
+  useEffect(() => {
+    if (motionOff) return;
+    let cancelled = false;
+    import("./lottieData").then((mod) => {
+      if (!cancelled) setAnimation(mod.LOTTIES[name]);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [name, motionOff]);
+  if (motionOff || !animation) return <div className={className} aria-hidden>{still}</div>;
+  return <ThemedLottie animation={animation} color={accent} fallback={still} className={className} freezeOffscreen={live} loop={!LOTTIE_PLAY_ONCE.includes(name)} />;
 }

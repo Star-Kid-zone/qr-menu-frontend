@@ -25,4 +25,3 @@ export function MediaRemoveButton({ onClick, label, className }: MediaRemoveButt
   );
 }
 
-export default MediaRemoveButton;

@@ -23,7 +23,7 @@ import type {
  *  4. Owner values override the skin wherever they are non-empty.
  */
 
-export interface OwnerOverrides {
+interface OwnerOverrides {
   palette?: Partial<Palette>;
   fonts?: Partial<{ display: string; body: string }>;
   /** Owner's animation setting; reduced-motion users always get "off". */

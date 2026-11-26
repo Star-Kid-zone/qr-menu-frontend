@@ -88,7 +88,7 @@ export interface WorkspaceSettingsFormValues {
   /** datetime-local input values ("YYYY-MM-DDTHH:mm") or "" for unset. */
   announcement_starts_at: string;
   announcement_ends_at: string;
-  currency_id: number | null;
+  currency_id: string | null;
 }
 
 export interface WorkspaceLayoutOption {
@@ -128,31 +128,26 @@ export interface WorkspaceToggleOption {
   description: string;
 }
 
-export interface WorkspaceColorField {
-  name: WorkspaceColorKey;
-  label: string;
-}
-
-export interface WorkspaceAvailability {
+interface WorkspaceAvailability {
   day: string;
   startTime: string;
   endTime: string;
 }
 
 export interface WorkspaceBusiness {
-  id: number;
+  id: string;
   business_name: string;
   phone: string;
   address?: string;
   website_url?: string;
-  industry_id?: number | null;
+  industry_id?: string | null;
   social_media?: SocialLink[];
   social_links?: SocialLink[];
   availability?: WorkspaceAvailability[];
   active: boolean;
-  user_id: number;
+  user_id: string;
   industry?: {
-    id: number;
+    id: string;
     name: string;
   } | null;
   gstin?: string | null;
@@ -161,29 +156,13 @@ export interface WorkspaceBusiness {
   serviceChargePercent?: number | string | null;
 }
 
-export interface WorkspaceOffer {
-  id: number;
-  user_id: number;
-  workspace_id?: number | null;
-  title: string;
-  description?: string | null;
-  offer_type: "percentage_discount" | "bogo" | "flat_discount" | "custom";
-  offer_value?: string | null;
-  start_date: string;
-  end_date: string;
-  is_active: boolean;
-  badge_text?: string | null;
-  created_at?: string;
-  updated_at?: string;
-}
-
 export interface WorkspaceGalleryItem {
   id: string;
   workspaceId?: string;
   imageUrl: string;
   createdAt?: string;
-  user_id?: number;
-  workspace_id?: number | null;
+  user_id?: string;
+  workspace_id?: string | null;
   caption?: string | null;
   image_url?: string | null;
   image_path?: string | null;
@@ -192,24 +171,12 @@ export interface WorkspaceGalleryItem {
   updated_at?: string;
 }
 
-export interface WorkspaceDashboardData {
-  settings: WorkspaceSetting | null;
-  business: WorkspaceBusiness | null;
-  businesses: WorkspaceBusiness[];
-  review: unknown;
-  payment: unknown;
-  offers: WorkspaceOffer[];
-  workspace_offers: WorkspaceOffer[];
-  gallery: WorkspaceGalleryItem[];
-  workspace_gallery: WorkspaceGalleryItem[];
-}
-
-export interface WorkspaceSettingSource extends Omit<
+interface WorkspaceSettingSource extends Omit<
   Partial<Setting>,
   "currency_id"
 > {
-  id?: number;
-  currency_id?: number | string | null;
+  id?: string;
+  currency_id?: string | null;
   // Extended colours
   text_primary_color?: string | null;
   text_secondary_color?: string | null;
@@ -295,14 +262,14 @@ export interface WorkspaceTheme {
   bannerUrl?: string | null;
 }
 
-export interface WorkspaceButtons {
+interface WorkspaceButtons {
   menubtnStatus: boolean;
   paybtnStatus: boolean;
   reviewbtnStatus: boolean;
   specialOfferStatus: boolean;
 }
 
-export interface WorkspaceAnnouncement {
+interface WorkspaceAnnouncement {
   text: string | null;
   enabled: boolean;
   startsAt?: string | null;
@@ -312,7 +279,7 @@ export interface WorkspaceAnnouncement {
 export interface WorkspaceBusinessProfile {
   id?: string;
   name?: string;
-  industryId?: string | number | null;
+  industryId?: string | null;
   phone?: string;
   address?: string | null;
   businessHours?: string | null;
@@ -388,12 +355,12 @@ export interface WorkspaceOfferItem {
   createdAt: string;
 }
 
-export interface WorkspaceCurrency {
+interface WorkspaceCurrency {
   code: string;
   symbol: string;
 }
 
-export interface WorkspaceContent {
+interface WorkspaceContent {
   storyHeadline: string | null;
   storyBody: string | null;
   stats: Array<{ label: string; value: string }>;

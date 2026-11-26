@@ -10,8 +10,10 @@ import { OccasionHeroDecoration } from './OccasionHeroDecoration';
 import { OccasionIntro } from './OccasionIntro';
 import { OCCASION_INTROS } from './intros';
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { LOTTIES, LOTTIE_IDS } from '../kit/lottie/SiteLottie';
-import { FESTIVE_ANIMATIONS, FESTIVE_STILL_ICON } from '../kit/lottie/animationsFestive';
+import { LOTTIE_IDS } from '../kit/lottie/SiteLottie';
+import { LOTTIES } from '../kit/lottie/lottieData';
+import { FESTIVE_ANIMATIONS } from '../kit/lottie/animationsFestive';
+import { FESTIVE_STILL_ICON } from '@/constants/lottie.constants';
 
 
 describe('occasion catalogue', () => {

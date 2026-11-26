@@ -1,15 +1,14 @@
 import type { ReactNode } from 'react';
 import { Toaster } from '@/components/ui/toast';
 import { ThemeProviderWrapper } from '@/contexts/theme.context';
-import { FingerprintProvider } from '@/contexts/fingerprint.context';
 
+// The device fingerprint used by guest analytics is resolved inside useAnalytics (lazily, when
+// idle), so admin and marketing pages never load the fingerprinting library.
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
-    <FingerprintProvider>
-      <ThemeProviderWrapper>
-        <Toaster />
-        {children}
-      </ThemeProviderWrapper>
-    </FingerprintProvider>
+    <ThemeProviderWrapper>
+      <Toaster />
+      {children}
+    </ThemeProviderWrapper>
   );
 }

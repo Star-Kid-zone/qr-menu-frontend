@@ -7,7 +7,7 @@ import { HeroScene } from "./components/HeroScene";
 import { LooksBand } from "./components/LooksBand";
 import { GuestJourney } from "./components/GuestJourney";
 import { DashboardBento } from "./components/DashboardBento";
-import { BrandMark } from "./components/QrMark";
+import { FeastOwlLogo } from "@/components/brand";
 import "./marketing.css";
 
 /**
@@ -65,7 +65,7 @@ export function MarketingLandingPage() {
                 </Link>
               </div>
               <p className="mkt-rise mkt-rise-4 mt-5 text-sm" style={{ color: "var(--m-on-plum-mute)" }}>
-                Sign up with your mobile number. Guests install nothing.
+                Sign up with your email. Guests install nothing.
               </p>
             </div>
             <HeroScene />
@@ -181,13 +181,14 @@ export function MarketingLandingPage() {
 
       <footer style={{ borderTop: "1px solid var(--m-line)" }}>
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-8 text-sm sm:px-6" style={{ color: "var(--m-mute)" }}>
-          <p className="flex items-center gap-2 font-semibold" style={{ color: "var(--m-ink)" }}>
-            <BrandMark className="size-6" />
-            {BRAND}
+          <p>
+            <FeastOwlLogo className="text-lg" markClassName="size-7" />
           </p>
           <nav aria-label="Account" className="flex gap-6">
             <Link href={routes.public.login} className="mkt-link">Sign in</Link>
             <Link href={routes.public.register} className="mkt-link">Create account</Link>
+            <Link href={routes.public.privacy} className="mkt-link">Privacy</Link>
+            <Link href={routes.public.terms} className="mkt-link">Terms</Link>
           </nav>
         </div>
       </footer>

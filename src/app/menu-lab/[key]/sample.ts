@@ -104,7 +104,7 @@ export function menuSample(structure: string, dark: boolean, theme: string, opts
   const items: Array<Item & Extra> = opts.business === "pub" ? PUB_ITEMS : opts.business === "wine-shop" ? SHOP_ITEMS : ITEMS;
   const name = opts.business === "pub" ? "The Copper Tap" : opts.business === "wine-shop" ? "Cellar Door" : "Casa Nonna";
   return {
-    user_id: 1,
+    user_id: '1',
     settings: {
       public_slug: "lab",
       logo_url: IMG("pasta-italian", "dish.jpg"),

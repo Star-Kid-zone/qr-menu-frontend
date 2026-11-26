@@ -223,8 +223,8 @@ function StaffPageContent() {
     try {
       await navigator.clipboard.writeText(member.email);
       toast.success('Email copied.');
-    } catch {
-      toast.error('Could not copy. Select the email and copy it manually.');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Could not copy. Select the email and copy it manually.'));
     }
   };
 

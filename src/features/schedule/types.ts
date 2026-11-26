@@ -12,11 +12,3 @@ export interface FormState {
 }
 
 // Re-exports for backwards compatibility
-export { DAY_LABELS, STATUS_STYLES } from '@/constants/schedule.constants';
-export {
-  toIsoDate,
-  startOfWeek,
-  addDays,
-  formatTime,
-  emptyForm,
-} from './schedule.utils';

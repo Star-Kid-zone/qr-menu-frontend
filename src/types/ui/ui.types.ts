@@ -1,17 +1,7 @@
 import type { ReactNode } from 'react';
 
-export interface WithClassName {
+interface WithClassName {
   className?: string;
-}
-
-export interface FieldProps extends WithClassName {
-  label?: ReactNode;
-  hint?: ReactNode;
-  error?: ReactNode;
-  htmlFor?: string;
-  required?: boolean;
-  actions?: ReactNode;
-  children: ReactNode;
 }
 
 export interface PageLoaderProps extends WithClassName {
@@ -39,7 +29,6 @@ export * from './PromptDialog.types';
 export * from './SearchInput.types';
 export * from './Select.types';
 export * from './Spinner.types';
-export * from './StatusMessage.types';
 export * from './Textarea.types';
 export * from './ToggleCard.types';
 export * from './NextLinkAdapter.types';

@@ -69,7 +69,7 @@ export function useMenuListState() {
   }, []);
 
   // The industry follows the business type chosen in the website studio (set on the server).
-  const currentIndustryId = workspace?.business?.industryId != null ? Number(workspace.business.industryId) : null;
+  const currentIndustryId = workspace?.business?.industryId != null ? String(workspace.business.industryId) : null;
 
   const {
     data: itemsData,

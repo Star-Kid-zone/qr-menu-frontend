@@ -1,7 +1,9 @@
 'use client';
 
-import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
+import { m, useScroll, useTransform } from 'framer-motion';
 import Image from '@/components/ui/Image';
+import { MotionRoot } from '@/components/motion/MotionRoot';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import type { CSSProperties, ReactNode } from 'react';
 import { useRef } from 'react';
 
@@ -20,16 +22,18 @@ export function FadeIn({
 }: DivProps & { delay?: number; y?: number }) {
   const reduce = useReducedMotion();
   return (
-    <motion.div
-      className={className}
-      style={style}
-      initial={reduce ? false : { opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 'some', margin: '120px 0px' }}
-      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
-    >
-      {children}
-    </motion.div>
+    <MotionRoot>
+      <m.div
+        className={className}
+        style={style}
+        initial={reduce ? false : { opacity: 0, y }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 'some', margin: '120px 0px' }}
+        transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {children}
+      </m.div>
+    </MotionRoot>
   );
 }
 
@@ -41,19 +45,21 @@ export function StaggerGroup({
 }: DivProps & { stagger?: number }) {
   const reduce = useReducedMotion();
   return (
-    <motion.div
-      className={className}
-      style={style}
-      initial={reduce ? false : 'hidden'}
-      whileInView="show"
-      viewport={{ once: true, amount: 'some', margin: '120px 0px' }}
-      variants={{
-        hidden: {},
-        show: { transition: { staggerChildren: stagger } },
-      }}
-    >
-      {children}
-    </motion.div>
+    <MotionRoot>
+      <m.div
+        className={className}
+        style={style}
+        initial={reduce ? false : 'hidden'}
+        whileInView="show"
+        viewport={{ once: true, amount: 'some', margin: '120px 0px' }}
+        variants={{
+          hidden: {},
+          show: { transition: { staggerChildren: stagger } },
+        }}
+      >
+        {children}
+      </m.div>
+    </MotionRoot>
   );
 }
 
@@ -64,16 +70,18 @@ export function StaggerItem({
   y = 20,
 }: DivProps & { y?: number }) {
   return (
-    <motion.div
-      className={className}
-      style={style}
-      variants={{
-        hidden: { opacity: 0, y },
-        show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
-      }}
-    >
-      {children}
-    </motion.div>
+    <MotionRoot>
+      <m.div
+        className={className}
+        style={style}
+        variants={{
+          hidden: { opacity: 0, y },
+          show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
+        }}
+      >
+        {children}
+      </m.div>
+    </MotionRoot>
   );
 }
 
@@ -88,6 +96,7 @@ export function ParallaxImage({
   overlay,
   speed = 0.3,
   scale = 1.2,
+  sizes = '100vw',
   children,
 }: {
   src: string;
@@ -96,6 +105,8 @@ export function ParallaxImage({
   overlay?: ReactNode;
   speed?: number;
   scale?: number;
+  /** Rendered width for the image optimiser; the default suits a full-width hero. */
+  sizes?: string;
   children?: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -108,51 +119,17 @@ export function ParallaxImage({
 
   return (
     <div ref={ref} className={`relative overflow-hidden ${className}`}>
-      <motion.div
-        style={{ y, scale: reduce ? 1 : scale }}
-        className="absolute inset-0 will-change-transform"
-      >
-        <Image src={src} alt={alt} fill className="object-cover" loading="eager" fetchPriority="high" />
-      </motion.div>
+      <MotionRoot>
+        <m.div
+          style={{ y, scale: reduce ? 1 : scale }}
+          className="absolute inset-0 will-change-transform"
+        >
+          <Image src={src} alt={alt} fill sizes={sizes} className="object-cover" loading="eager" fetchPriority="high" />
+        </m.div>
+      </MotionRoot>
       {overlay ? <div className="pointer-events-none absolute inset-0">{overlay}</div> : null}
       {children ? <div className="relative z-10">{children}</div> : null}
     </div>
-  );
-}
-
-/**
- * Soft floating blob background ornament — purely decorative.
- */
-export function FloatingBlob({
-  className = '',
-  delay = 0,
-  duration = 10,
-  style,
-}: {
-  className?: string;
-  delay?: number;
-  duration?: number;
-  style?: CSSProperties;
-}) {
-  const reduce = useReducedMotion();
-  if (reduce) return <div className={className} style={style} aria-hidden />;
-  return (
-    <motion.div
-      aria-hidden
-      className={className}
-      style={style}
-      animate={{
-        y: [0, -28, 0],
-        x: [0, 18, 0],
-        rotate: [0, 6, 0],
-      }}
-      transition={{
-        duration,
-        delay,
-        repeat: Infinity,
-        ease: 'easeInOut',
-      }}
-    />
   );
 }
 
@@ -172,14 +149,16 @@ export function Marquee({
 }) {
   return (
     <div className={`overflow-hidden ${className}`}>
-      <motion.div
-        className="flex w-max gap-12 whitespace-nowrap"
-        animate={{ x: reverse ? [0, 0 - 1000] : [0 - 1000, 0] }}
-        transition={{ duration: speed, repeat: Infinity, ease: 'linear' }}
-      >
-        {children}
-        {children}
-      </motion.div>
+      <MotionRoot>
+        <m.div
+          className="flex w-max gap-12 whitespace-nowrap"
+          animate={{ x: reverse ? [0, 0 - 1000] : [0 - 1000, 0] }}
+          transition={{ duration: speed, repeat: Infinity, ease: 'linear' }}
+        >
+          {children}
+          {children}
+        </m.div>
+      </MotionRoot>
     </div>
   );
 }
@@ -193,13 +172,15 @@ export function TiltCard({
   style,
 }: DivProps) {
   return (
-    <motion.div
-      className={className}
-      style={style}
-      whileHover={{ y: -6, rotateX: 4, rotateY: -4, scale: 1.02 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-    >
-      {children}
-    </motion.div>
+    <MotionRoot>
+      <m.div
+        className={className}
+        style={style}
+        whileHover={{ y: -6, rotateX: 4, rotateY: -4, scale: 1.02 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      >
+        {children}
+      </m.div>
+    </MotionRoot>
   );
 }

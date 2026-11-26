@@ -114,4 +114,3 @@ export function RestaurantLoaderIcon({
   );
 }
 
-export default RestaurantLoaderIcon;

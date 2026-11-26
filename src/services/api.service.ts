@@ -1,8 +1,8 @@
-import axios, { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, type AxiosResponse } from 'axios';
 import { API_BASE_URL } from '@/config/app.constants';
 import { HTTP_STATUS, MUTATING_METHODS } from '@/constants';
 import { routes } from '@/config/routes';
-import { getCsrfToken, getActiveWorkspaceId, isAuthenticated, clearStorage } from '@/utils/storage';
+import { getCsrfToken, isAuthenticated, clearStorage } from '@/utils/storage';
 import { startGlobalLoading, endGlobalLoading } from '@/utils/globalLoading.store';
 import type { ApiEnvelopeFields, RetryableRequestConfig } from '@/types/shared/api.types';
 
@@ -28,10 +28,6 @@ api.interceptors.request.use(
       if (csrfToken) {
         config.headers['X-CSRF-Token'] = csrfToken;
       }
-    }
-    const activeWsId = getActiveWorkspaceId();
-    if (activeWsId) {
-      config.headers['X-Workspace-Id'] = activeWsId;
     }
     startGlobalLoading();
     return config;

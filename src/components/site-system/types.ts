@@ -92,7 +92,7 @@ export interface BusinessTypeDefinition {
 }
 
 export type OccasionRegion = 'india' | 'gulf' | 'western' | 'general';
-export type OccasionIntensity = 'subtle' | 'full';
+type OccasionIntensity = 'subtle' | 'full';
 
 export interface OccasionDefinition {
   id: string;
@@ -147,8 +147,6 @@ export interface PublicSiteEvent {
   id: string; title: string; description: string | null; startsAt: string; endsAt: string | null;
   imageUrl: string | null; linkUrl: string | null;
 }
-export interface PublicAmenity { id: AmenityId; note?: string }
-
 export const AMENITY_IDS = [
   'wifi', 'parking', 'valet', 'wheelchair', 'baby-changing', 'pets', 'outdoor-seating',
   'private-dining', 'live-music', 'sports-screens', 'kids-area', 'smoking-area', 'air-conditioning',

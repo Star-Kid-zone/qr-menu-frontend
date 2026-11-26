@@ -19,9 +19,9 @@ interface ReviewFilterBarProps {
   onClearRating: () => void;
 }
 
-const CHIPS: { id: ReviewFilter; label: string }[] = REVIEW_FILTER_CHIPS as unknown as { id: ReviewFilter; label: string }[];
+const CHIPS: readonly { id: ReviewFilter; label: string }[] = REVIEW_FILTER_CHIPS;
 
-const SORTS: { id: ReviewSort; label: string }[] = REVIEW_SORT_OPTIONS as unknown as { id: ReviewSort; label: string }[];
+const SORTS: readonly { id: ReviewSort; label: string }[] = REVIEW_SORT_OPTIONS;
 
 export function ReviewFilterBar({
   filter,

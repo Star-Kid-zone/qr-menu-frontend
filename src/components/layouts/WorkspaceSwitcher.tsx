@@ -113,5 +113,4 @@ export const WorkspaceSwitcher = ({ className = "", onSwitch, showSingle = true 
   );
 };
 
-export default WorkspaceSwitcher;
 

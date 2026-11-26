@@ -8,13 +8,13 @@ import {
   IPV4_REGEX,
 } from '@/constants';
 
-export { PLATFORM_SUBDOMAINS, ADMIN_PATH_PREFIXES };
+export { PLATFORM_SUBDOMAINS };
 export type { HostKind };
 
 const SLUG_LABEL = SLUG_LABEL_REGEX;
 
 function normaliseHostname(host: string): string {
-  // Drop the port and any trailing dot ("vimal.mynagaram.com." is the same host).
+  // Drop the port and any trailing dot ("vimal.feastowl.com." is the same host).
   return host.split(':')[0].trim().toLowerCase().replace(/\.$/, '');
 }
 
@@ -33,11 +33,11 @@ export function isLocalDevHost(host: string): boolean {
  *
  * Only two shapes count as a tenant:
  *   - `<slug>.localhost`            (local dev)
- *   - `<slug>.<TENANT_ROOT_DOMAIN>` (production, e.g. vimal.mynagaram.com)
+ *   - `<slug>.<TENANT_ROOT_DOMAIN>` (production, e.g. vimal.feastowl.com)
  *
  * Everything else returns null: the bare root domain, platform subdomains
- * (app., www., api.), deeper hosts (a.b.mynagaram.com) and unrelated domains.
- * Before this was strict, `app.mynagaram.com` resolved to tenant "app" and a
+ * (app., www., api.), deeper hosts (a.b.feastowl.com) and unrelated domains.
+ * Before this was strict, `app.feastowl.com` resolved to tenant "app" and a
  * foreign host such as `menu.pizzaroma.com` resolved to tenant "menu".
  */
 export function getTenantSlugFromHost(host: string, rootDomain: string = TENANT_ROOT_DOMAIN): string | null {
@@ -59,31 +59,35 @@ export function getTenantSlugFromHost(host: string, rootDomain: string = TENANT_
   return label;
 }
 
-function buildPublicTenantUrl(publicSlug: string | null | undefined, path = '/'): string {
+/**
+ * Build a tenant URL relative to the host the app is running on:
+ *   - local dev (localhost, 127.0.0.1, *.localhost) -> `<proto>//<slug>.localhost:<port><path>`
+ *   - anywhere else (feastowl.com, www., app., deploy previews) -> `https://<slug>.<TENANT_ROOT_DOMAIN><path>`
+ * The production form never derives the domain from the current host, so the
+ * apex (`feastowl.com`) does not turn into `<slug>.com`.
+ */
+export function buildTenantUrlForHost(
+  publicSlug: string | null | undefined,
+  currentHost: string,
+  protocol = 'https:',
+  path = '/',
+): string {
   if (!publicSlug?.trim()) return '';
-  if (typeof window === 'undefined') return '';
-  const { protocol, hostname, port } = window.location;
-  const portSuffix = port ? `:${port}` : '';
   const slug = publicSlug.trim().toLowerCase();
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  const h = hostname.toLowerCase();
 
-  if (h === 'localhost' || h === '127.0.0.1') {
-    return `${protocol}//${slug}.localhost${portSuffix}${normalizedPath}`;
+  if (isLocalDevHost(currentHost)) {
+    const port = currentHost.trim().split(':')[1];
+    const proto = protocol.endsWith(':') ? protocol : `${protocol}:`;
+    return `${proto}//${slug}.localhost${port ? `:${port}` : ''}${normalizedPath}`;
   }
 
-  const parts = h.split('.');
-  if (parts.length >= 2 && parts[parts.length - 1] === 'localhost') {
-    const rest = parts.slice(1).join('.');
-    return `${protocol}//${slug}.${rest}${portSuffix}${normalizedPath}`;
-  }
+  return `https://${slug}.${normaliseRootDomain(TENANT_ROOT_DOMAIN)}${normalizedPath}`;
+}
 
-  if (parts.length >= 2) {
-    const rest = parts.slice(1).join('.');
-    return `${protocol}//${slug}.${rest}${portSuffix}${normalizedPath}`;
-  }
-
-  return `${protocol}//${slug}.${h}${portSuffix}${normalizedPath}`;
+function buildPublicTenantUrl(publicSlug: string | null | undefined, path = '/'): string {
+  if (typeof window === 'undefined') return '';
+  return buildTenantUrlForHost(publicSlug, window.location.host, window.location.protocol, path);
 }
 
 /** Build a public landing URL for a slug (same port + protocol as current app). */
@@ -94,38 +98,6 @@ export function buildPublicLandingUrl(publicSlug: string | null | undefined): st
 /** Build a public menu URL for a slug (same port + protocol as current app). */
 export function buildPublicMenuUrl(publicSlug: string | null | undefined): string {
   return buildPublicTenantUrl(publicSlug, '/menu');
-}
-
-/** Server-side construction of a tenant's subdomain URL given the request host and proto */
-export function buildPublicTenantUrlServer(
-  publicSlug: string | null | undefined,
-  host: string,
-  proto = 'http',
-  path = '/'
-): string {
-  if (!publicSlug?.trim()) return '';
-  const [hostname, port] = host.split(':');
-  const portSuffix = port ? `:${port}` : '';
-  const slug = publicSlug.trim().toLowerCase();
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  const h = hostname.toLowerCase();
-
-  if (h === 'localhost' || h === '127.0.0.1') {
-    return `${proto}://${slug}.localhost${portSuffix}${normalizedPath}`;
-  }
-
-  const parts = h.split('.');
-  if (parts.length >= 2 && parts[parts.length - 1] === 'localhost') {
-    const rest = parts.slice(1).join('.');
-    return `${proto}://${slug}.${rest}${portSuffix}${normalizedPath}`;
-  }
-
-  if (parts.length >= 2) {
-    const rest = parts.slice(1).join('.');
-    return `${proto}://${slug}.${rest}${portSuffix}${normalizedPath}`;
-  }
-
-  return `${proto}://${slug}.${h}${portSuffix}${normalizedPath}`;
 }
 
 /**

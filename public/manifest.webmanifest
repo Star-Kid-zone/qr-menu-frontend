@@ -1,0 +1,16 @@
+{
+  "name": "FeastOwl",
+  "short_name": "FeastOwl",
+  "description": "One QR code on the table: your menu, website and Google reviews, managed from one dashboard.",
+  "start_url": "/admin/home",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F7F5FA",
+  "theme_color": "#3B1D4F",
+  "icons": [
+    { "src": "/brand/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/brand/feastowl-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

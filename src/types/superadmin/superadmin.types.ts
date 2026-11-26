@@ -20,7 +20,7 @@ export interface PlatformOverview {
 }
 
 export interface UserListRow {
-  id: number;
+  id: string;
   email: string;
   name: string;
   role: string;
@@ -106,7 +106,7 @@ export interface BlueprintStory {
   stats: Array<{ label: string; value: string }>;
 }
 
-export interface BlueprintBusiness {
+interface BlueprintBusiness {
   businessHours: string;
   availability: Array<{ day: string; startTime: string; endTime: string }>;
 }
@@ -155,7 +155,7 @@ export interface OnboardingTemplateConfigResponse {
 }
 
 export interface TenantMenuItem {
-  id: number;
+  id: string;
   item: string;
   price: string | number;
   imageUrl?: string | null;
@@ -167,8 +167,8 @@ export interface TenantMenuItem {
   availabilityTime?: string | null;
 }
 
-export interface TenantStaffMember {
-  id: number;
+interface TenantStaffMember {
+  id: string;
   name: string;
   email?: string | null;
   role: 'manager' | 'staff';
@@ -178,7 +178,7 @@ export interface TenantStaffMember {
 
 export interface UserDetailResponse {
   user: {
-    id: number;
+    id: string;
     email?: string | null;
     name: string;
     role: string;
@@ -188,7 +188,7 @@ export interface UserDetailResponse {
     [key: string]: unknown;
   };
   workspaces: Array<{
-    id: number;
+    id: string;
     public_slug?: string | null;
     public_site_url?: string | null;
     paymentType?: string;
@@ -205,7 +205,7 @@ export interface UserDetailResponse {
     [key: string]: unknown;
   }>;
   businesses: Array<{
-    id: number;
+    id: string;
     businessName: string;
     phone?: string;
     whatsappNumber?: string | null;
@@ -220,14 +220,14 @@ export interface UserDetailResponse {
   menus: TenantMenuItem[];
   staff: TenantStaffMember[];
   gallery?: Array<{
-    id: number;
-    workspaceId: number;
+    id: string;
+    workspaceId: string;
     imageUrl: string;
     createdAt?: string;
   }>;
   offers?: Array<{
-    id: number;
-    workspaceId: number;
+    id: string;
+    workspaceId: string;
     title: string;
     description: string;
     discount?: string | null;
@@ -236,16 +236,16 @@ export interface UserDetailResponse {
     createdAt?: string;
   }>;
   faqs?: Array<{
-    id: number;
-    workspaceId: number;
+    id: string;
+    workspaceId: string;
     question: string;
     answer: string;
     isVisible: boolean;
     sortOrder?: number;
   }>;
   googleReviews?: Array<{
-    id: number;
-    workspaceId: number;
+    id: string;
+    workspaceId: string;
     authorName: string;
     authorPhotoUrl?: string | null;
     rating: number;
@@ -254,7 +254,7 @@ export interface UserDetailResponse {
     publishTime?: string | null;
   }>;
   socialAccounts?: Array<{
-    id: number;
+    id: string;
     platform: string;
     displayName: string;
     username?: string | null;
@@ -273,7 +273,7 @@ export interface UserDetailResponse {
   };
 }
 
-export interface PlatformTimelinePoint {
+interface PlatformTimelinePoint {
   date: string;
   label?: string;
   visitors: number;
@@ -283,19 +283,19 @@ export interface PlatformTimelinePoint {
   events: number;
 }
 
-export interface PlatformClickTarget {
+interface PlatformClickTarget {
   target: string;
   label: string;
   count: number;
   isConversion: boolean;
 }
 
-export interface PlatformSearchQuery {
+interface PlatformSearchQuery {
   query: string;
   count: number;
 }
 
-export interface PlatformTopDish {
+interface PlatformTopDish {
   menuItemId: string;
   item: string;
   price: string | number;
@@ -306,19 +306,19 @@ export interface PlatformTopDish {
   count: number;
 }
 
-export interface PlatformHourlyPoint {
+interface PlatformHourlyPoint {
   hour: number;
   label: string;
   events: number;
   visitors: number;
 }
 
-export interface PlatformWeekdayPoint {
+interface PlatformWeekdayPoint {
   day: string;
   count: number;
 }
 
-export interface PlatformFunnelStep {
+interface PlatformFunnelStep {
   step: string;
   count: number;
   dropoffPct: number;
@@ -350,8 +350,8 @@ export interface PlatformAnalyticsOverview {
   funnel?: PlatformFunnelStep[];
 }
 
-export interface AnalyticsTenantRow {
-  user_id: number;
+interface AnalyticsTenantRow {
+  user_id: string;
   name: string;
   email?: string | null;
   business_name?: string | null;
@@ -500,7 +500,7 @@ export interface PlatformAnnouncement {
 }
 
 export interface QueueJob {
-  id: number;
+  id: string;
   status: 'queued' | 'running' | 'succeeded' | 'retrying' | 'dead_letter' | 'cancelled';
   runAfter: string;
   lockedAt: string | null;
@@ -508,7 +508,7 @@ export interface QueueJob {
   lastError: string | null;
   startedAt: string | null;
   finishedAt: string | null;
-  destinationId: number | null;
+  destinationId: string | null;
   destinationStatus: string | null;
   caption: string | null;
   linkUrl: string | null;
@@ -520,14 +520,14 @@ export interface QueueJob {
   accountUsername: string | null;
   accountStatus: string | null;
   tokenExpiresAt: string | null;
-  workspaceId: number | null;
+  workspaceId: string | null;
   businessName: string | null;
-  userId: number | null;
+  userId: string | null;
   userName: string | null;
 }
 
-export interface SocialAccountHealth {
-  id: number;
+interface SocialAccountHealth {
+  id: string;
   platform: 'facebook' | 'instagram';
   displayName: string;
   username: string | null;
@@ -536,9 +536,9 @@ export interface SocialAccountHealth {
   tokenExpiresAt: string | null;
   lastCheckedAt: string | null;
   createdAt: string;
-  workspaceId: number | null;
+  workspaceId: string | null;
   businessName: string | null;
-  userId: number | null;
+  userId: string | null;
   userName: string | null;
 }
 

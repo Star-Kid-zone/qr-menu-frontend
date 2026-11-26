@@ -6,5 +6,3 @@ export interface AutoReplyToneOption {
   icon: string;
 }
 
-export type ReviewFilterStatus = 'all' | 'unreplied' | 'replied' | 'flagged';
-export type ReviewSortOption = 'newest' | 'oldest' | 'highest' | 'lowest';

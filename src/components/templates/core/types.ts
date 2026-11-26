@@ -1,18 +1,18 @@
 import type { ComponentType, CSSProperties, ReactNode } from 'react';
 import type { Menu } from '@/types';
 import type { SocialLink } from '@/types';
-import type { AnalyticsEvent } from '@/services/analytics.service';
+import type { AnalyticsEvent } from '@/types/admin/analytics/analytics.types';
 import type { SiteLook } from '@/components/site-system/types';
 
-export type PublicTrackFn = (
+type PublicTrackFn = (
   actionType: AnalyticsEvent['action_type'],
   actionTarget?: string,
   metadata?: Record<string, unknown>,
-  extras?: { menuItemId?: number; searchQuery?: string }
+  extras?: { menuItemId?: string; searchQuery?: string }
 ) => void;
 
 /** Router `Link` shape so templates stay testable without importing the router in every file. */
-export type PublicLink = ComponentType<{
+type PublicLink = ComponentType<{
   to: string;
   className?: string;
   children?: ReactNode;
@@ -21,13 +21,13 @@ export type PublicLink = ComponentType<{
 }>;
 
 export type GalleryItem = {
-  id?: number;
+  id?: string;
   image_url?: string | null;
   image_path?: string | null;
 };
 
 export type OfferRow = {
-  id?: number;
+  id?: string;
   title?: string;
   description?: string | null;
   badge_text?: string | null;
@@ -37,46 +37,11 @@ export type OfferRow = {
 
 /** Branch row — mirrors workspace `businesses[]` / list-business. */
 export type PublicBusinessBranch = {
-  id?: number;
+  id?: string;
   business_name: string;
   phone?: string;
   address?: string;
   active?: boolean;
-};
-
-export type PublicLandingTemplateProps = {
-  businessName: string;
-  phone: string;
-  address: string;
-  websiteUrl: string;
-  websiteHref: string;
-  social: Array<{ url?: string; name?: string; platform?: string }>;
-  announcement: string | null;
-  primary: string;
-  secondary: string;
-  accent: string;
-  menuBtn: boolean;
-  payBtn: boolean;
-  reviewBtn: boolean;
-  paymentLink: string;
-  reviewLink: string;
-  offersOn: boolean;
-  offers: OfferRow[];
-  gallery: GalleryItem[];
-  menuHref: string;
-  onPay: () => void;
-  onReview: () => void;
-  track: PublicTrackFn;
-  LinkComponent: PublicLink;
-  /** Multiple locations (workspace businesses) — optional directory blocks in some templates. */
-  branches?: PublicBusinessBranch[];
-  /** Lines from `about_features` industry blocks. */
-  aboutHighlights?: string[];
-  /** Workspace palette alias e.g. `ember-glow`. */
-  themeColour?: string | null;
-  /** Workspace id — for analytics. */
-  workspaceId?: number | null;
-  [key: string]: unknown;
 };
 
 export type PublicMenuTemplateProps = {
@@ -130,7 +95,7 @@ export type PublicMenuTemplateProps = {
   track: PublicTrackFn;
   LinkComponent: PublicLink;
   gallery: GalleryItem[];
-  workspaceId?: number | null;
+  workspaceId?: string | null;
   offers?: OfferRow[];
   offersOn?: boolean;
   /** Workspace typography / extended colors — used to override menu template defaults */

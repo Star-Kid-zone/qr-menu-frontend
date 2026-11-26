@@ -7,6 +7,7 @@ import { ModalFooter } from "@/components/ui/ModalFooter";
 import { toast } from "@/components/ui/toast";
 import { menuService, type MenuImportPreviewResult, type MenuImportRow } from "@/services/menu.service";
 import { getApiErrorMessage } from "@/utils/errors";
+import type { ApiEnvelopeFields } from "@/types/shared/api.types";
 import { PiUploadSimpleBold, PiWarningCircleBold } from "react-icons/pi";
 
 interface MenuImportModalProps {
@@ -50,7 +51,8 @@ export function MenuImportModal({ isOpen, onClose, onImported }: MenuImportModal
     setCommitting(true);
     try {
       const res = await menuService.importCommit(preview.valid as MenuImportRow[]);
-      toast.success(res.data.message);
+      // The server's sentence travels in the response envelope, not in `data`.
+      toast.success((res as ApiEnvelopeFields).message ?? `Imported ${res.data.count} items.`);
       reset();
       onImported();
       onClose();

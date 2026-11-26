@@ -1,14 +1,5 @@
-import type { ReactNode } from 'react';
 import type { IconType } from 'react-icons';
 import type { PermissionUnit } from '@/types/auth/auth.types';
-
-export interface ChildrenProps {
-  children: ReactNode;
-}
-
-export interface ClassNameProps {
-  className?: string;
-}
 
 export interface ImageCompressionOptions {
   maxWidth?: number;
@@ -40,3 +31,6 @@ export interface NavGroup {
   label?: string;
   items: NavItem[];
 }
+
+/** Callback for a parameterless change signal (e.g. services/workspaceEvents.ts). */
+export type ChangeListener = () => void;

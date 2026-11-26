@@ -7,6 +7,7 @@ import {
 } from '@/services/superadmin.service';
 import { toast } from '@/components/ui';
 import type { ScriptDownloadItem } from '../types';
+import { getApiErrorMessage } from "@/utils/errors";
 
 interface UseStudioAutomationStateProps {
   onIngestSuccess: () => Promise<void>;
@@ -87,7 +88,7 @@ export function useStudioAutomationState({ onIngestSuccess }: UseStudioAutomatio
       await loadDownloads();
     } catch (err: unknown) {
       console.error(err);
-      toast.error('Failed to import file');
+      toast.error(getApiErrorMessage(err, 'Failed to import file'));
     } finally {
       setIngestingDownload(null);
     }

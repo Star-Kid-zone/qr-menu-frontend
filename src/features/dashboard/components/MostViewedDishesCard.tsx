@@ -25,9 +25,7 @@ export function MostViewedDishesCard({ data, loading }: { data: DashboardData | 
         {loading ? (
           <div className="space-y-2">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
         ) : items.length === 0 ? (
-          <p className="text-xs text-muted-foreground">
-            No dish views yet. Once guests open your menu, their favourites show up here.
-          </p>
+          <p className="text-xs text-muted-foreground">No dish views yet.</p>
         ) : (
           <ol className="space-y-3">
             {items.map((it, i) => (

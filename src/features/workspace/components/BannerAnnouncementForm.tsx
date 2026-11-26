@@ -2,23 +2,13 @@
 import { useEffect } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { PiMegaphoneBold } from 'react-icons/pi';
 import { FormField, Textarea, ToggleCard, toast } from '@/components/ui';
 import { cn } from '@/utils/cn';
 import { BannerAnnouncementFormProps, BannerAnnouncementValues } from "@/types/admin/workspace/BannerAnnouncementForm.types";
+import { bannerAnnouncementSchema } from "@/schemas/workspace.schema";
 
-export const bannerAnnouncementSchema = z.object({
-  announcement_enabled: z.boolean(),
-  announcement_text: z.string(),
-  // datetime-local input values ("YYYY-MM-DDTHH:mm") or "" for unset — parsed
-  // to/from ISO strings at the API boundary in listbusiness/page.tsx.
-  announcement_starts_at: z.string(),
-  announcement_ends_at: z.string(),
-}).refine(
-  (v) => !v.announcement_starts_at || !v.announcement_ends_at || v.announcement_starts_at < v.announcement_ends_at,
-  { message: "Start must be before end.", path: ["announcement_ends_at"] },
-);
+// Re-exported for existing callers of the workspace feature barrel.
 
 export function BannerAnnouncementForm({
   formId,
@@ -27,7 +17,7 @@ export function BannerAnnouncementForm({
   compact = false,
   initialValues,
   onSubmit,
-  error,
+  error: _error,
   loading = false,
   onValuesChange,
 }: BannerAnnouncementFormProps) {

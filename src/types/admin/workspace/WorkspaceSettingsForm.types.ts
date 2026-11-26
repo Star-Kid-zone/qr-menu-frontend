@@ -1,4 +1,3 @@
-import type { StudioPartFocus } from "@/features/workspace/studio/resolvePart";
 import type { Currency } from "@/types";
 import type { WorkspaceSettingsFormValues } from "./workspace.types";
 
@@ -27,4 +26,10 @@ export interface WorkspaceSettingsFormProps {
   menuCategories?: readonly string[];
   /** Reload settings after something saved outside the form (e.g. a new hero photo). */
   onAssetsChanged?: () => void | Promise<void>;
+}
+
+/** A Studio part the site editor should scroll to and highlight (nonce re-triggers the same part). */
+export interface StudioPartFocus {
+  part: string;
+  nonce: number;
 }

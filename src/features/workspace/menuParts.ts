@@ -6,7 +6,7 @@ import type { MenuColorKey, WorkspacePalette } from "@/types/admin/workspace/wor
 /** The parts of the guest menu page an owner can tap in the preview and restyle. */
 export type MenuPartId = "page" | "header" | "card" | "text" | "accent";
 
-export type MenuControl =
+type MenuControl =
   | { kind: "color"; name: MenuColorKey; label: string; hint: string; paletteKey: keyof WorkspacePalette }
   | { kind: "font"; name: "menu_font_family"; label: string; hint: string; paletteKey: "fontFamily" }
   | { kind: "shape"; name: "menu_card_style"; label: string; hint: string; paletteKey: "cardStyle" };
@@ -15,10 +15,10 @@ export interface MenuPartConfig {
   id: MenuPartId;
   label: string;
   summary: string;
-  controls: MenuControl[];
+  controls: readonly MenuControl[];
 }
 
-export const MENU_PARTS: MenuPartConfig[] = CONST_MENU_PARTS as unknown as MenuPartConfig[];
+export const MENU_PARTS: readonly MenuPartConfig[] = CONST_MENU_PARTS;
 
 export function getMenuPart(id: MenuPartId): MenuPartConfig {
   return MENU_PARTS.find((p) => p.id === id) ?? MENU_PARTS[0];

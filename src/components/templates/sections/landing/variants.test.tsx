@@ -12,7 +12,7 @@ const Link: LandingTemplateProps["LinkComponent"] = ({ to, children }) => <a hre
 
 function html(siteDocument: unknown): string {
   const data: RawPublicSiteData = {
-    user_id: 1,
+    user_id: '1',
     settings: { site_document: siteDocument, menubtn_status: 1 },
     business: { business_name: "Vimal Kitchen" },
     payment: null,

@@ -4,14 +4,6 @@ import { LAYOUT_MAP } from "../layouts/registry";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import {
-  CARD_STYLE_OPTIONS,
-  FONT_FAMILY_OPTIONS,
-  HEADING_CLASS_OPTIONS,
-  HERO_OVERLAY_OPTIONS,
-  MENU_STRUCTURE_OPTIONS,
-} from "@/constants/workspace.constants";
-import { parseHex } from "@/utils/contrast";
 import { workspaceSettingsSchema } from "@/schemas/workspace.schema";
 import { getDefaultWorkspaceSettings } from "@/utils/workspace.utils";
 import BaseTemplate from "@/components/templates/landing/_shared/BaseTemplate";
@@ -21,21 +13,6 @@ import { KitPicker } from "@/features/workspace/components/KitPicker";
 import { LANDING_SECTION_MAP } from "../landing/registry";
 import { ART_MOTIF_MAP } from "../art/motifs";
 import { kitFormValues, kitRecipe, RESTAURANT_KITS } from "./kits";
-
-/** WCAG 2.x contrast ratio. */
-function contrast(a: string, b: string): number {
-  const lum = (hex: string) => {
-    const [r, g, bl] = parseHex(hex)!.map((v) => {
-      const c = v / 255;
-      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-    });
-    return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
-  };
-  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
-  return (hi + 0.05) / (lo + 0.05);
-}
-
-const values = <T extends { value: string }>(opts: readonly T[]) => opts.map((o) => o.value);
 
 describe.each(RESTAURANT_KITS.map((k) => [k.label, k] as const))("kit: %s", (_label, kit) => {
   it("is a recipe: a known business type with a real layout and style", () => {
@@ -100,7 +77,7 @@ describe("dividers on the guest page", () => {
     renderToStaticMarkup(
       <BaseTemplate
         theme={LANDING_THEME_DATA["swiss-international"]}
-        data={{ user_id: 1, settings: { site_document: siteDocument }, business: null, payment: null, review: null, gallery: [], offers: [], menuItems: [] }}
+        data={{ user_id: '1', settings: { site_document: siteDocument }, business: null, payment: null, review: null, gallery: [], offers: [], menuItems: [] }}
         routeSlug="vimal"
         menuHref="/menu"
         onPay={() => {}}

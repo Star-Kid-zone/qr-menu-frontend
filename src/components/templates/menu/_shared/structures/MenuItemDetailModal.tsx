@@ -2,7 +2,9 @@
 
 import { useEffect, useId, useRef, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
+import { MotionRoot } from "@/components/motion/MotionRoot";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { PiStarFill, PiXBold } from "react-icons/pi";
 import { MenuItemGallery } from "@/components/templates/core/MenuItemGallery";
 import type { PublicMenuTemplateProps } from "@/components/templates/core/types";
@@ -87,10 +89,11 @@ export function DishDetailSheet({
   if (!isClient) return null;
 
   return createPortal(
+    <MotionRoot>
     <AnimatePresence>
       {item && (
         <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-6" style={{ fontFamily: c.fontFamily }}>
-          <motion.div
+          <m.div
             className="absolute inset-0 bg-black/55 backdrop-blur-[2px]"
             onClick={onClose}
             aria-hidden
@@ -99,7 +102,7 @@ export function DishDetailSheet({
             exit={{ opacity: 0 }}
             transition={{ duration: reduced ? 0 : 0.2 }}
           />
-          <motion.div
+          <m.div
             ref={panelRef}
             role="dialog"
             aria-modal="true"
@@ -193,10 +196,11 @@ export function DishDetailSheet({
                 <DietaryBadges item={item} detailed className="border-t pt-4" />
               </div>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       )}
-    </AnimatePresence>,
+    </AnimatePresence>
+    </MotionRoot>,
     document.body,
   );
 }

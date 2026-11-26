@@ -1,5 +1,3 @@
-import { cn } from "@/utils/cn";
-
 /*
  * Decorative QR pattern: a fixed 25×25 module grid with the three finder
  * squares. It does not encode a link. The finder squares take the brand's
@@ -47,20 +45,6 @@ export function QrPattern({
       {finder(0, 0)}
       {finder(SIZE - 8, 0)}
       {finder(0, SIZE - 8)}
-    </svg>
-  );
-}
-
-/** Brand glyph: a single QR finder square, saffron on plum. */
-export function BrandMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" className={cn("size-8", className)} aria-hidden>
-      <rect width="32" height="32" rx="8" fill="var(--m-plum)" />
-      <path
-        fill="var(--m-saffron)"
-        fillRule="evenodd"
-        d="M8 8h16v16H8V8zm3 3v10h10V11H11zm2.5 2.5h5v5h-5v-5z"
-      />
     </svg>
   );
 }

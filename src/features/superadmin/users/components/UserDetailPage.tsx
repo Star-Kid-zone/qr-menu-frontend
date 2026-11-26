@@ -1,5 +1,7 @@
 'use client';
 
+import { notFound } from 'next/navigation';
+import { isApiId } from '@/utils/ids';
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -47,7 +49,9 @@ export interface UserDetailPageProps {
 }
 
 export function UserDetailPage({ id }: UserDetailPageProps) {
-  const userId = Number(id);
+  // Route params are untrusted: an id that is not an API id shows the 404 page.
+  if (!isApiId(id)) notFound();
+  const userId = id;
   const reduceMotion = useReducedMotion();
 
   const {

@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { useAnalytics } from '@/hooks/useAnalytics.hook';
 import { NextLinkAdapter } from '@/components/next/NextLinkAdapter';
-import { PUBLIC_LANDING_PATH, PUBLIC_MENU_PATH } from '@/components/templates/core/paths';
+import { PUBLIC_LANDING_PATH } from '@/components/templates/core/paths';
 import { mapGalleryWithResolvedUrls } from '@/components/templates/core/publicMedia';
 import { parseSiteDocument } from '@/components/templates/sections/document';
 import {
@@ -11,14 +11,9 @@ import {
 } from '@/components/templates/sections/menu/categories';
 import { isMenuPartShown } from '@/components/templates/sections/menu/parts';
 import { lookFromSettings, siteToday } from '@/components/site-system/kit/look';
-import type { PublicLandingTemplateProps, PublicMenuTemplateProps } from '@/components/templates/core/types';
-import type { MappedPublicUserDetails } from '@/types/public/templates/mapPublicUserDetails.types';
+import type { PublicMenuTemplateProps } from '@/components/templates/core/types';
 import type { PublicMenuPayload } from '@/types/public/publicSite.types';
 import type { Menu } from '@/types';
-
-function safeString(v: unknown, fallback = ''): string {
-  return typeof v === 'string' && v.trim() ? v : fallback;
-}
 
 /**
  * Captures how the guest arrived — UTM params (if this link was tagged) and
@@ -56,61 +51,6 @@ function getAcquisitionMetadata(): Record<string, string> {
   return meta;
 }
 
-export function useLandingTemplateData(mapped: MappedPublicUserDetails, routeSlug: string | null): PublicLandingTemplateProps {
-  const { track } = useAnalytics({ userId: mapped.userId });
-
-  useEffect(() => {
-    track('visit', 'landing_page', { page: 'landing', path: window.location.pathname, ...getAcquisitionMetadata() });
-  }, [track]);
-
-  const menuHref = PUBLIC_MENU_PATH;
-
-  const paymentLink = safeString(mapped.paymentLink, '');
-  const reviewLink = safeString(mapped.reviewLink, '');
-  const websiteUrl = safeString(mapped.business.website_url, '');
-  const websiteHref =
-    websiteUrl && /^https?:\/\//i.test(websiteUrl) ? websiteUrl : websiteUrl ? `https://${websiteUrl}` : '';
-
-  // The menu always lives at /menu on the restaurant's host, so the landing always links to it.
-  const finalMenuBtn = true;
-
-  return {
-    businessName: safeString(mapped.business.business_name, 'Venue'),
-    phone: safeString(mapped.business.phone, ''),
-    address: safeString(mapped.business.address, ''),
-    websiteUrl,
-    websiteHref,
-    social: mapped.social,
-    announcement: mapped.announcementEnabled && mapped.announcementText.trim() ? mapped.announcementText : null,
-    primary: mapped.primaryColor,
-    secondary: mapped.secondaryColor,
-    accent: mapped.accentColor,
-    menuBtn: finalMenuBtn,
-    payBtn: mapped.paybtnStatus,
-    reviewBtn: mapped.reviewbtnStatus,
-    paymentLink,
-    reviewLink,
-    offersOn: mapped.offersSectionEnabled,
-    offers: mapped.offers,
-    gallery: mapGalleryWithResolvedUrls(mapped.gallery),
-    menuHref,
-    onPay: () => {
-      track('click', 'payment_button', { destination: 'payment' });
-      if (paymentLink) window.open(paymentLink, '_blank', 'noopener,noreferrer');
-    },
-    onReview: () => {
-      track('click', 'review_button', { destination: 'reviews' });
-      if (reviewLink) window.open(reviewLink, '_blank', 'noopener,noreferrer');
-    },
-    track,
-    LinkComponent: NextLinkAdapter,
-    branches: mapped.branches,
-    aboutHighlights: mapped.aboutHighlights,
-    themeColour: mapped.themeColour,
-    workspaceId: mapped.workspaceId,
-  };
-}
-
 /**
  * Apply the owner's menu category layout (site_document.menu): drop items in
  * hidden or out-of-date-window categories and, when the owner has placed
@@ -137,7 +77,7 @@ export function applyMenuCategoryLayout(items: Menu[], settings: Record<string, 
     .map(({ it }) => it);
 }
 
-export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: string | null): PublicMenuTemplateProps {
+export function useMenuTemplateData(payload: PublicMenuPayload, _routeSlug: string | null): PublicMenuTemplateProps {
   const { mapped } = payload;
   const menuItems = useMemo(
     () => applyMenuCategoryLayout(payload.menuItems, mapped.settings),
@@ -145,6 +85,9 @@ export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: strin
   );
   const { track } = useAnalytics({ userId: mapped.userId });
   const [searchQuery, setSearchQuery] = useState('');
+  // The input updates immediately; filtering a long menu runs at lower priority, so typing stays
+  // responsive (INP) on slow phones.
+  const deferredQuery = useDeferredValue(searchQuery);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [activeType, setActiveType] = useState<string | null>(null);
   const [popularOnly, setPopularOnly] = useState(false);
@@ -214,8 +157,8 @@ export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: strin
     if (activeDietaryTag) {
       list = list.filter((it) => (it.dietaryTags || []).includes(activeDietaryTag));
     }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (deferredQuery.trim()) {
+      const q = deferredQuery.toLowerCase();
       list = list.filter(
         (it) =>
           it.item?.toLowerCase().includes(q) ||
@@ -225,11 +168,11 @@ export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: strin
     }
 
     return list;
-  }, [menuItems, popularOnly, activeCategory, activeType, activeDietaryTag, searchQuery]);
+  }, [menuItems, popularOnly, activeCategory, activeType, activeDietaryTag, deferredQuery]);
 
   // ── Track guest searches, debounced so we log intent, not keystrokes ──────
   useEffect(() => {
-    const q = searchQuery.trim();
+    const q = deferredQuery.trim();
     if (!q) return;
 
     const timeout = setTimeout(() => {
@@ -237,7 +180,7 @@ export function useMenuTemplateData(payload: PublicMenuPayload, routeSlug: strin
     }, 800);
 
     return () => clearTimeout(timeout);
-  }, [searchQuery, filtered.length, track]);
+  }, [deferredQuery, filtered.length, track]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, Menu[]>();

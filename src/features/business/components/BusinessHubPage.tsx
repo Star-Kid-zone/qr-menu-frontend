@@ -19,9 +19,7 @@ import {
   MenuPreviewRenderer,
 } from "@/features/workspace";
 import { cn } from "@/utils/cn";
-import { resolveMenuPart } from "@/features/workspace/menuParts";
-import { resolveLandingPart } from "@/features/workspace/landingParts";
-import type { StudioPartFocus } from "@/features/workspace/studio/resolvePart";
+import { resolveMenuPart, resolveLandingPart, type StudioPartFocus } from "@/features/workspace";
 import { useBusinessHubState } from "../hooks/useBusinessHubState";
 import { WebsiteTab } from "./tabs/WebsiteTab";
 import { BusinessesTab } from "./tabs/BusinessesTab";
@@ -58,15 +56,6 @@ function BusinessHubPageContent() {
     setWorkspaceDesignSection,
     businessFormLoading,
     setBusinessFormLoading,
-    publicSiteEditMode,
-    setPublicSiteEditMode,
-    slugDraft,
-    setSlugDraft,
-    slugSaving,
-    setSlugSaving,
-    setSlugError,
-    canSaveSlug,
-    slugAvailabilityLabel,
     listOffersRef,
     listGalleryRef,
     listFaqsRef,
@@ -102,7 +91,6 @@ function BusinessHubPageContent() {
     handleBannerSave,
     handleContentSave,
     handleUpdateBusiness,
-    copyToClipboard,
     canEdit,
     loadError,
     isInitialLoading,

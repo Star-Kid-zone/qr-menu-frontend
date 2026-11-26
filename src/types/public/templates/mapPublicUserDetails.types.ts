@@ -2,9 +2,9 @@ import type { SocialLink } from "@/types";
 import type { GalleryItem, OfferRow, PublicBusinessBranch } from '@/components/templates/core/types';
 
 export type MappedPublicUserDetails = {
-      userId: number;
+      userId: string;
       /** Workspace id (`settings.id`). */
-      workspaceId: number | null;
+      workspaceId: string | null;
       /** Workspace `settings` object (snake_case, same as dashboard). */
       settings: Record<string, unknown>;
       themeColour: string | null;
@@ -20,7 +20,7 @@ export type MappedPublicUserDetails = {
       specialOfferStatus: boolean;
       announcementEnabled: boolean;
       announcementText: string;
-      currency: { id?: number; symbol: string; code?: string; name?: string } | null;
+      currency: { id?: string; symbol: string; code?: string; name?: string } | null;
       /** Primary business (backend `business` — first active branch). */
       business: Record<string, unknown>;
       /** Branch list — derived from the single `business` object returned by the API. */

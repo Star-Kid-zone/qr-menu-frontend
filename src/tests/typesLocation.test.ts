@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
-import path from 'node:path';
-import { listSourceFiles, relPath, stripNoise, stripAmbient, lineAt, SRC } from './helpers/sourceScan.js';
+import { listSourceFiles, relPath, stripNoise, stripAmbient, lineAt } from './helpers/sourceScan.js';
 
 /**
  * Type-location rule (AGENTS.md §2F):

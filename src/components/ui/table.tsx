@@ -94,7 +94,7 @@ export const TableCell = forwardRef<HTMLTableCellElement, TdHTMLAttributes<HTMLT
 );
 TableCell.displayName = "TableCell";
 
-export const TableCaption = forwardRef<HTMLTableCaptionElement, HTMLAttributes<HTMLTableCaptionElement>>(
+const TableCaption = forwardRef<HTMLTableCaptionElement, HTMLAttributes<HTMLTableCaptionElement>>(
   ({ className, ...props }, ref) => (
     <caption
       ref={ref}

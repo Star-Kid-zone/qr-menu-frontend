@@ -1,7 +1,9 @@
 'use client';
 
 import { PageHeader } from '@/components/ui/PageHeader';
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { useAsyncData } from '@/hooks/useAsyncData';
+import { LoadErrorNotice } from '@/components/feedback/LoadErrorNotice';
 import { motion, useReducedMotion } from 'framer-motion';
 import { PiPlusBold } from 'react-icons/pi';
 import {
@@ -23,7 +25,6 @@ export function BlueprintsPage() {
   const [blueprints, setBlueprints] = useState<MenuBlueprint[]>([]);
   const [autoSeedEnabled, setAutoSeedEnabled] = useState(true);
   const [defaultBlueprintId, setDefaultBlueprintId] = useState('cafe_bakery');
-  const [loading, setLoading] = useState(true);
   const [savingConfig, setSavingConfig] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -39,23 +40,18 @@ export function BlueprintsPage() {
   const [pendingAction, setPendingAction] = useState<{ kind: 'delete' | 'reset'; blueprint: MenuBlueprint } | null>(null);
   const [confirming, setConfirming] = useState(false);
 
-  useEffect(() => {
-    async function loadConfig() {
-      try {
-        setLoading(true);
-        const res = await superadminService.getOnboardingTemplateConfig();
-        setAutoSeedEnabled(res.autoSeedEnabled ?? true);
-        setDefaultBlueprintId(res.defaultBlueprintId || 'cafe_bakery');
-        setBlueprints(Array.isArray(res.blueprints) ? res.blueprints : []);
-      } catch (err) {
-        console.error(err);
-        toast.error("We couldn't load the starter menus");
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadConfig();
-  }, []);
+  // The page edits these lists in place afterwards, so the load copies them into local state.
+  const { loading, error: loadError, refetch } = useAsyncData(
+    async () => {
+      const res = await superadminService.getOnboardingTemplateConfig();
+      setAutoSeedEnabled(res.autoSeedEnabled ?? true);
+      setDefaultBlueprintId(res.defaultBlueprintId || 'cafe_bakery');
+      setBlueprints(Array.isArray(res.blueprints) ? res.blueprints : []);
+      return res;
+    },
+    [],
+    "We couldn't load the starter menus",
+  );
 
   const handleToggleAutoSeed = async () => {
     const nextVal = !autoSeedEnabled;
@@ -73,7 +69,7 @@ export function BlueprintsPage() {
       );
     } catch (err) {
       console.error(err);
-      toast.error("We couldn't save this setting");
+      toast.error(getApiErrorMessage(err, "We couldn't save this setting"));
     } finally {
       setSavingConfig(false);
     }
@@ -92,7 +88,7 @@ export function BlueprintsPage() {
       toast.success(`New sign-ups will now get "${chosen?.name || blueprintId}".`);
     } catch (err) {
       console.error(err);
-      toast.error("We couldn't change the starter menu for new sign-ups");
+      toast.error(getApiErrorMessage(err, "We couldn't change the starter menu for new sign-ups"));
     } finally {
       setSavingConfig(false);
     }
@@ -247,7 +243,9 @@ export function BlueprintsPage() {
       </div>
 
       {/* Blueprint Cards Grid */}
-      {loading ? (
+      {loadError && !loading ? (
+        <LoadErrorNotice title="We couldn't load the starter menus" message={loadError} onRetry={refetch} />
+      ) : loading ? (
         <div className="grid gap-6 sm:grid-cols-2">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-96 animate-pulse rounded-2xl border border-border bg-card/60" />

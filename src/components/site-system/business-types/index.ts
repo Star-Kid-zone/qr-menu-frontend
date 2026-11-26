@@ -3,11 +3,11 @@ import { BUSINESS_FAMILIES } from '../types';
 import { BUSINESS_TYPES } from './definitions';
 
 export { BUSINESS_TYPES } from './definitions';
-export { categoryIcon, iconForCategory, normaliseCategory, GENERIC_CATEGORY_ICONS } from './categoryIcons';
+export { categoryIcon, iconForCategory, GENERIC_CATEGORY_ICONS } from './categoryIcons';
 
 const BY_ID: ReadonlyMap<string, BusinessTypeDefinition> = new Map(BUSINESS_TYPES.map((b) => [b.id, b]));
 
-export const GENERIC_BUSINESS_TYPE_ID = 'generic';
+const GENERIC_BUSINESS_TYPE_ID = 'generic';
 
 export function getBusinessType(id: string | null | undefined): BusinessTypeDefinition | null {
   return (id && BY_ID.get(id)) || null;

@@ -11,8 +11,6 @@ import { CHECKLIST_TABS } from '@/constants/schedule.constants';
 
 type ChecklistTab = 'today' | 'templates';
 
-const TABS: { id: ChecklistTab; label: string }[] = CHECKLIST_TABS as unknown as { id: ChecklistTab; label: string }[];
-
 function ChecklistsPageContent() {
   const { hasPermission } = usePermissions();
   const canManage = hasPermission('dashboard');
@@ -24,7 +22,7 @@ function ChecklistsPageContent() {
 
       {canManage && (
         <div>
-          <SubTabPills options={TABS} active={tab} onChange={setTab} />
+          <SubTabPills options={[...CHECKLIST_TABS]} active={tab} onChange={setTab} />
         </div>
       )}
 

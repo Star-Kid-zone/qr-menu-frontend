@@ -1,13 +1,4 @@
-export type {
-  UserDetailResponse,
-  TenantMenuItem,
-  TenantStaffMember,
-  TenantAnalyticsData,
-  TenantRedirect,
-  UserListRow,
-  DateRange,
-  MenuBlueprint,
-} from "@/types";
+export type { UserDetailResponse, TenantMenuItem, TenantAnalyticsData, DateRange } from "@/types";
 
 export type UserDetailTabId =
   | "overview"

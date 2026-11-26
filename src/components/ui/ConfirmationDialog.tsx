@@ -77,4 +77,3 @@ export function ConfirmationDialog({
   );
 }
 
-export default ConfirmationDialog;

@@ -22,11 +22,12 @@ import {
   PiCheckCircleFill,
 } from "react-icons/pi";
 import { cn, isSafeExternalUrl } from "@/utils";
-import { springDefault, easeOutTransition } from "@/lib/motion";
+import { easeOutTransition } from "@/lib/motion";
+import { getApiErrorMessage } from "@/utils/errors";
 
-export type PaymentMethodType = "url" | "image";
+type PaymentMethodType = "url" | "image";
 
-export interface PaymentFormInitialData {
+interface PaymentFormInitialData {
   type: PaymentMethodType;
   link?: string | null;
   qrImage?: string | null;
@@ -150,8 +151,8 @@ function PaymentFormBase(
       setCopied(true);
       toast.success("Payment link copied");
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("Failed to copy payment link");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to copy payment link"));
     }
   };
 

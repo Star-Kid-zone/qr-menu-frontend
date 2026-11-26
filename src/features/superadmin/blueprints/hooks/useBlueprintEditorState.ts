@@ -12,7 +12,6 @@ import { toast } from '@/components/ui';
 import { getApiErrorMessage } from '@/utils/errors';
 import { DEFAULT_NEW_BLUEPRINT } from '@/constants/blueprint.constants';
 
-export { DEFAULT_NEW_BLUEPRINT };
 
 export type EditorTab = 'basic' | 'dishes' | 'theme' | 'story' | 'content' | 'offers_faqs';
 

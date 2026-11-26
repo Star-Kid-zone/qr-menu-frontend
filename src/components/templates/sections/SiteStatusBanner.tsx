@@ -12,7 +12,7 @@ const DEFAULT_LINES: Record<Exclude<SiteStatusMode, "open">, string> = {
 // Fixed locale + UTC so the server render and the browser produce the same text.
 const REOPEN_FORMAT = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
-export function reopenLabel(until: string): string {
+function reopenLabel(until: string): string {
   return `We reopen on ${REOPEN_FORMAT.format(new Date(`${until}T00:00:00Z`))}.`;
 }
 

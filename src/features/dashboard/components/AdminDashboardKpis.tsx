@@ -40,7 +40,7 @@ export function AdminDashboardKpis({ statCards, loading }: AdminDashboardKpisPro
                 </span>
               </p>
             ) : null}
-            <p className="mt-0.5 text-caption font-medium text-muted-foreground">{stat.subtext}</p>
+            <p className="mt-0.5 truncate text-caption font-medium text-muted-foreground">{stat.subtext}</p>
           </div>
         </div>
       ))}

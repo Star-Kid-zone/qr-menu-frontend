@@ -12,7 +12,7 @@ export interface AnnouncementCardProps {
   onDelete: (id: string) => void;
 }
 
-export function getToneFromType(type: string): BadgeTone {
+function getToneFromType(type: string): BadgeTone {
   switch (type) {
     case 'warning':
       return 'warning';

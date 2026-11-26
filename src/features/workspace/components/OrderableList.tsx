@@ -44,7 +44,7 @@ export function withSchedule<T extends { schedule?: SectionSchedule }>(item: T, 
   return next.from || next.to ? { ...rest, schedule: next } : rest;
 }
 
-export interface OrderableItem {
+interface OrderableItem {
   id: string;
   label: string;
   description?: string;

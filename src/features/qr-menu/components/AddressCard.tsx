@@ -78,8 +78,8 @@ export function AddressCard({ slug, canEdit, onChanged }: AddressCardProps) {
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied");
-    } catch {
-      toast.error("Couldn't copy. Select the link and copy it instead.");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Couldn't copy. Select the link and copy it instead."));
     }
   };
 

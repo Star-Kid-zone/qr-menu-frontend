@@ -33,10 +33,6 @@ export function dietaryTagLabel(value: string): string {
   return DIETARY_TAG_OPTIONS.find((o) => o.value === value)?.label ?? value;
 }
 
-export function dietaryTagEmoji(value: string): string {
-  return DIETARY_TAG_OPTIONS.find((o) => o.value === value)?.emoji ?? '🍽';
-}
-
 export function allergenLabel(value: string): string {
   return ALLERGEN_OPTIONS.find((o) => o.value === value)?.label ?? value;
 }

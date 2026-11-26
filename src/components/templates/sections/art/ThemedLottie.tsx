@@ -1,9 +1,8 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useEffect, useRef, type ReactNode } from "react";
-import { useReducedMotion } from "framer-motion";
-import type { DotLottie } from "@lottiefiles/dotlottie-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import type { DotLottie, DotLottieReact as DotLottieReactComponent } from "@lottiefiles/dotlottie-react";
 import { parseHex } from "@/utils/contrast";
 
 // The player needs browser APIs (canvas + WASM), so it never renders on the server.
@@ -13,16 +12,8 @@ import { parseHex } from "@/utils/contrast";
  * blocks — the animation then silently never draws. Versioned file name: keep in
  * step with the installed @lottiefiles/dotlottie-web (a test checks this).
  */
+/** @public Read by art.test.tsx through a dynamic import, which knip cannot follow. */
 export const DOTLOTTIE_WASM_URL = "/vendor/dotlottie/dotlottie-player-0.82.1.wasm";
-
-const DotLottieReact = dynamic(
-  () =>
-    import("@lottiefiles/dotlottie-react").then((m) => {
-      m.setWasmUrl(DOTLOTTIE_WASM_URL);
-      return m.DotLottieReact;
-    }),
-  { ssr: false },
-);
 
 /** "#RRGGBB" → the [r, g, b, a] (0–1) a Lottie colour slot takes; null when not a hex colour. */
 export function toSlotColor(hex: string): [number, number, number, number] | null {
@@ -55,6 +46,9 @@ export interface ThemedLottieProps {
  */
 export function ThemedLottie({ animation, color, fallback, className, freezeOffscreen = false, loop = true }: ThemedLottieProps) {
   const reduced = useReducedMotion();
+  // The player (a ~30 KB wrapper plus the WASM engine) is fetched only after the page is idle, so
+  // it never competes with the content a guest came for. The static fallback shows until then.
+  const [Player, setPlayer] = useState<typeof DotLottieReactComponent | null>(null);
   const player = useRef<DotLottie | null>(null);
   const loaded = useRef(false);
   // Read through a ref so the one-time "load" listener always applies the latest colour.
@@ -67,11 +61,30 @@ export function ThemedLottie({ animation, color, fallback, className, freezeOffs
     if (player.current && loaded.current && slot) player.current.setColorSlot("accent", slot);
   }, [color]);
 
+  useEffect(() => {
+    if (reduced || Player) return;
+    let cancelled = false;
+    const load = () =>
+      import("@lottiefiles/dotlottie-react").then((mod) => {
+        mod.setWasmUrl(DOTLOTTIE_WASM_URL);
+        if (!cancelled) setPlayer(() => mod.DotLottieReact);
+      });
+    // requestIdleCallback is missing in Safari; a short timeout is close enough.
+    const idle = typeof window.requestIdleCallback === "function";
+    const handle = idle ? window.requestIdleCallback(load) : window.setTimeout(load, 300);
+    return () => {
+      cancelled = true;
+      if (idle) window.cancelIdleCallback(handle);
+      else window.clearTimeout(handle);
+    };
+  }, [reduced, Player]);
+
   if (reduced) return <>{fallback}</>;
+  if (!Player) return <div aria-hidden="true" className={className}>{fallback}</div>;
 
   return (
     <div aria-hidden="true" className={className}>
-      <DotLottieReact
+      <Player
         data={animation}
         autoplay
         loop={loop}

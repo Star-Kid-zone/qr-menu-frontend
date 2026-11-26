@@ -1,21 +1,6 @@
-import type { MenuColorKey } from "@/types/admin/workspace/workspace.types";
-import {
-  type ColourRole,
-  type ColourSet,
-  type MenuColourTheme,
-  ROLE_FIELD,
-  LANDING_ROLE_FIELD,
-  MENU_COLOUR_THEMES,
-} from "@/constants/workspace.constants";
+import { type ColourRole, type MenuColourTheme, ROLE_FIELD, LANDING_ROLE_FIELD, MENU_COLOUR_THEMES } from "@/constants/workspace.constants";
 
-export {
-  type ColourRole,
-  type ColourSet,
-  type MenuColourTheme,
-  ROLE_FIELD,
-  LANDING_ROLE_FIELD,
-  MENU_COLOUR_THEMES,
-};
+export { type ColourRole, type MenuColourTheme, ROLE_FIELD, LANDING_ROLE_FIELD, MENU_COLOUR_THEMES };
 
 export type RoleFieldMap = Record<ColourRole, string>;
 

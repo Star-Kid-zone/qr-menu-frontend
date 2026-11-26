@@ -10,7 +10,7 @@ import type { Palette } from "../types";
 
 // ------------------------------------------------------------------ frames
 export const FRAME_IDS = ["arch", "rect", "rounded", "organic", "stamp", "sticker", "badge", "glow", "notched", "pixel"] as const;
-export type FrameId = (typeof FRAME_IDS)[number];
+type FrameId = (typeof FRAME_IDS)[number];
 
 /**
  * Styles for a photo container in the skin's frame shape. Shapes that need a
@@ -52,7 +52,7 @@ export function frameStyle(frame: string, palette: Pick<Palette, "accent" | "bor
 
 // ----------------------------------------------------------------- corners
 export const CORNER_IDS = ["none", "fleuron", "deco-fan", "leaf", "bracket", "twine", "tape", "pixel"] as const;
-export type CornerId = (typeof CORNER_IDS)[number];
+type CornerId = (typeof CORNER_IDS)[number];
 
 const CORNER_PATHS: Record<Exclude<CornerId, "none">, string> = {
   fleuron: "M2 30V12C2 6.5 6.5 2 12 2h18M8 30V14a6 6 0 0 1 6-6h16M12 18c0-3.3 2.7-6 6-6M14 22a4 4 0 1 1 4 4",
@@ -93,7 +93,7 @@ export function OrnamentCorner({ corner, size = 32, className, style }: { corner
 export const TEXTURE_IDS = [
   "none", "damask", "grain", "paper", "kraft", "blobs", "halftone", "print-grain", "night-gradient", "grid", "frost", "pixel",
 ] as const;
-export type TextureId = (typeof TEXTURE_IDS)[number];
+type TextureId = (typeof TEXTURE_IDS)[number];
 
 const svgUri = (w: number, h: number, body: string) =>
   `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'>${body}</svg>`)}")`;

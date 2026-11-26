@@ -4,6 +4,7 @@
  */
 import {
   APP_NAME,
+  DEFAULT_TENANT_ROOT_DOMAIN,
   SUSPENSE_LABELS,
   UI_TIMING,
 } from '@/constants/app.constants';
@@ -47,12 +48,31 @@ export const SERVER_API_BASE_URL = `${requireEnvInProduction(
   'http://127.0.0.1:7000',
 ).replace(/\/+$/, '')}/api`;
 
-/** Root domain tenant subdomains are served from, e.g. `<slug>.mynagaram.com`. */
-export const TENANT_ROOT_DOMAIN = process.env.NEXT_PUBLIC_TENANT_ROOT_DOMAIN || 'mynagaram.com';
+/** Root domain tenant subdomains are served from, e.g. `<slug>.feastowl.com`. */
+export const TENANT_ROOT_DOMAIN = (process.env.NEXT_PUBLIC_TENANT_ROOT_DOMAIN || DEFAULT_TENANT_ROOT_DOMAIN)
+  .trim()
+  .toLowerCase()
+  .replace(/^\.+|\.+$/g, '');
 
-/** Canonical public URL for a tenant's landing page, given their public slug. */
+/** When the app itself runs locally (localhost:3000), tenant sites live on `<slug>.localhost:3000`. */
+function localDevBase(): URL | null {
+  try {
+    const url = new URL(APP_BASE_URL);
+    const h = url.hostname.toLowerCase();
+    return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.localhost') ? url : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Public URL of a tenant's site, given their public slug:
+ * `https://<slug>.feastowl.com` in production, `http://<slug>.localhost:3000` in local dev.
+ */
 export function getTenantPublicUrl(slug: string | null | undefined): string {
   const safeSlug = slug?.trim().toLowerCase() || 'example';
+  const local = localDevBase();
+  if (local) return `${local.protocol}//${safeSlug}.localhost${local.port ? `:${local.port}` : ''}`;
   return `https://${safeSlug}.${TENANT_ROOT_DOMAIN}`;
 }
 

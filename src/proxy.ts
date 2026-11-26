@@ -1,9 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { APP_BASE_URL, SERVER_API_BASE_URL } from "@/config/app.constants";
 import { classifyHost, isAdminPath, isLocalDevHost } from "@/utils/tenantHost";
-import { HTTP_STATUS, TENANT_SLUG_HEADER, CACHE_TTL_MS, MISS_TTL_MS } from "@/constants";
-
-export { TENANT_SLUG_HEADER };
+import {
+  HTTP_STATUS,
+  CACHE_TTL_MS,
+  MISS_TTL_MS,
+  PUBLIC_LANDING_PATH,
+  PUBLIC_MENU_PATH,
+  TENANT_SITE_PREFIX,
+} from "@/constants";
 
 const domainCache = new Map<string, { slug: string | null; expires: number }>();
 
@@ -44,13 +49,24 @@ const UNKNOWN_DOMAIN_PAGE = `<!doctype html><html lang="en"><head><meta charset=
 
 const normaliseHost = (h: string) => h.trim().toLowerCase().replace(/\.$/, "");
 
+/** The internal tenant-site path for a guest page, or null when the path is not a guest page. */
+function tenantSitePath(slug: string, pathname: string): string | null {
+  if (pathname === PUBLIC_LANDING_PATH) return `${TENANT_SITE_PREFIX}/${slug}`;
+  if (pathname === PUBLIC_MENU_PATH) return `${TENANT_SITE_PREFIX}/${slug}${PUBLIC_MENU_PATH}`;
+  return null;
+}
+
 export async function proxy(request: NextRequest) {
-  const headers = new Headers(request.headers);
-  headers.delete(TENANT_SLUG_HEADER);
+  const { pathname, search } = request.nextUrl;
+
+  // The tenant-site route is internal: reachable only through the rewrite below, never directly.
+  // Guest sites live on their own host only, never at a path of another host.
+  if (pathname === TENANT_SITE_PREFIX || pathname.startsWith(`${TENANT_SITE_PREFIX}/`)) {
+    return new NextResponse(null, { status: HTTP_STATUS.NOT_FOUND });
+  }
 
   const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || request.nextUrl.host;
   const hostKind = classifyHost(host);
-  const { pathname, search } = request.nextUrl;
 
   if (hostKind.kind !== "platform" && isAdminPath(pathname)) {
     const target = new URL(`${pathname}${search}`, APP_BASE_URL);
@@ -61,15 +77,22 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  let slug: string | null = hostKind.kind === "tenant" ? hostKind.slug : null;
   if (hostKind.kind === "custom") {
-    const slug = await lookupCustomDomain(hostKind.domain);
+    slug = await lookupCustomDomain(hostKind.domain);
     if (!slug) {
       return new NextResponse(UNKNOWN_DOMAIN_PAGE, { status: HTTP_STATUS.NOT_FOUND, headers: { "content-type": "text/html; charset=utf-8" } });
     }
-    headers.set(TENANT_SLUG_HEADER, slug);
   }
 
-  return NextResponse.next({ request: { headers } });
+  // Guest pages on a restaurant's host are served from the cached tenant-site route for that slug.
+  // The browser keeps seeing / and /menu, so host-relative links keep working.
+  const internal = slug ? tenantSitePath(slug.toLowerCase(), pathname) : null;
+  if (internal) {
+    return NextResponse.rewrite(new URL(`${internal}${search}`, request.url));
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {

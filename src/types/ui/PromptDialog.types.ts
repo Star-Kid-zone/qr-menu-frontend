@@ -9,4 +9,6 @@ export interface PromptDialogProps {
     cancelLabel?: string;
     loading?: boolean;
     error?: string;
+    /** Pre-filled value each time the dialog opens (defaults to empty). */
+    initialValue?: string;
 }

@@ -57,7 +57,7 @@ export function MenuItemPreviewCard({
   const cleanVideos = videos.filter((u): u is string => Boolean(u));
 
   const galleryItem: Menu = {
-    id: 0,
+    id: "",
     item: name,
     description: description ?? "",
     price: String(price ?? ""),

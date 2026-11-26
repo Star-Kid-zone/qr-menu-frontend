@@ -1,6 +1,6 @@
 import type { MenuBlueprint, BlueprintContent } from '@/services/superadmin.service';
 
-export const DEFAULT_BLUEPRINT_TEMPLATE_SLUG = 'harvest-bento';
+const DEFAULT_BLUEPRINT_TEMPLATE_SLUG = 'harvest-bento';
 
 export const EMPTY_BLUEPRINT_CONTENT: BlueprintContent = {
   amenities: [],

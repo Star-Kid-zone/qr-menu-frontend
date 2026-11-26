@@ -1,53 +1,20 @@
 import api from './api.service';
-import type { Currency, SocialLink } from '@/types';
-import type { SiteDocument } from '@/components/templates/sections/types';
+import { workspaceChanged } from './workspaceEvents';
+import type { Currency } from '@/types';
 
-import type {
-  WorkspaceTheme,
-  WorkspaceButtons,
-  WorkspaceAnnouncement,
-  WorkspaceBusinessProfile,
-  WorkspaceReviewConfig,
-  GooglePlaceResult,
-  GoogleReviewRecord,
-  WorkspacePaymentConfig,
-  WorkspaceQrCodeConfig,
-  WorkspaceGalleryItem,
-  WorkspaceOfferItem,
-  WorkspaceCurrency,
-  WorkspaceContent,
-  WorkspaceFaq,
-  WorkspaceData,
-  WorkspaceListItem,
-  SiteDomain,
-  SiteVersion,
-} from '@/types/admin/workspace/workspace.types';
+import type { WorkspaceBusinessProfile, WorkspaceReviewConfig, GooglePlaceResult, GoogleReviewRecord, WorkspacePaymentConfig, WorkspaceQrCodeConfig, WorkspaceGalleryItem, WorkspaceOfferItem, WorkspaceFaq, WorkspaceData, WorkspaceListItem, SiteDomain, SiteVersion } from '@/types/admin/workspace/workspace.types';
 
-export type {
-  WorkspaceTheme,
-  WorkspaceButtons,
-  WorkspaceAnnouncement,
-  WorkspaceBusinessProfile,
-  WorkspaceReviewConfig,
-  GooglePlaceResult,
-  GoogleReviewRecord,
-  WorkspacePaymentConfig,
-  WorkspaceQrCodeConfig,
-  WorkspaceGalleryItem,
-  WorkspaceOfferItem,
-  WorkspaceCurrency,
-  WorkspaceContent,
-  WorkspaceFaq,
-  WorkspaceData,
-  WorkspaceListItem,
-  SiteDomain,
-  SiteVersion,
-};
+export type { WorkspaceBusinessProfile, WorkspaceReviewConfig, GooglePlaceResult, GoogleReviewRecord, WorkspacePaymentConfig, WorkspaceQrCodeConfig, WorkspaceGalleryItem, WorkspaceOfferItem, WorkspaceFaq, WorkspaceData, WorkspaceListItem, SiteDomain, SiteVersion };
 
 export const workspaceService = {
   listWorkspaces: () => api.get<WorkspaceListItem[]>('/workspace/list'),
   getWorkspace: () => api.get<WorkspaceData>('/workspace'),
-  updateWorkspace: (data: Partial<WorkspaceData>) => api.put<{ message: string, workspace: WorkspaceData }>('/workspace', data),
+  // A saved change makes every cached useWorkspace() copy refetch.
+  updateWorkspace: (data: Partial<WorkspaceData>) =>
+    api.put<{ message: string, workspace: WorkspaceData }>('/workspace', data).then((res) => {
+      workspaceChanged();
+      return res;
+    }),
   addGalleryItem: (data: FormData) => api.post<{ message: string, item: WorkspaceGalleryItem }>('/workspace/gallery', data),
   removeGalleryItem: (itemId: string) => api.delete<{ message: string }>(`/workspace/gallery/${itemId}`),
   addOfferItem: (data: FormData) => api.post<{ message: string, offer: WorkspaceOfferItem }>('/workspace/offers', data),
@@ -82,6 +49,6 @@ export const workspaceService = {
     ),
   syncGoogleReviews: () =>
     api.post<{ message: string; reviews: GoogleReviewRecord[] }>('/workspace/reviews/google/sync'),
-  toggleGoogleReviewFeatured: (id: string | number) =>
+  toggleGoogleReviewFeatured: (id: string) =>
     api.patch<{ message: string, review: GoogleReviewRecord }>(`/workspace/reviews/google/${id}/toggle`),
 };

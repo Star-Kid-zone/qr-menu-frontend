@@ -17,15 +17,16 @@ export function PromptDialog({
   confirmLabel = 'Create',
   cancelLabel = 'Cancel',
   loading = false,
+  initialValue = '',
 }: PromptDialogProps) {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState(initialValue);
   // Reset the input the moment the dialog transitions to open, without an
   // effect (react-hooks/set-state-in-effect) — see "adjusting state when a
   // prop changes" in the React docs.
   const [wasOpen, setWasOpen] = useState(isOpen);
   if (isOpen !== wasOpen) {
     setWasOpen(isOpen);
-    if (isOpen) setValue('');
+    if (isOpen) setValue(initialValue);
   }
 
   const handleSubmit = () => {

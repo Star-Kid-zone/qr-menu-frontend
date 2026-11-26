@@ -21,7 +21,6 @@ export interface PriceOptionRow {
 
 import { MAX_PRICE_OPTIONS } from "@/constants/menu.constants";
 
-export { MAX_PRICE_OPTIONS };
 
 /** Drops empty values and empty sets, so the saved JSON only holds what the owner filled in. */
 export function cleanAttributes(attrs: ItemAttributes): ItemAttributes {

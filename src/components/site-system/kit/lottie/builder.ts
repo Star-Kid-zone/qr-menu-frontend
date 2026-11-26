@@ -20,9 +20,9 @@ export function anim(...frames: Array<[number, Vec]>) {
   };
 }
 
-export const still = (k: number | Vec) => ({ a: 0, k });
+const still = (k: number | Vec) => ({ a: 0, k });
 
-export const ACCENT_SLOT = { a: 0, k: [0.78, 0.6, 0.25, 1], sid: "accent" };
+const ACCENT_SLOT = { a: 0, k: [0.78, 0.6, 0.25, 1], sid: "accent" };
 
 export const fill = (opacity: number | ReturnType<typeof anim> = 100) => ({
   ty: "fl",
@@ -42,7 +42,7 @@ export const stroke = (width: number, opacity = 100) => ({
   lj: 2,
 });
 
-export const groupTransform = {
+const groupTransform = {
   ty: "tr",
   nm: "Transform",
   p: still([0, 0]),

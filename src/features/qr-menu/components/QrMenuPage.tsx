@@ -1,63 +1,22 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React from "react";
+import { invalidateWorkspace, useWorkspace } from "@/hooks/useWorkspace";
 import { PiQrCode, PiWarningCircle } from "react-icons/pi";
 import { Button, EmptyState, PageHeader, Skeleton } from "@/components/ui";
-import { toast } from "@/components/ui/toast";
 import { usePermissions } from "@/hooks/usePermissions";
 import { QrStudio } from "@/features/qr-codes";
-import { workspaceService } from "@/services/workspace.service";
-import type { WorkspaceData } from "@/types";
-import { getApiErrorMessage } from "@/utils/errors";
 import { AddressCard } from "./AddressCard";
 
 /** One page for the whole job: pick the address, design the code, then download or print it. */
 export function QrMenuPage() {
   const { canEditWebsite, hasPermission } = usePermissions();
-  const [workspace, setWorkspace] = useState<WorkspaceData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  const fetchWorkspace = useCallback((isAlive: () => boolean = () => true) => {
-    return workspaceService
-      .getWorkspace()
-      .then((res) => {
-        if (!isAlive()) return;
-        setWorkspace(res.data);
-        setLoadError(null);
-      })
-      .catch((err) => {
-        if (!isAlive()) return;
-        const message = getApiErrorMessage(err, "We couldn't load your QR menu settings.");
-        setLoadError(message);
-        toast.error(message);
-      })
-      .finally(() => {
-        if (isAlive()) setLoading(false);
-      });
-  }, []);
-
-  useEffect(() => {
-    let alive = true;
-    // State is only set in the promise callbacks, after the request settles.
-    workspaceService
-      .getWorkspace()
-      .then((res) => {
-        if (alive) setWorkspace(res.data);
-      })
-      .catch((err) => {
-        if (!alive) return;
-        const message = getApiErrorMessage(err, "We couldn't load your QR menu settings.");
-        setLoadError(message);
-        toast.error(message);
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-    return () => {
-      alive = false;
-    };
-  }, []);
+  const { data: workspace, loading, error: loadError, refetch } = useWorkspace();
+  // After the address changes (or on retry), read the workspace fresh rather than from the cache.
+  const fetchWorkspace = () => {
+    invalidateWorkspace();
+    return refetch();
+  };
 
   if (loading) {
     return (
@@ -81,7 +40,6 @@ export function QrMenuPage() {
         action={
           <Button
             onClick={() => {
-              setLoading(true);
               void fetchWorkspace();
             }}
           >

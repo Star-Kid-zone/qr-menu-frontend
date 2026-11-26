@@ -9,7 +9,7 @@ import {
   PiEyeBold,
   PiBrowsersBold,
 } from 'react-icons/pi';
-import { Button, PageHeader, toast } from '@/components/ui';
+import { Button, PageHeader, PromptDialog, toast } from '@/components/ui';
 
 import type { StudioTab } from '../types';
 import { VaultTab } from './VaultTab';
@@ -245,6 +245,16 @@ export function CreativeStudioPage() {
         />
       )}
       {vault.confirmDialog}
+      <PromptDialog
+        isOpen={studio.promptTitleDefault !== null}
+        initialValue={studio.promptTitleDefault ?? ''}
+        onClose={studio.closePromptTitleDialog}
+        onSubmit={studio.savePromptWithTitle}
+        title="Save to Prompt Library"
+        label="Prompt title"
+        confirmLabel="Save"
+        loading={studio.savingToLibrary}
+      />
     </div>
   );
 }

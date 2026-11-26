@@ -110,18 +110,6 @@ export const RECOMMENDED_MODELS = [
   'Runway Gen-3 Alpha (Slow-Motion Orbit)',
 ] as const;
 
-export const STYLE_PRESETS = [
-  'Commercial Food Photography',
-  'Studio Lighting with Rim Glow',
-  'Dramatic Culinary Sizzler',
-  'Hero Commercial Shot',
-  'Dynamic Action Plating',
-  'Luxury Fine Dining',
-  'Slow Motion Cinematic Video',
-  'Festive Commercial Poster',
-  'Dark & Moody Rustic Bokeh',
-] as const;
-
 export const VAULT_TYPE_LABELS: Record<string, string> = {
   image: 'Image',
   video: 'Reel',

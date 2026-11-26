@@ -22,7 +22,7 @@ import { PiPlusBold, PiSignpostBold, PiTrashBold, PiArrowRightBold } from "react
  * old-slug -> new-slug redirect created whenever a tenant changes their own
  * site slug is unrelated to this panel and needs no admin action at all.
  */
-export function TenantRedirectsPanel({ userId }: { userId: number }) {
+export function TenantRedirectsPanel({ userId }: { userId: string }) {
   const [redirects, setRedirects] = useState<TenantRedirect[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

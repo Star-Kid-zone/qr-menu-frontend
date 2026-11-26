@@ -21,8 +21,8 @@ export interface TenantMetadataInput {
   imageUrl?: string | null;
 }
 
-export type PortalMenuItem = {
-  id: string | number;
+type PortalMenuItem = {
+  id: string;
   item: string;
   description?: string | null;
   price?: string | number | null;
@@ -44,17 +44,17 @@ export type PortalResponse = {
     payment?: { type?: string; link?: string; qrImage?: string } | null;
   };
   menu?: Record<string, PortalMenuItem[]> | null;
-  gallery?: Array<{ id?: string | number; imageUrl?: string | null }> | null;
+  gallery?: Array<{ id?: string; imageUrl?: string | null }> | null;
   offers?: Array<{
-    id?: string | number;
+    id?: string;
     title?: string;
     description?: string | null;
     discount?: string | null;
     imageUrl?: string | null;
   }> | null;
-  faqs?: Array<{ id?: string | number; question?: string; answer?: string }> | null;
+  faqs?: Array<{ id?: string; question?: string; answer?: string }> | null;
   googleReviews?: Array<{
-    id: string | number;
+    id: string;
     authorName: string;
     authorPhotoUrl?: string | null;
     rating: number;

@@ -2,14 +2,13 @@ import type { Menu } from '@/types';
 import type { RawPublicSiteData } from '@/types/public/templates/rawPublicSiteData.types';
 import { toSafeExternalUrl } from '@/utils/url';
 import { resolveTerms } from './industryTerms';
-import { DEFAULT_TEMPLATE_SLUG } from '@/components/templates/core/defaultTemplate';
 
-export type SignatureDish = { name: string; description: string; price?: string; image?: string };
-export type Faq = { q: string; a: string };
+type SignatureDish = { name: string; description: string; price?: string; image?: string };
+type Faq = { q: string; a: string };
 export type HoursRow = { day: string; hours: string; startTime?: string; endTime?: string };
-export type StatItem = { label: string; value: string };
+type StatItem = { label: string; value: string };
 export type GoogleReviewItem = {
-  id: string | number;
+  id: string;
   authorName: string;
   authorPhotoUrl: string | null;
   rating: number;
@@ -27,16 +26,6 @@ type MenuRow = Menu & { title?: string };
 function firstImageObjectUrl(m: MenuRow): string | undefined {
   const first = m?.images?.[0];
   return first && typeof first === 'object' ? first.url : undefined;
-}
-
-/**
- * The tenant's saved landing-theme slug (`settings.landing_theme`), defaulting to
- * `'swiss'` when unset. `settings` is an untyped JSON bag, so non-string values
- * (legacy numeric ids) are stringified.
- */
-export function getLandingThemeSlug(data: RawPublicSiteData): string {
-  const landingTheme = data.settings?.landing_theme;
-  return landingTheme == null || landingTheme === '' ? DEFAULT_TEMPLATE_SLUG : String(landingTheme);
 }
 
 /**

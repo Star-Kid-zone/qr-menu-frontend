@@ -107,4 +107,3 @@ export function GlobalLoaderOverlay() {
   );
 }
 
-export default GlobalLoaderOverlay;

@@ -29,7 +29,7 @@ export interface SectionSchedule {
   to?: string;
 }
 
-export interface SitePage {
+interface SitePage {
   sections: SectionInstance[];
 }
 
@@ -78,9 +78,9 @@ export interface LandingSectionProps {
   section: SectionInstance;
 }
 
-export type SectionGroup = "opening" | "about" | "food" | "engage" | "trust" | "visit" | "global";
+type SectionGroup = "opening" | "about" | "food" | "engage" | "trust" | "visit" | "global";
 
-export interface SectionDefinition<P> {
+interface SectionDefinition<P> {
   type: string;
   label: string;
   description: string;

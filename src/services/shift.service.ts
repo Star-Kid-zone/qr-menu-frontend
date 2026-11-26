@@ -9,5 +9,5 @@ export const shiftService = {
   create: (data: CreateShiftInput) => api.post<{ shift: Shift }>('/shifts', data),
   update: (id: string, data: Partial<CreateShiftInput & { status: ShiftStatus }>) =>
     api.put<{ shift: Shift }>(`/shifts/${id}`, data),
-  remove: (id: string) => api.delete(`/shifts/${id}`),
+  remove: (id: string) => api.delete<unknown>(`/shifts/${id}`),
 };

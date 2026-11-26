@@ -219,7 +219,7 @@ export function useCategorySpy(cats: string[]) {
 }
 
 /** Phone / tablet: a sticky row of category chips that keeps the current one in view. */
-export function CategoryChips({ cats, current, onPick, label = "Menu sections", className = "" }: { cats: string[]; current: string | null; onPick: (c: string) => void; label?: string; className?: string }) {
+function CategoryChips({ cats, current, onPick, label = "Menu sections", className = "" }: { cats: string[]; current: string | null; onPick: (c: string) => void; label?: string; className?: string }) {
   const bar = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!current) return;
@@ -251,7 +251,7 @@ export function CategoryChips({ cats, current, onPick, label = "Menu sections", 
 }
 
 /** Laptop: a sticky sidebar of categories with their icons and counts. */
-export function CategorySidebar({ groups, current, onPick, className = "" }: { groups: Array<[string, Menu[]]>; current: string | null; onPick: (c: string) => void; className?: string }) {
+function CategorySidebar({ groups, current, onPick, className = "" }: { groups: Array<[string, Menu[]]>; current: string | null; onPick: (c: string) => void; className?: string }) {
   const look = useSiteLook();
   if (groups.length < 2) return null;
   return (
@@ -345,7 +345,7 @@ function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; c
 }
 
 /** Shown when search / filters leave nothing. */
-export function NoMatches({ sys }: { sys: MenuSystem }) {
+function NoMatches({ sys }: { sys: MenuSystem }) {
   return (
     <div className="mx-auto max-w-sm py-24 text-center" style={{ color: tv.muted }}>
       <p className="text-lg font-semibold" style={{ color: tv.text }}>Nothing matches</p>

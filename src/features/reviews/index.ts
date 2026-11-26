@@ -1,4 +1,3 @@
-export * from "./types";
 export * from "./components/StarRating";
 export * from "./components/ReviewStatsBar";
 export * from "./components/GoogleAutoReplyPanel";

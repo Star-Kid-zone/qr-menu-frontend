@@ -5,7 +5,6 @@
  */
 import { APP_LOCALE } from "@/constants/app.constants";
 
-export { APP_LOCALE };
 
 export function formatDate(value: Date | string | number, options: Intl.DateTimeFormatOptions = { day: "numeric", month: "short", year: "numeric" }) {
   const date = value instanceof Date ? value : new Date(value);

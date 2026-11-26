@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
+import { invalidateWorkspace, useWorkspace } from "@/hooks/useWorkspace";
+import { workspaceService } from "@/services/workspace.service";
 import Image from "@/components/ui/Image";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
 import { ReactQRCode } from "@lglab/react-qr-code";
-import { workspaceService, WorkspaceData } from "@/services/workspace.service";
 import { toast } from "@/components/ui/toast";
 import { getApiErrorMessage } from "@/utils/errors";
 import { Notice } from "@/components/ui/Notice";
+import { LoadErrorNotice } from "@/components/feedback/LoadErrorNotice";
 import { PaymentForm, type PaymentFormHandle } from "./PaymentForm";
 import { savePaymentMethod } from "../savePayment";
 import {
@@ -28,9 +30,8 @@ import {
  * see behind "Pay bill", all on this page (edits happen in place).
  */
 export function ListPaymentPage({ startEditing = false }: { startEditing?: boolean }) {
-  const [data, setData] = useState<WorkspaceData | null>(null);
+  const { data, loading, error: loadError, refetch } = useWorkspace();
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(startEditing);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -53,20 +54,11 @@ export function ListPaymentPage({ startEditing = false }: { startEditing?: boole
     }
   };
 
+  // After a save or delete, read the payment settings fresh.
   const fetchWorkspace = async () => {
-    try {
-      const res = await workspaceService.getWorkspace();
-      setData(res.data);
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, "Failed to load payment settings"));
-    } finally {
-      setLoading(false);
-    }
+    invalidateWorkspace();
+    await refetch();
   };
-
-  useEffect(() => {
-    fetchWorkspace();
-  }, []);
 
   // ConfirmDeleteModal shows the success toast or the inline error.
   const handleDelete = async () => {
@@ -122,7 +114,9 @@ export function ListPaymentPage({ startEditing = false }: { startEditing?: boole
 
       {/* Body */}
       <div className="flex flex-col">
-        {loading ? (
+        {loadError && !loading ? (
+          <LoadErrorNotice title="We couldn't load your bill payment settings" message={loadError} onRetry={fetchWorkspace} />
+        ) : loading ? (
           <div className="flex min-h-48 items-center justify-center">
             <span className="size-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>

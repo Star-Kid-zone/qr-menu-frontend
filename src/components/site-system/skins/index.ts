@@ -4,7 +4,7 @@ import { FLAGSHIP_SKINS } from './flagship';
 import { LEGACY_PREFIX, LEGACY_SKINS } from './legacy';
 
 export { FAMILY_DEFAULTS } from './families';
-export { LEGACY_FAMILY, LEGACY_PREFIX, skinFromTheme } from './legacy';
+export { LEGACY_FAMILY } from './legacy';
 
 /** All 125 skins: 12 flagship first, then the 113 converted style templates. */
 export const SKINS: readonly SkinDefinition[] = [...FLAGSHIP_SKINS, ...LEGACY_SKINS];

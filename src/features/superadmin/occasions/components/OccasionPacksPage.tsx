@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useAsyncData } from '@/hooks/useAsyncData';
+import { LoadErrorNotice } from '@/components/feedback/LoadErrorNotice';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Button, Input, toast } from '@/components/ui';
 import { superadminService, type OccasionPackWording } from '@/services/superadmin.service';
@@ -22,21 +24,21 @@ const REGION_LABEL = OCCASION_REGION_LABELS;
 export function OccasionPacksPage() {
   const [saved, setSaved] = useState<Packs>({});
   const [draft, setDraft] = useState<Packs>({});
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const groups = occasionsByRegion();
 
-  useEffect(() => {
-    superadminService
-      .getOccasionPacks()
-      .then((p) => {
-        const packs = p && typeof p === 'object' ? p : {};
-        setSaved(packs);
-        setDraft(packs);
-      })
-      .catch((err: unknown) => toast.error(getApiErrorMessage(err, 'Could not load the occasion wording.')))
-      .finally(() => setLoading(false));
-  }, []);
+  // The page edits a draft afterwards, so the load copies the saved wording into local state.
+  const { loading, error: loadError, refetch } = useAsyncData(
+    async () => {
+      const p = await superadminService.getOccasionPacks();
+      const packs = p && typeof p === 'object' ? p : {};
+      setSaved(packs);
+      setDraft(packs);
+      return packs;
+    },
+    [],
+    'Could not load the occasion wording.',
+  );
 
   const dirty = JSON.stringify(saved) !== JSON.stringify(draft);
   const setField = (id: string, field: keyof OccasionPackWording, value: string) =>
@@ -68,7 +70,9 @@ export function OccasionPacksPage() {
         }
       />
 
-      {loading ? (
+      {loadError && !loading ? (
+        <LoadErrorNotice title="We couldn't load the occasion wording" message={loadError} onRetry={refetch} />
+      ) : loading ? (
         <p className="text-sm text-muted-foreground">Loading wording…</p>
       ) : (
         OCCASION_REGIONS.map((region) => (

@@ -8,7 +8,7 @@ import { landingTemplates } from "@/components/templates/core/landingRegistry";
 import type { RawPublicSiteData } from "@/types/public/templates/rawPublicSiteData.types";
 import { DEFAULT_TEMPLATE_SLUG } from "@/components/templates/core/defaultTemplate";
 
-// Mirrors the resolution logic in `src/app/(public)/TenantLandingPage.tsx` so the
+// Mirrors the resolution logic in `src/features/public-site/components/TenantLandingPage.tsx` so the
 // admin preview renders the exact same component the public site would — just fed
 // draft (unsaved) data instead of a server fetch, and with no analytics tracking.
 

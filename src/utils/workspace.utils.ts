@@ -1,4 +1,4 @@
-import type { WorkspaceSettingsFormValues, WorkspaceSetting, WorkspaceSettingSource } from '@/types/admin/workspace/workspace.types';
+import type { WorkspaceSettingsFormValues, WorkspaceSetting } from '@/types/admin/workspace/workspace.types';
 import { parseSiteDocument } from '@/components/templates/sections/document';
 
 /**
@@ -59,7 +59,7 @@ export function mapWorkspaceSettingToFormValues(setting: WorkspaceSetting | null
     announcement_text:   s?.announcement_text || '',
     announcement_starts_at: s?.announcement_starts_at || '',
     announcement_ends_at:   s?.announcement_ends_at   || '',
-    currency_id: s?.currency_id ? Number(s.currency_id) : null,
+    currency_id: s?.currency_id ? String(s.currency_id) : null,
   };
 }
 
@@ -111,60 +111,6 @@ export function getDefaultWorkspaceSettings(): WorkspaceSettingsFormValues {
     announcement_starts_at: '',
     announcement_ends_at:   '',
     currency_id: null,
-  };
-}
-
-/**
- * Builds a partial Setting payload from form values for API updates.
- */
-export function buildWorkspaceSettingsPayload(values: WorkspaceSettingsFormValues): WorkspaceSettingSource {
-  return {
-    theme_colour:         values.theme_colour,
-    primary_color:        values.primary_color,
-    secondary_color:      values.secondary_color,
-    accent_color:         values.accent_color,
-    text_primary_color:   values.text_primary_color,
-    text_secondary_color: values.text_secondary_color,
-    accent_text_color:    values.accent_text_color,
-    border_color:         values.border_color,
-    footer_bg_color:      values.footer_bg_color,
-    section_bg_color:     values.section_bg_color,
-    font_family:          values.font_family,
-    card_style:           values.card_style,
-    hero_overlay:         values.hero_overlay,
-    heading_class:        values.heading_class,
-    theme_badge:          values.theme_badge,
-    theme_marquee:        values.theme_marquee,
-    hero_tagline:         values.hero_tagline,
-    menu_primary_color:        values.menu_primary_color,
-    menu_secondary_color:      values.menu_secondary_color,
-    menu_accent_color:         values.menu_accent_color,
-    menu_text_primary_color:   values.menu_text_primary_color,
-    menu_text_secondary_color: values.menu_text_secondary_color,
-    menu_accent_text_color:    values.menu_accent_text_color,
-    menu_border_color:         values.menu_border_color,
-    menu_footer_bg_color:      values.menu_footer_bg_color,
-    menu_section_bg_color:     values.menu_section_bg_color,
-    menu_font_family:          values.menu_font_family,
-    menu_card_style:           values.menu_card_style,
-    menu_theme:           values.menu_theme,
-    landing_theme:        values.landing_theme,
-    landing_structure:    values.landing_structure,
-    menu_structure:       values.menu_structure,
-    skin_id:              values.skin_id,
-    menu_skin_id:         values.menu_skin_id,
-    business_type:        values.business_type,
-    loading_screen_theme: values.loading_screen_theme,
-    site_document:        values.site_document,
-    menubtn_status:       values.menubtn_status,
-    paybtn_status:        values.paybtn_status,
-    reviewbtn_status:     values.reviewbtn_status,
-    special_offerstatus:  values.special_offerstatus,
-    announcement_enabled: values.announcement_enabled,
-    announcement_text:    values.announcement_text,
-    announcement_starts_at: values.announcement_starts_at || null,
-    announcement_ends_at:   values.announcement_ends_at   || null,
-    currency_id:          values.currency_id,
   };
 }
 

@@ -30,7 +30,7 @@ export const LANDING_SECTION_TYPES = [
   "curated-list",
 ] as const;
 
-export type LandingSectionType = (typeof LANDING_SECTION_TYPES)[number];
+type LandingSectionType = (typeof LANDING_SECTION_TYPES)[number];
 
 /** An in-page link for the layout's navigation bar (only sections that are actually shown). */
 export interface LayoutNavItem {

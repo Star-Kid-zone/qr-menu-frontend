@@ -3,7 +3,8 @@
 import Image from "@/components/ui/Image";
 import { useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { ReactQRCode } from "@lglab/react-qr-code";
-import { APP_NAME } from "@/config/app.constants";
+import { APP_BASE_URL, APP_NAME } from "@/config/app.constants";
+import { OwlMark } from "@/components/brand";
 import { getSocialPlatformIcon, getSocialPlatformLabel } from "@/components/templates/core/socialPlatforms";
 import type { LandingSectionContext } from "@/components/templates/sections/types";
 import { SiteIcon } from "../icons/SiteIcon";
@@ -33,7 +34,7 @@ function useAbsoluteUrl(href: string): string | null {
 }
 
 /** A scannable code for the menu. Always dark on white: codes must stay scannable on every skin. */
-export function MenuQr({ href, size = 112, label = "Scan for the menu" }: { href: string; size?: number; label?: string }) {
+function MenuQr({ href, size = 112, label = "Scan for the menu" }: { href: string; size?: number; label?: string }) {
   const url = useAbsoluteUrl(href);
   return (
     <figure className="flex w-fit flex-col items-center gap-2">
@@ -212,7 +213,10 @@ export function FooterV2({
           <p>
             © {year} {c.businessName}. All rights reserved.
           </p>
-          <p>Digital menu by {APP_NAME}</p>
+          <a href={APP_BASE_URL} target="_blank" rel="noopener" className="inline-flex items-center gap-1.5 hover:underline">
+            <OwlMark variant="mono" className="size-4" />
+            Digital menu by {APP_NAME}
+          </a>
           <button
             type="button"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}

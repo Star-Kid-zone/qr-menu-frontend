@@ -60,5 +60,3 @@ export function FormField({
   );
 }
 
-export const Field = FormField;
-export default FormField;

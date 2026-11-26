@@ -7,6 +7,7 @@ const submitted = vi.hoisted(() => vi.fn());
 
 // Stand-in for the real settings form: a <form> with the id the header's Save button targets.
 vi.mock("@/features/workspace", () => ({
+  SiteHistoryModal: () => null,
   WorkspaceSettingsForm: ({ formId }: { formId: string }) => (
     <form
       id={formId}
@@ -17,7 +18,6 @@ vi.mock("@/features/workspace", () => ({
     />
   ),
 }));
-vi.mock("@/features/workspace/components/SiteHistoryModal", () => ({ SiteHistoryModal: () => null }));
 
 import { WebsiteTab } from "./WebsiteTab";
 

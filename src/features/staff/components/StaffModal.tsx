@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { ModalFooter } from '@/components/ui/ModalFooter';
 import { ToggleCard } from '@/components/ui/ToggleCard';
 import { cn } from '@/utils/cn';
-import type { StaffRole } from '@/constants/permissions';
 import { ROLE_OPTIONS } from '@/constants/auth.constants';
 import type { StaffModalProps } from '../types';
 

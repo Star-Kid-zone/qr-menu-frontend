@@ -1,4 +1,4 @@
-import type { PermissionUnit, StaffRole } from '@/types';
+import type { AuthFeatureKey, AuthStageVariant, PermissionUnit, StaffRole } from '@/types';
 
 export type { PermissionUnit, StaffRole };
 
@@ -49,27 +49,77 @@ export const ROLE_COPY = {
 /** Pages that belong to the admin app, never to a restaurant's public host. */
 export const ADMIN_PATH_PREFIXES = ['/admin', '/superadmin', '/login', '/register', '/forgot-password'];
 
-export const PASSWORD_GENERATION = {
-  DEFAULT_LENGTH: 12,
-  CHARS: 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789',
-} as const;
-
 export const OTP_RESEND_SECONDS = 60;
 
-export const AUTH_PANEL_COPY: Record<string, { heading: string; body: string }> = {
-  '/login': {
-    heading: 'Your menu, right where you left it.',
-    body: 'Update dishes, answer reviews and check how many guests scanned today.',
+/** Which story the sign-in screens tell, by route. Anything unknown falls back to sign-in. */
+export const AUTH_STAGE_BY_PATH: Record<string, AuthStageVariant> = {
+  '/login': 'signin',
+  '/register': 'register',
+  '/forgot-password': 'reset',
+};
+
+/**
+ * Copy beside the form. Every line describes something the product does today
+ * (same rule as features/marketing/content.ts).
+ */
+export const AUTH_STAGE_COPY: Record<AuthStageVariant, { eyebrow: string; heading: string; body: string }> = {
+  signin: {
+    eyebrow: 'Welcome back',
+    heading: 'Pick up where you left off.',
+    body: 'Reply to new Google reviews, schedule this week’s posts and see how many guests opened your menu.',
   },
-  '/register': {
-    heading: 'Put your menu on every table.',
-    body: 'Add your dishes, choose a look and print your QR codes in one sitting.',
+  register: {
+    eyebrow: '14-day free trial',
+    heading: 'Your restaurant online, in one sitting.',
+    body: 'A menu guests open by scanning, a website of your own and your Google reviews, all run from one dashboard.',
   },
-  '/forgot-password': {
+  reset: {
+    eyebrow: 'Password reset',
     heading: 'Back in a couple of minutes.',
-    body: "We'll email a 6-digit code to the address you sign in with.",
+    body: 'We’ll email a 6-digit code to the address you sign in with. Your menu stays live while you reset.',
   },
 };
+
+/** The three things a new owner does after signing up, in order. */
+export const REGISTER_STEPS = [
+  { title: 'Add your dishes', body: 'Type them in, or photograph your printed menu and we read it for you.' },
+  { title: 'Choose a look', body: 'Pick a style for your website and menu. Change it any time.' },
+  { title: 'Print your QR codes', body: 'Put them on the tables. Guests scan with their camera, nothing to install.' },
+] as const;
+
+/** Cards in the swipeable strip under the form on phones (the desktop scene, flattened). */
+export const AUTH_FEATURE_STRIP: { key: AuthFeatureKey; title: string; body: string }[] = [
+  { key: 'menu', title: 'Menu on every table', body: 'Guests scan and see dishes, prices and veg marks. Mark a dish sold out in a tap.' },
+  { key: 'website', title: 'Your own website', body: 'Hours, photos, offers and directions, at your own address.' },
+  { key: 'reviews', title: 'Google reviews', body: 'See new reviews as they come in and reply from the dashboard.' },
+  { key: 'social', title: 'Social posts', body: 'Write once, post to Instagram, Facebook, X and LinkedIn, now or later.' },
+  { key: 'qr', title: 'QR codes', body: 'Design and print table cards that always open your latest menu.' },
+];
+
+/** Design size of the sign-in scene in px; it is scaled to fit the panel. */
+export const AUTH_SCENE_SIZE = { width: 600, height: 480 } as const;
+
+/** Sample restaurant the scene shows (the same one as the marketing page). */
+export const AUTH_SAMPLE_RESTAURANT = {
+  name: 'Annapoorna Kitchen',
+  slug: 'annapoorna',
+  tagline: 'Home-style Chettinad cooking',
+  heroImage: '/landing/spicy-bold/hero.jpg',
+  dishImage: '/landing/street-food/dish.jpg',
+  reviewer: 'Priya S.',
+  review: 'The ghee roast dosa was perfect. Lovely staff, quick service.',
+  postCaption: 'Our masala blend, roasted and ground fresh every morning.',
+} as const;
+
+/**
+ * Mirrors the backend's slugify at sign-up (controllers/auth/auth.controller.ts):
+ * the public address is "<name, max 50 chars>-<6 random characters>".
+ */
+export const SLUG_PREVIEW = {
+  MAX_BASE_LENGTH: 50,
+  SUFFIX_PLACEHOLDER: 'xxxxxx',
+  FALLBACK_BASE: 'your-restaurant',
+} as const;
 
 export const LOGIN_DEFAULT_VALUES = {
   identifier: '',

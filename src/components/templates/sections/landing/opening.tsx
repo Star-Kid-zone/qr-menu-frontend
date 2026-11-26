@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "@/components/ui/Image";
-import { FadeIn, Marquee, ParallaxImage } from "@/components/templates/landing/_shared/animations";
+import { Marquee, ParallaxImage } from "@/components/templates/landing/_shared/animations";
 import type { LandingSectionProps } from "../types";
 
 export function AnnouncementSection({ ctx: { c, t } }: LandingSectionProps) {
@@ -20,6 +20,8 @@ export function AnnouncementSection({ ctx: { c, t } }: LandingSectionProps) {
  * Variants: "full" (default, full-screen photo), "banner" (same, about half
  * height), "split" (text on the page colour beside the photo).
  */
+// The hero is above the fold and usually the LCP element: it renders at full opacity in the
+// server HTML instead of fading in after hydration (FadeIn starts at opacity 0).
 export function HeroSection({ ctx, section }: LandingSectionProps) {
   if (section.variant === "split") return <SplitHero ctx={ctx} section={section} />;
   const { c, t, img, p } = ctx;
@@ -37,7 +39,7 @@ export function HeroSection({ ctx, section }: LandingSectionProps) {
     >
       <div className="flex h-full items-center px-5 sm:px-10">
         <div className="mx-auto w-full max-w-5xl text-center text-white">
-          <FadeIn>
+          <div>
             {c.logoUrl && (
               <div className="relative mx-auto mb-4 h-16 w-16 sm:h-20 sm:w-20">
                 <Image
@@ -56,23 +58,23 @@ export function HeroSection({ ctx, section }: LandingSectionProps) {
                 {t.badge}
               </span>
             )}
-          </FadeIn>
-          <FadeIn delay={0.15} y={30}>
+          </div>
+          <div>
             <h1
               style={{ color: t.textPrimary === "#ffffff" || t.bg === "#000000" ? "#ffffff" : "white" }}
               className={`text-5xl font-bold leading-tight sm:text-7xl md:text-8xl ${t.headingClass ?? ""}`}
             >
               {c.businessName}
             </h1>
-          </FadeIn>
+          </div>
           {(t.heroTagline || c.slogan) && (
-            <FadeIn delay={0.3}>
+            <div>
               <p className="mt-4 text-lg font-light tracking-widest text-white/80 uppercase sm:text-xl">
                 {t.heroTagline || c.slogan}
               </p>
-            </FadeIn>
+            </div>
           )}
-          <FadeIn delay={0.5}>
+          <div>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               {c.cta.menuBtn && (
                 <p.LinkComponent
@@ -101,7 +103,7 @@ export function HeroSection({ ctx, section }: LandingSectionProps) {
                 </button>
               )}
             </div>
-          </FadeIn>
+          </div>
         </div>
       </div>
     </ParallaxImage>
@@ -112,7 +114,7 @@ function SplitHero({ ctx: { c, t, img, p } }: LandingSectionProps) {
   return (
     <section style={{ background: t.bg }} className="px-5 py-14 sm:px-10 lg:py-20">
       <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-2">
-        <FadeIn>
+        <div>
           {c.logoUrl && (
             <div className="relative mb-5 h-16 w-16">
               <Image src={c.logoUrl} alt={`${c.businessName} logo`} fill className="rounded-full object-cover" />
@@ -164,7 +166,7 @@ function SplitHero({ ctx: { c, t, img, p } }: LandingSectionProps) {
               </button>
             )}
           </div>
-        </FadeIn>
+        </div>
         <div className="relative aspect-[4/3] overflow-hidden rounded-3xl lg:aspect-[5/6]">
           <Image
             src={c.bannerUrl || c.gallery[0]?.image_url || img.hero}

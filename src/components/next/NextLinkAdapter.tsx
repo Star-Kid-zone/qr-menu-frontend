@@ -1,6 +1,5 @@
 'use client';
 
-import type { CSSProperties, ReactNode } from 'react';
 import Link from 'next/link';
 import { NextLinkAdapterProps } from "@/types/ui/NextLinkAdapter.types";
 

@@ -32,7 +32,7 @@ interface DevicePreset {
 // would on that actual phone. The whole mockup (bezel + content) is then
 // visually scaled down as one unit to fit the sidebar, so switching devices
 // shows a genuinely smaller/bigger phone, not just a resized viewport.
-const DEVICES: DevicePreset[] = PHONE_PREVIEW_DEVICES as unknown as DevicePreset[];
+const DEVICES: readonly DevicePreset[] = PHONE_PREVIEW_DEVICES;
 
 const BEZEL_BORDER = PHONE_BEZEL_BORDER;
 const CONTAINER_WIDTH = PHONE_CONTAINER_WIDTH; // available width budget inside the sidebar column

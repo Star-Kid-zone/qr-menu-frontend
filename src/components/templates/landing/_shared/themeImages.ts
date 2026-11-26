@@ -1,4 +1,4 @@
-export const THEME_IMAGES: Record<string, { hero: string; dish: string; scene: string }> = {
+const THEME_IMAGES: Record<string, { hero: string; dish: string; scene: string }> = {
   // ── Already hand-crafted (AI + stock) ────────────────────────────────────────
   'vaporwave':        { hero: '/landing/vaporwave/hero.png',         dish: '/landing/vaporwave/dish.png',         scene: '/landing/vaporwave/scene.png' },
   'neo-brutalism':    { hero: '/landing/neo-brutalism/hero.png',     dish: '/landing/neo-brutalism/dish.png',     scene: '/landing/neo-brutalism/scene.png' },

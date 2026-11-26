@@ -34,7 +34,7 @@ export function Container({ children, size = "lg", className = "", style }: { ch
 export type Tone = "base" | "band" | "surface" | "accent" | "footer" | "inverse";
 
 /** Background + text colours for a tone. "inverse" swaps page and text colours. */
-export function toneStyle(tone: Tone): CSSProperties {
+function toneStyle(tone: Tone): CSSProperties {
   switch (tone) {
     case "band":
       return { background: tv.band, color: tv.muted };

@@ -6,7 +6,7 @@ import { cn } from "@/utils/cn";
 import { SITE_STATUS_MODES } from "@/constants/site.constants";
 import type { SiteDocument, SiteStatus, SiteStatusMode } from "@/components/templates/sections/types";
 
-const MODES: { mode: SiteStatusMode; label: string; description: string; defaultLine: string }[] = SITE_STATUS_MODES as unknown as { mode: SiteStatusMode; label: string; description: string; defaultLine: string }[];
+const MODES: readonly { mode: SiteStatusMode; label: string; description: string; defaultLine: string }[] = SITE_STATUS_MODES;
 
 export interface SiteStatusPanelProps {
   formId: string;

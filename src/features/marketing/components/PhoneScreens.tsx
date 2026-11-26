@@ -10,6 +10,8 @@ import {
 } from "react-icons/pi";
 import { cn } from "@/utils/cn";
 import { QrPattern } from "./QrMark";
+import "../marketing.css";
+import { ROOT_DOMAIN } from "../content";
 
 /*
  * The three screens a guest sees after scanning. Every element is a real
@@ -103,7 +105,7 @@ export function WebsiteScreen() {
   return (
     <div className="flex h-full flex-col text-[0.8125rem]">
       <div className="mkt-plum-light relative px-4 pb-5 pt-10" style={{ color: "var(--m-on-plum)" }}>
-        <p className="text-[0.625rem]" style={{ color: "var(--m-on-plum-mute)" }}>annapoorna.mynagaram.com</p>
+        <p className="text-[0.625rem]" style={{ color: "var(--m-on-plum-mute)" }}>annapoorna.{ROOT_DOMAIN}</p>
         <p className="mkt-h3 mt-2 text-white">{RESTAURANT}</p>
         <p className="mt-1 text-xs" style={{ color: "var(--m-on-plum-mute)" }}>Home-style Chettinad cooking since 1998</p>
         <div className="mt-3 flex gap-1.5 text-[0.6875rem] font-semibold">

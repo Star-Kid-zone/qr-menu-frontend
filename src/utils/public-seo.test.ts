@@ -16,6 +16,16 @@ describe("buildTenantMetadata", () => {
     expect(m.openGraph).toMatchObject({ images: [] });
     expect(m.twitter).toMatchObject({ images: [] });
   });
+
+  it("brands the page as the restaurant, not FeastOwl", () => {
+    const withLogo = buildTenantMetadata({ ...base, imageUrl: "https://img/logo.png" });
+    expect(withLogo.icons).toEqual({ icon: "https://img/logo.png", apple: "https://img/logo.png" });
+    expect(withLogo.manifest).toBeNull();
+    expect(withLogo.applicationName).toBe("Cafe");
+    expect(withLogo.title).toEqual({ absolute: base.title });
+    // Without a logo the FeastOwl icon from the root layout stays.
+    expect(buildTenantMetadata(base).icons).toBeUndefined();
+  });
 });
 
 describe("readBusinessSeo", () => {

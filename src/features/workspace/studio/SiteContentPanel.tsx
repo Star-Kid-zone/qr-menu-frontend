@@ -40,7 +40,7 @@ import { SiteIcon } from "@/components/site-system/icons/SiteIcon";
  */
 
 type Tab = "awards" | "team" | "events" | "amenities" | "picks";
-const TABS: Array<{ id: Tab; label: string }> = SITE_CONTENT_TABS as unknown as Array<{ id: Tab; label: string }>;
+const TABS: ReadonlyArray<{ id: Tab; label: string }> = SITE_CONTENT_TABS;
 
 export function SiteContentPanel({ value, disabled, onChange }: { value: SiteDocument | null; disabled: boolean; onChange: (doc: SiteDocument) => void }) {
   const [tab, setTab] = useState<Tab>("awards");
@@ -558,7 +558,7 @@ const PICKS_TYPE = WORKSPACE_CURATED_PICKS.TYPE;
 const MAX_PICKS = WORKSPACE_CURATED_PICKS.MAX;
 
 interface MenuRow {
-  id: number | string;
+  id: string;
   item: string;
   category?: string;
   price?: string;
@@ -567,7 +567,7 @@ interface MenuRow {
 }
 
 /** The curated-list section in the landing page (created hidden-off on first edit). */
-export function withPicks(doc: SiteDocument | null, patch: { title?: string; itemIds?: string[] }): SiteDocument {
+function withPicks(doc: SiteDocument | null, patch: { title?: string; itemIds?: string[] }): SiteDocument {
   const next: SiteDocument = { ...(doc ?? {}), version: 1 };
   const sections: SectionInstance[] = [...(next.landing?.sections ?? [])];
   const i = sections.findIndex((x) => x.type === PICKS_TYPE);

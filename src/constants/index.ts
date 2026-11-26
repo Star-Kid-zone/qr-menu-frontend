@@ -10,6 +10,7 @@ export * from './analytics.constants';
 export * from './app.constants';
 export * from './auth.constants';
 export * from './blueprint.constants';
+export * from './brand.constants';
 export * from './dietary.constants';
 export * from './http.constants';
 export * from './menu.constants';

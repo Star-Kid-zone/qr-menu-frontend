@@ -1,5 +1,5 @@
 'use client';
-import type { KeyboardEvent, ReactNode } from 'react';
+import { memo, useMemo, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { PiMagnifyingGlassBold, PiPhoneBold, PiStarFill, PiXBold } from 'react-icons/pi';
 import { MenuItemImage } from '@/components/templates/core/MenuImage';
 import { useMenuTemplateData } from '@/components/templates/core/useTemplateData';
@@ -73,6 +73,69 @@ const keyOpen = (open: () => void) => (e: KeyboardEvent) => {
   }
 };
 
+/**
+ * One dish card. Memoised with stable props (theme, open handler), so typing in search or moving
+ * between categories re-renders only the cards whose dish changed, not the whole menu (INP).
+ */
+const MenuItemCard = memo(function MenuItemCard({
+  item,
+  t,
+  radius,
+  focusRing,
+  priceText,
+  onOpen,
+}: {
+  item: Menu;
+  t: MenuTheme;
+  radius: string;
+  focusRing: CSSProperties;
+  priceText: string;
+  onOpen: (item: Menu) => void;
+}) {
+  return (
+    <div
+      key={item.id}
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen(item)}
+      onKeyDown={keyOpen(() => onOpen(item))}
+      className={`group flex min-w-0 cursor-pointer gap-4 border p-3 transition-[border-color,box-shadow] hover:shadow-[0_6px_24px_-12px_rgba(0,0,0,0.25)] focus-visible:outline-2 focus-visible:outline-offset-2 sm:p-4 ${item.availability ? '' : 'opacity-60'}`}
+      style={{ background: t.cardBg, borderColor: t.cardBorder, borderRadius: radius, ...focusRing }}
+    >
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex items-start gap-2">
+          <h3 className="min-w-0 flex-1 text-[15px] font-semibold leading-snug [overflow-wrap:anywhere]" style={{ color: t.textPrimary }}>
+            {item.item}
+          </h3>
+        </div>
+        <p className="mt-0.5 text-[15px] font-semibold tabular-nums" style={{ color: t.priceColor }}>
+          {priceText}
+        </p>
+        {item.description && (
+          <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed" style={{ color: t.textMuted }}>
+            {item.description}
+          </p>
+        )}
+        <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-2.5 empty:hidden" style={{ color: t.textMuted }}>
+          {item.popular && (
+            <span className="inline-flex h-5 items-center gap-1 rounded-full px-1.5 text-[11px] font-semibold" style={{ background: t.accent, color: t.accentText }}>
+              <PiStarFill className="size-2.5" aria-hidden /> Popular
+            </span>
+          )}
+          {!item.availability && <span className="text-[11px] font-medium">Not available today</span>}
+          <DietaryBadges item={item} />
+        </div>
+      </div>
+      <MenuItemImage
+        item={item}
+        primary={t.accent}
+        secondary={t.textMuted}
+        className="size-24 shrink-0 self-start sm:size-28"
+      />
+    </div>
+  );
+});
+
 export function MenuTemplateRenderer({
   theme,
   payload,
@@ -85,7 +148,7 @@ export function MenuTemplateRenderer({
   const p = useMenuTemplateData(payload, routeSlug);
 
   // Merge workspace settings over the template's defaults.
-  const t: MenuTheme = {
+  const t: MenuTheme = useMemo(() => ({
     ...theme,
     accent:      p.primary       || theme.accent,
     bg:          p.accent        || theme.bg,
@@ -98,7 +161,7 @@ export function MenuTemplateRenderer({
     searchText:  p.textPrimary   || theme.searchText,
     font:        p.fontFamily    || theme.font,
     cardRadius:  (p.cardStyle && CARD_RADIUS_MAP[p.cardStyle]) || theme.cardRadius,
-  };
+  }), [theme, p.primary, p.accent, p.secondary, p.textPrimary, p.textSecondary, p.accentText, p.borderColor, p.fontFamily, p.cardStyle]);
   const radius = t.cardRadius ?? '1rem';
   const price = (m: Menu) => `${p.currencySymbol}${m.price}`;
 
@@ -114,7 +177,7 @@ export function MenuTemplateRenderer({
   const showTypeRow = p.allTypes.length > 1;
   const popular = p.grouped.flatMap(([, items]) => items).filter((m) => m.popular);
   const showPopularStrip = popular.length > 1 && !filtersActive && !p.searchQuery;
-  const focusRing = { outlineColor: t.accent };
+  const focusRing = useMemo(() => ({ outlineColor: t.accent }), [t.accent]);
 
   return (
     <div className="min-h-dvh overflow-x-clip pb-32" style={{ background: t.bg, fontFamily: t.font, color: t.textPrimary }}>
@@ -290,46 +353,7 @@ export function MenuTemplateRenderer({
               {/* One column on phones, two on laptops, three on large monitors. */}
               <div className="grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3">
                 {items.map((item) => (
-                  <div
-                    key={item.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => p.openItem(item)}
-                    onKeyDown={keyOpen(() => p.openItem(item))}
-                    className={`group flex min-w-0 cursor-pointer gap-4 border p-3 transition-[border-color,box-shadow] hover:shadow-[0_6px_24px_-12px_rgba(0,0,0,0.25)] focus-visible:outline-2 focus-visible:outline-offset-2 sm:p-4 ${item.availability ? '' : 'opacity-60'}`}
-                    style={{ background: t.cardBg, borderColor: t.cardBorder, borderRadius: radius, ...focusRing }}
-                  >
-                    <div className="flex min-w-0 flex-1 flex-col">
-                      <div className="flex items-start gap-2">
-                        <h3 className="min-w-0 flex-1 text-[15px] font-semibold leading-snug [overflow-wrap:anywhere]" style={{ color: t.textPrimary }}>
-                          {item.item}
-                        </h3>
-                      </div>
-                      <p className="mt-0.5 text-[15px] font-semibold tabular-nums" style={{ color: t.priceColor }}>
-                        {price(item)}
-                      </p>
-                      {item.description && (
-                        <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed" style={{ color: t.textMuted }}>
-                          {item.description}
-                        </p>
-                      )}
-                      <div className="mt-auto flex flex-wrap items-center gap-1.5 pt-2.5 empty:hidden" style={{ color: t.textMuted }}>
-                        {item.popular && (
-                          <span className="inline-flex h-5 items-center gap-1 rounded-full px-1.5 text-[11px] font-semibold" style={{ background: t.accent, color: t.accentText }}>
-                            <PiStarFill className="size-2.5" aria-hidden /> Popular
-                          </span>
-                        )}
-                        {!item.availability && <span className="text-[11px] font-medium">Not available today</span>}
-                        <DietaryBadges item={item} />
-                      </div>
-                    </div>
-                    <MenuItemImage
-                      item={item}
-                      primary={t.accent}
-                      secondary={t.textMuted}
-                      className="size-24 shrink-0 self-start sm:size-28"
-                    />
-                  </div>
+                  <MenuItemCard key={item.id} item={item} t={t} radius={radius} focusRing={focusRing} priceText={price(item)} onOpen={p.openItem} />
                 ))}
               </div>
             </section>

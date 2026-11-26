@@ -1,6 +1,6 @@
 /** Colour maths for the scan check and for picking readable text. */
 
-export function hexToRgb(hex: string): [number, number, number] | null {
+function hexToRgb(hex: string): [number, number, number] | null {
   const m = /^#?([a-f\d]{3}|[a-f\d]{6})([a-f\d]{2})?$/i.exec(hex.trim());
   if (!m) return null;
   const h = m[1].length === 3 ? m[1].split('').map((c) => c + c).join('') : m[1];

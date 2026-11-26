@@ -110,7 +110,7 @@ export function useAiStudioState({ onSaveSuccess }: UseAiStudioStateProps) {
       toast.success(`Reference image "${file.name}" attached!`);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to upload reference image');
+      toast.error(getApiErrorMessage(err, 'Failed to upload reference image'));
     } finally {
       setUploadingStudioRef(false);
     }
@@ -171,17 +171,22 @@ export function useAiStudioState({ onSaveSuccess }: UseAiStudioStateProps) {
     }
   };
 
-  // Save Prompt to Prompt Library
+  // Save Prompt to Prompt Library: ask for a title in a PromptDialog, then save.
+  const [promptTitleDefault, setPromptTitleDefault] = useState<string | null>(null);
+
   const handleSaveToPromptLibrary = async () => {
     const currentPrompt = aiMode === 'image' ? imagePrompt.trim() : videoPrompt.trim();
     if (!currentPrompt) {
       toast.warning('Please enter a prompt first to save it to your library');
       return;
     }
-    const defaultTitle = (assetTitleInput || currentPrompt.slice(0, 35) + ' Special').trim();
-    const title = window.prompt('Enter a title for this prompt template:', defaultTitle);
-    if (!title || !title.trim()) return;
+    setPromptTitleDefault((assetTitleInput || currentPrompt.slice(0, 35) + ' Special').trim());
+  };
 
+  const closePromptTitleDialog = () => setPromptTitleDefault(null);
+
+  const savePromptWithTitle = async (title: string) => {
+    const currentPrompt = aiMode === 'image' ? imagePrompt.trim() : videoPrompt.trim();
     try {
       setSavingToLibrary(true);
       await superadminService.createPrompt({
@@ -198,9 +203,9 @@ export function useAiStudioState({ onSaveSuccess }: UseAiStudioStateProps) {
         stylePreset: 'Commercial Food Photography',
       });
       toast.success('Prompt successfully saved to your Prompt Library!');
+      setPromptTitleDefault(null);
     } catch (err: unknown) {
-      console.error(err);
-      toast.error('Failed to save prompt to library');
+      toast.error(getApiErrorMessage(err, 'Failed to save prompt to library'));
     } finally {
       setSavingToLibrary(false);
     }
@@ -221,7 +226,7 @@ export function useAiStudioState({ onSaveSuccess }: UseAiStudioStateProps) {
       toast.success('Multilingual marketing copy generated!');
     } catch (err: unknown) {
       console.error(err);
-      toast.error('Copy generation failed');
+      toast.error(getApiErrorMessage(err, 'Copy generation failed'));
     } finally {
       setGeneratingCopy(false);
     }
@@ -251,13 +256,16 @@ export function useAiStudioState({ onSaveSuccess }: UseAiStudioStateProps) {
       await onSaveSuccess();
     } catch (err: unknown) {
       console.error(err);
-      toast.error('Failed to save to Vault');
+      toast.error(getApiErrorMessage(err, 'Failed to save to Vault'));
     } finally {
       setSavingAiAsset(false);
     }
   };
 
   return {
+    promptTitleDefault,
+    closePromptTitleDialog,
+    savePromptWithTitle,
     aiMode,
     setAiMode,
     imagePrompt,

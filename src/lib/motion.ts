@@ -13,30 +13,12 @@
 import type { Transition, Variants } from 'framer-motion';
 
 /** Cubic-bezier equivalents of the CSS tokens, for non-spring transitions. */
-export const EASE_OUT = [0.23, 1, 0.32, 1] as const;
-export const EASE_IN_OUT = [0.77, 0, 0.175, 1] as const;
-
+const EASE_OUT = [0.23, 1, 0.32, 1] as const;
 /** Critically damped — the default for anything that just appears, moves,
  * or resizes on its own (no gesture preceded it). No overshoot. */
 export const springDefault: Transition = {
   type: 'spring',
   duration: 0.4,
-  bounce: 0,
-};
-
-/** Slight bounce — reserve for interactions a gesture (drag, flick, toggle
- * release) actually drove. Never use on things that "just appear". */
-export const springMomentum: Transition = {
-  type: 'spring',
-  duration: 0.4,
-  bounce: 0.2,
-};
-
-/** Fast, snappy spring for micro-feedback: button press states, small
- * toggles, checkbox ticks. */
-export const springSnappy: Transition = {
-  type: 'spring',
-  duration: 0.25,
   bounce: 0,
 };
 
@@ -58,14 +40,6 @@ export const fadeInUp: Variants = {
 export const fadeIn: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: easeOutTransition },
-};
-
-/** Modal/dialog surface: starts slightly scaled down (never from 0) so the
- * entrance reads as material arriving, not appearing from nowhere. */
-export const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.96 },
-  visible: { opacity: 1, scale: 1, transition: springDefault },
-  exit: { opacity: 0, scale: 0.98, transition: easeOutTransition },
 };
 
 /** Stagger helper for list/grid children — keep the per-item delay short

@@ -7,15 +7,15 @@ export interface SocialLink {
 }
 
 export interface Currency {
-  id: string | number;
+  id: string;
   name: string;
   code: string;
   symbol: string;
 }
 
 export interface Setting {
-  id: string | number;
-  user_id?: string | number;
+  id: string;
+  user_id?: string;
   /** Tenant subdomain slug for public landing (e.g. `vimal` → vimal.localhost). */
   public_slug?: string | null;
   theme_colour?: string;
@@ -31,7 +31,7 @@ export interface Setting {
   loading_screen_theme?: string;
   announcement_text?: string | null;
   announcement_enabled?: boolean;
-  currency_id?: string | number | null;
+  currency_id?: string | null;
   currency?: Currency;
   created_at?: string;
   updated_at?: string;

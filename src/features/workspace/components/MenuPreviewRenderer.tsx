@@ -12,7 +12,7 @@ import type { RawPublicSiteData } from "@/types/public/templates/rawPublicSiteDa
 import type { Menu } from "@/types";
 import { DEFAULT_TEMPLATE_SLUG } from "@/components/templates/core/defaultTemplate";
 
-// Same resolution as `src/app/(public)/menu/TenantMenuPage.tsx` (shared registry), so the
+// Same resolution as `src/features/public-site/components/TenantMenuPage.tsx` (shared registry), so the
 // admin preview renders the exact same component the public site would — just fed
 // draft (unsaved) data instead of a server fetch.
 
@@ -58,7 +58,7 @@ export function MenuPreviewRenderer({ data }: { data: RawPublicSiteData }) {
     // A missing image stays `null` (not `undefined`), as the templates have always received it.
     return {
       ...item,
-      id: Number(item.id),
+      id: String(item.id),
       image_url: img,
       imageUrl: img,
       image: img,

@@ -27,7 +27,7 @@ const sameColour = (a: string, b: string) => a.trim().toLowerCase() === b.trim()
 /** Rects are [x, y, w, h] in a 40×28 box. */
 export type Glyphs = Record<string, number[][]>;
 
-export function StructureGlyph({ glyphs, id, active }: { glyphs: Glyphs; id: string; active: boolean }) {
+function StructureGlyph({ glyphs, id, active }: { glyphs: Glyphs; id: string; active: boolean }) {
   return (
     <svg viewBox="0 0 40 28" className="h-7 w-10 shrink-0" aria-hidden="true">
       {(glyphs[id] ?? glyphs[""] ?? []).map(([x, y, w, h], i) => (

@@ -102,7 +102,7 @@ export const GENERIC_CATEGORY_ICONS: readonly CategoryIconRule[] = [
 const LATIN = /^[\p{Script=Latin}\d\s'’&-]+$/u;
 
 /** Lowercase, accents removed, Arabic diacritics removed, spaces collapsed. */
-export function normaliseCategory(text: string): string {
+function normaliseCategory(text: string): string {
   return text
     .normalize('NFKD')
     .replace(/[̀-ͯ]/g, '')

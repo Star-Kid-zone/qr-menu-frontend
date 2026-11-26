@@ -25,10 +25,10 @@ export interface LandingPartConfig {
   id: LandingPartId;
   label: string;
   summary: string;
-  controls: LandingControl[];
+  controls: readonly LandingControl[];
 }
 
-export const LANDING_PARTS: LandingPartConfig[] = CONST_LANDING_PARTS as unknown as LandingPartConfig[];
+export const LANDING_PARTS: readonly LandingPartConfig[] = CONST_LANDING_PARTS;
 
 export function getLandingPart(id: LandingPartId): LandingPartConfig {
   return LANDING_PARTS.find((p) => p.id === id) ?? LANDING_PARTS[0];

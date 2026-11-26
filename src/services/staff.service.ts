@@ -12,5 +12,5 @@ export const staffService = {
     id: string,
     data: Partial<{ name: string; email: string; role: StaffRole; active: boolean; password: string }>
   ) => api.put<{ staff: StaffMember }>(`/staff/${id}`, data),
-  remove: (id: string) => api.delete(`/staff/${id}`),
+  remove: (id: string) => api.delete<unknown>(`/staff/${id}`),
 };

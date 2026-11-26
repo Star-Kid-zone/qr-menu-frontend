@@ -11,54 +11,6 @@ export const POPULAR_HASHTAGS = [
   '#DineWithUs',
 ] as const;
 
-export const SOCIAL_PLATFORMS_META = [
-  {
-    id: 'instagram',
-    name: 'Instagram',
-    subname: 'Reels & Feed',
-    capabilities: 'Reels · Feed · Carousels',
-    brandColor: '#E1306C',
-    gradient: 'from-[#f09433] via-[#dc2743] to-[#bc1888]',
-    glowShadow: 'rgba(225, 48, 108, 0.35)',
-  },
-  {
-    id: 'facebook',
-    name: 'Facebook',
-    subname: 'Page & Videos',
-    capabilities: 'Page Posts · Videos · Feed',
-    brandColor: '#1877F2',
-    gradient: 'from-[#1877F2] to-[#0D65D9]',
-    glowShadow: 'rgba(24, 119, 242, 0.35)',
-  },
-  {
-    id: 'twitter',
-    name: 'Twitter / X',
-    subname: 'Short Updates & Media',
-    capabilities: 'Tweets · 280 chars · Media',
-    brandColor: '#FFFFFF',
-    gradient: 'from-neutral-800 to-black',
-    glowShadow: 'rgba(255, 255, 255, 0.2)',
-  },
-  {
-    id: 'linkedin',
-    name: 'LinkedIn',
-    subname: 'Professional Network',
-    capabilities: 'Articles · Company Feed',
-    brandColor: '#0A66C2',
-    gradient: 'from-[#0A66C2] to-[#004182]',
-    glowShadow: 'rgba(10, 102, 194, 0.35)',
-  },
-  {
-    id: 'tiktok',
-    name: 'TikTok',
-    subname: 'Short-form Vertical Reels',
-    capabilities: '9:16 Video · Sound',
-    brandColor: '#FE2C55',
-    gradient: 'from-neutral-950 via-neutral-900 to-black',
-    glowShadow: 'rgba(254, 44, 85, 0.35)',
-  },
-] as const;
-
 export const PLATFORM_META: Record<
   SocialPlatform,
   {

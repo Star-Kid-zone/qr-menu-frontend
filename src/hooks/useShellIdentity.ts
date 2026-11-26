@@ -1,10 +1,11 @@
 "use client";
 
+import { loadWorkspace } from '@/hooks/useWorkspace';
 import { useEffect, useState } from "react";
 import { authService } from "@/services/auth.service";
-import { workspaceService } from "@/services/workspace.service";
 import { buildPublicLandingUrl } from "@/utils/tenantHost";
 import { getImpersonationSession } from "@/utils/storage";
+import { onSessionChanged, onWorkspaceChanged } from "@/services/workspaceEvents";
 
 export interface ShellIdentity {
   /** The signed-in person, e.g. "Maya Patel". */
@@ -41,6 +42,11 @@ function roleLabelFor(user: ProfileUser) {
 const cache = new Map<string, Promise<ShellIdentity>>();
 const cacheKey = (area: string) => `${area}:${JSON.stringify(getImpersonationSession() ?? null)}`;
 
+// A renamed business / changed address, or a different signed-in identity, makes every copy stale.
+const clearCache = () => cache.clear();
+onWorkspaceChanged(clearCache);
+onSessionChanged(clearCache);
+
 async function loadIdentity(area: "admin" | "superadmin"): Promise<ShellIdentity> {
   const profileRes = await authService.getProfile().catch(() => null);
   const user = ((profileRes?.data as { user?: ProfileUser } | undefined)?.user ?? {}) as ProfileUser;
@@ -49,9 +55,9 @@ async function loadIdentity(area: "admin" | "superadmin"): Promise<ShellIdentity
   let restaurantName: string | null = null;
   let websiteUrl: string | null = null;
   if (area === "admin") {
-    const ws = await workspaceService.getWorkspace().catch(() => null);
-    restaurantName = ws?.data?.business?.name?.trim() || null;
-    websiteUrl = ws?.data?.publicSlug ? buildPublicLandingUrl(ws.data.publicSlug) : null;
+    const ws = await loadWorkspace().catch(() => null);
+    restaurantName = ws?.business?.name?.trim() || null;
+    websiteUrl = ws?.publicSlug ? buildPublicLandingUrl(ws.publicSlug) : null;
   }
 
   return { name, roleLabel: roleLabelFor(user), initials: toInitials(name), restaurantName, websiteUrl };
@@ -59,6 +65,14 @@ async function loadIdentity(area: "admin" | "superadmin"): Promise<ShellIdentity
 
 export function useShellIdentity(area: "admin" | "superadmin") {
   const [identity, setIdentity] = useState<ShellIdentity | null>(null);
+  const [version, setVersion] = useState(0);
+
+  // Re-run the load below when the workspace or session changes (the cache is already cleared).
+  useEffect(() => {
+    const bump = () => setVersion((v) => v + 1);
+    const offs = [onWorkspaceChanged(bump), onSessionChanged(bump)];
+    return () => offs.forEach((off) => off());
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -71,12 +85,8 @@ export function useShellIdentity(area: "admin" | "superadmin") {
     return () => {
       alive = false;
     };
-  }, [area]);
+  }, [area, version]);
 
   return identity;
 }
 
-/** Call on sign-out so the next session doesn't reuse the previous identity. */
-export function resetShellIdentity() {
-  cache.clear();
-}

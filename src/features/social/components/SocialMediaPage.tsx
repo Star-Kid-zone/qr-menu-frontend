@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
+import { useAsyncData } from "@/hooks/useAsyncData";
+import { LoadErrorNotice } from "@/components/feedback/LoadErrorNotice";
 import {
   PiClockBold,
   PiDeviceMobileBold,
@@ -48,7 +50,7 @@ import type {
   SocialTabId,
 } from "../types";
 
-export function SocialMediaPageContent() {
+function SocialMediaPageContent() {
   const [activeTab, setActiveTab] = useState<SocialTabId>("compose");
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
   const [assets, setAssets] = useState<SocialAsset[]>([]);
@@ -64,7 +66,6 @@ export function SocialMediaPageContent() {
   const [schedule, setSchedule] = useState("");
 
   // UI state
-  const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -122,28 +123,19 @@ export function SocialMediaPageContent() {
     }
   }
 
-  function handleLoadError(error: unknown) {
-    toast.error(getApiErrorMessage(error, "Could not load social media data."));
-  }
-
-  async function loadData() {
-    try {
-      setLoading(true);
-      applyData(await requestData());
-    } catch (error) {
-      handleLoadError(error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // Initial load (`loading` starts true); loadData handles the refresh buttons.
-  useEffect(() => {
-    requestData()
-      .then(applyData)
-      .catch(handleLoadError)
-      .finally(() => setLoading(false));
-  }, []);
+  // Everything that loaded is shown; if any part failed, the page says so with a retry
+  // (allSettled alone used to hide those failures).
+  const { loading, error: loadError, refetch: loadData } = useAsyncData(
+    async () => {
+      const results = await requestData();
+      applyData(results);
+      const failed = results.find((r) => r.status === "rejected");
+      if (failed) throw failed.reason;
+      return true;
+    },
+    [],
+    "Could not load social media data.",
+  );
 
   async function connectPlatform(platform: SocialPlatform) {
     try {
@@ -409,6 +401,9 @@ export function SocialMediaPageContent() {
       {/* Left main pane */}
       <div className="flex h-full min-w-0 flex-1 flex-col gap-4">
         <PageHeader title="Social posts" description="Post to your connected accounts now or schedule for later." />
+        {loadError && !loading ? (
+          <LoadErrorNotice title="Some of your social posts data didn't load" message={loadError} onRetry={loadData} />
+        ) : null}
         <div role="tablist" aria-label="Social posts sections" className="flex shrink-0 gap-1 overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-b border-border">
           {tabs.map((tab) => {
             const selected = tab.id === activeTab;

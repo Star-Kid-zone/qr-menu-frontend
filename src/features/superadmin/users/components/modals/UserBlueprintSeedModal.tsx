@@ -11,7 +11,7 @@ export interface UserBlueprintSeedModalProps {
   blueprintModalOpen: boolean;
   setBlueprintModalOpen: (open: boolean) => void;
   userName: string;
-  userId: number;
+  userId: string;
   availableBlueprints: MenuBlueprint[];
   selectedBpId: string;
   setSelectedBpId: (id: string) => void;

@@ -19,7 +19,7 @@ export type VerticalTerms = {
 
 // Keep keys in sync with the `group` values in
 // updatedbackend/src/db/laravelSeedConstants.ts.
-export const INDUSTRY_GROUP_TERMS: Record<string, VerticalTerms> = {
+const INDUSTRY_GROUP_TERMS: Record<string, VerticalTerms> = {
   food_beverage: {
     catalogLabel: 'Menu',
     itemSingular: 'Dish',

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { PiArrowCounterClockwiseBold } from "react-icons/pi";
-import { Button, Modal, Spinner, toast } from "@/components/ui";
+import { Button, Modal, Notice, Spinner, toast } from "@/components/ui";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { workspaceService, type SiteVersion } from "@/services/workspace.service";
 import { getApiErrorMessage } from "@/utils/errors";
@@ -83,21 +83,25 @@ export function SiteHistoryModal({ isOpen, onClose, onRestored }: SiteHistoryMod
         </p>
 
         {error ? (
-          <div role="alert" className="space-y-3">
-            <p className="text-body text-destructive">{error}</p>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                setError(null);
-                setVersions(null);
-                setReloadKey((k) => k + 1);
-              }}
-            >
-              Try again
-            </Button>
-          </div>
+          <Notice
+            tone="error"
+            action={
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setError(null);
+                  setVersions(null);
+                  setReloadKey((k) => k + 1);
+                }}
+              >
+                Try again
+              </Button>
+            }
+          >
+            {error}
+          </Notice>
         ) : versions === null ? (
           <div className="flex justify-center py-8" aria-busy="true">
             <Spinner size="md" />

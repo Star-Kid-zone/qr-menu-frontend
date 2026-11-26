@@ -1,7 +1,6 @@
 import * as z from 'zod';
 import { TENANT_SLUG_REGEX } from '@/constants/site.constants';
 
-export { TENANT_SLUG_REGEX };
 
 export function normalizeTenantSlug(raw: string): string {
   return raw.trim().toLowerCase();

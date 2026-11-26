@@ -4,6 +4,12 @@ import { useState, type CSSProperties } from 'react';
 import Image from '@/components/ui/Image';
 import { resolvePublicImageUrl } from './publicMedia';
 import type { MenuImageProps } from "@/types/public/templates/MenuImage.types";
+import { CARD_IMAGE_SIZES, REM_PX, TAILWIND_UNIT_PX } from '@/constants/theme.constants';
+
+function thumbSizes(className: string): string {
+  const width = fixedThumbWidth(className);
+  return width ? `${width}px` : CARD_IMAGE_SIZES;
+}
 
 /**
  * A dish photo, or — when there isn't one (or it fails to load) — a quiet
@@ -11,7 +17,20 @@ import type { MenuImageProps } from "@/types/public/templates/MenuImage.types";
  * colours with a fine diagonal pattern, so photo-less menus still look
  * deliberate instead of showing a "No image" stamp on every card.
  */
-export function MenuItemImage({ item, primary, secondary, className = '', style }: MenuImageProps) {
+/**
+ * The width a thumbnail is drawn at, from its fixed Tailwind size (size-16, sm:h-28/w-28,
+ * size-[4.5rem]); null for fluid images. Lets a 64px thumbnail request a ~64px image instead of
+ * a full-viewport one (about 10x fewer bytes per dish on a phone).
+ */
+export function fixedThumbWidth(className: string): number | null {
+  let px = 0;
+  for (const m of className.matchAll(/(?:^|\s)(?:[a-z]+:)?(?:size|w)-(\d+(?:\.\d+)?|\[(\d+(?:\.\d+)?)rem\])(?=\s|$)/g)) {
+    px = Math.max(px, m[2] ? Number(m[2]) * REM_PX : Number(m[1]) * TAILWIND_UNIT_PX);
+  }
+  return px > 0 ? Math.ceil(px) : null;
+}
+
+export function MenuItemImage({ item, primary, secondary, className = '', style, sizes }: MenuImageProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const firstImage = item.images && item.images.length > 0 ? item.images[0] : null;
   const raw =
@@ -41,7 +60,7 @@ export function MenuItemImage({ item, primary, secondary, className = '', style 
           src={src}
           alt={name}
           fill
-          sizes="(max-width: 768px) 100vw, 33vw"
+          sizes={sizes ?? thumbSizes(className)}
           className="object-cover"
           onError={() => setImageFailed(true)}
         />
@@ -70,4 +89,3 @@ export function MenuItemImage({ item, primary, secondary, className = '', style 
   );
 }
 
-export default MenuItemImage;

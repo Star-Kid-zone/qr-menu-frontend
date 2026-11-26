@@ -1,39 +1,39 @@
-import { lazy, type ComponentType } from "react";
+import dynamic from "next/dynamic";
+import type { ComponentType } from "react";
 import type { PublicMenuPayload } from "@/types/public/publicSite.types";
 
 /**
  * Menu structures by their `menu_structure` key — one table for the public
  * menu page and the admin preview, so they always render the same thing.
- * Each is loaded on demand.
+ * Each is its own chunk; next/dynamic (with the import inline in each call) server-renders it and
+ * lets Next preload the chunk, unlike React.lazy, which the client only discovers after hydrating.
  */
 type StructureProps = { payload: PublicMenuPayload; routeSlug: string | null; themeSlug?: string };
 
-const load = (f: () => Promise<{ default: ComponentType<StructureProps> }>) => lazy(f);
-
 export const MENU_STRUCTURE_MAP: Readonly<Record<string, ComponentType<StructureProps>>> = {
-  list: load(() => import("./_shared/structures/MenuStructureList")),
-  grid: load(() => import("./_shared/structures/MenuStructureGrid")),
-  sidebar: load(() => import("./_shared/structures/MenuStructureSidebar")),
-  tabs: load(() => import("./_shared/structures/MenuStructureTabs")),
-  accordion: load(() => import("./_shared/structures/MenuStructureAccordion")),
-  magazine: load(() => import("./_shared/structures/MenuStructureMagazine")),
-  compact: load(() => import("./_shared/structures/MenuStructureCompact")),
-  masonry: load(() => import("./_shared/structures/MenuStructureMasonry")),
-  story: load(() => import("./_shared/structures/MenuStructureStory")),
-  bento: load(() => import("./_shared/structures/MenuStructureBento")),
+  list: dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureList")),
+  grid: dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureGrid")),
+  sidebar: dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureSidebar")),
+  tabs: dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureTabs")),
+  accordion: dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureAccordion")),
+  magazine: dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureMagazine")),
+  compact: dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureCompact")),
+  masonry: dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureMasonry")),
+  story: dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureStory")),
+  bento: dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureBento")),
   // Site system (docs/site-system/PLAN.md §2.5).
-  "bill-of-fare": load(() => import("./_shared/structures/MenuStructureBillOfFare")),
-  spotlight: load(() => import("./_shared/structures/MenuStructureSpotlight")),
-  "magazine-spread": load(() => import("./_shared/structures/MenuStructureMagazineSpread")),
-  "drinks-list": load(() => import("./_shared/structures/MenuStructureDrinksList")),
-  "shop-shelf": load(() => import("./_shared/structures/MenuStructureShopShelf")),
-  "garden-cards": load(() => import("./_shared/structures/MenuStructureGardenCards")),
-  "catch-board": load(() => import("./_shared/structures/MenuStructureCatchBoard")),
-  "grill-board": load(() => import("./_shared/structures/MenuStructureGrillBoard")),
-  "bento-box": load(() => import("./_shared/structures/MenuStructureBentoBox")),
-  "market-stalls": load(() => import("./_shared/structures/MenuStructureMarketStalls")),
-  "deco-card": load(() => import("./_shared/structures/MenuStructureDecoCard")),
-  jukebox: load(() => import("./_shared/structures/MenuStructureJukebox")),
+  "bill-of-fare": dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureBillOfFare")),
+  spotlight: dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureSpotlight")),
+  "magazine-spread": dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureMagazineSpread")),
+  "drinks-list": dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureDrinksList")),
+  "shop-shelf": dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureShopShelf")),
+  "garden-cards": dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureGardenCards")),
+  "catch-board": dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureCatchBoard")),
+  "grill-board": dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureGrillBoard")),
+  "bento-box": dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureBentoBox")),
+  "market-stalls": dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureMarketStalls")),
+  "deco-card": dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureDecoCard")),
+  jukebox: dynamic<StructureProps>(() => import("./_shared/structures/MenuStructureJukebox")),
 };
 
 export const MENU_STRUCTURE_KEYS = Object.keys(MENU_STRUCTURE_MAP);

@@ -1,6 +1,7 @@
 import { routes } from '@/config/routes';
 import { clearStoredUserRole, clearStoredPermissions } from '@/utils/storage';
 import { authService } from '@/services/auth.service';
+import { sessionChanged } from '@/services/workspaceEvents';
 
 /**
  * Ends the client session and replaces the current history entry so the
@@ -12,7 +13,8 @@ import { authService } from '@/services/auth.service';
 export function logoutSession(): void {
   clearStoredUserRole();
   clearStoredPermissions();
-  const target = `${window.location.origin}${routes.public.login}`;
+  sessionChanged();
+  const target = `${window.location.origin}${routes.public.login}?reason=logged_out`;
   authService
     .logout()
     .catch(() => {})

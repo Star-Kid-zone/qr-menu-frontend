@@ -33,7 +33,6 @@ export const HTTP_METHODS = {
   OPTIONS: 'OPTIONS',
 } as const;
 
-export type { HttpStatus, HttpMethod } from '@/types';
 
 /** Mutating HTTP methods that require CSRF tokens */
 export const MUTATING_METHODS = new Set(['post', 'put', 'patch', 'delete']);

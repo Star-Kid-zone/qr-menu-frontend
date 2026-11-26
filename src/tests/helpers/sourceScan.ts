@@ -28,20 +28,6 @@ export function listSourceFiles(skipDirs: string[] = [], dir: string = SRC, out:
   return out;
 }
 
-/** Every `*.test.ts` or `*.test.tsx` under `src/` except the architecture guards in `src/tests/`. */
-export function listTestFiles(dir: string = SRC, out: string[] = []): string[] {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (entry.name === 'tests' || entry.name === 'node_modules' || entry.name === '__snapshots__') continue;
-      listTestFiles(full, out);
-    } else if (entry.name.endsWith('.test.ts') || entry.name.endsWith('.test.tsx')) {
-      out.push(full);
-    }
-  }
-  return out;
-}
-
 export const relPath = (file: string): string => path.relative(SRC, file).split(path.sep).join('/');
 
 /** Blank out comments and string/template contents, keeping offsets and newlines intact. */

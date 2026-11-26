@@ -1,4 +1,3 @@
-import type { IconType } from "react-icons";
 import {
   PiCalendarCheck,
   PiChartLineUp,
@@ -30,10 +29,10 @@ export type { NavItem, NavGroup };
 export const ADMIN_NAV: NavGroup[] = [
   {
     items: [
-      { label: "Home", href: routes.admin.home, icon: PiHouse, unit: "dashboard", match: ["/admin/analytics"] },
+      { label: "Home", href: routes.admin.home, icon: PiHouse, unit: "dashboard" },
       { label: "Menu", href: routes.admin.listMenu, icon: PiForkKnife, unit: "menu", match: ["/admin/addmenu", "/admin/editmenu"] },
       { label: "Website", href: routes.admin.listBusiness, icon: PiStorefront, unit: "workspace" },
-      { label: "QR menu", href: routes.admin.qrMenu, icon: PiQrCode, anyOf: ["qr-assets", "workspace"], match: ["/admin/addqrcode"] },
+      { label: "QR menu", href: routes.admin.qrMenu, icon: PiQrCode, anyOf: ["qr-assets", "workspace"] },
       { label: "Reviews", href: routes.admin.listReview, icon: PiStar, unit: "reviews", match: ["/admin/addreview"] },
       { label: "Social posts", href: routes.admin.socialMedia, icon: PiShareNetwork, unit: "marketing" },
     ],
@@ -54,7 +53,6 @@ export const ADMIN_NAV: NavGroup[] = [
         icon: PiGear,
         // Business details need website edit rights; the other sections have their own.
         anyOf: ["workspace", "payments", "reviews", "marketing"],
-        match: ["/admin/listpayment", "/admin/addpayment", "/admin/editpayment"]
       },
     ],
   },

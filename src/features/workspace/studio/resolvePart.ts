@@ -1,12 +1,10 @@
+import type { StudioPartFocus } from '@/types/admin/workspace/WorkspaceSettingsForm.types';
+
+export type { StudioPartFocus };
 import { toHex6 } from "@/utils/contrast";
 import type { ColourRole, RoleFieldMap } from "../menuThemes";
 
 /** A part the owner tapped in the live preview; `nonce` lets the same part be re-picked. */
-export interface StudioPartFocus {
-  part: string;
-  nonce: number;
-}
-
 export interface ResolveSpec {
   fields: RoleFieldMap;
   /** Parts, by id, that tapped text of each colour maps to. */

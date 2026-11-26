@@ -1,16 +1,16 @@
-export type AnalyticsActionType = 'visit' | 'click' | 'view' | 'navigation' | 'search';
+type AnalyticsActionType = 'visit' | 'click' | 'view' | 'navigation' | 'search';
 
 export type AnalyticsTabId = 'traffic' | 'demand' | 'dishes' | 'time_tech' | 'tenants';
 
 export interface AnalyticsEvent {
   fingerprint: string;
   visitor_id: string;
-  user_id?: string | number;
-  business_id?: string | number;
+  user_id?: string;
+  business_id?: string;
   action_type: AnalyticsActionType;
   action_target?: string;
   /** Set when tracking a click/view on a specific dish. */
-  menu_item_id?: string | number;
+  menu_item_id?: string;
   /** Set when tracking a guest search query. */
   search_query?: string;
   metadata?: Record<string, unknown>;
@@ -55,7 +55,7 @@ export interface DashboardData {
   visitsByHour?: Array<{ hour: number; count: number }>;
 }
 
-export interface VisitorRow {
+interface VisitorRow {
   visitorId: string;
   fingerprint: string | null;
   ipAddress: string | null;

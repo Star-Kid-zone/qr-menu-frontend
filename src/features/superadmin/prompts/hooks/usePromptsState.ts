@@ -12,6 +12,7 @@ import { routes } from "@/config/routes";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { DEFAULT_PROMPT_FORM } from "@/constants";
 import type { PromptFormData, PromptLibrary, PromptFilters } from "@/types";
+import { getApiErrorMessage } from "@/utils/errors";
 
 // The prompts endpoint has answered with a bare array, `{ data }` or `{ prompts }`; accept each.
 function readPromptList(res: unknown): PlatformPrompt[] {
@@ -207,8 +208,8 @@ export function usePromptsState() {
       setPrompts((prev) =>
         prev.map((p) => (p.id === id ? { ...p, isFavorite: res.prompt.isFavorite } : p))
       );
-    } catch {
-      toast.error("Failed to update favorite");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to update favorite"));
     }
   };
 
@@ -225,8 +226,8 @@ export function usePromptsState() {
       await superadminService.deletePrompt(id);
       setPrompts((prev) => prev.filter((p) => p.id !== id));
       toast.success("Prompt deleted from library");
-    } catch {
-      toast.error("Failed to delete prompt");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to delete prompt"));
     }
   };
 
@@ -275,7 +276,7 @@ export function usePromptsState() {
       toast.success(`Reference image "${file.name}" uploaded!`);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to upload reference image");
+      toast.error(getApiErrorMessage(err, "Failed to upload reference image"));
     } finally {
       setUploadingRefImage(false);
     }
@@ -309,7 +310,7 @@ export function usePromptsState() {
       setIsModalOpen(false);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to save prompt");
+      toast.error(getApiErrorMessage(err, "Failed to save prompt"));
     } finally {
       setActionLoading(false);
     }
@@ -330,8 +331,8 @@ export function usePromptsState() {
       const res = await superadminService.seedDefaultPrompts(true);
       toast.success(res?.message || "Curated default prompts loaded!");
       loadPrompts();
-    } catch {
-      toast.error("Failed to load default presets");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to load default presets"));
     } finally {
       setActionLoading(false);
     }

@@ -6,18 +6,18 @@ import type { PublicAward, PublicTeamMember, PublicSiteEvent } from "@/component
  * Passed directly to landing templates — no transformation applied.
  */
 export type RawPublicSiteData = {
-  user_id: string | number;
+  user_id: string;
   settings: Record<string, unknown>;
   business: Record<string, unknown> | null;
   payment: Record<string, unknown> | null;
   review: Record<string, unknown> | null;
   gallery: Array<{
-    id?: string | number;
+    id?: string;
     image_url?: string | null;
     image_path?: string | null;
   }>;
   offers: Array<{
-    id?: string | number;
+    id?: string;
     title?: string;
     description?: string | null;
     badge_text?: string | null;
@@ -26,9 +26,9 @@ export type RawPublicSiteData = {
     image_url?: string | null;
   }>;
   menuItems: Menu[];
-  faqs?: Array<{ id?: number | string; question?: string; answer?: string }>;
+  faqs?: Array<{ id?: string; question?: string; answer?: string }>;
   googleReviews?: Array<{
-    id: string | number;
+    id: string;
     authorName: string;
     authorPhotoUrl: string | null;
     rating: number;
@@ -38,7 +38,7 @@ export type RawPublicSiteData = {
   }>;
   currency?: { code?: string; symbol?: string } | null;
   workspace_gallery?: Array<{
-    id?: string | number;
+    id?: string;
     image_url?: string | null;
     image_path?: string | null;
   }>;
@@ -52,7 +52,7 @@ export type RawPublicSiteData = {
 };
 
 /** Runtime callbacks injected by TenantLandingPage — not from the API */
-export type LandingTemplateCallbacks = {
+type LandingTemplateCallbacks = {
   /** True in the admin's live preview: full-screen overlays (e.g. the opening screen) render inline instead. */
   isPreview?: boolean;
   menuHref: string;

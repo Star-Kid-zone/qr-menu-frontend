@@ -25,7 +25,7 @@ import Link from "next/link";
 import { BUSINESS_TYPE_HREF } from "@/constants/site.constants";
 
 // Form Schema
-export const businessSchema = z.object({
+const businessSchema = z.object({
   business_name: z.string().min(1, "Business name is required"),
   phone: z.string().regex(/^\d{10,15}$/, "Phone number must be 10-15 digits").optional().or(z.literal("")),
   address: z.string().optional().or(z.literal("")),
@@ -69,12 +69,12 @@ interface RawSocialLink {
 }
 
 export interface BusinessFormInitialData {
-  id: number;
+  id: string;
   business_name?: string;
   phone?: string;
   address?: string;
   website_url?: string;
-  industry_id?: number | null;
+  industry_id?: string | null;
   active?: boolean;
   social_media?: RawSocialLink[];
   social_links?: RawSocialLink[];
@@ -85,7 +85,7 @@ export interface BusinessFormInitialData {
   serviceChargePercent?: number | string | null;
 }
 
-export const editBusinessFormId = (id: number) => `inline-edit-business-${id}`;
+export const editBusinessFormId = (id: string) => `inline-edit-business-${id}`;
 
 const weekDays = WEEK_DAYS;
 
@@ -111,7 +111,6 @@ export function BusinessForm({
     control,
     handleSubmit,
     setValue,
-    watch,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<BusinessSchemaValues>({
@@ -180,8 +179,8 @@ export function BusinessForm({
     name: "availability",
   });
 
-  const active = watch("active");
   const watchedValues = useWatch({ control });
+  const active = Boolean(watchedValues.active);
 
   useEffect(() => {
     onLoadingChange?.(isSubmitting);
@@ -333,7 +332,7 @@ export function BusinessForm({
               </FormField>
               <FormField label="Menu prices" htmlFor="business-tax-inclusive" className="md:col-span-2">
                 <ToggleCard
-                  checked={watch("tax_inclusive")}
+                  checked={Boolean(watchedValues.tax_inclusive)}
                   onChange={(checked) => {
                     if (!disabled)
                       setValue("tax_inclusive", checked, { shouldDirty: true });
@@ -379,7 +378,7 @@ export function BusinessForm({
                     >
                       <div className="flex items-center gap-2">
                         <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground">
-                          {getSocialPlatformIcon(watch(`social_media.${index}.platform`))}
+                          {getSocialPlatformIcon(watchedValues.social_media?.[index]?.platform)}
                         </div>
                         <Select
                           id={`social-media-platform-${index}`}

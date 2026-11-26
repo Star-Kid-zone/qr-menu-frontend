@@ -8,7 +8,7 @@ import type { AttributeSetId } from './types';
  * `label` and option labels are what owners and guests read.
  */
 
-export type AttributeFieldKind = 'text' | 'number' | 'int' | 'bool' | 'enum' | 'list' | 'enumList';
+type AttributeFieldKind = 'text' | 'number' | 'int' | 'bool' | 'enum' | 'list' | 'enumList';
 
 export interface AttributeFieldDef {
   id: string;

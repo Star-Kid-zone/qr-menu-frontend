@@ -13,7 +13,7 @@ import { LANDING_SECTIONS } from "../landing/registry";
  */
 
 const full: RawPublicSiteData = {
-  user_id: 1,
+  user_id: '1',
   settings: {
     public_slug: "vimal",
     logo_url: "/logo.png",
@@ -46,15 +46,15 @@ const full: RawPublicSiteData = {
   gallery: [{ image_url: "/g1.jpg" }, { image_url: "/g2.jpg" }, { image_url: "/g3.jpg" }],
   offers: [{ title: "Lunch deal offer", description: "Two for one", offer_value: "20", offer_type: "percentage" }],
   menuItems: [
-    { id: 1, item: "Signature Biryani", description: "Spiced rice", price: "12", popular: false, image_url: "/b.jpg", category: "Mains" },
-    { id: 2, item: "Popular Dosa", description: "Crisp", price: "6", popular: true, image_url: null, category: "Breakfast" },
+    { id: '1', item: "Signature Biryani", description: "Spiced rice", price: "12", popular: false, image_url: "/b.jpg", category: "Mains" },
+    { id: '2', item: "Popular Dosa", description: "Crisp", price: "6", popular: true, image_url: null, category: "Breakfast" },
   ] as unknown as RawPublicSiteData["menuItems"],
   faqs: [{ question: "Is there parking?", answer: "Yes, free parking." }],
-  googleReviews: [{ id: 1, authorName: "Asha Review", authorPhotoUrl: null, rating: 5, text: "Great food", relativePublishDescription: "a week ago" }],
+  googleReviews: [{ id: '1', authorName: "Asha Review", authorPhotoUrl: null, rating: 5, text: "Great food", relativePublishDescription: "a week ago" }],
   currency: { symbol: "₹" },
 };
 
-const empty: RawPublicSiteData = { user_id: 2, settings: {}, business: null, payment: null, review: null, gallery: [], offers: [], menuItems: [] };
+const empty: RawPublicSiteData = { user_id: '2', settings: {}, business: null, payment: null, review: null, gallery: [], offers: [], menuItems: [] };
 
 const Link: LandingTemplateProps["LinkComponent"] = ({ to, children, className, style }) => (
   <a href={to} className={className} style={style}>{children}</a>
@@ -139,4 +139,11 @@ describe("layout registry", () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
+});
+
+describe("STRUCTURE_MAP (code-split guest pages)", () => {
+  it("has exactly one lazily loaded page per registered layout key", async () => {
+    const { STRUCTURE_MAP } = await import("./structureMap");
+    expect(Object.keys(STRUCTURE_MAP).sort()).toEqual(LAYOUTS.map((l) => l.key).sort());
+  });
 });

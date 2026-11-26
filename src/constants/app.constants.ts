@@ -3,7 +3,10 @@
  * Pure data only — environment-derived URLs belong in src/config/app.constants.ts.
  */
 
-export const APP_NAME = 'QRMenu';
+export const APP_NAME = 'FeastOwl';
+
+/** Production root domain: the app at feastowl.com, each restaurant at <slug>.feastowl.com. */
+export const DEFAULT_TENANT_ROOT_DOMAIN = 'feastowl.com';
 
 export const DEFAULT_APP_DESCRIPTION =
   'One QR code on the table: your menu, website and Google reviews, managed from one dashboard.';

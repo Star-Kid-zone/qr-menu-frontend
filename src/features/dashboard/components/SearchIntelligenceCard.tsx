@@ -28,6 +28,8 @@ export function SearchIntelligenceCard({ data, loading }: SearchIntelligenceCard
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}
           </div>
+        ) : (!data?.topSearches || data.topSearches.length === 0) && (!data?.zeroResultSearches || data.zeroResultSearches.length === 0) ? (
+          <p className="text-xs text-muted-foreground">No menu searches yet.</p>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {/* Top queries */}
@@ -43,7 +45,7 @@ export function SearchIntelligenceCard({ data, loading }: SearchIntelligenceCard
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-muted-foreground">No searches yet. When guests search your menu, their top searches show here.</p>
+                <p className="text-xs text-muted-foreground">No searches yet.</p>
               )}
             </div>
 
@@ -65,7 +67,7 @@ export function SearchIntelligenceCard({ data, loading }: SearchIntelligenceCard
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-muted-foreground">None. Every search found a dish.</p>
+                <p className="text-xs text-muted-foreground">None — every search matched a dish.</p>
               )}
             </div>
           </div>

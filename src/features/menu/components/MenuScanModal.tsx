@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
+import type { ApiEnvelopeFields } from "@/types/shared/api.types";
 import { routes } from "@/config/routes";
 import { menuService } from "@/services/menu.service";
 import { menuScanService, type ScannedItem } from "@/services/menuScan.service";
@@ -55,7 +56,7 @@ interface Props {
   onClose: () => void;
   onImported: () => void; // called when items have been saved so parent can refresh
   /** The business's fixed industry (set once on the Menu Items page) — null if not set yet. */
-  industryId: number | null;
+  industryId: string | null;
   categories: IndustryCategory[];
   types: IndustryType[];
   defaultCategory?: string;
@@ -131,7 +132,7 @@ export function MenuScanModal({
       const items: ScannedItem[] = res.data.items ?? [];
       if (items.length === 0) {
         toast.error(
-          res.data.message ||
+          (res as ApiEnvelopeFields).message ||
             "No menu items found. Try a clearer, well-lit photo of a printed menu."
         );
         setScanning(false);

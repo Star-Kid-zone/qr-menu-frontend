@@ -4,14 +4,14 @@ import { createContext, useContext, useEffect, useMemo, useSyncExternalStore, ty
 import { getRawStorageItem, setRawStorageItem, storageKeys } from '@/utils/storage';
 import { STORAGE_EVENTS } from '@/constants/storage.constants';
 
-export type ThemeMode = 'light' | 'dark';
+type ThemeMode = 'light' | 'dark';
 
 export interface ThemeContextType {
   mode: ThemeMode;
   toggleTheme: () => void;
 }
 
-export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const useThemeContext = (): ThemeContextType => {
   const context = useContext(ThemeContext);

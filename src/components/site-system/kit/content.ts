@@ -55,7 +55,7 @@ export interface EventView extends PublicSiteEvent {
 }
 
 export interface DishView {
-  id: number | string;
+  id: string;
   name: string;
   description: string;
   price: string;
@@ -161,7 +161,7 @@ export function itemImage(m: Row): string | null {
   return m?.image_url || m?.imageUrl || fromImages || null;
 }
 
-export function dishView(m: Row, currency: string): DishView {
+function dishView(m: Row, currency: string): DishView {
   const options = Array.isArray(m.priceOptions)
     ? m.priceOptions.filter((o) => o && o.label && o.price).map((o) => ({ label: o.label, price: `${currency}${o.price}` }))
     : [];

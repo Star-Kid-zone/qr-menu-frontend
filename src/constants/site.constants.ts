@@ -16,6 +16,7 @@ export const MOVED_TABS: Record<string, string> = {
   'public-site': '/admin/qr-menu',
 };
 
+import type { BusinessFamily, SkinFamily } from '@/components/site-system/types';
 import type { WebsiteSectionTabId, WebsiteSectionItem } from '@/types';
 
 export type { WebsiteSectionTabId, WebsiteSectionItem };
@@ -28,10 +29,6 @@ export const WEBSITE_SECTIONS: WebsiteSectionItem[] = [
 
 export const INLINE_WORKSPACE_FORM_ID = 'inline-workspace-settings';
 export const INLINE_BANNER_FORM_ID = 'inline-banner-settings';
-export const INLINE_ADD_BUSINESS_FORM_ID = 'inline-add-business';
-
-export const TENANT_SLUG_HEADER = 'x-qr-tenant-slug';
-
 export const TENANT_SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 export const SLUG_LABEL_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/;
 export const IPV4_REGEX = /^\d{1,3}(\.\d{1,3}){3}$/;
@@ -53,7 +50,7 @@ export const SITE_STATUS_MODES = [
   { mode: 'renovation', label: 'Renovation', description: 'Closed while you refurbish.', defaultLine: "We're closed for renovation." },
 ] as const;
 
-export const BUSINESS_FAMILY_LABELS: Record<string, string> = {
+export const BUSINESS_FAMILY_LABELS: Record<BusinessFamily, string> = {
   restaurants: 'Restaurants',
   'quick-casual': 'Quick and casual',
   'cafes-sweets': 'Cafés and sweets',
@@ -62,7 +59,7 @@ export const BUSINESS_FAMILY_LABELS: Record<string, string> = {
   other: 'Other',
 };
 
-export const SKIN_FAMILY_LABELS: Record<string, string> = {
+export const SKIN_FAMILY_LABELS: Record<SkinFamily, string> = {
   'royal-classic': 'Royal and classic',
   'luxury-minimal': 'Quiet luxury',
   'modern-minimal': 'Modern and clean',
@@ -93,6 +90,7 @@ export const PLATFORM_SUBDOMAINS: ReadonlySet<string> = new Set([
   'app',
   'api',
   'apigateway',
+  'sites',
   'admin',
   'superadmin',
   'cdn',
@@ -106,3 +104,17 @@ export const PLATFORM_SUBDOMAINS: ReadonlySet<string> = new Set([
  * Hosts that serve the platform itself even though they aren't the root domain.
  */
 export const PLATFORM_HOST_SUFFIXES = ['.amplifyapp.com', '.vercel.app', '.cloudfront.net'] as const;
+
+/**
+ * Internal route the proxy rewrites tenant guest hosts to (`/` → `/tenant-site/<slug>`,
+ * `/menu` → `/tenant-site/<slug>/menu`), so guest pages get the slug from the URL and can be
+ * cached. Direct requests to it are refused: guest sites live on their own host only.
+ */
+export const TENANT_SITE_PREFIX = '/tenant-site';
+
+/** Dishes the landing page can show: the first N signature dishes and N popular picks. */
+export const LANDING_SIGNATURE_COUNT = 6;
+export const LANDING_POPULAR_COUNT = 8;
+
+/** Cache tag of a restaurant's public portal data: `portal:<slug>`. */
+export const PORTAL_TAG_PREFIX = 'portal:';

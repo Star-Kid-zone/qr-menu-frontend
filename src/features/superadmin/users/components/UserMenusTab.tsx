@@ -22,7 +22,7 @@ import type { UserDetailResponse, TenantMenuItem } from "../types";
 import { UserMenuEditModal, UserBlueprintSeedModal } from "./modals";
 
 export interface UserMenusTabProps {
-  userId: number;
+  userId: string;
   detail: UserDetailResponse;
   filteredMenus: TenantMenuItem[];
   categories: string[];
@@ -31,7 +31,7 @@ export interface UserMenusTabProps {
   selectedCategory: string;
   setSelectedCategory: (val: string) => void;
   handleToggleMenuAvailability: (
-    menuId: number,
+    menuId: string,
     currentAvailability: boolean
   ) => Promise<void>;
   editingItem: TenantMenuItem | null;

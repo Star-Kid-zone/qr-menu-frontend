@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@/utils/cn";
@@ -23,7 +23,6 @@ export function WorkspaceSettingsForm({
   error: _error,
   loading = false,
   currencies = [],
-  showPalettePresets = true,
   readOnly = false,
   compact = false,
   section,

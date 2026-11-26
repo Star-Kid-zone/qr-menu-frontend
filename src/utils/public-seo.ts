@@ -11,9 +11,16 @@ export type { TenantMetadataInput };
  */
 export function buildTenantMetadata({ title, description, canonicalUrl, siteName, imageUrl }: TenantMetadataInput): Metadata {
   return {
-    title,
+    // `absolute` skips the root "%s | FeastOwl" template: the tab shows the restaurant only.
+    title: { absolute: title },
     description,
     alternates: { canonical: canonicalUrl },
+    // A restaurant's site is its own brand: its logo is the tab icon (FeastOwl's
+    // only when it has none) and it doesn't offer the FeastOwl dashboard app.
+    applicationName: siteName,
+    appleWebApp: { title: siteName },
+    manifest: null,
+    ...(imageUrl ? { icons: { icon: imageUrl, apple: imageUrl } } : {}),
     openGraph: {
       title,
       description,

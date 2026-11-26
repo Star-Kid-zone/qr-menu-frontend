@@ -2,8 +2,6 @@ import type { MenuBlueprint } from '@/types';
 
 export type PreviewTab = 'dishes' | 'branding' | 'story' | 'offers' | 'gallery_faqs';
 
-export type EditorTab = 'basic' | 'dishes' | 'theme' | 'story' | 'offers_faqs';
-
 export interface BlueprintCardProps {
   blueprint: MenuBlueprint;
   isDefault: boolean;
@@ -24,9 +22,3 @@ export interface BlueprintPreviewModalProps {
   onSetDefault: (id: string) => void;
 }
 
-export interface BlueprintEditorModalProps {
-  blueprint: MenuBlueprint | null;
-  isOpen: boolean;
-  onClose: () => void;
-  onSaved: (savedBp: MenuBlueprint) => void;
-}

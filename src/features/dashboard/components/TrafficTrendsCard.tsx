@@ -4,7 +4,6 @@ import { fillMissingDays, formatDate } from "@/utils/date";
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { DashboardData } from '@/services/analytics.service';
-import type { RangeKey } from '../types';
 
 export interface TrafficTrendsCardProps {
   data: DashboardData | null;
@@ -26,10 +25,12 @@ export function TrafficTrendsCard({ data, loading, rangeLabel, derived }: Traffi
             <CardTitle className="text-sm font-semibold text-foreground">Visits per day</CardTitle>
             <p className="text-xs text-muted-foreground">{rangeLabel} · Each bar is one day</p>
           </div>
-          <div className="flex items-center gap-2 rounded-full bg-success/10 px-3 py-1 text-caption font-bold text-success dark:bg-success dark:text-success">
-            <span className="size-1.5 rounded-full bg-success animate-pulse" />
-            Peak: {derived.peakCount} visits ({derived.peakDay})
-          </div>
+          {derived.peakCount > 0 ? (
+            <div className="flex items-center gap-2 rounded-full bg-success/10 px-3 py-1 text-caption font-bold text-success dark:bg-success dark:text-success">
+              <span className="size-1.5 rounded-full bg-success animate-pulse" />
+              Peak: {derived.peakCount} visits ({derived.peakDay})
+            </div>
+          ) : null}
         </div>
       </CardHeader>
       <CardContent className="flex flex-col p-6">
@@ -71,9 +72,9 @@ export function TrafficTrendsCard({ data, loading, rangeLabel, derived }: Traffi
             </div>
           </div>
         ) : (
-          <div className="flex h-48 items-center justify-center text-xs text-muted-foreground">
-            No visit history yet. Scan the QR code to record your first visit.
-          </div>
+          <p className="py-10 text-center text-xs text-muted-foreground">
+            No visits in this period.
+          </p>
         )}
       </CardContent>
     </Card>

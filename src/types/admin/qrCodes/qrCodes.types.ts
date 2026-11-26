@@ -138,7 +138,7 @@ export interface QrPrintSheetLayout {
   rows: number;
 }
 
-export type QrScanTone = 'good' | 'warn' | 'bad';
+type QrScanTone = 'good' | 'warn' | 'bad';
 
 export interface QrScanIssue {
   tone: Exclude<QrScanTone, 'good'>;

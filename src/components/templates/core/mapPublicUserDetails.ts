@@ -11,6 +11,7 @@ import type {
 import type { SocialLink } from '@/types';
 import { MappedPublicUserDetails } from "@/types/public/templates/mapPublicUserDetails.types";
 import { toSafeExternalUrl } from '@/utils/url';
+import { isApiId } from '@/utils/ids';
 
 function asRecord(v: unknown): Record<string, unknown> | null {
   if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
@@ -23,10 +24,10 @@ function safeString(v: unknown, fallback = ''): string {
   return typeof v === 'string' && v.trim() ? v : fallback;
 }
 
-function num(v: unknown): number | null {
-  if (typeof v === 'number' && Number.isFinite(v)) return v;
-  if (typeof v === 'string' && v.trim() && /^\d+$/.test(v.trim())) return Number(v.trim());
-  return null;
+/** An API id (opaque string). Accepts the legacy numeric form so old cached payloads still map. */
+function idOf(v: unknown): string | null {
+  if (typeof v === 'number' && Number.isInteger(v) && v > 0) return String(v);
+  return isApiId(v) && v !== '0' ? v : null;
 }
 
 function parseCurrency(settings: Record<string, unknown>): MappedPublicUserDetails['currency'] {
@@ -35,7 +36,7 @@ function parseCurrency(settings: Record<string, unknown>): MappedPublicUserDetai
   const symbol = safeString(c.symbol, '');
   if (!symbol) return null;
   return {
-    id: num(c.id) ?? undefined,
+    id: idOf(c.id) ?? undefined,
     symbol,
     code: safeString(c.code, '') || undefined,
     name: safeString(c.name, '') || undefined,
@@ -48,7 +49,7 @@ function parseBranches(business: Record<string, unknown> | null): PublicBusiness
   if (!name) return [];
   return [
     {
-      id: num(business.id) ?? undefined,
+      id: idOf(business.id) ?? undefined,
       business_name: name,
       phone: safeString(business.phone, '') || undefined,
       address: safeString(business.address, '') || undefined,
@@ -93,8 +94,8 @@ export function mapPublicUserDetailsFromApi(data: unknown): { ok: true; value: M
     return { ok: false, error: 'Invalid response.' };
   }
 
-  const userId = num(root.user_id);
-  if (userId == null || userId <= 0) {
+  const userId = idOf(root.user_id);
+  if (userId == null) {
     return { ok: false, error: 'Missing tenant user.' };
   }
 
@@ -121,7 +122,7 @@ export function mapPublicUserDetailsFromApi(data: unknown): { ok: true; value: M
     const ov = r?.offer_value;
     const ot = r?.offer_type;
     return {
-      id: num(r?.id) ?? undefined,
+      id: idOf(r?.id) ?? undefined,
       title: safeString(r?.title, 'Offer'),
       description: typeof r?.description === 'string' ? r.description : null,
       badge_text: typeof badge === 'string' && badge.trim() ? badge.trim() : null,
@@ -154,11 +155,11 @@ export function mapPublicUserDetailsFromApi(data: unknown): { ok: true; value: M
   const aboutRaw = bizForSocial.about_features;
   const aboutHighlights = parseAboutHighlights(aboutRaw);
 
-  const wid = num(settings.id);
+  const wid = idOf(settings.id);
 
   const value: MappedPublicUserDetails = {
     userId,
-    workspaceId: wid != null && wid > 0 ? wid : null,
+    workspaceId: wid,
     settings,
     themeColour,
     primaryColor,

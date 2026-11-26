@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { bannerAnnouncementSchema } from "@/features/workspace";
+import type { bannerAnnouncementSchema } from "@/schemas/workspace.schema";
 
 export interface BannerAnnouncementFormProps {
     formId: string;

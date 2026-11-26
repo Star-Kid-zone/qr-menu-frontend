@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { getApiErrorMessage } from "@/utils/errors";
 
 export interface UseAsyncDataResult<T> {
@@ -9,6 +9,8 @@ export interface UseAsyncDataResult<T> {
   error: string | null;
   /** Re-runs `fetcher` without waiting for `deps` to change. */
   refetch: () => Promise<void>;
+  /** Local update after a create/edit/delete on the page, without refetching. */
+  setData: Dispatch<SetStateAction<T | null>>;
 }
 
 /**
@@ -71,5 +73,5 @@ export function useAsyncData<T>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
-  return { data, loading, error, refetch: run };
+  return { data, loading, error, refetch: run, setData };
 }

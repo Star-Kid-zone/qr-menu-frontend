@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { LoadErrorNotice } from '@/components/feedback/LoadErrorNotice';
+import { invalidateWorkspace, loadWorkspace } from '@/hooks/useWorkspace';
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ActionMenu } from "@/components/ui/ActionMenu";
@@ -104,6 +106,7 @@ function ListReviewPageContent() {
     if (added > 0) toast.success(`Added ${added} review${added === 1 ? "" : "s"} to your website`);
   };
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Google Business OAuth + auto-reply state
   const [googleStatus, setGoogleStatus] = useState<GoogleBusinessStatus | null>(null);
@@ -140,7 +143,7 @@ function ListReviewPageContent() {
 
   const requestPageData = () =>
     Promise.allSettled([
-      workspaceService.getWorkspace(),
+      loadWorkspace(),
       workspaceService.getGoogleReviews(),
       googleService.getStatus(),
     ]);
@@ -150,7 +153,10 @@ function ListReviewPageContent() {
     googleReviewsRes,
     googleStatusRes,
   ]: Awaited<ReturnType<typeof requestPageData>>) => {
-    if (workspaceRes.status === "fulfilled") setWorkspace(workspaceRes.value.data);
+    // Show what loaded; if any part failed, say so with a retry instead of failing silently.
+    const failed = [workspaceRes, googleReviewsRes, googleStatusRes].find((r) => r.status === "rejected");
+    setLoadError(failed ? getApiErrorMessage(failed.reason, "Some of your reviews data didn't load.") : null);
+    if (workspaceRes.status === "fulfilled") setWorkspace(workspaceRes.value);
     if (googleReviewsRes.status === "fulfilled") {
       setGoogleReviews(googleReviewsRes.value.data.reviews);
       setGooglePlaceId(googleReviewsRes.value.data.googlePlaceId);
@@ -164,19 +170,27 @@ function ListReviewPageContent() {
 
   const fetchPageData = async () => {
     try {
+      // A refresh after a change on this page: read the workspace fresh, not from the cache.
+      invalidateWorkspace();
       applyPageData(await requestPageData());
     } catch (error) {
-      console.error(error);
+      setLoadError(getApiErrorMessage(error, "Some of your reviews data didn't load."));
     } finally {
       setLoading(false);
     }
   };
 
+  // The mount-only load below must call the latest applyPageData without re-running on every render.
+  const applyPageDataRef = useRef(applyPageData);
+  useEffect(() => {
+    applyPageDataRef.current = applyPageData;
+  });
+
   useEffect(() => {
     // Initial load (`loading` starts true); fetchPageData handles later refreshes.
     requestPageData()
-      .then(applyPageData)
-      .catch((error: unknown) => console.error(error))
+      .then((results) => applyPageDataRef.current(results))
+      .catch((error: unknown) => setLoadError(getApiErrorMessage(error, "Some of your reviews data didn't load.")))
       .finally(() => setLoading(false));
 
     if (typeof window !== "undefined") {
@@ -411,6 +425,9 @@ function ListReviewPageContent() {
           </div>
         }
       />
+      {loadError && !loading ? (
+        <LoadErrorNotice title="Some of your reviews data didn't load" message={loadError} onRetry={fetchPageData} />
+      ) : null}
 
       {/* ── Google Business Connection + AI Engine Panel ── */}
       <AutoReplySettingsModal

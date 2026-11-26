@@ -4,8 +4,7 @@ import React, { useState } from "react";
 import { Button, EmptyState, PageHeader, SubTabPills } from "@/components/ui";
 import { PiClockCounterClockwiseBold, PiPencilSimpleBold, PiPlusBold, PiSwatchesBold } from "react-icons/pi";
 import { WorkspaceSettingsForm } from "@/features/workspace";
-import { SiteHistoryModal } from "@/features/workspace/components/SiteHistoryModal";
-import type { StudioPartFocus } from "@/features/workspace/studio/resolvePart";
+import { SiteHistoryModal, type StudioPartFocus } from "@/features/workspace";
 import type {
   WorkspaceSetting,
   WorkspaceSettingsFormValues,

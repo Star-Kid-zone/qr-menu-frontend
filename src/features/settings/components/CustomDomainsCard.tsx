@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { PiCheckCircleBold, PiClockBold, PiCopyBold, PiTrashBold } from "react-icons/pi";
-import { Button, FormField, Input, Spinner, toast } from "@/components/ui";
+import { Button, FormField, Input, Notice, Spinner, toast } from "@/components/ui";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 import { workspaceService, type SiteDomain } from "@/services/workspace.service";
 import { getApiErrorMessage } from "@/utils/errors";
@@ -13,8 +13,8 @@ function CopyValue({ label, value }: { label: string; value: string }) {
     try {
       await navigator.clipboard.writeText(value);
       toast.success(`${label} copied.`);
-    } catch {
-      toast.error("Couldn't copy. Select the text and copy it instead.");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Couldn't copy. Select the text and copy it instead."));
     }
   };
   return (
@@ -212,7 +212,7 @@ export function CustomDomainsCard({ publicSlug }: { publicSlug: string | null | 
         <p className="mt-1 text-caption text-muted-foreground">
           Your free address is{" "}
           <a href={getTenantPublicUrl(publicSlug)} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">
-            {getTenantPublicUrl(publicSlug).replace(/^https:\/\//, "")}
+            {getTenantPublicUrl(publicSlug).replace(/^https?:\/\//, "")}
           </a>
           . You can also use a domain you own, like www.yourrestaurant.com.
         </p>
@@ -236,12 +236,16 @@ export function CustomDomainsCard({ publicSlug }: { publicSlug: string | null | 
       </form>
 
       {loadError ? (
-        <div role="alert" className="space-y-2">
-          <p className="text-body text-destructive">{loadError}</p>
-          <Button type="button" variant="secondary" size="sm" onClick={reload}>
-            Try again
-          </Button>
-        </div>
+        <Notice
+          tone="error"
+          action={
+            <Button type="button" variant="secondary" size="sm" onClick={reload}>
+              Try again
+            </Button>
+          }
+        >
+          {loadError}
+        </Notice>
       ) : domains === null ? (
         <div className="flex justify-center py-6" aria-busy="true">
           <Spinner size="md" />

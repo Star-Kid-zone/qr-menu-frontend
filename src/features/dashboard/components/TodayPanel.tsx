@@ -45,15 +45,18 @@ export function TodayPanel({ data, menuStats }: { data: DashboardData | null; me
   ];
 
   const t = data?.today;
+  const hasTodayActivity = Boolean(t && (t.visits > 0 || t.visitors > 0 || t.clicks > 0 || t.searches > 0));
   return (
     <section aria-labelledby="today-heading" className="rounded-lg border border-border bg-card p-6">
       <h2 id="today-heading" className="text-h3 text-foreground">Today</h2>
-      {t ? (
+      {hasTodayActivity && t ? (
         <p className="mt-1 text-body text-muted-foreground">
           {t.visitors} {t.visitors === 1 ? 'guest' : 'guests'} so far ({t.newVisitors} new, {t.returningVisitors} returning) ·{' '}
           {t.visits} {t.visits === 1 ? 'visit' : 'visits'} · {t.clicks} button {t.clicks === 1 ? 'tap' : 'taps'} · {t.searches}{' '}
           {t.searches === 1 ? 'search' : 'searches'}
         </p>
+      ) : t ? (
+        <p className="mt-1 text-body text-muted-foreground">No visits recorded today yet.</p>
       ) : null}
       {items.length > 0 ? (
         <ul className="mt-3 divide-y divide-border">
@@ -66,9 +69,9 @@ export function TodayPanel({ data, menuStats }: { data: DashboardData | null; me
             </li>
           ))}
         </ul>
-      ) : (
+      ) : !t ? (
         <p className="mt-3 text-body text-muted-foreground">Nothing needs your attention right now.</p>
-      )}
+      ) : null}
     </section>
   );
 }

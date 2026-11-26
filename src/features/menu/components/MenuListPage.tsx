@@ -15,8 +15,7 @@ import { BulkPriceAdjustModal } from "./BulkPriceAdjustModal";
 import { PiCalculator, PiCamera, PiDownloadSimple, PiForkKnifeBold, PiListDashes, PiPlus, PiSquaresFour, PiUploadSimple } from "react-icons/pi";
 import { ActionMenu } from "@/components/ui/ActionMenu";
 import { MenuScanModal } from "./MenuScanModal";
-import { industryService } from "@/services/industry.service";
-import type { IndustryCategory, IndustryType } from "@/types";
+import { useIndustryTaxonomy } from "@/hooks/useIndustryTaxonomy";
 import { downloadCsv, cn } from "@/utils";
 import { useMenuListState } from "../hooks/useMenuListState";
 import {
@@ -72,15 +71,15 @@ export function MenuListPage() {
   } = useMenuListState();
   const { canEditWebsite } = usePermissions();
   const [scanOpen, setScanOpen] = useState(false);
-  const [scanLists, setScanLists] = useState<{ categories: IndustryCategory[]; types: IndustryType[] }>({ categories: [], types: [] });
-
   // The scanner needs this restaurant's category and dish-type lists.
+  const scanLists = useIndustryTaxonomy(currentIndustryId);
+
   const openScanner = () => {
     setScanOpen(true);
-    if (!currentIndustryId) return;
-    Promise.all([industryService.getCategories(currentIndustryId), industryService.getTypes(currentIndustryId)])
-      .then(([c, t]) => setScanLists({ categories: c.data || [], types: t.data || [] }))
-      .catch(() => toast.error("Couldn't load your categories. Try again."));
+    if (scanLists.error) {
+      toast.error(scanLists.error);
+      void scanLists.refetch();
+    }
   };
   const currencySymbol = workspace?.currency?.symbol;
 

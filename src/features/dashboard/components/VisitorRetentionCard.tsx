@@ -19,14 +19,16 @@ export function VisitorRetentionCard({ data, loading }: VisitorRetentionCardProp
             <CardTitle className="text-sm font-semibold text-foreground">New and returning visitors</CardTitle>
             <p className="text-xs text-muted-foreground">People visiting for the first time, and people who came back</p>
           </div>
-          <div className="flex items-center gap-3 text-xs font-semibold">
-            <span className="flex items-center gap-1 text-primary">
-              <span className="size-2 rounded-full bg-primary" /> New
-            </span>
-            <span className="flex items-center gap-1 text-muted-foreground">
-              <span className="size-2 rounded-full bg-primary/30" /> Returning
-            </span>
-          </div>
+          {data?.visitorTrend && data.visitorTrend.length > 0 ? (
+            <div className="flex items-center gap-3 text-xs font-semibold">
+              <span className="flex items-center gap-1 text-primary">
+                <span className="size-2 rounded-full bg-primary" /> New
+              </span>
+              <span className="flex items-center gap-1 text-muted-foreground">
+                <span className="size-2 rounded-full bg-primary/30" /> Returning
+              </span>
+            </div>
+          ) : null}
         </div>
       </CardHeader>
       <CardContent className="p-6">
@@ -71,9 +73,9 @@ export function VisitorRetentionCard({ data, loading }: VisitorRetentionCardProp
             </div>
           </div>
         ) : (
-          <div className="flex h-40 items-center justify-center text-xs text-muted-foreground">
-            No visitor trend data recorded yet.
-          </div>
+          <p className="py-10 text-center text-xs text-muted-foreground">
+            No visitor data yet.
+          </p>
         )}
       </CardContent>
     </Card>

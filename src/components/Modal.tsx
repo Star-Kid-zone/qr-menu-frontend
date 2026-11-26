@@ -190,4 +190,3 @@ export const Modal: React.FC<ModalProps> = ({
   );
 };
 
-export default Modal;

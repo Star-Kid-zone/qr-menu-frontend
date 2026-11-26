@@ -99,7 +99,7 @@ export function downloadSvg(markup: string, fileName: string) {
 }
 
 /** Rasterises SVG markup (with its fonts embedded) to a PNG of exactly width × height. */
-export async function svgToPng(markup: string, width: number, height: number): Promise<Blob> {
+async function svgToPng(markup: string, width: number, height: number): Promise<Blob> {
   const url = URL.createObjectURL(new Blob([markup], { type: 'image/svg+xml;charset=utf-8' }));
   try {
     const img = new Image();

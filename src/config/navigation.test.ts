@@ -10,11 +10,11 @@ describe('admin navigation', () => {
     ]);
   });
 
-  it('highlights exactly one item for every admin page, including moved and sub-pages', () => {
+  it('highlights exactly one item for every admin page, including sub-pages', () => {
     const pages = [
       '/admin/home', '/admin/listmenu', '/admin/addmenu', '/admin/editmenu/312', '/admin/listbusiness',
-      '/admin/qr-menu', '/admin/addqrcode', '/admin/listreview', '/admin/addreview', '/admin/social-media', '/admin/schedule',
-      '/admin/checklists', '/admin/staff', '/admin/settings', '/admin/listpayment',
+      '/admin/qr-menu', '/admin/listreview', '/admin/addreview', '/admin/social-media', '/admin/schedule',
+      '/admin/checklists', '/admin/staff', '/admin/settings',
     ];
     for (const path of pages) {
       const active = allAdminItems.filter((item) => isNavItemActive(item, path)).map((i) => i.label);

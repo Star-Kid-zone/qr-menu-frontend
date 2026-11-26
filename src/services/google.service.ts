@@ -40,7 +40,7 @@ export const googleService = {
   /**
    * Generate an empathetic, context-aware AI reply for a specific review using Gemini.
    */
-  async generateAiReply(reviewId: string | number, options?: { tone?: string; customPrompt?: string }): Promise<{ reply: string }> {
+  async generateAiReply(reviewId: string, options?: { tone?: string; customPrompt?: string }): Promise<{ reply: string }> {
     const res = await api.post<{ reply: string }>(`/google/reviews/${reviewId}/generate-ai-reply`, options || {});
     return res.data;
   },
@@ -48,7 +48,7 @@ export const googleService = {
   /**
    * Submit reply to Google (and save locally).
    */
-  async replyToReview(reviewId: string | number, replyText: string): Promise<{ message: string; review: GoogleReviewRecord }> {
+  async replyToReview(reviewId: string, replyText: string): Promise<{ message: string; review: GoogleReviewRecord }> {
     const res = await api.post<{ message: string; review: GoogleReviewRecord }>(`/google/reviews/${reviewId}/reply`, { replyText });
     return res.data;
   },

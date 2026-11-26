@@ -21,6 +21,7 @@ import {
   PiXLogoBold,
 } from "react-icons/pi";
 import { Badge } from "@/components/ui/Badge";
+import { Notice } from "@/components/ui/Notice";
 import { cn } from "@/utils/cn";
 import type { SocialAccount, SocialPlatform } from "@/services/social.service";
 import { formatDate } from "@/utils/date";
@@ -61,10 +62,6 @@ export function SocialPostPreview({
 
   // Find account per platform
   const accountForPlatform = accounts.find((a) => a.platform === platform);
-  const fbAccount = accounts.find((a) => a.platform === "facebook");
-  const igAccount = accounts.find((a) => a.platform === "instagram");
-  const xAccount = accounts.find((a) => a.platform === "twitter");
-  const inAccount = accounts.find((a) => a.platform === "linkedin");
 
   // Determine caption for current platform
   let effectiveCaption = "";
@@ -398,9 +395,9 @@ export function SocialPostPreview({
 
                   {/* 280-char counter notice for Twitter */}
                   {effectiveCaption.length > 280 && (
-                    <div className="mt-1 text-[10px] text-red-500 font-semibold">
-                      ⚠️ Exceeds 280-char Twitter limit ({effectiveCaption.length}/280)
-                    </div>
+                    <Notice tone="warning" className="mt-1">
+                      Exceeds the 280-character Twitter limit ({effectiveCaption.length}/280).
+                    </Notice>
                   )}
 
                   {/* Attached Media */}

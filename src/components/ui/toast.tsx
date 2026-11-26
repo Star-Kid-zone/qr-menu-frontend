@@ -2,7 +2,6 @@
 
 import { useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "framer-motion";
 import {
   PiCheckCircleFill,
   PiInfoFill,
@@ -140,14 +139,10 @@ function ToastCard({ id, variant, title, message, duration }: ToastItem) {
   const displayTitle = title || (message.length > 50 ? config.defaultTitle : undefined);
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: -16, scale: 0.94 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, x: 50, scale: 0.95, transition: { duration: 0.18 } }}
-      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+    // CSS-only animation: keeps framer-motion out of every bundle that imports toast().
+    <div
       className={cn(
-        "pointer-events-auto relative flex w-full max-w-sm flex-col overflow-hidden rounded-2xl border bg-card text-card-foreground p-4 shadow-xl backdrop-blur-md transition-all sm:max-w-md",
+        "animate-scale-in pointer-events-auto relative flex w-full max-w-sm flex-col overflow-hidden rounded-2xl border bg-card text-card-foreground p-4 shadow-xl backdrop-blur-md transition-all sm:max-w-md",
         config.borderClass,
       )}
       role="status"
@@ -189,15 +184,13 @@ function ToastCard({ id, variant, title, message, duration }: ToastItem) {
       {/* Countdown progress timer line */}
       {duration > 0 ? (
         <div className="absolute inset-x-0 bottom-0 h-1 bg-border/40">
-          <motion.div
-            className={cn("h-full", config.progressBarClass)}
-            initial={{ width: "100%" }}
-            animate={{ width: "0%" }}
-            transition={{ duration: duration / 1000, ease: "linear" }}
+          <div
+            className={cn("toast-progress h-full", config.progressBarClass)}
+            style={{ animationDuration: `${duration}ms` }}
           />
         </div>
       ) : null}
-    </motion.div>
+    </div>
   );
 }
 
@@ -210,14 +203,11 @@ export function Toaster() {
 
   return createPortal(
     <div className="pointer-events-none fixed inset-x-4 top-4 z-[300] flex flex-col items-center gap-2 sm:inset-x-auto sm:right-5 sm:top-5 sm:items-end">
-      <AnimatePresence initial={false}>
-        {items.map((item) => (
-          <ToastCard key={item.id} {...item} />
-        ))}
-      </AnimatePresence>
+      {items.map((item) => (
+        <ToastCard key={item.id} {...item} />
+      ))}
     </div>,
     document.body,
   );
 }
 
-export default toast;

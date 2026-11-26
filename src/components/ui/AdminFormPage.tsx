@@ -57,4 +57,3 @@ export function AdminFormPage({
   );
 }
 
-export default AdminFormPage;

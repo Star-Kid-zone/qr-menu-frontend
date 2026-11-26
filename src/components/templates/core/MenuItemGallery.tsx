@@ -183,4 +183,3 @@ export function MenuItemGallery({ item, primary, secondary, className = '' }: Me
   );
 }
 
-export default MenuItemGallery;

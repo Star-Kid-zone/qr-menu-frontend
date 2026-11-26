@@ -1,16 +1,16 @@
 export interface Industry {
-  id: string | number;
+  id: string;
   name: string;
 }
 
 export interface IndustryCategory {
-  id: string | number;
+  id: string;
   name: string;
-  industry_id: string | number;
+  industry_id: string;
 }
 
 export interface IndustryType {
-  id: string | number;
+  id: string;
   name: string;
-  industry_id: string | number;
+  industry_id: string;
 }

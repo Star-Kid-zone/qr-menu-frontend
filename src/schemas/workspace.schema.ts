@@ -59,5 +59,18 @@ export const workspaceSettingsSchema = z.object({
   announcement_text:   z.string(),
   announcement_starts_at: z.string(),
   announcement_ends_at:   z.string(),
-  currency_id:         z.number().int().positive().nullable(),
+  currency_id:         z.string().regex(/^\d+$/).nullable(),
 });
+
+/** Announcement banner form (Website > Banners). */
+export const bannerAnnouncementSchema = z.object({
+  announcement_enabled: z.boolean(),
+  announcement_text: z.string(),
+  // datetime-local input values ("YYYY-MM-DDTHH:mm") or "" for unset — parsed
+  // to/from ISO strings at the API boundary in listbusiness/page.tsx.
+  announcement_starts_at: z.string(),
+  announcement_ends_at: z.string(),
+}).refine(
+  (v) => !v.announcement_starts_at || !v.announcement_ends_at || v.announcement_starts_at < v.announcement_ends_at,
+  { message: "Start must be before end.", path: ["announcement_ends_at"] },
+);

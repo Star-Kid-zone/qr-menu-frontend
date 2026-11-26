@@ -92,7 +92,7 @@ export function usePosterDecoderState({ onSaveSuccess }: UsePosterDecoderStatePr
       setRefinementPrompt('');
     } catch (err: unknown) {
       console.error(err);
-      toast.error('Failed to refine blueprint');
+      toast.error(getApiErrorMessage(err, 'Failed to refine blueprint'));
     } finally {
       setRefining(false);
     }
@@ -128,7 +128,7 @@ export function usePosterDecoderState({ onSaveSuccess }: UsePosterDecoderStatePr
       await onSaveSuccess();
     } catch (err: unknown) {
       console.error(err);
-      toast.error('Failed to save blueprint');
+      toast.error(getApiErrorMessage(err, 'Failed to save blueprint'));
     } finally {
       setSavingTemplate(false);
     }

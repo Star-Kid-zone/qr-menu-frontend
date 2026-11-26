@@ -1,5 +1,6 @@
 "use client";
 
+import { loadWorkspace } from '@/hooks/useWorkspace';
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { PiGoogleLogo } from "react-icons/pi";
@@ -12,12 +13,11 @@ import { routes } from "@/config/routes";
 import { usePermissions } from "@/hooks/usePermissions";
 import { googleService, type GoogleBusinessStatus } from "@/services/google.service";
 import { socialService, type SocialAccount, type SocialPlatform } from "@/services/social.service";
-import { workspaceService } from "@/services/workspace.service";
-import { AccountsTab } from "@/features/social/components/AccountsTab";
+import { AccountsTab } from "@/features/social";
 import { getApiErrorMessage } from "@/utils/errors";
 
 const requestGoogle = () =>
-  Promise.all([googleService.getStatus(), workspaceService.getWorkspace()]);
+  Promise.all([googleService.getStatus(), loadWorkspace()]);
 
 /**
  * Every outside account the restaurant links: Google Business (reviews) and
@@ -42,7 +42,7 @@ export function ConnectedAccounts() {
 
   const applyGoogle = useCallback(([status, ws]: Awaited<ReturnType<typeof requestGoogle>>) => {
     setGoogle(status);
-    setReviewLink(ws.data.review?.googleReviewLink?.trim() || null);
+    setReviewLink(ws.review?.googleReviewLink?.trim() || null);
   }, []);
 
   const handleGoogleError = useCallback((err: unknown) => {

@@ -8,6 +8,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import type { WorkspaceData } from "@/services/workspace.service";
 import type { MenuStats } from "@/services/menu.service";
 import { buildPublicLandingUrl } from "@/utils/tenantHost";
+import { getApiErrorMessage } from "@/utils/errors";
 
 /** Where guests find the restaurant, as the first thing on Home. */
 export function SiteStatusCard({ workspace }: { workspace: WorkspaceData | null }) {
@@ -17,8 +18,8 @@ export function SiteStatusCard({ workspace }: { workspace: WorkspaceData | null 
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied");
-    } catch {
-      toast.error("Couldn't copy. Select the link and copy it instead.");
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Couldn't copy. Select the link and copy it instead."));
     }
   };
   return (

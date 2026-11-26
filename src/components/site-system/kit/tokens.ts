@@ -57,8 +57,6 @@ export const space = {
  */
 export const ON_PHOTO = "rgb(255 255 255)";
 export const ON_PHOTO_MUTED = "rgb(255 255 255 / 0.82)";
-export const ON_PHOTO_LINE = "rgb(255 255 255 / 0.4)";
-
 /** Dark scrim over a photo; `from` = side the text sits on. */
 export function photoScrim(from: "left" | "bottom" | "center" = "bottom", strength = 0.72): string {
   const a = strength;

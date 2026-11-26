@@ -43,7 +43,7 @@ export const DATA_MODULE_STYLES: { value: DataModuleStyle; label: string }[] = [
 /** Dot shapes that phone cameras read less reliably; the page asks owners to test these. */
 export const QR_FANCY_DOT_STYLES: readonly DataModuleStyle[] = ['star', 'heart', 'circuit-board', 'plus', 'diamond'];
 
-export const DEFAULT_QR_CONFIG: WorkspaceQrCodeConfig = {
+const DEFAULT_QR_CONFIG: WorkspaceQrCodeConfig = {
   url: '',
   size: 591,
   margin: 4,

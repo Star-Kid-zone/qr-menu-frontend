@@ -6,17 +6,19 @@ export const routes = {
     forgotPassword: "/forgot-password",
     otp: "/otp",
     resetPassword: "/reset-password",
+    privacy: "/privacy",
+    terms: "/terms",
   },
   admin: {
     home: "/admin/home",
-    addQrCode: "/admin/addqrcode",
+
     qrMenu: "/admin/qr-menu",
     listMenu: "/admin/listmenu",
     addMenu: "/admin/addmenu",
     listReview: "/admin/listreview",
     addReview: "/admin/addreview",
-    listPayment: "/admin/listpayment",
-    addPayment: "/admin/addpayment",
+
+
     listBusiness: "/admin/listbusiness",
     settings: "/admin/settings",
     socialMedia: "/admin/social-media",
@@ -30,7 +32,7 @@ export const routes = {
   superadmin: {
     home: "/superadmin",
     users: "/superadmin/users",
-    userDetail: (id: string | number) => `/superadmin/users/${id}`,
+    userDetail: (id: string) => `/superadmin/users/${id}`,
     analytics: "/superadmin/analytics",
     weeklyPosters: "/superadmin/weekly-posters",
     creativeStudio: "/superadmin/creative-studio",

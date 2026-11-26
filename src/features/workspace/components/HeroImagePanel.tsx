@@ -3,7 +3,7 @@
 import Image from "@/components/ui/Image";
 import { useEffect, useRef, useState } from "react";
 import { PiArrowCounterClockwiseBold, PiCheckBold, PiUploadSimpleBold } from "react-icons/pi";
-import { Button, Spinner, toast } from "@/components/ui";
+import { Button, Notice, Spinner, toast } from "@/components/ui";
 import { cn } from "@/utils/cn";
 import { workspaceService } from "@/services/workspace.service";
 import { getApiErrorMessage } from "@/utils/errors";
@@ -15,7 +15,6 @@ import { compressImageFile } from "@/utils/imageCompressor";
  */
 import { STOCK_HERO_PHOTOS, HERO_IMAGE_UPLOAD } from "@/constants/workspace.constants";
 
-export { STOCK_HERO_PHOTOS };
 
 export interface HeroImagePanelProps {
   disabled: boolean;
@@ -164,7 +163,7 @@ export function HeroImagePanel({ disabled, onChanged }: HeroImagePanelProps) {
               Use style&apos;s photo
             </Button>
           </div>
-          {error ? <p role="alert" className="text-caption text-destructive">{error}</p> : null}
+          {error ? <Notice tone="error">{error}</Notice> : null}
         </div>
       </div>
 
